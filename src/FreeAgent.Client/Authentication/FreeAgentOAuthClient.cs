@@ -132,7 +132,10 @@ public class FreeAgentOAuthClient : IDisposable
             throw new FreeAgentOAuthException($"Token request failed: {response.StatusCode} - {responseBody}");
         }
 
-        var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<OAuthTokenResponse>(responseBody);
+        var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<OAuthTokenResponse>(responseBody, new System.Text.Json.JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
         
         if (tokenResponse == null)
         {

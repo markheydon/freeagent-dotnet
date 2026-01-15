@@ -198,43 +198,43 @@ public class FreeAgentHttpClient : IDisposable
 
     private async Task HandleRateLimitHeadersAsync(HttpResponseMessage response)
     {
-        // Check for rate limit headers and adjust timing
-        if (response.Headers.TryGetValues("X-RateLimit-Remaining", out var remainingValues))
-        {
-            if (int.TryParse(remainingValues.FirstOrDefault(), out var remaining) && remaining == 0)
-            {
-                if (response.Headers.TryGetValues("X-RateLimit-Reset", out var resetValues))
-                {
-                    if (long.TryParse(resetValues.FirstOrDefault(), out var resetTimestamp))
-                    {
-                        var resetTime = DateTimeOffset.FromUnixTimeSeconds(resetTimestamp).UtcDateTime;
-                        _nextAllowedRequestTime = resetTime;
-                    }
-                }
-            }
-        }
-
-        // Handle 429 Too Many Requests
-        if (response.StatusCode == HttpStatusCode.TooManyRequests)
-        {
-            if (response.Headers.RetryAfter != null)
-            {
-                var retryAfter = response.Headers.RetryAfter.Delta ?? TimeSpan.FromSeconds(60);
-                _nextAllowedRequestTime = DateTime.UtcNow.Add(retryAfter);
-            }
-            else
-            {
-                _nextAllowedRequestTime = DateTime.UtcNow.AddSeconds(60);
-            }
-
-            var errorContent = await response.Content.ReadAsStringAsync(CancellationToken.None);
-            throw new FreeAgentRateLimitException($"Rate limit exceeded. Retry after {_nextAllowedRequestTime}");
-        }
-
-        // Apply a safe default delay between requests
         await _rateLimitSemaphore.WaitAsync(CancellationToken.None);
         try
         {
+            // Check for rate limit headers and adjust timing
+            if (response.Headers.TryGetValues("X-RateLimit-Remaining", out var remainingValues))
+            {
+                if (int.TryParse(remainingValues.FirstOrDefault(), out var remaining) && remaining == 0)
+                {
+                    if (response.Headers.TryGetValues("X-RateLimit-Reset", out var resetValues))
+                    {
+                        if (long.TryParse(resetValues.FirstOrDefault(), out var resetTimestamp))
+                        {
+                            var resetTime = DateTimeOffset.FromUnixTimeSeconds(resetTimestamp).UtcDateTime;
+                            _nextAllowedRequestTime = resetTime;
+                        }
+                    }
+                }
+            }
+
+            // Handle 429 Too Many Requests
+            if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            {
+                if (response.Headers.RetryAfter != null)
+                {
+                    var retryAfter = response.Headers.RetryAfter.Delta ?? TimeSpan.FromSeconds(60);
+                    _nextAllowedRequestTime = DateTime.UtcNow.Add(retryAfter);
+                }
+                else
+                {
+                    _nextAllowedRequestTime = DateTime.UtcNow.AddSeconds(60);
+                }
+
+                var errorContent = await response.Content.ReadAsStringAsync(CancellationToken.None);
+                throw new FreeAgentRateLimitException($"Rate limit exceeded. Retry after {_nextAllowedRequestTime}");
+            }
+
+            // Apply a safe default delay between requests
             _nextAllowedRequestTime = DateTime.UtcNow.AddMilliseconds(DefaultRateLimitDelayMs);
         }
         finally
