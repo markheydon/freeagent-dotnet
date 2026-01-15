@@ -227,21 +227,19 @@ public class FreeAgentHttpClient : IDisposable
                 _nextAllowedRequestTime = DateTime.UtcNow.AddSeconds(60);
             }
 
-            var errorContent = await response.Content.ReadAsStringAsync();
+            var errorContent = await response.Content.ReadAsStringAsync(CancellationToken.None);
             throw new FreeAgentRateLimitException($"Rate limit exceeded. Retry after {_nextAllowedRequestTime}");
         }
 
         // Apply a safe default delay between requests
-        if (await _rateLimitSemaphore.WaitAsync(0))
+        await _rateLimitSemaphore.WaitAsync(CancellationToken.None);
+        try
         {
-            try
-            {
-                _nextAllowedRequestTime = DateTime.UtcNow.AddMilliseconds(DefaultRateLimitDelayMs);
-            }
-            finally
-            {
-                _rateLimitSemaphore.Release();
-            }
+            _nextAllowedRequestTime = DateTime.UtcNow.AddMilliseconds(DefaultRateLimitDelayMs);
+        }
+        finally
+        {
+            _rateLimitSemaphore.Release();
         }
     }
 
