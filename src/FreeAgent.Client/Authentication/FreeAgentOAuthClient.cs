@@ -3,12 +3,14 @@ namespace FreeAgent.Client.Authentication;
 /// <summary>
 /// OAuth 2.0 client for FreeAgent API authentication.
 /// </summary>
-public class FreeAgentOAuthClient
+public class FreeAgentOAuthClient : IDisposable
 {
     private readonly string _clientId;
     private readonly string _clientSecret;
     private readonly string _redirectUri;
     private readonly HttpClient _httpClient;
+    private readonly bool _ownsHttpClient;
+    private bool _disposed;
     
     private const string AuthorizationEndpoint = "https://api.freeagent.com/v2/approve_app";
     private const string TokenEndpoint = "https://api.freeagent.com/v2/token_endpoint";
@@ -25,6 +27,7 @@ public class FreeAgentOAuthClient
         _clientSecret = clientSecret ?? throw new ArgumentNullException(nameof(clientSecret));
         _redirectUri = redirectUri ?? throw new ArgumentNullException(nameof(redirectUri));
         _httpClient = new HttpClient();
+        _ownsHttpClient = true;
     }
 
     /// <summary>
@@ -40,6 +43,7 @@ public class FreeAgentOAuthClient
         _clientSecret = clientSecret ?? throw new ArgumentNullException(nameof(clientSecret));
         _redirectUri = redirectUri ?? throw new ArgumentNullException(nameof(redirectUri));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _ownsHttpClient = false;
     }
 
     /// <summary>
@@ -136,5 +140,30 @@ public class FreeAgentOAuthClient
         }
 
         return tokenResponse;
+    }
+
+    /// <summary>
+    /// Disposes the HTTP client.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Disposes managed resources.
+    /// </summary>
+    /// <param name="disposing">Whether to dispose managed resources</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing && _ownsHttpClient)
+            {
+                _httpClient?.Dispose();
+            }
+            _disposed = true;
+        }
     }
 }

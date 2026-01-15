@@ -7,9 +7,10 @@ namespace FreeAgent.Client;
 /// <summary>
 /// Main client for interacting with the FreeAgent API.
 /// </summary>
-public class FreeAgentClient
+public class FreeAgentClient : IDisposable
 {
     private readonly FreeAgentHttpClient _httpClient;
+    private bool _disposed;
 
     /// <summary>
     /// Company API service.
@@ -46,5 +47,30 @@ public class FreeAgentClient
     {
         _httpClient = new FreeAgentHttpClient(httpClient, accessToken);
         Company = new CompanyService(_httpClient);
+    }
+
+    /// <summary>
+    /// Disposes the client and its resources.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Disposes managed resources.
+    /// </summary>
+    /// <param name="disposing">Whether to dispose managed resources</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                _httpClient?.Dispose();
+            }
+            _disposed = true;
+        }
     }
 }

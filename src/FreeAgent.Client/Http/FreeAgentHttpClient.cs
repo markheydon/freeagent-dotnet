@@ -7,13 +7,16 @@ namespace FreeAgent.Client.Http;
 /// <summary>
 /// HTTP client for FreeAgent API with authentication and rate limiting support.
 /// </summary>
-public class FreeAgentHttpClient
+public class FreeAgentHttpClient : IDisposable
 {
     private readonly HttpClient _httpClient;
+    private readonly bool _ownsHttpClient;
     private readonly FreeAgentOAuthClient? _oauthClient;
     private OAuthTokenResponse? _currentToken;
     private readonly SemaphoreSlim _rateLimitSemaphore = new(1, 1);
+    private readonly SemaphoreSlim _tokenRefreshSemaphore = new(1, 1);
     private DateTime _nextAllowedRequestTime = DateTime.MinValue;
+    private bool _disposed;
 
     private const string BaseUrl = "https://api.freeagent.com/v2";
     private const int DefaultRateLimitDelayMs = 1000; // 1 request per second as a safe default
@@ -30,8 +33,9 @@ public class FreeAgentHttpClient
         }
 
         _httpClient = new HttpClient { BaseAddress = new Uri(BaseUrl) };
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", "FreeAgent.Client/1.0");
+        _ownsHttpClient = true;
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
     }
 
     /// <summary>
@@ -45,8 +49,9 @@ public class FreeAgentHttpClient
         _currentToken = token ?? throw new ArgumentNullException(nameof(token));
 
         _httpClient = new HttpClient { BaseAddress = new Uri(BaseUrl) };
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token.AccessToken}");
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", "FreeAgent.Client/1.0");
+        _ownsHttpClient = true;
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {token.AccessToken}");
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
     }
 
     /// <summary>
@@ -57,6 +62,7 @@ public class FreeAgentHttpClient
     public FreeAgentHttpClient(HttpClient httpClient, string accessToken)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _ownsHttpClient = false;
         
         if (string.IsNullOrEmpty(accessToken))
         {
@@ -68,8 +74,8 @@ public class FreeAgentHttpClient
             _httpClient.BaseAddress = new Uri(BaseUrl);
         }
 
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
-        _httpClient.DefaultRequestHeaders.Add("User-Agent", "FreeAgent.Client/1.0");
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
     }
 
     /// <summary>
@@ -152,11 +158,23 @@ public class FreeAgentHttpClient
     {
         if (_oauthClient != null && _currentToken != null && _currentToken.IsExpiringSoon && !string.IsNullOrEmpty(_currentToken.RefreshToken))
         {
-            var newToken = await _oauthClient.RefreshTokenAsync(_currentToken.RefreshToken, cancellationToken);
-            _currentToken = newToken;
-            
-            _httpClient.DefaultRequestHeaders.Remove("Authorization");
-            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {newToken.AccessToken}");
+            await _tokenRefreshSemaphore.WaitAsync(cancellationToken);
+            try
+            {
+                // Double-check after acquiring lock
+                if (_currentToken.IsExpiringSoon)
+                {
+                    var newToken = await _oauthClient.RefreshTokenAsync(_currentToken.RefreshToken, cancellationToken);
+                    _currentToken = newToken;
+                    
+                    _httpClient.DefaultRequestHeaders.Remove("Authorization");
+                    _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {newToken.AccessToken}");
+                }
+            }
+            finally
+            {
+                _tokenRefreshSemaphore.Release();
+            }
         }
     }
 
@@ -214,14 +232,16 @@ public class FreeAgentHttpClient
         }
 
         // Apply a safe default delay between requests
-        await _rateLimitSemaphore.WaitAsync();
-        try
+        if (await _rateLimitSemaphore.WaitAsync(0))
         {
-            _nextAllowedRequestTime = DateTime.UtcNow.AddMilliseconds(DefaultRateLimitDelayMs);
-        }
-        finally
-        {
-            _rateLimitSemaphore.Release();
+            try
+            {
+                _nextAllowedRequestTime = DateTime.UtcNow.AddMilliseconds(DefaultRateLimitDelayMs);
+            }
+            finally
+            {
+                _rateLimitSemaphore.Release();
+            }
         }
     }
 
@@ -245,5 +265,35 @@ public class FreeAgentHttpClient
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Disposes the HTTP client and semaphores.
+    /// </summary>
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Disposes managed resources.
+    /// </summary>
+    /// <param name="disposing">Whether to dispose managed resources</param>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                if (_ownsHttpClient)
+                {
+                    _httpClient?.Dispose();
+                }
+                _rateLimitSemaphore?.Dispose();
+                _tokenRefreshSemaphore?.Dispose();
+            }
+            _disposed = true;
+        }
     }
 }

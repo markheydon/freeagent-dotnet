@@ -51,16 +51,18 @@ Once you have an access token, create a FreeAgent client:
 using FreeAgent.Client;
 
 // Option 1: With just an access token
-var client = new FreeAgentClient("your-access-token");
+using var client = new FreeAgentClient("your-access-token");
 
 // Option 2: With OAuth client for automatic token refresh
-var client = new FreeAgentClient(oauthClient, token);
+using var client = new FreeAgentClient(oauthClient, token);
 
 // Get company information
 var company = await client.Company.GetCompanyAsync();
 Console.WriteLine($"Company: {company.Name}");
 Console.WriteLine($"Currency: {company.Currency}");
 ```
+
+**Note:** The client implements `IDisposable` and should be disposed when done to release HTTP resources properly.
 
 ### Token Refresh
 
