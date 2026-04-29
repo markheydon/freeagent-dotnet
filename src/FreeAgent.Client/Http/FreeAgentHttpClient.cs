@@ -21,6 +21,12 @@ public class FreeAgentHttpClient : IDisposable
     private const string BaseUrl = "https://api.freeagent.com/v2";
     private const int DefaultRateLimitDelayMs = 1000; // 1 request per second as a safe default
 
+    // Cached to avoid allocating a new instance per call (CA1869)
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
+
     /// <summary>
     /// Initializes a new instance with an access token.
     /// </summary>
@@ -63,7 +69,7 @@ public class FreeAgentHttpClient : IDisposable
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _ownsHttpClient = false;
-        
+
         if (string.IsNullOrEmpty(accessToken))
         {
             throw new ArgumentNullException(nameof(accessToken));
@@ -166,7 +172,7 @@ public class FreeAgentHttpClient : IDisposable
                 {
                     var newToken = await _oauthClient.RefreshTokenAsync(_currentToken.RefreshToken, cancellationToken);
                     _currentToken = newToken;
-                    
+
                     _httpClient.DefaultRequestHeaders.Remove("Authorization");
                     _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {newToken.AccessToken}");
                 }
@@ -243,7 +249,7 @@ public class FreeAgentHttpClient : IDisposable
         }
     }
 
-    private async Task<T> HandleResponseAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
+    private static async Task<T> HandleResponseAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         var content = await response.Content.ReadAsStringAsync(cancellationToken);
 
@@ -252,10 +258,7 @@ public class FreeAgentHttpClient : IDisposable
             throw new FreeAgentApiException($"API request failed: {response.StatusCode} - {content}");
         }
 
-        var result = JsonSerializer.Deserialize<T>(content, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
+        var result = JsonSerializer.Deserialize<T>(content, JsonOptions);
 
         if (result == null)
         {

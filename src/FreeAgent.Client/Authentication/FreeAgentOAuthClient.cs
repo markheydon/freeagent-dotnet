@@ -11,9 +11,15 @@ public class FreeAgentOAuthClient : IDisposable
     private readonly HttpClient _httpClient;
     private readonly bool _ownsHttpClient;
     private bool _disposed;
-    
+
     private const string AuthorizationEndpoint = "https://api.freeagent.com/v2/approve_app";
     private const string TokenEndpoint = "https://api.freeagent.com/v2/token_endpoint";
+
+    // Cached to avoid allocating a new instance per call (CA1869)
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
+    };
 
     /// <summary>
     /// Initializes a new instance of the OAuth client.
@@ -65,7 +71,7 @@ public class FreeAgentOAuthClient : IDisposable
             queryParams["state"] = state;
         }
 
-        var queryString = string.Join("&", queryParams.Select(kvp => 
+        var queryString = string.Join("&", queryParams.Select(kvp =>
             $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
 
         return $"{AuthorizationEndpoint}?{queryString}";
@@ -132,11 +138,8 @@ public class FreeAgentOAuthClient : IDisposable
             throw new FreeAgentOAuthException($"Token request failed: {response.StatusCode} - {responseBody}");
         }
 
-        var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<OAuthTokenResponse>(responseBody, new System.Text.Json.JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true
-        });
-        
+        var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<OAuthTokenResponse>(responseBody, JsonOptions);
+
         if (tokenResponse == null)
         {
             throw new FreeAgentOAuthException("Failed to deserialize token response");
