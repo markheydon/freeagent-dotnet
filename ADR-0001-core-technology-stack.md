@@ -45,7 +45,7 @@ The following technology stack is adopted for the initial and ongoing developmen
 - **GitHub:** Source control and collaboration.
 
 ## Alternatives Considered
-For each technology choice, common alternatives are listed below. *Rejection reasons should be filled in by the developer as the project evolves.*
+For each technology choice, common alternatives are listed below.
 
 - **.NET Version:**
   - .NET 8.0, .NET 6.0, .NET Framework, Mono.

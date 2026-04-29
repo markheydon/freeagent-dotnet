@@ -10,7 +10,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - ✅ Rate limiting support to respect API constraints
 - ✅ Pagination support for large result sets
 - ✅ Company API support
-- ✅ Built for .NET 8.0
+- ✅ Built for .NET 10.0
 - ✅ Fully async/await
 - ✅ Comprehensive XML documentation
 
@@ -148,7 +148,7 @@ dotnet pack src/FreeAgent.Client/FreeAgent.Client.csproj -c Release
 ## Development
 
 Requirements:
-- .NET 8.0 SDK or later
+- .NET 10.0 SDK or later
 
 ## Contributing
 
