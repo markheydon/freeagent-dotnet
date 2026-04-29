@@ -54,4 +54,4 @@ I will stop work on this project if:
 ## Revision History
 | Date | Change | Reason |
 |---|---|---|
-| 29 April 2026 | Initial draft | Project kickoff |
+| 29 April 2026 | Initial draft - project kickoff | Project kickoff |

@@ -1,4 +1,3 @@
-# Conventions
 > ⚠️ Review and update this file once tech stack choices are finalised. The structure and patterns below are .NET Clean Architecture defaults.
 
 # Conventions
@@ -17,20 +16,24 @@ create an ADR if it's a significant architectural change.
 
 ````
 src/
-	FreeAgent.Client/           # Main SDK implementation (models, services, HTTP, auth)
+├── [ProjectName].Domain/          # Entities, value objects, domain events
+├── [ProjectName].Application/     # Use cases, commands, queries, interfaces
+├── [ProjectName].Infrastructure/  # External services, repositories, adapters
+└── [ProjectName].Api/             # HTTP endpoints, middleware, DI config
+
 tests/
-	FreeAgent.Client.Tests/     # Unit and integration tests for the SDK
-plan/                         # Project planning and specs
+├── [ProjectName].Unit.Tests/
+├── [ProjectName].Integration.Tests/
+└── [ProjectName].Architecture.Tests/
 ````
 
 ---
 
 ## Patterns in Use
-- **Service abstraction** for each FreeAgent API resource.
-- **Strongly typed models** for requests and responses.
-- **Exception hierarchy** for API and transport errors.
-- **Async/await** for all I/O operations.
-- **No business logic** in SDK (see SCOPE.md).
+- **CQRS** via MediatR - all writes are Commands, all reads are Queries.
+- **Repository pattern** - interfaces in Application, implementations in Infrastructure.
+- **Result pattern** - use `Result<T>` for operations that can fail; avoid exceptions for flow control.
+- **Validation** - FluentValidation on Commands and Queries.
 
 ---
 

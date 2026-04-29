@@ -63,7 +63,11 @@ What will be in the first version? Keep this ruthlessly small.
 
 ## 7. Key User Journeys
 
-The main flows a user must be able to complete.
+In this project, "user" means a developer consuming this NuGet package in their own codebase.
+
+These journeys describe consumer experience and documentation priorities, not implementation backlog items for this repository.
+
+They should inform developer-facing/public-facing documentation and examples, rather than be translated directly into GitHub Issues for this codebase.
 
 1. Install FreeAgent.NET from NuGet and initialise a client using an OAuth access token.
 2. Retrieve a paginated list of FreeAgent resources using a simple async API.
@@ -120,6 +124,6 @@ I'll stop if...
 - [ ] Populate GOALS.md from Section 4 + 11
 - [ ] Populate SCOPE.md from Section 5 + 6
 - [ ] Create GitHub Issues for each item in Section 6 (MVP Scope)
-- [ ] Create GitHub Issues for each journey in Section 7
+- [ ] Create/expand developer-facing docs and examples that cover each journey in Section 7
 - [ ] Write `.github/copilot-instructions.md`
 - [ ] Write first ADR: technology choices
