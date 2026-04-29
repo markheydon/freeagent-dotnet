@@ -15,7 +15,7 @@ FreeAgent.NET is an open-source, modern .NET SDK for the FreeAgent REST API. It 
 
 ## Architecture
 
-- .NET Clean Architecture defaults.
+- SDK-oriented architecture: main client entry point, resource services, typed models, and HTTP/auth support components.
 - No UI, CLI, or end-user tooling.
 - No business-rule abstraction.
 - No handling of OAuth flows beyond programmatic token exchange/refresh.

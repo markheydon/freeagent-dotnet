@@ -39,10 +39,16 @@ The following technology stack is adopted for the initial and ongoing developmen
 - **xUnit:** Unit testing framework.
 - **Microsoft.Extensions.Http:** HTTP client abstraction.
 - **No database:** API client only, no persistence layer.
-- **Clean Architecture:** Project structure and separation of concerns.
+- **SDK-oriented architecture:** Client + services + models + HTTP/auth support components, optimised for NuGet consumption rather than app-layer architecture.
 - **Solo-maintained:** Project is maintained by a single developer.
 - **NuGet:** Package distribution.
 - **GitHub:** Source control and collaboration.
+
+### Architecture clarification
+FreeAgent.NET is a reusable library package, not an application host.
+As such, conventions should prioritise a stable public API, clear service abstractions, strongly typed models, predictable exception behaviour, and backward-compatible package evolution.
+
+Patterns like CQRS, repositories, and API controller boundaries are intentionally not required unless a future ADR introduces a specific need.
 
 ## Alternatives Considered
 For each technology choice, common alternatives are listed below.
