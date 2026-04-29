@@ -1,7 +1,10 @@
 # Conventions
+> ⚠️ Review and update this file once tech stack choices are finalised. The structure and patterns below are .NET Clean Architecture defaults.
 
-**Project:** [Name]
-**Last updated:** [Date]
+# Conventions
+
+**Project:** FreeAgent.NET
+**Last updated:** 29 April 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.
@@ -14,24 +17,20 @@ create an ADR if it's a significant architectural change.
 
 ````
 src/
-├── [ProjectName].Domain/          # Entities, value objects, domain events
-├── [ProjectName].Application/     # Use cases, commands, queries, interfaces
-├── [ProjectName].Infrastructure/  # EF Core, external services, repositories
-└── [ProjectName].Api/             # Controllers, middleware, DI config
-
+	FreeAgent.Client/           # Main SDK implementation (models, services, HTTP, auth)
 tests/
-├── [ProjectName].Unit.Tests/
-├── [ProjectName].Integration.Tests/
-└── [ProjectName].Architecture.Tests/
+	FreeAgent.Client.Tests/     # Unit and integration tests for the SDK
+plan/                         # Project planning and specs
 ````
 
 ---
 
 ## Patterns in Use
-- **CQRS** via MediatR - all writes are Commands, all reads are Queries
-- **Repository pattern** - `IRepository<T>` in Application, implemented in Infrastructure
-- **Result pattern** - use `Result<T>` for operations that can fail; no exceptions for flow control
-- **Validation** - FluentValidation on all Commands and Queries
+- **Service abstraction** for each FreeAgent API resource.
+- **Strongly typed models** for requests and responses.
+- **Exception hierarchy** for API and transport errors.
+- **Async/await** for all I/O operations.
+- **No business logic** in SDK (see SCOPE.md).
 
 ---
 
@@ -61,6 +60,7 @@ tests/
 ---
 
 ## Revision History
-| Date | Change |
-|---|---|
-| [Date] | Initial draft |
+| Date | Change | Reason |
+|---|---|---|
+| 29 April 2026 | Initial draft | Project kickoff |
+
