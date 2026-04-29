@@ -69,7 +69,7 @@ Console.WriteLine($"Currency: {company.Currency}");
 Tokens can be refreshed manually:
 
 ```csharp
-if (token.IsExpiringSoon)
+if (token.IsExpiringSoon && !string.IsNullOrEmpty(token.RefreshToken))
 {
     var newToken = await oauthClient.RefreshTokenAsync(token.RefreshToken);
     // Update your stored token

@@ -11,5 +11,5 @@ public class CompanyResponse
     /// Company data.
     /// </summary>
     [JsonPropertyName("company")]
-    public Company Company { get; set; } = new();
+    public Company? Company { get; set; }
 }

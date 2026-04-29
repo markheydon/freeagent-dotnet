@@ -26,7 +26,13 @@ public class CompanyService
     /// <returns>Company information</returns>
     public async Task<Company> GetCompanyAsync(CancellationToken cancellationToken = default)
     {
-        var response = await _httpClient.GetAsync<CompanyResponse>("/company", cancellationToken);
+        var response = await _httpClient.GetAsync<CompanyResponse>("company", cancellationToken);
+        
+        if (response.Company == null)
+        {
+            throw new FreeAgentApiException("Company data missing from API response");
+        }
+        
         return response.Company;
     }
 }

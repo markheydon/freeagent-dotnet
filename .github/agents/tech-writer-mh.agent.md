@@ -8,7 +8,7 @@ tools: ['read', 'edit', 'search', 'execute']
 ## On Activation
 
 1. Load the `documentation-writer` skill from `.github/skills/documentation-writer/SKILL.md` for Diátaxis framework guidance on structuring tutorials, how-to guides, reference pages, and explanations.
-2. Load the `project-documentation` skill from `.github/skills/project-documentation/SKILL.md` for project-aware document placement, local terminology, and review guidance.
+2. Load the `project-documentation-mh` skill from `.github/skills/project-documentation-mh/SKILL.md` for project-aware document placement, local terminology, and review guidance.
 3. Read the following project context files if they exist - use them to ground all writing in the project's goals, scope, terminology, and conventions. Do not invent context that is not present in these files:
    - `GOALS.md` — project intent, success criteria, and kill criteria
    - `SCOPE.md` — what is and is not in scope for the current version

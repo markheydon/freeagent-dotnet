@@ -18,7 +18,7 @@ public class FreeAgentHttpClient : IDisposable
     private DateTime _nextAllowedRequestTime = DateTime.MinValue;
     private bool _disposed;
 
-    private const string BaseUrl = "https://api.freeagent.com/v2";
+    private const string BaseUrl = "https://api.freeagent.com/v2/";
     private const int DefaultRateLimitDelayMs = 1000; // 1 request per second as a safe default
 
     // Cached to avoid allocating a new instance per call (CA1869)
@@ -170,7 +170,15 @@ public class FreeAgentHttpClient : IDisposable
                 // Double-check after acquiring lock
                 if (_currentToken.IsExpiringSoon)
                 {
+                    var oldRefreshToken = _currentToken.RefreshToken;
                     var newToken = await _oauthClient.RefreshTokenAsync(_currentToken.RefreshToken, cancellationToken);
+                    
+                    // Preserve the refresh token if the provider doesn't return a new one
+                    if (string.IsNullOrEmpty(newToken.RefreshToken))
+                    {
+                        newToken.RefreshToken = oldRefreshToken;
+                    }
+                    
                     _currentToken = newToken;
 
                     _httpClient.DefaultRequestHeaders.Remove("Authorization");
@@ -195,6 +203,11 @@ public class FreeAgentHttpClient : IDisposable
                 var delay = _nextAllowedRequestTime - now;
                 await Task.Delay(delay, cancellationToken);
             }
+            
+            // Reserve the next slot before releasing the semaphore
+            // Take the max of current time and existing next allowed time to handle concurrent requests
+            var currentNextTime = _nextAllowedRequestTime > now ? _nextAllowedRequestTime : now;
+            _nextAllowedRequestTime = currentNextTime.AddMilliseconds(DefaultRateLimitDelayMs);
         }
         finally
         {
@@ -217,7 +230,11 @@ public class FreeAgentHttpClient : IDisposable
                         if (long.TryParse(resetValues.FirstOrDefault(), out var resetTimestamp))
                         {
                             var resetTime = DateTimeOffset.FromUnixTimeSeconds(resetTimestamp).UtcDateTime;
-                            _nextAllowedRequestTime = resetTime;
+                            // Only update if this reset time is later than what we already have
+                            if (resetTime > _nextAllowedRequestTime)
+                            {
+                                _nextAllowedRequestTime = resetTime;
+                            }
                         }
                     }
                 }
@@ -226,22 +243,28 @@ public class FreeAgentHttpClient : IDisposable
             // Handle 429 Too Many Requests
             if (response.StatusCode == HttpStatusCode.TooManyRequests)
             {
+                DateTime retryTime;
                 if (response.Headers.RetryAfter != null)
                 {
                     var retryAfter = response.Headers.RetryAfter.Delta ?? TimeSpan.FromSeconds(60);
-                    _nextAllowedRequestTime = DateTime.UtcNow.Add(retryAfter);
+                    retryTime = DateTime.UtcNow.Add(retryAfter);
                 }
                 else
                 {
-                    _nextAllowedRequestTime = DateTime.UtcNow.AddSeconds(60);
+                    retryTime = DateTime.UtcNow.AddSeconds(60);
+                }
+                
+                // Only update if this retry time is later than what we already have
+                if (retryTime > _nextAllowedRequestTime)
+                {
+                    _nextAllowedRequestTime = retryTime;
                 }
 
                 var errorContent = await response.Content.ReadAsStringAsync(CancellationToken.None);
-                throw new FreeAgentRateLimitException($"Rate limit exceeded. Retry after {_nextAllowedRequestTime}");
+                throw new FreeAgentRateLimitException($"Rate limit exceeded. Retry after {_nextAllowedRequestTime}. Response: {errorContent}");
             }
-
-            // Apply a safe default delay between requests
-            _nextAllowedRequestTime = DateTime.UtcNow.AddMilliseconds(DefaultRateLimitDelayMs);
+            
+            // Note: We don't apply the default delay here anymore since it's now handled in ApplyRateLimitAsync
         }
         finally
         {
