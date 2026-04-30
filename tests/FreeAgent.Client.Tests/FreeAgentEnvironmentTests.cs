@@ -5,9 +5,9 @@ namespace FreeAgent.Client.Tests;
 public class FreeAgentEnvironmentTests
 {
     [Fact]
-    public void FreeAgentClient_DefaultEnvironment_IsProduction()
+    public void FreeAgentClient_DefaultConstructor_DoesNotThrow()
     {
-        var client = new FreeAgentClient("test-token");
+        using var client = new FreeAgentClient("test-token");
 
         Assert.NotNull(client);
     }

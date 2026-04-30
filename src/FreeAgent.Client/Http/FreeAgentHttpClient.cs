@@ -18,7 +18,6 @@ public class FreeAgentHttpClient : IDisposable
     private DateTime _nextAllowedRequestTime = DateTime.MinValue;
     private bool _disposed;
 
-    private const string DefaultBaseUrl = "https://api.freeagent.com/v2/";
     private const int DefaultRateLimitDelayMs = 1000; // 1 request per second as a safe default
 
     // Cached to avoid allocating a new instance per call (CA1869)
@@ -79,7 +78,7 @@ public class FreeAgentHttpClient : IDisposable
 
         if (_httpClient.BaseAddress == null)
         {
-            _httpClient.BaseAddress = new Uri(DefaultBaseUrl);
+            _httpClient.BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(FreeAgentEnvironment.Production));
         }
 
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");

@@ -92,13 +92,13 @@ public sealed class OAuthService : IDisposable
     /// Creates a <see cref="FreeAgentClient"/> configured for automatic token refresh.
     /// The caller is responsible for disposing the returned client.
     /// </summary>
-    public FreeAgentClient CreateFreeAgentClient(OAuthTokenResponse token)
+    public FreeAgentClient CreateFreeAgentClient(OAuthTokenResponse token, FreeAgentEnvironment connectedEnvironment)
     {
         ArgumentNullException.ThrowIfNull(token);
         EnsureConfigured();
 
         var oauthClient = GetOrCreateOAuthClient();
-        return new FreeAgentClient(oauthClient, token, SelectedEnvironment);
+        return new FreeAgentClient(oauthClient, token, connectedEnvironment);
     }
 
     private FreeAgentOAuthClient GetOrCreateOAuthClient()

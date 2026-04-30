@@ -193,7 +193,7 @@
 
     private void Connect()
     {
-        var state = TokenStore.GenerateAndStorePendingState();
+        var state = TokenStore.GenerateAndStorePendingState(OAuthService.SelectedEnvironment);
         var url = OAuthService.BuildAuthorizationUrl(state);
         NavigationManager.NavigateTo(url, forceLoad: true);
     }

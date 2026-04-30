@@ -173,7 +173,7 @@
 
         try
         {
-            using var client = OAuthService.CreateFreeAgentClient(token);
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
             _company = await client.Company.GetCompanyAsync();
         }
         catch (FreeAgentApiException ex)
