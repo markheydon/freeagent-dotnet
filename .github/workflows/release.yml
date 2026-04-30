@@ -1,0 +1,79 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    name: Build, Pack & Publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore FreeAgent.slnx
+
+      - name: Build
+        run: dotnet build FreeAgent.slnx --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test FreeAgent.slnx --no-build --configuration Release --logger "trx;LogFileName=results.trx"
+
+      - name: Pack
+        run: dotnet pack src/FreeAgent.Client/FreeAgent.Client.csproj --no-build --configuration Release --output ./nupkg
+
+      - name: Publish to NuGet
+        run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+
+      - name: Determine if prerelease
+        id: prerelease_check
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if [[ "$TAG" =~ -[a-zA-Z] ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub Release
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const tag = context.ref.replace('refs/tags/', '');
+            const isPrerelease = ${{ steps.prerelease_check.outputs.is_prerelease }};
+
+            // Make release creation idempotent for workflow re-runs on the same tag.
+            try {
+              await github.rest.repos.getReleaseByTag({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                tag,
+              });
+
+              core.info(`Release for tag ${tag} already exists. Skipping createRelease.`);
+              return;
+            } catch (error) {
+              if (error.status !== 404) {
+                throw error;
+              }
+            }
+
+            await github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: tag,
+              name: tag,
+              prerelease: isPrerelease,
+              generate_release_notes: true,
+            });

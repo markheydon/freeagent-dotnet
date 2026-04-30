@@ -3,6 +3,9 @@
 A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) with OAuth 2.0 support, rate limiting, and pagination.
 
 [![NuGet](https://img.shields.io/nuget/v/FreeAgent.Client.svg)](https://www.nuget.org/packages/FreeAgent.Client/)
+[![NuGet (prerelease)](https://img.shields.io/nuget/vpre/FreeAgent.Client.svg?label=nuget%20prerelease)](https://www.nuget.org/packages/FreeAgent.Client/)
+
+> ⚠️ **Prerelease software.** This package is currently in alpha. Public APIs may change between releases. See [VERSIONING.md](VERSIONING.md) for the full versioning policy and stability expectations.
 
 ## Features
 
@@ -157,6 +160,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Versioning
+
+This package follows [Semantic Versioning](https://semver.org/). Until the MVP is complete, all releases carry a prerelease tag (e.g. `0.1.0-alpha.1`). Prerelease packages do not carry stability guarantees — public APIs may change between versions.
+
+See [VERSIONING.md](VERSIONING.md) for the full policy, stage transition criteria, and when the first stable `1.0.0` will be released.
 
 ## Resources
 
