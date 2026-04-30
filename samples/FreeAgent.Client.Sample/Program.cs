@@ -14,6 +14,9 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.PreventDuplicates = false;
 });
 
+// NOTE: TokenStore and OAuthService are registered as singletons.
+// This sample is intended for local, single-user development use only.
+// In a multi-user scenario, tokens would be shared across all circuits/sessions.
 builder.Services.AddSingleton<TokenStore>();
 builder.Services.AddSingleton<OAuthService>();
 
@@ -62,7 +65,18 @@ app.MapGet("/oauth/callback", async (
     }
     catch (FreeAgentOAuthException ex)
     {
-        return Results.Redirect($"/?auth_error={Uri.EscapeDataString(ex.Message)}");
+        app.Logger.LogWarning(ex, "OAuth token exchange rejected by FreeAgent.");
+        return Results.Redirect("/?auth_error=token_exchange_failed");
+    }
+    catch (HttpRequestException ex)
+    {
+        app.Logger.LogError(ex, "Network error during OAuth token exchange.");
+        return Results.Redirect("/?auth_error=network_error");
+    }
+    catch (Exception ex)
+    {
+        app.Logger.LogError(ex, "Unexpected error during OAuth token exchange.");
+        return Results.Redirect("/?auth_error=unexpected_error");
     }
 
     return Results.Redirect("/");

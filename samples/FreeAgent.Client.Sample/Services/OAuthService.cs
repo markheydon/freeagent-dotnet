@@ -32,9 +32,9 @@ public sealed class OAuthService : IDisposable
     /// Returns <c>true</c> when all required OAuth credentials are present in configuration.
     /// </summary>
     public bool IsConfigured =>
-        !string.IsNullOrEmpty(_clientId) &&
-        !string.IsNullOrEmpty(_clientSecret) &&
-        !string.IsNullOrEmpty(_redirectUri);
+        !string.IsNullOrWhiteSpace(_clientId) &&
+        !string.IsNullOrWhiteSpace(_clientSecret) &&
+        !string.IsNullOrWhiteSpace(_redirectUri);
 
     /// <summary>
     /// Builds the FreeAgent OAuth authorization URL including the CSRF state parameter.
@@ -69,11 +69,6 @@ public sealed class OAuthService : IDisposable
 
     private FreeAgentOAuthClient GetOrCreateOAuthClient()
     {
-        if (_oauthClient is not null)
-        {
-            return _oauthClient;
-        }
-
         lock (_clientLock)
         {
             return _oauthClient ??= new FreeAgentOAuthClient(_clientId, _clientSecret, _redirectUri);
