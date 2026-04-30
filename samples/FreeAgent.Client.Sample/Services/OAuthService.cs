@@ -1,3 +1,4 @@
+using FreeAgent.Client;
 using FreeAgent.Client.Authentication;
 
 namespace FreeAgent.Client.Sample.Services;
@@ -11,6 +12,7 @@ public sealed class OAuthService : IDisposable
     private readonly string _clientId;
     private readonly string _clientSecret;
     private readonly string _redirectUri;
+    private FreeAgentEnvironment _selectedEnvironment = FreeAgentEnvironment.Production;
     private FreeAgentOAuthClient? _oauthClient;
     private readonly Lock _clientLock = new();
     private bool _disposed;
@@ -26,6 +28,36 @@ public sealed class OAuthService : IDisposable
         _clientId = section["ClientId"] ?? string.Empty;
         _clientSecret = section["ClientSecret"] ?? string.Empty;
         _redirectUri = section["RedirectUri"] ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Gets or sets the selected FreeAgent API environment for the next OAuth connection attempt.
+    /// Changing this value resets the cached OAuth client so endpoint URLs stay in sync.
+    /// </summary>
+    public FreeAgentEnvironment SelectedEnvironment
+    {
+        get
+        {
+            lock (_clientLock)
+            {
+                return _selectedEnvironment;
+            }
+        }
+
+        set
+        {
+            lock (_clientLock)
+            {
+                if (_selectedEnvironment == value)
+                {
+                    return;
+                }
+
+                _selectedEnvironment = value;
+                _oauthClient?.Dispose();
+                _oauthClient = null;
+            }
+        }
     }
 
     /// <summary>
@@ -60,18 +92,20 @@ public sealed class OAuthService : IDisposable
     /// Creates a <see cref="FreeAgentClient"/> configured for automatic token refresh.
     /// The caller is responsible for disposing the returned client.
     /// </summary>
-    public FreeAgentClient CreateFreeAgentClient(OAuthTokenResponse token)
+    public FreeAgentClient CreateFreeAgentClient(OAuthTokenResponse token, FreeAgentEnvironment connectedEnvironment)
     {
         ArgumentNullException.ThrowIfNull(token);
         EnsureConfigured();
-        return new FreeAgentClient(GetOrCreateOAuthClient(), token);
+
+        var oauthClient = GetOrCreateOAuthClient();
+        return new FreeAgentClient(oauthClient, token, connectedEnvironment);
     }
 
     private FreeAgentOAuthClient GetOrCreateOAuthClient()
     {
         lock (_clientLock)
         {
-            return _oauthClient ??= new FreeAgentOAuthClient(_clientId, _clientSecret, _redirectUri);
+            return _oauthClient ??= new FreeAgentOAuthClient(_clientId, _clientSecret, _redirectUri, _selectedEnvironment);
         }
     }
 
@@ -91,7 +125,11 @@ public sealed class OAuthService : IDisposable
     {
         if (!_disposed)
         {
-            _oauthClient?.Dispose();
+            lock (_clientLock)
+            {
+                _oauthClient?.Dispose();
+                _oauthClient = null;
+            }
             _disposed = true;
         }
     }

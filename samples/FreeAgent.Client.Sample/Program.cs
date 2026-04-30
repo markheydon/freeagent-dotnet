@@ -53,7 +53,7 @@ app.MapGet("/oauth/callback", async (
     }
 
     // CSRF check
-    if (!tokenStore.ValidateAndClearState(state))
+    if (!tokenStore.ValidateAndClearState(state, out var pendingEnvironment))
     {
         return Results.Redirect("/?auth_error=invalid_state");
     }
@@ -61,7 +61,7 @@ app.MapGet("/oauth/callback", async (
     try
     {
         var token = await oauthService.ExchangeCodeAsync(code);
-        tokenStore.SetToken(token);
+        tokenStore.SetToken(token, pendingEnvironment);
     }
     catch (FreeAgentOAuthException ex)
     {
