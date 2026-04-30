@@ -3,7 +3,7 @@
 **Project Name:** FreeAgent.NET  
 **Owner:** Mark Heydon  
 **Date:** 29 April 2026  
-**Status:** Draft
+**Status:** Active (post-kickoff tracking)
 
 ---
 
@@ -120,10 +120,15 @@ I'll stop if...
 
 ## 13. Next Steps
 
-- [ ] Create repo with standard structure
-- [ ] Populate GOALS.md from Section 4 + 11
-- [ ] Populate SCOPE.md from Section 5 + 6
-- [ ] Create GitHub Issues for each item in Section 6 (MVP Scope)
-- [ ] Create/expand developer-facing docs and examples that cover each journey in Section 7
-- [ ] Write `.github/copilot-instructions.md`
-- [ ] Write first ADR: technology choices
+- [x] Create repo with standard structure
+- [x] Populate GOALS.md from Section 4 + 11
+- [x] Populate SCOPE.md from Section 5 + 6
+- [x] Create GitHub Issues for MVP scope execution and quality hardening (#3, #4, #5, #6, #7, #8, #10)
+- [ ] Create/expand developer-facing docs and examples that cover each journey in Section 7 (#16)
+- [x] Write `.github/copilot-instructions.md`
+- [x] Write first ADR: technology choices (`ADR-0001-core-technology-stack.md`)
+
+### Remaining Post-Kickoff Work
+
+- Docs and examples aligned to key user journeys: #16
+- Kickoff closeout and tracking hygiene: #11
