@@ -1,34 +1,34 @@
-name: Story request
-description: Propose a scoped story for feature, improvement, or admin planning work
+name: Feature request
+description: Propose a new capability or enhancement for the SDK
+title: "feat: "
 labels: [story]
-title: "story: "
 body:
   - type: markdown
     attributes:
       value: |
-        Please describe the work as a story so it can be triaged and planned consistently.
-        Link relevant goals from GOALS.md and keep scope explicit.
+        Use this template for user-facing features or meaningful enhancements.
+        Keep scope tight and link each request to project goals where possible.
   - type: textarea
     id: summary
     attributes:
       label: Summary
-      description: Briefly describe the story outcome
-      placeholder: Provide a concise summary of the story.
+      description: Describe the feature and expected user/developer value
+      placeholder: Add a concise summary of the requested feature.
     validations:
       required: true
   - type: textarea
-    id: user_story
+    id: problem
     attributes:
-      label: User story
-      description: Use the format - As a [user], I can [action], so that [benefit]
-      placeholder: As a ..., I can ..., so that ...
+      label: Problem statement
+      description: What problem does this solve, and for whom?
+      placeholder: Describe the pain point this feature addresses.
     validations:
       required: true
   - type: textarea
     id: scope
     attributes:
       label: Scope
-      description: Define what this issue will and will not cover
+      description: Define what is in scope and out of scope for this issue
       placeholder: |
         In scope:
         - ...
@@ -51,7 +51,7 @@ body:
     id: risks
     attributes:
       label: Risks and trade-offs
-      description: Note risks, assumptions, or trade-offs
+      description: Note implementation risks, compatibility concerns, or trade-offs
       placeholder: |
         - Risk:
         - Mitigation:
@@ -68,7 +68,7 @@ body:
     validations:
       required: true
   - type: textarea
-    id: related
+    id: additional
     attributes:
-      label: Related context
-      description: Related issue/PR links, repo context, or constraints
+      label: Additional context
+      description: Links to prior issues/PRs, API docs, or implementation notes

@@ -31,5 +31,11 @@ When working in this repo, refer to:
 - `.github/copilot-instructions.md` - coding standards.
 
 ## Issue Formatting
-When raising GitHub Issues, use the templates in `.github/ISSUE_TEMPLATE/`.
-Link issues to relevant goals from GOALS.md where possible.
+When raising GitHub Issues, use the templates in `.github/ISSUE_TEMPLATE/`:
+- `feature_request.yml` for user-facing feature/enhancement work.
+- `chore_request.yml` for maintenance/tooling/docs/governance tasks.
+- `story_request.yml` for broader planning/admin stories.
+
+For all issue types:
+- Link issues to relevant goals from GOALS.md.
+- Include explicit scope, acceptance criteria, and risks/trade-offs.

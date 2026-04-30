@@ -50,5 +50,7 @@ FreeAgent.NET is an open-source, modern .NET SDK for the FreeAgent REST API. It 
 
 ## GitHub Issues
 
-- When suggesting work to be done, format it as a GitHub Issue using the story issue template.
-- Link issues to GOALS.md goals where relevant.
+- When suggesting user-facing feature work, use `.github/ISSUE_TEMPLATE/feature_request.yml`.
+- When suggesting maintenance/tooling/docs/governance work, use `.github/ISSUE_TEMPLATE/chore_request.yml`.
+- When suggesting broad planning/admin work, use `.github/ISSUE_TEMPLATE/story_request.yml`.
+- Include explicit scope, acceptance criteria, risks/trade-offs, and GOALS.md links where relevant.
