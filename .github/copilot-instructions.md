@@ -41,12 +41,23 @@ FreeAgent.NET is an open-source, modern .NET SDK for the FreeAgent REST API. It 
 - Interfaces: I prefix.
 - Test classes: [ClassName]Tests.
 
+## Sample and Test App Sync
+
+The Blazor sample (`samples/FreeAgent.Client.Sample`) must reflect the **current, implemented** state of the SDK — not planned or aspirational endpoints.
+
+- Every API endpoint implemented in `src/FreeAgent.Client/Services/` must have a corresponding page or component in the sample app that exercises it.
+- When a new service or endpoint is added to the SDK, a matching UI page in the sample app must be added in the same PR.
+- When an endpoint is removed or renamed, the sample app must be updated in the same PR.
+- Do not add sample UI for endpoints that do not yet exist in the SDK.
+- The sample app is the living reference for "what this SDK can do today". Keep it honest.
+
 ## What Not to Do
 
 - Do not put business logic in controllers.
 - Do not generate migrations automatically - flag when a migration is needed.
 - Do not add NuGet packages without flagging it first.
 - Do not change the architecture pattern without an ADR.
+- Do not add sample app pages for SDK endpoints that are not yet implemented.
 
 ## GitHub Issues
 
