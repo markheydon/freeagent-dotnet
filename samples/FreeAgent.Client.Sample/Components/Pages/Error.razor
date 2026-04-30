@@ -1,0 +1,12 @@
+@page "/Error"
+@using Microsoft.AspNetCore.Components.Web
+
+<PageTitle>Error — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-6">
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        An unexpected error occurred.
+    </MudAlert>
+    <MudButton Variant="Variant.Outlined" Href="/"
+               StartIcon="@Icons.Material.Filled.Home">Return home</MudButton>
+</MudContainer>
