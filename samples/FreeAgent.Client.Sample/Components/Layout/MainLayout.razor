@@ -1,0 +1,85 @@
+@inherits LayoutComponentBase
+@inject TokenStore TokenStore
+
+<MudThemeProvider Theme="_theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0" Color="Color.Surface" Dense="true" Class="sample-appbar">
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+            <MudAvatar Size="Size.Medium" Color="Color.Primary" Variant="Variant.Filled">
+                <MudIcon Icon="@Icons.Material.Filled.Code" />
+            </MudAvatar>
+            <MudStack Spacing="0">
+                <MudText Typo="Typo.subtitle2">FreeAgent.NET</MudText>
+                <MudText Typo="Typo.caption" Class="shell-subtitle">Developer workbench for OAuth and API surface testing</MudText>
+            </MudStack>
+        </MudStack>
+
+        <MudSpacer />
+
+        <MudChip T="string"
+                 Color="@(TokenStore.IsConnected ? Color.Success : Color.Default)"
+                 Variant="Variant.Outlined"
+                 Size="Size.Small"
+                 Icon="@(TokenStore.IsConnected ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)">
+            @(TokenStore.IsConnected ? "Connected" : "Awaiting auth")
+        </MudChip>
+    </MudAppBar>
+
+    <MudDrawer Open="true" Elevation="0" Variant="DrawerVariant.Responsive" Class="sample-drawer">
+        <MudStack Class="drawer-header" Spacing="1">
+            <MudText Typo="Typo.overline" Class="drawer-label">Workspace</MudText>
+            <MudText Typo="Typo.h6">SDK Explorer</MudText>
+            <MudText Typo="Typo.body2" Class="drawer-copy">Use the sample to validate OAuth flow and probe implemented FreeAgent endpoints.</MudText>
+        </MudStack>
+
+        <MudDivider Class="mb-2" />
+
+        <MudNavMenu Rounded="true">
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+                Overview
+            </MudNavLink>
+            <MudNavLink Href="/company" Icon="@Icons.Material.Filled.Business">
+                Company Probe
+            </MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent Class="sample-main">
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private readonly MudTheme _theme = new()
+    {
+        PaletteLight = new PaletteLight
+        {
+            Primary = "#0f766e",
+            Secondary = "#b45309",
+            Tertiary = "#1d4ed8",
+            Background = "#f5f7f4",
+            Surface = "#fbfcfa",
+            AppbarBackground = "rgba(251, 252, 250, 0.92)",
+            DrawerBackground = "#f1f5f1",
+            DrawerText = "#16211d",
+            TextPrimary = "#16211d",
+            TextSecondary = "#50615b",
+            LinesDefault = "rgba(15, 23, 42, 0.08)"
+        },
+        LayoutProperties = new LayoutProperties
+        {
+            DrawerWidthLeft = "300px"
+        },
+        Typography = new Typography
+        {
+            Default = new DefaultTypography
+            {
+                FontFamily = ["Roboto", "Segoe UI", "sans-serif"]
+            }
+        }
+    };
+}

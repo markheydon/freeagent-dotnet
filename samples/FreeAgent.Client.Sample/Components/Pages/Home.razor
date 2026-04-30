@@ -1,0 +1,181 @@
+@page "/"
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
+
+<PageTitle>Home — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <MudPaper Class="hero-panel" Elevation="0">
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="8">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.overline" Class="section-kicker">Sample application</MudText>
+                    <MudText Typo="Typo.h3">Validate OAuth and exercise SDK calls without leaving the repo.</MudText>
+                    <MudText Typo="Typo.body1" Class="hero-copy">
+                        This app is the local workbench for FreeAgent.NET development. It exposes the current SDK surface,
+                        shows connection state clearly, and gives contributors a safe place to verify new API calls as they land.
+                    </MudText>
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary" Icon="@Icons.Material.Filled.Security">OAuth redirect flow</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary" Icon="@Icons.Material.Filled.Api">SDK-backed requests</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Info" Icon="@Icons.Material.Filled.Handyman">Contributor-friendly</MudChip>
+                    </MudStack>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudPaper Class="status-panel" Elevation="0">
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.subtitle1">Session status</MudText>
+                        <MudChip T="string"
+                                 Color="@(TokenStore.IsConnected ? Color.Success : Color.Default)"
+                                 Variant="Variant.Filled"
+                                 Icon="@(TokenStore.IsConnected ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)">
+                            @(TokenStore.IsConnected ? "Connected" : "Not connected")
+                        </MudChip>
+                        <MudText Typo="Typo.body2">Configured environment: <strong>@EnvironmentName</strong></MudText>
+                        <MudText Typo="Typo.body2">SDK API target: <strong>@SdkApiTarget</strong></MudText>
+                        <MudText Typo="Typo.body2">Redirect URI: <strong>@RedirectUri</strong></MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (_authError is not null)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4" ShowCloseIcon="true"
+                  CloseIconClicked="@(() => _authError = null)">
+            @_authError
+        </MudAlert>
+    }
+
+    <MudGrid Spacing="3" Class="mt-1">
+        <MudItem xs="12" md="7">
+            <MudPaper Class="workbench-panel" Elevation="0">
+                <MudStack Spacing="3">
+                    <MudText Typo="Typo.h5">Connection control</MudText>
+
+                    @if (TokenStore.IsConnected)
+                    {
+                        <MudAlert Severity="Severity.Success" Dense="true" Variant="Variant.Outlined">
+                            Active OAuth session stored in memory for this app process.
+                        </MudAlert>
+
+                        @if (_token is not null)
+                        {
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+                                <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" />
+                                @if (_token.IsExpired)
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Error">Token has expired. Disconnect and reconnect.</MudText>
+                                }
+                                else if (_token.IsExpiringSoon)
+                                {
+                                    <MudText Typo="Typo.body2" Color="Color.Warning">Token is expiring soon. The SDK will attempt automatic refresh.</MudText>
+                                }
+                                else
+                                {
+                                    <MudText Typo="Typo.body2">Token expires in approximately @ExpiresInMinutes minutes.</MudText>
+                                }
+                            </MudStack>
+                        }
+
+                        <MudStack Row="true" Spacing="2">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Error"
+                                       StartIcon="@Icons.Material.Filled.LinkOff"
+                                       OnClick="Disconnect">Disconnect</MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                       Href="/company"
+                                       StartIcon="@Icons.Material.Filled.ArrowForward">Open company probe</MudButton>
+                        </MudStack>
+                    }
+                    else
+                    {
+                        <MudText Typo="Typo.body2">
+                            Start the OAuth flow to connect a local developer session to FreeAgent.
+                            The app redirects to FreeAgent, handles the callback, and stores the token in memory.
+                        </MudText>
+
+                        @if (!OAuthService.IsConfigured)
+                        {
+                            <MudAlert Severity="Severity.Warning" Dense="true">
+                                Credentials are not configured. See <code>samples/README.md</code> for the user-secrets setup.
+                            </MudAlert>
+                        }
+
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Link"
+                                   Disabled="@(!OAuthService.IsConfigured)"
+                                   OnClick="Connect">
+                            Connect to FreeAgent
+                        </MudButton>
+                    }
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="5">
+            <MudPaper Class="workbench-panel" Elevation="0">
+                <MudStack Spacing="3">
+                    <MudText Typo="Typo.h5">Included probe</MudText>
+                    <MudText Typo="Typo.body2">The current sample ships with one implemented API check.</MudText>
+                    <MudPaper Class="probe-card" Elevation="0">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.subtitle1">Company</MudText>
+                            <MudText Typo="Typo.body2">Calls <code>CompanyService.GetCompanyAsync()</code> and renders the returned model.</MudText>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                       Href="/company"
+                                       StartIcon="@Icons.Material.Filled.Business">Open probe</MudButton>
+                        </MudStack>
+                    </MudPaper>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "auth_error")]
+    private string? AuthErrorParam { get; set; }
+
+    private OAuthTokenResponse? _token;
+    private string? _authError;
+
+    private string EnvironmentName => Configuration["FreeAgent:Environment"] ?? "sandbox";
+    private const string SdkApiTarget = "https://api.freeagent.com/v2/ (currently fixed in SDK)";
+    private string RedirectUri => Configuration["FreeAgent:RedirectUri"] ?? "https://localhost:5001/oauth/callback";
+
+    private int ExpiresInMinutes =>
+        _token is null
+            ? 0
+            : Math.Max(0, (int)(_token.IssuedAt.AddSeconds(_token.ExpiresIn) - DateTime.UtcNow).TotalMinutes);
+
+    protected override void OnInitialized()
+    {
+        _token = TokenStore.GetToken();
+
+        _authError = AuthErrorParam switch
+        {
+            "invalid_state" => "Authentication failed: invalid state parameter. Please try connecting again.",
+            "missing_params" => "Authentication failed: missing parameters in the FreeAgent callback.",
+            "access_denied" => "Access denied. You did not approve the FreeAgent authorization request.",
+            { Length: > 0 } msg => $"Authentication failed: {msg}",
+            _ => null
+        };
+    }
+
+    private void Connect()
+    {
+        var state = TokenStore.GenerateAndStorePendingState();
+        var url = OAuthService.BuildAuthorizationUrl(state);
+        NavigationManager.NavigateTo(url, forceLoad: true);
+    }
+
+    private void Disconnect()
+    {
+        TokenStore.ClearToken();
+        NavigationManager.NavigateTo("/", forceLoad: false);
+    }
+}

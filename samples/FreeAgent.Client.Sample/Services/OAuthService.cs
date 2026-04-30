@@ -1,0 +1,103 @@
+using FreeAgent.Client.Authentication;
+
+namespace FreeAgent.Client.Sample.Services;
+
+/// <summary>
+/// Wraps <see cref="FreeAgentOAuthClient"/> and provides authorization URL generation,
+/// authorization code exchange, and <see cref="FreeAgentClient"/> creation with automatic token refresh.
+/// </summary>
+public sealed class OAuthService : IDisposable
+{
+    private readonly string _clientId;
+    private readonly string _clientSecret;
+    private readonly string _redirectUri;
+    private FreeAgentOAuthClient? _oauthClient;
+    private readonly Lock _clientLock = new();
+    private bool _disposed;
+
+    /// <summary>
+    /// Initializes the service from application configuration.
+    /// Expects <c>FreeAgent:ClientId</c>, <c>FreeAgent:ClientSecret</c>, and <c>FreeAgent:RedirectUri</c> keys.
+    /// </summary>
+    public OAuthService(IConfiguration configuration)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        var section = configuration.GetSection("FreeAgent");
+        _clientId = section["ClientId"] ?? string.Empty;
+        _clientSecret = section["ClientSecret"] ?? string.Empty;
+        _redirectUri = section["RedirectUri"] ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Returns <c>true</c> when all required OAuth credentials are present in configuration.
+    /// </summary>
+    public bool IsConfigured =>
+        !string.IsNullOrEmpty(_clientId) &&
+        !string.IsNullOrEmpty(_clientSecret) &&
+        !string.IsNullOrEmpty(_redirectUri);
+
+    /// <summary>
+    /// Builds the FreeAgent OAuth authorization URL including the CSRF state parameter.
+    /// </summary>
+    public string BuildAuthorizationUrl(string state)
+    {
+        EnsureConfigured();
+        return GetOrCreateOAuthClient().GetAuthorizationUrl(state);
+    }
+
+    /// <summary>
+    /// Exchanges an authorization code for an <see cref="OAuthTokenResponse"/>.
+    /// </summary>
+    public async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, CancellationToken cancellationToken = default)
+    {
+        EnsureConfigured();
+        return await GetOrCreateOAuthClient()
+            .ExchangeCodeForTokenAsync(code, cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="FreeAgentClient"/> configured for automatic token refresh.
+    /// The caller is responsible for disposing the returned client.
+    /// </summary>
+    public FreeAgentClient CreateFreeAgentClient(OAuthTokenResponse token)
+    {
+        ArgumentNullException.ThrowIfNull(token);
+        EnsureConfigured();
+        return new FreeAgentClient(GetOrCreateOAuthClient(), token);
+    }
+
+    private FreeAgentOAuthClient GetOrCreateOAuthClient()
+    {
+        if (_oauthClient is not null)
+        {
+            return _oauthClient;
+        }
+
+        lock (_clientLock)
+        {
+            return _oauthClient ??= new FreeAgentOAuthClient(_clientId, _clientSecret, _redirectUri);
+        }
+    }
+
+    private void EnsureConfigured()
+    {
+        if (!IsConfigured)
+        {
+            throw new InvalidOperationException(
+                "FreeAgent OAuth credentials are not configured. " +
+                "Set FreeAgent:ClientId, FreeAgent:ClientSecret, and FreeAgent:RedirectUri " +
+                "using dotnet user-secrets. See samples/README.md for instructions.");
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        if (!_disposed)
+        {
+            _oauthClient?.Dispose();
+            _disposed = true;
+        }
+    }
+}

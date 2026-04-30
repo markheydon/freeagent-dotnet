@@ -1,0 +1,190 @@
+@page "/company"
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
+
+<PageTitle>Company — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <MudPaper Class="hero-panel compact" Elevation="0">
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="8">
+                <MudStack Spacing="1">
+                    <MudText Typo="Typo.overline" Class="section-kicker">Implemented endpoint</MudText>
+                    <MudText Typo="Typo.h3">Company probe</MudText>
+                    <MudText Typo="Typo.body1" Class="hero-copy">
+                        Executes the current company service and shows the mapped SDK model.
+                        Use this page as a reference shape for future endpoint test surfaces.
+                    </MudText>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="12" md="4">
+                <MudPaper Class="status-panel" Elevation="0">
+                    <MudStack Spacing="1">
+                        <MudText Typo="Typo.subtitle2">Execution target</MudText>
+                        <MudText Typo="Typo.body2"><strong>Configured environment:</strong> @EnvironmentName</MudText>
+                        <MudText Typo="Typo.body2"><strong>SDK API target:</strong> @SdkApiBaseUrl</MudText>
+                        <MudText Typo="Typo.body2"><strong>Endpoint path:</strong> /v2/company</MudText>
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="4">
+                <MudPaper Class="workbench-panel" Elevation="0">
+                    <MudStack Spacing="3">
+                        <MudText Typo="Typo.h5">Run probe</MudText>
+                        <MudText Typo="Typo.body2">Send a GET request through the SDK using the active in-memory token.</MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   Disabled="_loading"
+                                   OnClick="FetchCompanyAsync">
+                            @if (_loading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Running…</span>
+                            }
+                            else
+                            {
+                                <span>Fetch company</span>
+                            }
+                        </MudButton>
+
+                        @if (_company is not null)
+                        {
+                            <MudAlert Severity="Severity.Success" Dense="true" Variant="Variant.Outlined">
+                                Probe completed successfully.
+                            </MudAlert>
+                        }
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="8">
+                <MudStack Spacing="3">
+                    @if (_error is not null)
+                    {
+                        <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                                  CloseIconClicked="@(() => _error = null)">
+                            @_error
+                        </MudAlert>
+                    }
+
+                    @if (_company is null && _error is null && !_loading)
+                    {
+                        <MudPaper Class="workbench-panel empty-state" Elevation="0">
+                            <MudText Typo="Typo.h5" GutterBottom="true">No result yet</MudText>
+                            <MudText Typo="Typo.body2">Run the probe to inspect the returned company model.</MudText>
+                        </MudPaper>
+                    }
+
+                    @if (_company is not null)
+                    {
+                        <MudPaper Class="workbench-panel" Elevation="0">
+                            <MudStack Spacing="3">
+                                <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                    <MudText Typo="Typo.h5">Result</MudText>
+                                    <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">@_company.Currency</MudChip>
+                                    <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@_company.Type</MudChip>
+                                </MudStack>
+
+                                <MudGrid Spacing="2">
+                                    <MudItem xs="12" sm="6">
+                                        <MudPaper Class="probe-card" Elevation="0">
+                                            <MudText Typo="Typo.caption">Name</MudText>
+                                            <MudText Typo="Typo.subtitle1">@_company.Name</MudText>
+                                        </MudPaper>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6">
+                                        <MudPaper Class="probe-card" Elevation="0">
+                                            <MudText Typo="Typo.caption">Subdomain</MudText>
+                                            <MudText Typo="Typo.subtitle1">@_company.Subdomain</MudText>
+                                        </MudPaper>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6">
+                                        <MudPaper Class="probe-card" Elevation="0">
+                                            <MudText Typo="Typo.caption">Registration No.</MudText>
+                                            <MudText Typo="Typo.subtitle1">@ValueOrFallback(_company.CompanyRegistrationNumber)</MudText>
+                                        </MudPaper>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6">
+                                        <MudPaper Class="probe-card" Elevation="0">
+                                            <MudText Typo="Typo.caption">Sales Tax Status</MudText>
+                                            <MudText Typo="Typo.subtitle1">@ValueOrFallback(_company.SalesTaxRegistrationStatus)</MudText>
+                                        </MudPaper>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6">
+                                        <MudPaper Class="probe-card" Elevation="0">
+                                            <MudText Typo="Typo.caption">Mileage Units</MudText>
+                                            <MudText Typo="Typo.subtitle1">@ValueOrFallback(_company.MileageUnits)</MudText>
+                                        </MudPaper>
+                                    </MudItem>
+                                    <MudItem xs="12" sm="6">
+                                        <MudPaper Class="probe-card" Elevation="0">
+                                            <MudText Typo="Typo.caption">Resource URL</MudText>
+                                            <MudText Typo="Typo.body2">@_company.Url</MudText>
+                                        </MudPaper>
+                                    </MudItem>
+                                </MudGrid>
+                            </MudStack>
+                        </MudPaper>
+                    }
+                </MudStack>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private FreeAgent.Client.Models.Company? _company;
+    private string EnvironmentName => Configuration["FreeAgent:Environment"] ?? "sandbox";
+    private const string SdkApiBaseUrl = "https://api.freeagent.com/v2/ (currently fixed in SDK)";
+
+    private async Task FetchCompanyAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _company = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token);
+            _company = await client.Company.GetCompanyAsync();
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}
