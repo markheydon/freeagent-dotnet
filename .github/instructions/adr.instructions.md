@@ -11,6 +11,7 @@ applyTo: 'adr/*.md'
 
 ## Location and Naming
 - Store ADR files in repository-root `adr/`.
+- Treat repository-root `adr/` as the authoritative ADR location, even if the `create-architectural-decision-record` skill mentions `/docs/adr/`; that older path is overridden by `.github/copilot-instructions.md` and this file.
 - Use filename pattern `adr-NNNN-[title-slug].md` with a 4-digit sequence.
 
 ## Consistency Rules
