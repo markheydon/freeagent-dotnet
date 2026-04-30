@@ -1,3 +1,4 @@
+using FreeAgent.Client;
 using FreeAgent.Client.Authentication;
 
 namespace FreeAgent.Client.Sample.Services;
@@ -10,6 +11,7 @@ public sealed class TokenStore
 {
     private readonly Lock _lock = new();
     private OAuthTokenResponse? _token;
+    private FreeAgentEnvironment _connectedEnvironment = FreeAgentEnvironment.Production;
     private string? _pendingState;
 
     /// <summary>
@@ -26,12 +28,13 @@ public sealed class TokenStore
     /// <summary>
     /// Stores the token received from a successful OAuth exchange.
     /// </summary>
-    public void SetToken(OAuthTokenResponse token)
+    public void SetToken(OAuthTokenResponse token, FreeAgentEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(token);
         lock (_lock)
         {
             _token = token;
+            _connectedEnvironment = environment;
         }
     }
 
@@ -43,6 +46,21 @@ public sealed class TokenStore
         lock (_lock)
         {
             _token = null;
+            _connectedEnvironment = FreeAgentEnvironment.Production;
+        }
+    }
+
+    /// <summary>
+    /// Returns the environment used for the active connection.
+    /// </summary>
+    public FreeAgentEnvironment ConnectedEnvironment
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _connectedEnvironment;
+            }
         }
     }
 

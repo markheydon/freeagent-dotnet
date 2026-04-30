@@ -61,7 +61,7 @@ app.MapGet("/oauth/callback", async (
     try
     {
         var token = await oauthService.ExchangeCodeAsync(code);
-        tokenStore.SetToken(token);
+        tokenStore.SetToken(token, oauthService.SelectedEnvironment);
     }
     catch (FreeAgentOAuthException ex)
     {

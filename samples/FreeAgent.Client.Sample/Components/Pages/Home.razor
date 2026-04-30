@@ -63,6 +63,10 @@
                             Active OAuth session stored in memory for this app process.
                         </MudAlert>
 
+                        <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Lock">
+                            Connected to @EnvironmentName
+                        </MudChip>
+
                         @if (_token is not null)
                         {
                             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
@@ -96,6 +100,20 @@
                         <MudText Typo="Typo.body2">
                             Start the OAuth flow to connect a local developer session to FreeAgent.
                             The app redirects to FreeAgent, handles the callback, and stores the token in memory.
+                        </MudText>
+
+                        <MudSelect T="FreeAgentEnvironment"
+                                   Label="FreeAgent environment"
+                                   Value="SelectedEnvironment"
+                                   ValueChanged="OnSelectedEnvironmentChanged"
+                                   Variant="Variant.Outlined"
+                                   Dense="true">
+                            <MudSelectItem T="FreeAgentEnvironment" Value="FreeAgentEnvironment.Production">Production</MudSelectItem>
+                            <MudSelectItem T="FreeAgentEnvironment" Value="FreeAgentEnvironment.Sandbox">Sandbox</MudSelectItem>
+                        </MudSelect>
+
+                        <MudText Typo="Typo.caption">
+                            Sandbox uses api.sandbox.freeagent.com and is safe for isolated testing.
                         </MudText>
 
                         @if (!OAuthService.IsConfigured)
@@ -143,8 +161,15 @@
     private OAuthTokenResponse? _token;
     private string? _authError;
 
-    private string EnvironmentName => Configuration["FreeAgent:Environment"] ?? "sandbox";
-    private const string SdkApiTarget = "https://api.freeagent.com/v2/ (currently fixed in SDK)";
+    private FreeAgentEnvironment ActiveEnvironment =>
+        TokenStore.IsConnected ? TokenStore.ConnectedEnvironment : OAuthService.SelectedEnvironment;
+
+    private FreeAgentEnvironment SelectedEnvironment => OAuthService.SelectedEnvironment;
+
+    private string EnvironmentName => ActiveEnvironment.ToString();
+
+    private string SdkApiTarget => FreeAgentEnvironmentEndpoints.GetApiBaseUrl(ActiveEnvironment);
+
     private string RedirectUri => Configuration["FreeAgent:RedirectUri"] ?? "https://localhost:5001/oauth/callback";
 
     private int ExpiresInMinutes =>
@@ -176,6 +201,12 @@
     private void Disconnect()
     {
         TokenStore.ClearToken();
+        _token = null;
         NavigationManager.NavigateTo("/", forceLoad: false);
+    }
+
+    private void OnSelectedEnvironmentChanged(FreeAgentEnvironment environment)
+    {
+        OAuthService.SelectedEnvironment = environment;
     }
 }

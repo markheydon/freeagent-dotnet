@@ -12,8 +12,8 @@ public class FreeAgentOAuthClient : IDisposable
     private readonly bool _ownsHttpClient;
     private bool _disposed;
 
-    private const string AuthorizationEndpoint = "https://api.freeagent.com/v2/approve_app";
-    private const string TokenEndpoint = "https://api.freeagent.com/v2/token_endpoint";
+    private readonly string _authorizationEndpoint;
+    private readonly string _tokenEndpoint;
 
     // Cached to avoid allocating a new instance per call (CA1869)
     private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
@@ -27,13 +27,16 @@ public class FreeAgentOAuthClient : IDisposable
     /// <param name="clientId">OAuth client ID</param>
     /// <param name="clientSecret">OAuth client secret</param>
     /// <param name="redirectUri">OAuth redirect URI</param>
-    public FreeAgentOAuthClient(string clientId, string clientSecret, string redirectUri)
+    /// <param name="environment">Target API environment. Defaults to <see cref="FreeAgentEnvironment.Production"/>.</param>
+    public FreeAgentOAuthClient(string clientId, string clientSecret, string redirectUri, FreeAgentEnvironment environment = FreeAgentEnvironment.Production)
     {
         _clientId = clientId ?? throw new ArgumentNullException(nameof(clientId));
         _clientSecret = clientSecret ?? throw new ArgumentNullException(nameof(clientSecret));
         _redirectUri = redirectUri ?? throw new ArgumentNullException(nameof(redirectUri));
         _httpClient = new HttpClient();
         _ownsHttpClient = true;
+        _authorizationEndpoint = FreeAgentEnvironmentEndpoints.GetOAuthAuthorizationEndpoint(environment);
+        _tokenEndpoint = FreeAgentEnvironmentEndpoints.GetOAuthTokenEndpoint(environment);
     }
 
     /// <summary>
@@ -43,13 +46,16 @@ public class FreeAgentOAuthClient : IDisposable
     /// <param name="clientSecret">OAuth client secret</param>
     /// <param name="redirectUri">OAuth redirect URI</param>
     /// <param name="httpClient">Custom HttpClient instance</param>
-    public FreeAgentOAuthClient(string clientId, string clientSecret, string redirectUri, HttpClient httpClient)
+    /// <param name="environment">Target API environment. Defaults to <see cref="FreeAgentEnvironment.Production"/>.</param>
+    public FreeAgentOAuthClient(string clientId, string clientSecret, string redirectUri, HttpClient httpClient, FreeAgentEnvironment environment = FreeAgentEnvironment.Production)
     {
         _clientId = clientId ?? throw new ArgumentNullException(nameof(clientId));
         _clientSecret = clientSecret ?? throw new ArgumentNullException(nameof(clientSecret));
         _redirectUri = redirectUri ?? throw new ArgumentNullException(nameof(redirectUri));
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _ownsHttpClient = false;
+        _authorizationEndpoint = FreeAgentEnvironmentEndpoints.GetOAuthAuthorizationEndpoint(environment);
+        _tokenEndpoint = FreeAgentEnvironmentEndpoints.GetOAuthTokenEndpoint(environment);
     }
 
     /// <summary>
@@ -74,7 +80,7 @@ public class FreeAgentOAuthClient : IDisposable
         var queryString = string.Join("&", queryParams.Select(kvp =>
             $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
 
-        return $"{AuthorizationEndpoint}?{queryString}";
+        return $"{_authorizationEndpoint}?{queryString}";
     }
 
     /// <summary>
@@ -129,7 +135,7 @@ public class FreeAgentOAuthClient : IDisposable
     private async Task<OAuthTokenResponse> RequestTokenAsync(Dictionary<string, string> requestData, CancellationToken cancellationToken)
     {
         using var content = new FormUrlEncodedContent(requestData);
-        using var response = await _httpClient.PostAsync(TokenEndpoint, content, cancellationToken);
+        using var response = await _httpClient.PostAsync(_tokenEndpoint, content, cancellationToken);
 
         var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 

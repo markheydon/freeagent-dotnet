@@ -18,7 +18,7 @@ public class FreeAgentHttpClient : IDisposable
     private DateTime _nextAllowedRequestTime = DateTime.MinValue;
     private bool _disposed;
 
-    private const string BaseUrl = "https://api.freeagent.com/v2/";
+    private const string DefaultBaseUrl = "https://api.freeagent.com/v2/";
     private const int DefaultRateLimitDelayMs = 1000; // 1 request per second as a safe default
 
     // Cached to avoid allocating a new instance per call (CA1869)
@@ -31,14 +31,15 @@ public class FreeAgentHttpClient : IDisposable
     /// Initializes a new instance with an access token.
     /// </summary>
     /// <param name="accessToken">OAuth access token</param>
-    public FreeAgentHttpClient(string accessToken)
+    /// <param name="environment">Target API environment. Defaults to <see cref="FreeAgentEnvironment.Production"/>.</param>
+    public FreeAgentHttpClient(string accessToken, FreeAgentEnvironment environment = FreeAgentEnvironment.Production)
     {
         if (string.IsNullOrEmpty(accessToken))
         {
             throw new ArgumentNullException(nameof(accessToken));
         }
 
-        _httpClient = new HttpClient { BaseAddress = new Uri(BaseUrl) };
+        _httpClient = new HttpClient { BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(environment)) };
         _ownsHttpClient = true;
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
@@ -49,12 +50,13 @@ public class FreeAgentHttpClient : IDisposable
     /// </summary>
     /// <param name="oauthClient">OAuth client for token refresh</param>
     /// <param name="token">Initial OAuth token</param>
-    public FreeAgentHttpClient(FreeAgentOAuthClient oauthClient, OAuthTokenResponse token)
+    /// <param name="environment">Target API environment. Defaults to <see cref="FreeAgentEnvironment.Production"/>.</param>
+    public FreeAgentHttpClient(FreeAgentOAuthClient oauthClient, OAuthTokenResponse token, FreeAgentEnvironment environment = FreeAgentEnvironment.Production)
     {
         _oauthClient = oauthClient ?? throw new ArgumentNullException(nameof(oauthClient));
         _currentToken = token ?? throw new ArgumentNullException(nameof(token));
 
-        _httpClient = new HttpClient { BaseAddress = new Uri(BaseUrl) };
+        _httpClient = new HttpClient { BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(environment)) };
         _ownsHttpClient = true;
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {token.AccessToken}");
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
@@ -77,7 +79,7 @@ public class FreeAgentHttpClient : IDisposable
 
         if (_httpClient.BaseAddress == null)
         {
-            _httpClient.BaseAddress = new Uri(BaseUrl);
+            _httpClient.BaseAddress = new Uri(DefaultBaseUrl);
         }
 
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
@@ -172,13 +174,13 @@ public class FreeAgentHttpClient : IDisposable
                 {
                     var oldRefreshToken = _currentToken.RefreshToken;
                     var newToken = await _oauthClient.RefreshTokenAsync(_currentToken.RefreshToken, cancellationToken);
-                    
+
                     // Preserve the refresh token if the provider doesn't return a new one
                     if (string.IsNullOrEmpty(newToken.RefreshToken))
                     {
                         newToken.RefreshToken = oldRefreshToken;
                     }
-                    
+
                     _currentToken = newToken;
 
                     _httpClient.DefaultRequestHeaders.Remove("Authorization");
@@ -203,7 +205,7 @@ public class FreeAgentHttpClient : IDisposable
                 var delay = _nextAllowedRequestTime - now;
                 await Task.Delay(delay, cancellationToken);
             }
-            
+
             // Reserve the next slot before releasing the semaphore
             // Take the max of current time and existing next allowed time to handle concurrent requests
             var currentNextTime = _nextAllowedRequestTime > now ? _nextAllowedRequestTime : now;
@@ -253,7 +255,7 @@ public class FreeAgentHttpClient : IDisposable
                 {
                     retryTime = DateTime.UtcNow.AddSeconds(60);
                 }
-                
+
                 // Only update if this retry time is later than what we already have
                 if (retryTime > _nextAllowedRequestTime)
                 {
@@ -263,7 +265,7 @@ public class FreeAgentHttpClient : IDisposable
                 var errorContent = await response.Content.ReadAsStringAsync(CancellationToken.None);
                 throw new FreeAgentRateLimitException($"Rate limit exceeded. Retry after {_nextAllowedRequestTime}. Response: {errorContent}");
             }
-            
+
             // Note: We don't apply the default delay here anymore since it's now handled in ApplyRateLimitAsync
         }
         finally

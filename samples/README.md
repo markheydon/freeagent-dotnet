@@ -83,6 +83,6 @@ Additional pages will be added as new services are implemented.
 ## Notes for Contributors
 
 - **Token lifetime:** The token is held in memory. It is lost when the app restarts; reconnect to get a new one. The SDK handles automatic token refresh within an active session.
-- **Sandbox vs production:** `appsettings.json` has a `FreeAgent:Environment` setting (default `sandbox`) ready for when the SDK adds configurable environment support (see [issue #20](https://github.com/markheydon/freeagent-dotnet/issues/20)).
+- **Sandbox vs production:** Choose the target environment from the Connect panel before starting OAuth. After connecting, disconnect to switch environments.
 - **Port:** The sample uses port `5001` (HTTPS). If you change it in `Properties/launchSettings.json`, update the redirect URI in both your FreeAgent app registration and your user secrets.
 - **Do not commit credentials.** `appsettings.json` contains only empty placeholders. User secrets are stored outside the repository in your OS user profile.

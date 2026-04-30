@@ -2,7 +2,6 @@
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
 @inject NavigationManager NavigationManager
-@inject IConfiguration Configuration
 
 <PageTitle>Company — FreeAgent SDK Sample</PageTitle>
 
@@ -151,8 +150,13 @@
     private bool _loading;
     private string? _error;
     private FreeAgent.Client.Models.Company? _company;
-    private string EnvironmentName => Configuration["FreeAgent:Environment"] ?? "sandbox";
-    private const string SdkApiBaseUrl = "https://api.freeagent.com/v2/ (currently fixed in SDK)";
+
+    private FreeAgentEnvironment ActiveEnvironment =>
+        TokenStore.IsConnected ? TokenStore.ConnectedEnvironment : OAuthService.SelectedEnvironment;
+
+    private string EnvironmentName => ActiveEnvironment.ToString();
+
+    private string SdkApiBaseUrl => FreeAgentEnvironmentEndpoints.GetApiBaseUrl(ActiveEnvironment);
 
     private async Task FetchCompanyAsync()
     {
