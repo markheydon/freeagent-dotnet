@@ -65,17 +65,17 @@ app.MapGet("/oauth/callback", async (
     }
     catch (FreeAgentOAuthException ex)
     {
-        app.Logger.LogWarning(ex, "OAuth token exchange rejected by FreeAgent.");
+        Log.OAuthRejected(app.Logger, ex);
         return Results.Redirect("/?auth_error=token_exchange_failed");
     }
     catch (HttpRequestException ex)
     {
-        app.Logger.LogError(ex, "Network error during OAuth token exchange.");
+        Log.OAuthNetworkError(app.Logger, ex);
         return Results.Redirect("/?auth_error=network_error");
     }
     catch (Exception ex)
     {
-        app.Logger.LogError(ex, "Unexpected error during OAuth token exchange.");
+        Log.OAuthUnexpectedError(app.Logger, ex);
         return Results.Redirect("/?auth_error=unexpected_error");
     }
 
@@ -86,3 +86,15 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+static partial class Log
+{
+    [LoggerMessage(Level = LogLevel.Warning, Message = "OAuth token exchange rejected by FreeAgent.")]
+    public static partial void OAuthRejected(ILogger logger, Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Network error during OAuth token exchange.")]
+    public static partial void OAuthNetworkError(ILogger logger, Exception ex);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Unexpected error during OAuth token exchange.")]
+    public static partial void OAuthUnexpectedError(ILogger logger, Exception ex);
+}
