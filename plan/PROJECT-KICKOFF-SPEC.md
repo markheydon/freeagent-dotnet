@@ -126,7 +126,7 @@ I'll stop if...
 - [x] Create GitHub Issues for MVP scope execution and quality hardening (#3, #4, #5, #6, #7, #8, #10)
 - [ ] Create/expand developer-facing docs and examples that cover each journey in Section 7 (#16)
 - [x] Write `.github/copilot-instructions.md`
-- [x] Write first ADR: technology choices (`ADR-0001-core-technology-stack.md`)
+- [x] Write first ADR: technology choices (`adr/adr-0001-core-technology-stack.md`)
 
 ### Remaining Post-Kickoff Work
 
