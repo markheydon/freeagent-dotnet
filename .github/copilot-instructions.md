@@ -54,3 +54,10 @@ FreeAgent.NET is an open-source, modern .NET SDK for the FreeAgent REST API. It 
 - When suggesting maintenance/tooling/docs/governance work, use `.github/ISSUE_TEMPLATE/chore_request.yml`.
 - When suggesting broad planning/admin work, use `.github/ISSUE_TEMPLATE/story_request.yml`.
 - Include explicit scope, acceptance criteria, risks/trade-offs, and GOALS.md links where relevant.
+
+## ADR Authoring Override
+
+- Store all ADRs in the repository-root `adr/` directory.
+- Do not place ADRs under `docs/` because `docs/` is reserved for public-facing documentation and GitHub Pages content.
+- ADR filename convention: `adr-NNNN-[title-slug].md` (4-digit sequence, lowercase filename).
+- When existing ADRs are in legacy locations (such as repository root or `docs/adr/`), move them into `adr/` as part of ADR housekeeping changes.
