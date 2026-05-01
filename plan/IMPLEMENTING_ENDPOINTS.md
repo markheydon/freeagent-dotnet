@@ -25,10 +25,10 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 
 - Add request/response models under `src/FreeAgent.Client/Models/`.
 - Use `System.Text.Json`.
-- Add `JsonPropertyName` to every serialized/deserialized property, including envelope wrappers.
+- Add `JsonPropertyName` to every serialised/deserialised property, including envelope wrappers.
 - Use `DateOnly` for date-only API fields.
 - Use `DateTime`/`DateTimeOffset` only for timestamp fields, following existing repo convention.
-- Model constrained string fields as enums or strong value mappings with exact wire-value behavior.
+- Model constrained string fields as enums or strong value mappings with exact wire-value behaviour.
 - Use `JsonStringEnumMemberName` on each API-facing enum member to make wire values explicit.
 - Prefer strongly typed fields; use `JsonExtensionData` only when API shape is intentionally open-ended.
 - Add XML docs to all public types and members.
@@ -50,20 +50,20 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 
 ## 6. Cover Errors and Retries
 
-- Ensure behavior works with shared HTTP retry/transport handling.
+- Ensure behaviour works with shared HTTP retry/transport handling.
 - Add tests for non-success responses and missing payload branches.
 - Prefer typed exception assertions (`FreeAgentRateLimitException`, transport exceptions, and base `FreeAgentApiException` where appropriate).
 
 ## 7. Add or Update Tests
 
 - Add/update service tests in `tests/FreeAgent.Client.Tests/Services/`.
-- Add/update HTTP behavior tests in `tests/FreeAgent.Client.Tests/Infrastructure/Http/` if infrastructure behavior changes.
+- Add/update HTTP behaviour tests in `tests/FreeAgent.Client.Tests/Infrastructure/Http/` if infrastructure behaviour changes.
 - Cover success paths, failures, and edge cases including:
-  - Envelope/wrapper deserialization.
+  - Envelope/wrapper deserialisation.
   - URL construction.
   - Enum wire-value mapping.
   - `DateOnly` handling.
-  - Pagination cancellation behavior.
+  - Pagination cancellation behaviour.
 
 ## 8. Keep the Sample App Honest (Mandatory)
 
@@ -77,7 +77,7 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 
 - Update API coverage list.
 - Add or update usage examples for new or retrofitted methods.
-- Keep retry/error handling docs aligned with actual behavior.
+- Keep retry/error handling docs aligned with actual behaviour.
 
 ## 10. Agent Routing
 

@@ -247,7 +247,7 @@
         }
         catch (JsonException ex)
         {
-            _error = $"Model deserialization error: {ex.Message}";
+            _error = $"Model deserialisation error: {ex.Message}";
             _wireCompanyApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,

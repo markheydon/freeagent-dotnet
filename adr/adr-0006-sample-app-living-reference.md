@@ -24,7 +24,7 @@ The FreeAgent.NET SDK includes a Blazor sample app that exercises all implemente
 
 This decision is driven by:
 - The need for honest, up-to-date developer validation and diagnostics.
-- The requirement for contributors and agents to verify endpoint coverage and behavior.
+- The requirement for contributors and agents to verify endpoint coverage and behaviour.
 - The desire to avoid aspirational or out-of-date sample UI.
 
 ## Decision

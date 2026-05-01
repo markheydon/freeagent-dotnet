@@ -37,7 +37,7 @@ If the entity already exists, retrofit it to current guardrails in the same run.
 
 1. Produce a concise implementation plan before editing code.
 2. **If the entity already exists**, audit the existing models and services against these guardrails first:
-   - Every serialized property has `JsonPropertyName`
+   - Every serialised property has `JsonPropertyName`
    - Date-only API fields use `DateOnly` (not `DateTime`)
    - Timestamp fields use `DateTimeOffset` (not `DateTime`)
    - Constrained string fields are enums or strong value mappings with exact wire values
@@ -71,10 +71,10 @@ Provide the plan with explicit violation list and these guardrails to C# Expert:
 Apply these guardrails to all new and retrofitted models:
 
 1. Use `System.Text.Json`.
-2. Every serialized/deserialized property must have `JsonPropertyName`.
+2. Every serialised/deserialised property must have `JsonPropertyName`.
 3. Use `DateOnly` for date-only API fields.
 4. Use `DateTime`/`DateTimeOffset` only for timestamp fields per existing repo convention.
-5. Constrained string fields must use enums or strong value mappings with exact wire-value behavior.
+5. Constrained string fields must use enums or strong value mappings with exact wire-value behaviour.
 6. API-facing enums must use explicit `JsonStringEnumMemberName` wire values for each enum member.
 7. When docs are ambiguous for constrained values, do not silently guess; mark unresolved mapping and add a follow-up issue.
 8. Response payloads must use explicit wrapper/envelope models.
@@ -94,7 +94,7 @@ When auditing existing models, look for and fix:
    - `MileageUnits` → should be `MileageUnit` enum (miles, kilometres)
    - Any field documented with "e.g. value1, value2, value3" in API docs → needs enum
 
-3. **Missing JsonPropertyName** on any serialized property
+3. **Missing JsonPropertyName** on any serialised property
 
 4. **Response wrappers not validated** in service methods (should throw `FreeAgentApiException`)
 
@@ -116,11 +116,11 @@ Fix all violations found in the plan before adding new functionality.
 C# Expert must add or update tests to cover:
 
 - URL construction
-- Envelope/wrapper deserialization
+- Envelope/wrapper deserialisation
 - Date handling (`DateOnly`)
 - Enum/string wire mapping exactness
 - Missing payload branch exceptions
-- Pagination behavior and cancellation
+- Pagination behaviour and cancellation
 
 ## Step 8 - C# Expert: Sample App Sync Is Mandatory
 

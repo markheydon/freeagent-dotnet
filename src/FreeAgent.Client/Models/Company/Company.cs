@@ -32,16 +32,16 @@ public class Company
     public string Subdomain { get; set; } = string.Empty;
 
     /// <summary>
-    /// Company type (e.g., "UkLimitedCompany", "UkSoleTrader", etc.).
+    /// Company type (e.g., "UkLimitedCompany", "UkSoleTrader", etc.). May be <see langword="null"/> when omitted by the API.
     /// </summary>
     [JsonPropertyName("type")]
-    public CompanyType Type { get; set; }
+    public CompanyType? Type { get; set; }
 
     /// <summary>
-    /// Company currency code (e.g., "GBP", "USD").
+    /// Company currency code (e.g., "GBP", "USD"). May be <see langword="null"/> when omitted by the API.
     /// </summary>
     [JsonPropertyName("currency")]
-    public CurrencyCode Currency { get; set; }
+    public CurrencyCode? Currency { get; set; }
 
     /// <summary>
     /// Mileage units (e.g., "miles", "kilometres").

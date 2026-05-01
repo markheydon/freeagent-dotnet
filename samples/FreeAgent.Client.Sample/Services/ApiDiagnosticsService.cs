@@ -4,7 +4,7 @@ using FreeAgent.Client.Infrastructure.Configuration;
 namespace FreeAgent.Client.Sample.Services;
 
 /// <summary>
-/// Fetches raw endpoint payloads to aid debugging when model deserialization or API calls fail.
+/// Fetches raw endpoint payloads to aid debugging when model deserialisation or API calls fail.
 /// </summary>
 public sealed class ApiDiagnosticsService
 {

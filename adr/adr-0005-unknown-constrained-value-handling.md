@@ -16,7 +16,7 @@ superseded_by: ""
 
 ## Context
 
-The FreeAgent API occasionally returns values for constrained fields (e.g., enums) that are not documented or are added without notice. Most enums in the SDK are strict, mapping only documented values and throwing or failing on unknowns. However, for certain fields (e.g., `SalesTaxRegistrationStatus`), the SDK must tolerate unknown or undocumented values to avoid breaking deserialization and to aid diagnostics. This exception is justified by:
+The FreeAgent API occasionally returns values for constrained fields (e.g., enums) that are not documented or are added without notice. Most enums in the SDK are strict, mapping only documented values and throwing or failing on unknowns. However, for certain fields (e.g., `SalesTaxRegistrationStatus`), the SDK must tolerate unknown or undocumented values to avoid breaking deserialisation and to aid diagnostics. This exception is justified by:
 
 - Incomplete or outdated API documentation for some endpoints.
 - Real-world evidence of undocumented values in production (e.g., "Unregistered").
@@ -48,7 +48,7 @@ Adopt a selective tolerance policy for unknown or undocumented constrained value
 
 ### Strict enums everywhere
 - **ALT-001**: **Description**: All enums throw or fail on unknown values.
-- **ALT-002**: **Rejection Reason**: Breaks deserialization and developer experience when API returns undocumented values.
+- **ALT-002**: **Rejection Reason**: Breaks deserialisation and developer experience when API returns undocumented values.
 
 ### Blanket tolerant parsing for all enums
 - **ALT-003**: **Description**: All enums accept unknown values as `Unknown` or similar.

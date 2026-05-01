@@ -19,7 +19,7 @@ superseded_by: ""
 The FreeAgent.NET SDK must ensure that all API endpoint implementations are consistent, robust, and maintainable. Prior to this ADR, endpoint coverage was ad hoc, with inconsistent model mapping, test coverage, and sample app sync. The project now requires:
 
 - Plan-first workflow for all endpoint work (new or retrofit).
-- Strict model guardrails (serialization, type mapping, validation).
+- Strict model guardrails (serialisation, type mapping, validation).
 - Mandatory agent routing for code vs. documentation.
 - Sample app and navigation sync for every endpoint.
 
@@ -57,7 +57,7 @@ Adopt a mandatory, plan-first endpoint implementation workflow for all SDK endpo
 - **ALT-002**: **Rejection Reason**: Led to model drift, inconsistent tests, and sample app falling out of sync.
 
 ### Partial guardrail enforcement
-- **ALT-003**: **Description**: Enforce only some model guardrails (e.g., serialization but not type mapping).
+- **ALT-003**: **Description**: Enforce only some model guardrails (e.g., serialisation but not type mapping).
 - **ALT-004**: **Rejection Reason**: Incomplete enforcement allows technical debt and ambiguity to accumulate.
 
 ## Implementation Notes

@@ -121,29 +121,29 @@ public class CompanyServiceTests
         Assert.Equal(SalesTaxRegistrationStatus.Unknown, company.SalesTaxRegistrationStatus);
     }
 
-      [Fact]
-      public async Task GetCompanyAsync_DeserializesKilometresMileageUnit()
-      {
+    [Fact]
+    public async Task GetCompanyAsync_DeserializesKilometresMileageUnit()
+    {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
-          Content = new StringContent("""
-          {
-            "company": {
-            "url": "https://api.freeagent.com/v2/company",
-            "id": 12345,
-            "name": "My Company",
-            "subdomain": "my-company",
-            "type": "UkLimitedCompany",
-            "currency": "GBP",
-            "mileage_units": "kilometres"
+            Content = new StringContent("""
+            {
+              "company": {
+                "url": "https://api.freeagent.com/v2/company",
+                "id": 12345,
+                "name": "My Company",
+                "subdomain": "my-company",
+                "type": "UkLimitedCompany",
+                "currency": "GBP",
+                "mileage_units": "kilometres"
+              }
             }
-          }
-          """)
+            """)
         });
 
         using var httpClient = new HttpClient(handler)
         {
-          BaseAddress = new Uri("https://api.freeagent.com/v2/")
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
         };
         using var client = new FreeAgentHttpClient(httpClient, "test-token");
         var service = new CompanyService(client);
@@ -151,7 +151,7 @@ public class CompanyServiceTests
         var company = await service.GetCompanyAsync();
 
         Assert.Equal(MileageUnit.Kilometers, company.MileageUnits);
-      }
+    }
 
     [Fact]
     public async Task GetCompanyAsync_WhenPayloadMissing_ThrowsFreeAgentApiException()

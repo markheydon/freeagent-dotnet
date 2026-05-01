@@ -30,7 +30,7 @@ This reduces model drift, avoids repeated type debates, and supports the project
 2. Use strong value type when values are structured but may expand.
 3. Use string only when stability is unknown, and document the reason.
 4. API-facing enums must use explicit wire values via `JsonStringEnumMemberName` on every enum member.
-5. Do not rely on implicit enum member name serialization for wire contracts.
+5. Do not rely on implicit enum member name serialisation for wire contracts.
 
 Example retrofit targets:
 
@@ -73,13 +73,13 @@ Post-GA:
 - [ ] Converted date-only fields to DateOnly.
 - [ ] Converted constrained strings to enum or strong value type where appropriate.
 - [ ] Confirmed wrapper models exist and are validated.
-- [ ] Added or updated tests for wire mapping and parsing behavior.
-- [ ] Updated sample app when endpoint behavior changed.
+- [ ] Added or updated tests for wire mapping and parsing behaviour.
+- [ ] Updated sample app when endpoint behaviour changed.
 - [ ] Documented any intentional deviations.
 
 ## Handling API Changes and Deviations
 
-1. Raise an issue when API docs or behavior changes.
+1. Raise an issue when API docs or behaviour changes.
 2. Classify impact on model types, services, tests, and sample app.
 3. Update this policy when a mapping rule changes.
 4. Keep a short rationale for each intentional deviation in code comments or docs.

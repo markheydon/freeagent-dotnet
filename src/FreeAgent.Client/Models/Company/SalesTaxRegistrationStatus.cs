@@ -64,7 +64,8 @@ public sealed class SalesTaxRegistrationStatusJsonConverter : JsonConverter<Sale
             SalesTaxRegistrationStatus.Registered => "Registered",
             SalesTaxRegistrationStatus.Deregistered => "De-registered",
             SalesTaxRegistrationStatus.Unregistered => "Unregistered",
-            _ => "Unknown"
+            SalesTaxRegistrationStatus.Unknown => throw new JsonException("Cannot serialise unknown sales tax registration status to a FreeAgent wire value."),
+            _ => throw new JsonException($"Unsupported sales tax registration status value: {value}.")
         };
 
         writer.WriteStringValue(wireValue);
