@@ -1,4 +1,4 @@
-using FreeAgent.Client.Authentication;
+using FreeAgent.Client.Infrastructure.Authentication;
 using Xunit;
 
 namespace FreeAgent.Client.Tests;
@@ -15,8 +15,9 @@ public class FreeAgentClientTests
     public void Constructor_WithAccessToken_InitializesCompanyService()
     {
         var client = new FreeAgentClient("test-token");
-        
+
         Assert.NotNull(client.Company);
+        Assert.NotNull(client.Contacts);
     }
 
     [Fact]
@@ -31,7 +32,8 @@ public class FreeAgentClientTests
         };
 
         var client = new FreeAgentClient(oauthClient, token);
-        
+
         Assert.NotNull(client.Company);
+        Assert.NotNull(client.Contacts);
     }
 }

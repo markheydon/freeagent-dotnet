@@ -11,10 +11,10 @@
             <MudItem xs="12" md="8">
                 <MudStack Spacing="1">
                     <MudText Typo="Typo.overline" Class="section-kicker">Implemented endpoint</MudText>
-                    <MudText Typo="Typo.h3">Company probe</MudText>
+                    <MudText Typo="Typo.h3">Company overview</MudText>
                     <MudText Typo="Typo.body1" Class="hero-copy">
-                        Executes the current company service and shows the mapped SDK model.
-                        Use this page as a reference shape for future endpoint test surfaces.
+                        Shows general company information from the Company endpoint.
+                        This reflects the documented FreeAgent company details use case.
                     </MudText>
                 </MudStack>
             </MudItem>
@@ -34,7 +34,7 @@
     @if (!TokenStore.IsConnected)
     {
         <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
-            This probe needs an OAuth session first.
+            This page needs an OAuth session first.
             <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
         </MudAlert>
     }
@@ -44,7 +44,7 @@
             <MudItem xs="12" md="4">
                 <MudPaper Class="workbench-panel" Elevation="0">
                     <MudStack Spacing="3">
-                        <MudText Typo="Typo.h5">Run probe</MudText>
+                        <MudText Typo="Typo.h5">Load company details</MudText>
                         <MudText Typo="Typo.body2">Send a GET request through the SDK using the active in-memory token.</MudText>
                         <MudButton Variant="Variant.Filled" Color="Color.Primary"
                                    StartIcon="@Icons.Material.Filled.CloudDownload"
@@ -85,7 +85,7 @@
                     {
                         <MudPaper Class="workbench-panel empty-state" Elevation="0">
                             <MudText Typo="Typo.h5" GutterBottom="true">No result yet</MudText>
-                            <MudText Typo="Typo.body2">Run the probe to inspect the returned company model.</MudText>
+                            <MudText Typo="Typo.body2">Load company details to inspect the returned company model.</MudText>
                         </MudPaper>
                     }
 
@@ -149,7 +149,7 @@
 @code {
     private bool _loading;
     private string? _error;
-    private FreeAgent.Client.Models.Company? _company;
+    private FreeAgent.Client.Models.Company.Company? _company;
 
     private FreeAgentEnvironment ActiveEnvironment =>
         TokenStore.IsConnected ? TokenStore.ConnectedEnvironment : OAuthService.SelectedEnvironment;

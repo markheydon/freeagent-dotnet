@@ -92,7 +92,7 @@
                                        OnClick="Disconnect">Disconnect</MudButton>
                             <MudButton Variant="Variant.Text" Color="Color.Primary"
                                        Href="/company"
-                                       StartIcon="@Icons.Material.Filled.ArrowForward">Open company probe</MudButton>
+                                       StartIcon="@Icons.Material.Filled.ArrowForward">Open company overview</MudButton>
                         </MudStack>
                     }
                     else
@@ -108,8 +108,8 @@
                                    ValueChanged="OnSelectedEnvironmentChanged"
                                    Variant="Variant.Outlined"
                                    Dense="true">
-                            <MudSelectItem T="FreeAgentEnvironment" Value="FreeAgentEnvironment.Production">Production</MudSelectItem>
                             <MudSelectItem T="FreeAgentEnvironment" Value="FreeAgentEnvironment.Sandbox">Sandbox</MudSelectItem>
+                            <MudSelectItem T="FreeAgentEnvironment" Value="FreeAgentEnvironment.Production">Production</MudSelectItem>
                         </MudSelect>
 
                         <MudText Typo="Typo.caption">
@@ -138,14 +138,41 @@
             <MudPaper Class="workbench-panel" Elevation="0">
                 <MudStack Spacing="3">
                     <MudText Typo="Typo.h5">Included probe</MudText>
-                    <MudText Typo="Typo.body2">The current sample ships with one implemented API check.</MudText>
+                    <MudText Typo="Typo.body2">The current sample reflects all currently implemented SDK endpoint checks.</MudText>
                     <MudPaper Class="probe-card" Elevation="0">
                         <MudStack Spacing="1">
                             <MudText Typo="Typo.subtitle1">Company</MudText>
                             <MudText Typo="Typo.body2">Calls <code>CompanyService.GetCompanyAsync()</code> and renders the returned model.</MudText>
                             <MudButton Variant="Variant.Text" Color="Color.Primary"
                                        Href="/company"
-                                       StartIcon="@Icons.Material.Filled.Business">Open probe</MudButton>
+                                       StartIcon="@Icons.Material.Filled.Business">Open overview</MudButton>
+                        </MudStack>
+                    </MudPaper>
+                    <MudPaper Class="probe-card" Elevation="0">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.subtitle1">Business Categories</MudText>
+                            <MudText Typo="Typo.body2">Calls <code>CompanyService.GetBusinessCategoriesAsync()</code>.</MudText>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                       Href="/company/business-categories"
+                                       StartIcon="@Icons.Material.Filled.Category">Open probe</MudButton>
+                        </MudStack>
+                    </MudPaper>
+                    <MudPaper Class="probe-card" Elevation="0">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.subtitle1">Tax Timeline</MudText>
+                            <MudText Typo="Typo.body2">Calls <code>CompanyService.GetTaxTimelineAsync()</code>.</MudText>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                       Href="/company/tax-timeline"
+                                       StartIcon="@Icons.Material.Filled.Event">Open probe</MudButton>
+                        </MudStack>
+                    </MudPaper>
+                    <MudPaper Class="probe-card" Elevation="0">
+                        <MudStack Spacing="1">
+                            <MudText Typo="Typo.subtitle1">Contacts Pagination</MudText>
+                            <MudText Typo="Typo.body2">Demonstrates single-page and auto-pagination contacts calls.</MudText>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                       Href="/contacts"
+                                       StartIcon="@Icons.Material.Filled.Contacts">Open probe</MudButton>
                         </MudStack>
                     </MudPaper>
                 </MudStack>

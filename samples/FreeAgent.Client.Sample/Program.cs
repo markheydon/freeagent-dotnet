@@ -1,4 +1,4 @@
-using FreeAgent.Client.Authentication;
+using FreeAgent.Client.Infrastructure.Authentication;
 using FreeAgent.Client.Sample.Components;
 using FreeAgent.Client.Sample.Services;
 using MudBlazor.Services;

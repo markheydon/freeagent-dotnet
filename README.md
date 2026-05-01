@@ -1,6 +1,6 @@
 # FreeAgent .NET Client
 
-A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) with OAuth 2.0 support, rate limiting, and pagination.
+A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) with OAuth 2.0 support, rate limiting, retries, typed transport errors, and pagination.
 
 [![NuGet](https://img.shields.io/nuget/v/FreeAgent.Client.svg)](https://www.nuget.org/packages/FreeAgent.Client/)
 [![NuGet (prerelease)](https://img.shields.io/nuget/vpre/FreeAgent.Client.svg?label=nuget%20prerelease)](https://www.nuget.org/packages/FreeAgent.Client/)
@@ -11,8 +11,11 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 
 - ✅ OAuth 2.0 authentication with automatic token refresh
 - ✅ Rate limiting support to respect API constraints
-- ✅ Pagination support for large result sets
-- ✅ Company API support
+- ✅ Bounded retries for transient failures
+- ✅ Typed transport exception hierarchy
+- ✅ Pagination support (single-page and auto-pagination)
+- ✅ Company API support (company details, business categories, tax timeline)
+- ✅ Contacts API support (list page and auto-pagination)
 - ✅ Built for .NET 10.0
 - ✅ Fully async/await
 - ✅ Comprehensive XML documentation
@@ -63,6 +66,24 @@ using var client = new FreeAgentClient(oauthClient, token);
 var company = await client.Company.GetCompanyAsync();
 Console.WriteLine($"Company: {company.Name}");
 Console.WriteLine($"Currency: {company.Currency}");
+
+// Get company business categories
+var categories = await client.Company.GetBusinessCategoriesAsync();
+Console.WriteLine($"Categories returned: {categories.Count}");
+
+// Get upcoming tax events
+var timeline = await client.Company.GetTaxTimelineAsync();
+Console.WriteLine($"Upcoming tax events: {timeline.Count}");
+
+// Contacts single-page access
+var firstPage = await client.Contacts.GetContactsPageAsync(page: 1, perPage: 25);
+Console.WriteLine($"Contacts page 1 items: {firstPage.Items.Count}");
+
+// Contacts auto-pagination
+await foreach (var contact in client.Contacts.GetAllContactsAsync(perPage: 50))
+{
+    Console.WriteLine(contact.ContactName);
+}
 ```
 
 **Note:** The client implements `IDisposable` and should be disposed when done to release HTTP resources properly.
@@ -90,17 +111,34 @@ var client = new FreeAgentClient(oauthClient, token);
 
 Currently, this library supports:
 
-- **Company API**: Get company information
+- **Company API**:
+    - Get company information
+    - List all business categories
+    - Get upcoming tax events
+- **Contacts API**:
+    - Get a single contacts page
+    - Auto-paginate all contacts
 
 More endpoints will be added in future releases.
 
 ## Rate Limiting
 
-The client automatically handles rate limiting:
+The client automatically handles FreeAgent rate limiting:
 
 - Respects `X-RateLimit-*` headers from the API
-- Implements automatic retry with exponential backoff for 429 responses
 - Default safety delay of 1 second between requests
+
+## Retries
+
+The client applies bounded retries by default for transient failures:
+
+- Retries up to `MaxNetworkRetries = 2` (in addition to the initial request)
+- Uses exponential backoff with optional jitter
+- Honors `Retry-After` for `429 Too Many Requests`
+- Retries safe methods (`GET`, `DELETE`) by default
+- Mutating methods are not retried unless explicitly opted in via `FreeAgentHttpClientOptions.AdditionalRetriableMethods`
+
+You can configure retry behavior through `FreeAgentHttpClientOptions` on `FreeAgentClient` constructors.
 
 ## Error Handling
 
@@ -118,11 +156,30 @@ catch (FreeAgentRateLimitException ex)
 {
     // Handle rate limit exceeded
     Console.WriteLine($"Rate limit exceeded: {ex.Message}");
+    Console.WriteLine($"Attempts: {ex.AttemptCount}");
+    Console.WriteLine($"Retry-After: {ex.RetryAfter}");
+}
+catch (FreeAgentTimeoutException ex)
+{
+    // Handle timeout
+    Console.WriteLine($"Timeout calling {ex.RequestPath}: {ex.Message}");
+}
+catch (FreeAgentNetworkException ex)
+{
+    // Handle network failures
+    Console.WriteLine($"Network error calling {ex.RequestPath}: {ex.Message}");
+}
+catch (FreeAgentTransportException ex)
+{
+    // Handle other transport-layer failures
+    Console.WriteLine($"Transport error: {ex.Message}");
 }
 catch (FreeAgentApiException ex)
 {
     // Handle other API errors
     Console.WriteLine($"API error: {ex.Message}");
+    Console.WriteLine($"Status code: {ex.StatusCode}");
+    Console.WriteLine($"Attempts: {ex.AttemptCount}");
 }
 catch (FreeAgentOAuthException ex)
 {
