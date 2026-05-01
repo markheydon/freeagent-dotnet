@@ -33,7 +33,7 @@ Use this checklist when adding endpoint coverage to keep SDK, tests, sample app,
 ## 5. Add/Update Tests
 
 - Add service tests in `tests/FreeAgent.Client.Tests/Services/`.
-- Add HTTP behavior tests in `tests/FreeAgent.Client.Tests/Http/` if infrastructure behavior changes.
+- Add HTTP behavior tests in `tests/FreeAgent.Client.Tests/Infrastructure/Http/` if infrastructure behavior changes.
 - Cover success paths, failures, and edge cases (including cancellation for auto-pagination).
 
 ## 6. Keep the Sample App Honest

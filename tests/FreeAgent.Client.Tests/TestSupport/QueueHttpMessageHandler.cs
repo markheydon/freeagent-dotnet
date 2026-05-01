@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Http;
 
 namespace FreeAgent.Client.Tests.TestSupport;
@@ -19,12 +18,11 @@ internal sealed class QueueHttpMessageHandler : HttpMessageHandler
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (_responses.Count == 0)
         {
-            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError)
-            {
-                Content = new StringContent("No queued response")
-            });
+            throw new InvalidOperationException("No queued response available. Ensure the test has enqueued the correct number of responses.");
         }
 
         return Task.FromResult(_responses.Dequeue()(request));

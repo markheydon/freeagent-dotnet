@@ -15,7 +15,7 @@ public class ContactServiceTests
         {
             Assert.Contains("page=1", request.RequestUri!.Query);
             Assert.Contains("per_page=2", request.RequestUri.Query);
-                        Assert.Contains("view=all", request.RequestUri.Query);
+            Assert.Contains("view=all", request.RequestUri.Query);
 
             var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
