@@ -1,0 +1,15 @@
+# Default owners
+* @markheydon
+
+# Core SDK
+/src/ @markheydon
+/tests/ @markheydon
+
+# Sample app
+/samples/ @markheydon
+
+# Repository automation and docs
+/.github/ @markheydon
+/*.md @markheydon
+/plan/ @markheydon
+/adr/ @markheydon

@@ -212,7 +212,25 @@ Requirements:
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome.
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.
+
+By participating in this project, you agree to follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md).
+
+## Support
+
+Use [GitHub Discussions](https://github.com/markheydon/freeagent-dotnet/discussions) for setup and usage questions.
+
+For confirmed bugs and actionable work items, use the repository issue templates.
+
+See [SUPPORT.md](SUPPORT.md) for support routing and expectations.
+
+## Security
+
+Do not disclose vulnerabilities in public issues or discussions.
+
+See [SECURITY.md](SECURITY.md) for private vulnerability reporting and disclosure process.
 
 ## License
 
