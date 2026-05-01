@@ -35,19 +35,19 @@ public class Company
     /// Company type (e.g., "UkLimitedCompany", "UkSoleTrader", etc.).
     /// </summary>
     [JsonPropertyName("type")]
-    public string Type { get; set; } = string.Empty;
+    public CompanyType Type { get; set; }
 
     /// <summary>
     /// Company currency code (e.g., "GBP", "USD").
     /// </summary>
     [JsonPropertyName("currency")]
-    public string Currency { get; set; } = string.Empty;
+    public CurrencyCode Currency { get; set; }
 
     /// <summary>
     /// Mileage units (e.g., "miles", "kilometres").
     /// </summary>
     [JsonPropertyName("mileage_units")]
-    public string? MileageUnits { get; set; }
+    public MileageUnit? MileageUnits { get; set; }
 
     /// <summary>
     /// Company registration number.
@@ -59,7 +59,7 @@ public class Company
     /// Sales tax registration status.
     /// </summary>
     [JsonPropertyName("sales_tax_registration_status")]
-    public string? SalesTaxRegistrationStatus { get; set; }
+    public SalesTaxRegistrationStatus? SalesTaxRegistrationStatus { get; set; }
 
     /// <summary>
     /// VAT number.
@@ -71,19 +71,19 @@ public class Company
     /// Company start date.
     /// </summary>
     [JsonPropertyName("company_start_date")]
-    public DateTime? CompanyStartDate { get; set; }
+    public DateOnly? CompanyStartDate { get; set; }
 
     /// <summary>
     /// Trading start date when it differs from <see cref="CompanyStartDate"/>.
     /// </summary>
     [JsonPropertyName("trading_start_date")]
-    public DateTime? TradingStartDate { get; set; }
+    public DateOnly? TradingStartDate { get; set; }
 
     /// <summary>
     /// First accounting year end date.
     /// </summary>
     [JsonPropertyName("first_accounting_year_end")]
-    public DateTime? FirstAccountingYearEnd { get; set; }
+    public DateOnly? FirstAccountingYearEnd { get; set; }
 
     /// <summary>
     /// Accounting periods covered by annual accounts.
@@ -105,6 +105,7 @@ public class Company
 
     /// <summary>
     /// Company business category.
+    /// Valid values are returned by the company business categories endpoint.
     /// </summary>
     [JsonPropertyName("business_category")]
     public string? BusinessCategory { get; set; }
@@ -119,7 +120,7 @@ public class Company
     /// FreeAgent accounting start date.
     /// </summary>
     [JsonPropertyName("freeagent_start_date")]
-    public DateTime? FreeAgentStartDate { get; set; }
+    public DateOnly? FreeAgentStartDate { get; set; }
 
     /// <summary>
     /// First address line.
@@ -197,7 +198,7 @@ public class Company
     /// Date current sales tax took effect.
     /// </summary>
     [JsonPropertyName("sales_tax_effective_date")]
-    public DateTime? SalesTaxEffectiveDate { get; set; }
+    public DateOnly? SalesTaxEffectiveDate { get; set; }
 
     /// <summary>
     /// Current sales tax rates.
@@ -239,13 +240,13 @@ public class Company
     /// End date for first VAT return period.
     /// </summary>
     [JsonPropertyName("vat_first_return_period_ends_on")]
-    public DateTime? VatFirstReturnPeriodEndsOn { get; set; }
+    public DateOnly? VatFirstReturnPeriodEndsOn { get; set; }
 
     /// <summary>
     /// VAT accounting basis on registration date.
     /// </summary>
     [JsonPropertyName("initial_vat_basis")]
-    public string? InitialVatBasis { get; set; }
+    public InitialVatBasis? InitialVatBasis { get; set; }
 
     /// <summary>
     /// Indicates if the company was initially on Flat Rate Scheme.
@@ -263,7 +264,7 @@ public class Company
     /// Sales tax deregistration effective date.
     /// </summary>
     [JsonPropertyName("sales_tax_deregistration_effective_date")]
-    public DateTime? SalesTaxDeregistrationEffectiveDate { get; set; }
+    public DateOnly? SalesTaxDeregistrationEffectiveDate { get; set; }
 
     /// <summary>
     /// Current second sales tax name.

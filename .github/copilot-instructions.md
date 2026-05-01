@@ -2,6 +2,10 @@
 
 > ⚠️ Review and customise these defaults for your project before relying on them.
 
+## Language and Spelling
+
+All documentation, comments, and user-facing text in this repository **must use UK English spelling and vocabulary**. Do not use US English. When in doubt, prefer the Oxford English Dictionary standard.
+
 ## Project Context
 
 FreeAgent.NET is an open-source, modern .NET SDK for the FreeAgent REST API. It aims to provide a first-class developer experience comparable to Stripe.NET, with strongly typed models, clean service abstractions, automatic pagination, and predictable error handling. The package is published to NuGet for use by the author's own applications and the wider .NET community.

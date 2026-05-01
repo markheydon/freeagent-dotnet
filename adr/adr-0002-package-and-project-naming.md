@@ -12,7 +12,7 @@ superseded_by: ""
 
 ## Status
 
-Accepted
+**Accepted**
 
 ## Context
 

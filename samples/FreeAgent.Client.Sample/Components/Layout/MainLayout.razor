@@ -1,5 +1,7 @@
+@implements IDisposable
 @inherits LayoutComponentBase
 @inject TokenStore TokenStore
+@inject NavigationManager NavigationManager
 
 <MudThemeProvider Theme="_theme" />
 <MudPopoverProvider />
@@ -8,6 +10,12 @@
 
 <MudLayout>
     <MudAppBar Elevation="0" Color="Color.Surface" Dense="true" Class="sample-appbar">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Primary"
+                       Edge="Edge.Start"
+                       Class="drawer-toggle"
+                       OnClick="ToggleDrawer" />
+
         <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
             <MudAvatar Size="Size.Medium" Color="Color.Primary" Variant="Variant.Filled">
                 <MudIcon Icon="@Icons.Material.Filled.Code" />
@@ -29,7 +37,7 @@
         </MudChip>
     </MudAppBar>
 
-    <MudDrawer Open="true" Elevation="0" Variant="DrawerVariant.Responsive" Class="sample-drawer">
+    <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Variant="DrawerVariant.Responsive" Class="sample-drawer">
         <MudStack Class="drawer-header" Spacing="1">
             <MudText Typo="Typo.overline" Class="drawer-label">Workspace</MudText>
             <MudText Typo="Typo.h6">SDK Explorer</MudText>
@@ -42,18 +50,24 @@
             <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
                 Overview
             </MudNavLink>
-            <MudNavLink Href="/company" Icon="@Icons.Material.Filled.Business">
-                Company Overview
-            </MudNavLink>
-            <MudNavLink Href="/company/business-categories" Icon="@Icons.Material.Filled.Category">
-                Business Categories
-            </MudNavLink>
-            <MudNavLink Href="/company/tax-timeline" Icon="@Icons.Material.Filled.Event">
-                Tax Timeline
-            </MudNavLink>
-            <MudNavLink Href="/contacts" Icon="@Icons.Material.Filled.Contacts">
-                Contacts Pagination
-            </MudNavLink>
+
+            <MudNavGroup Title="Company" Icon="@Icons.Material.Filled.Business" Expanded="@IsCompanyRoute">
+                <MudNavLink Href="/company" Icon="@Icons.Material.Filled.FactCheck">
+                    Company Overview
+                </MudNavLink>
+                <MudNavLink Href="/company/business-categories" Icon="@Icons.Material.Filled.Category">
+                    Business Categories
+                </MudNavLink>
+                <MudNavLink Href="/company/tax-timeline" Icon="@Icons.Material.Filled.Event">
+                    Tax Timeline
+                </MudNavLink>
+            </MudNavGroup>
+
+            <MudNavGroup Title="Contacts" Icon="@Icons.Material.Filled.Contacts" Expanded="@IsContactsRoute">
+                <MudNavLink Href="/contacts" Icon="@Icons.Material.Filled.AllInclusive">
+                    Contacts Pagination
+                </MudNavLink>
+            </MudNavGroup>
         </MudNavMenu>
     </MudDrawer>
 
@@ -63,6 +77,46 @@
 </MudLayout>
 
 @code {
+    private bool _drawerOpen = true;
+
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += HandleLocationChanged;
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
+
+    private void ToggleDrawer()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    private string CurrentPath
+    {
+        get
+        {
+            var relativePath = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+            var pathWithoutQuery = relativePath.Split('?', '#')[0];
+            return pathWithoutQuery.Trim('/');
+        }
+    }
+
+    private bool IsCompanyRoute =>
+        CurrentPath.Equals("company", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("company/", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsContactsRoute =>
+        CurrentPath.Equals("contacts", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("contacts/", StringComparison.OrdinalIgnoreCase);
+
+    private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
     private readonly MudTheme _theme = new()
     {
         PaletteLight = new PaletteLight
@@ -81,7 +135,7 @@
         },
         LayoutProperties = new LayoutProperties
         {
-            DrawerWidthLeft = "300px"
+            DrawerWidthLeft = "280px"
         },
         Typography = new Typography
         {

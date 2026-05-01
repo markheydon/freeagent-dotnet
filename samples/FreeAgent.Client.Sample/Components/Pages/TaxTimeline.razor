@@ -1,21 +1,17 @@
 @page "/company/tax-timeline"
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
 @inject NavigationManager NavigationManager
 
 <PageTitle>Tax Timeline — FreeAgent SDK Sample</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
-    <MudPaper Class="hero-panel compact" Elevation="0">
-        <MudStack Spacing="1">
-            <MudText Typo="Typo.overline" Class="section-kicker">Company endpoint</MudText>
-            <MudText Typo="Typo.h4">Upcoming tax events</MudText>
-            <MudText Typo="Typo.body1" Class="hero-copy">
-                Calls <code>CompanyService.GetTaxTimelineAsync()</code>. This endpoint requires
-                FreeAgent access level <strong>Tax, Accounting and Users</strong>.
-            </MudText>
-        </MudStack>
-    </MudPaper>
+    <EndpointProbeHeader SectionKicker="Company endpoint"
+                         Title="Upcoming tax events"
+                         CallUnderTest="CompanyService.GetTaxTimelineAsync()"
+                         Description="Requires FreeAgent access level Tax, Accounting and Users."
+                         EndpointPath="/v2/company/tax_timeline" />
 
     @if (!TokenStore.IsConnected)
     {
@@ -43,12 +39,24 @@
                     }
                 </MudButton>
 
-                @if (!string.IsNullOrWhiteSpace(_error))
+                @if (_error is not null)
                 {
-                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+
+                    <ApiErrorDiagnostics RawPayload="@_rawApiResponse" />
                 }
 
-                @if (_items.Count > 0)
+                @if (_items is null && !_loading)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press the button above to load the tax timeline from FreeAgent.</MudText>
+                }
+                else if (_items is not null && _items.Count == 0 && !_loading)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">No tax timeline events returned.</MudText>
+                }
+
+                @if (_items is not null && _items.Count > 0)
                 {
                     <MudTimeline>
                         @foreach (var item in _items)
@@ -79,7 +87,8 @@
 @code {
     private bool _loading;
     private string? _error;
-    private List<TaxTimelineItem> _items = new();
+    private string? _rawApiResponse;
+    private List<TaxTimelineItem>? _items;
 
     private async Task FetchAsync()
     {
@@ -92,7 +101,8 @@
 
         _loading = true;
         _error = null;
-        _items = new List<TaxTimelineItem>();
+        _rawApiResponse = null;
+        _items = null;
 
         try
         {
@@ -103,14 +113,23 @@
         catch (FreeAgentApiException ex)
         {
             _error = $"API error: {ex.Message}";
+            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "company/tax_timeline");
         }
         catch (Exception ex)
         {
             _error = $"Unexpected error: {ex.Message}";
+            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "company/tax_timeline");
         }
         finally
         {
             _loading = false;
+            _items ??= new List<TaxTimelineItem>();
         }
     }
 }
