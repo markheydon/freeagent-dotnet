@@ -11,4 +11,4 @@ contact_links:
     about: Report vulnerabilities privately and review the disclosure policy.
   - name: FreeAgent API Documentation
     url: https://dev.freeagent.com/docs
-    about: Check upstream FreeAgent API behavior and constraints.
+    about: Check upstream FreeAgent API behaviour and constraints.
