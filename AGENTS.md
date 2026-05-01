@@ -29,7 +29,7 @@ Agents should ground decisions in these files before making non-trivial changes:
 - Introduce architecture pattern changes without an ADR.
 
 ## Documentation Routing
-- For general Markdown documentation (`**/*.md`), use the `tech-writer-mh` path by default.
+- For general Markdown documentation (`**/*.md`), use the `Tech Writer` path by default.
 - Follow `.github/instructions/markdown.instructions.md` for documentation consistency expectations.
 
 ## ADR Routing

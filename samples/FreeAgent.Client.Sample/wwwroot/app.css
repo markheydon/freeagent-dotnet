@@ -19,6 +19,12 @@ body {
     border-bottom: 1px solid rgba(15, 23, 42, 0.07);
 }
 
+.drawer-toggle {
+    margin-right: 0.35rem;
+    border: 1px solid rgba(15, 118, 110, 0.25);
+    background: rgba(15, 118, 110, 0.08);
+}
+
 .shell-subtitle {
     color: #567069;
 }
@@ -83,6 +89,15 @@ body {
 .probe-card {
     padding: 1rem;
     background: rgba(248, 250, 248, 0.95);
+}
+
+.raw-json-panel pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.4;
 }
 
 .empty-state {

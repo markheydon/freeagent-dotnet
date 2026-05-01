@@ -19,6 +19,7 @@ builder.Services.AddMudServices(config =>
 // In a multi-user scenario, tokens would be shared across all circuits/sessions.
 builder.Services.AddSingleton<TokenStore>();
 builder.Services.AddSingleton<OAuthService>();
+builder.Services.AddSingleton<ApiDiagnosticsService>();
 
 var app = builder.Build();
 

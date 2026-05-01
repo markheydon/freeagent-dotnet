@@ -23,7 +23,7 @@ public class TaxTimelineItem
     /// Date associated with the timeline event.
     /// </summary>
     [JsonPropertyName("dated_on")]
-    public DateTime DatedOn { get; set; }
+    public DateOnly DatedOn { get; set; }
 
     /// <summary>
     /// Amount due when provided by the API.

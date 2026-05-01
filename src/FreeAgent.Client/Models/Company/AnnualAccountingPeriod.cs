@@ -11,11 +11,11 @@ public class AnnualAccountingPeriod
     /// Start date of the accounting period.
     /// </summary>
     [JsonPropertyName("starts_on")]
-    public DateTime StartsOn { get; set; }
+    public DateOnly StartsOn { get; set; }
 
     /// <summary>
     /// End date of the accounting period.
     /// </summary>
     [JsonPropertyName("ends_on")]
-    public DateTime EndsOn { get; set; }
+    public DateOnly EndsOn { get; set; }
 }

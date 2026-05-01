@@ -6,7 +6,8 @@
 ---
 
 ## Status
-Accepted
+
+**Accepted**
 
 ## Context
 This decision is based on the constraints and assumptions outlined in the project kickoff specification:

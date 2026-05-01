@@ -1,0 +1,59 @@
+@if (!string.IsNullOrWhiteSpace(RawPayload))
+{
+    <MudText Typo="Typo.h6">@Title</MudText>
+    <MudPaper Class="probe-card raw-json-panel" Elevation="0">
+        <pre>@DisplayedPayload</pre>
+    </MudPaper>
+
+    @if (HasOverflow)
+    {
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center">
+            <MudText Typo="Typo.caption">Showing @PreviewLines line(s) of @TotalLines line(s).</MudText>
+            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Primary" OnClick="ToggleExpanded">
+                @(_isExpanded ? "Show less" : "Show all")
+            </MudButton>
+        </MudStack>
+    }
+}
+
+@code {
+    [Parameter]
+    public string? RawPayload { get; set; }
+
+    [Parameter]
+    public string Title { get; set; } = "Raw API payload (fallback diagnostics)";
+
+    [Parameter]
+    public int MaxLines { get; set; } = 200;
+
+    private bool _isExpanded;
+
+    private string[] Lines =>
+        (RawPayload ?? string.Empty)
+        .Replace("\r\n", "\n", StringComparison.Ordinal)
+        .Split('\n');
+
+    private int TotalLines => Lines.Length;
+
+    private int PreviewLines => Math.Min(MaxLines, TotalLines);
+
+    private bool HasOverflow => TotalLines > MaxLines;
+
+    private string DisplayedPayload
+    {
+        get
+        {
+            if (!HasOverflow || _isExpanded)
+            {
+                return RawPayload ?? string.Empty;
+            }
+
+            return string.Join('\n', Lines.Take(MaxLines));
+        }
+    }
+
+    private void ToggleExpanded()
+    {
+        _isExpanded = !_isExpanded;
+    }
+}

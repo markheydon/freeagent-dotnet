@@ -13,7 +13,7 @@ public sealed class OAuthService : IDisposable
     private readonly string _clientId;
     private readonly string _clientSecret;
     private readonly string _redirectUri;
-    private FreeAgentEnvironment _selectedEnvironment = FreeAgentEnvironment.Production;
+    private FreeAgentEnvironment _selectedEnvironment = FreeAgentEnvironment.Sandbox;
     private FreeAgentOAuthClient? _oauthClient;
     private readonly Lock _clientLock = new();
     private bool _disposed;
