@@ -34,7 +34,7 @@ Adopt a mandatory, plan-first endpoint implementation workflow for all SDK endpo
 
 - All endpoint work begins with a plan that validates the entity against FreeAgent docs and audits existing code for guardrail violations.
 - Guardrails enforced: every serialised property has `JsonPropertyName`, date-only fields use `DateOnly`, constrained strings use enums/strong values, wrappers are explicit, and services validate payloads.
-- Agent routing is required: C# Expert for code/tests, tech-writer-mh for docs.
+- Agent routing is required: C# Expert for code/tests, Tech Writer for docs.
 - Sample app and navigation must be updated in the same change as the endpoint.
 - Breaking changes are allowed pre-GA if they improve correctness, but must be called out.
 

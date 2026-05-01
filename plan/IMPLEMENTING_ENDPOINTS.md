@@ -82,7 +82,7 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 ## 10. Agent Routing
 
 - Use `C# Expert` for C# implementation and test changes.
-- Use `tech-writer-mh` for Markdown documentation updates.
+- Use `Tech Writer` for Markdown documentation updates.
 
 ## Validation
 

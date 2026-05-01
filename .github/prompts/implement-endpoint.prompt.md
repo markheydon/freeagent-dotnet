@@ -134,9 +134,9 @@ When adding or changing endpoint support:
 
 ---
 
-## Step 9 - Delegate to tech-writer-mh for Documentation
+## Step 9 - Delegate to Tech Writer for Documentation
 
-After C# Expert completes Steps 3–8, invoke the **tech-writer-mh** agent to handle:
+After C# Expert completes Steps 3–8, invoke the **Tech Writer** agent to handle:
 
 - README updates (API coverage, usage examples)
 - `plan/IMPLEMENTING_ENDPOINTS.md` alignment (if process changes were made)
@@ -159,6 +159,6 @@ After both agents complete their work:
 
 - Verify the plan was created or updated.
 - Review C# Expert changes: models (including retrofit violations fixed), services, tests, sample page.
-- Review tech-writer-mh changes: README and docs updates.
+- Review Tech Writer changes: README and docs updates.
 - Confirm `dotnet build` and `dotnet test` both pass.
 - Highlight any breaking changes applied during retrofit (DateTime → DateOnly conversions, string → enum conversions).

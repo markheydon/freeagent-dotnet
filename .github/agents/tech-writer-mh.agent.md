@@ -1,5 +1,5 @@
 ---
-name: tech-writer-mh
+name: Tech Writer
 description: 'Project-aware technical writing specialist for developer documentation, user guides, tutorials, and technical blog posts.'
 model: GPT-4.1
 tools: ['read', 'edit', 'search', 'execute']
