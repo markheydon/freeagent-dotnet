@@ -76,9 +76,27 @@ The app starts at `https://localhost:5001`. Your browser may show a certificate 
 |------|----------------|
 | [/company](https://localhost:5001/company) | `CompanyService.GetCompanyAsync()` |
 
-Additional pages will be added as new services are implemented.
 
 ---
+
+## Sandbox Rate-Limit Diagnostics
+
+The sample app provides a dedicated developer tooling page for live rate-limit diagnostics:
+
+- **Route:** `/sandbox/rate-limit-test` (visible only when running the sample app)
+- **Purpose:** Allows developers to test and observe FreeAgent API rate-limiting behaviour in real time, without affecting production data.
+- **Sandbox-only:** This page is restricted to sandbox OAuth sessions. Attempting to use it with a production connection will show an error.
+- **X-RateLimit-Test header:** Optionally sends the `X-RateLimit-Test: true` header, which triggers test-mode rate-limiting in the FreeAgent sandbox API. This enables safe, repeatable limit testing without impacting real usage quotas.
+- **Not an SDK endpoint:** This is a sample-app-only diagnostics tool. It does not expose new SDK surface or production API features.
+
+Use this page to:
+
+- Run multiple requests against the `/v2/company` endpoint
+- Inspect returned `X-RateLimit-*` headers and `Retry-After` values
+- Experiment with rate-limit handling and SDK retry logic
+
+See the page in the running app for full details and usage instructions.
+
 
 ## Notes for Contributors
 
