@@ -1,0 +1,154 @@
+@page "/contacts"
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Contacts — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <MudPaper Class="hero-panel compact" Elevation="0">
+        <MudStack Spacing="1">
+            <MudText Typo="Typo.overline" Class="section-kicker">Pagination proof</MudText>
+            <MudText Typo="Typo.h4">Contacts auto-pagination</MudText>
+            <MudText Typo="Typo.body1" Class="hero-copy">
+                Demonstrates single-page access with <code>GetContactsPageAsync</code> and auto-pagination with
+                <code>GetAllContactsAsync</code>.
+            </MudText>
+        </MudStack>
+    </MudPaper>
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="6">
+                <MudPaper Class="workbench-panel" Elevation="0">
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h6">Single page</MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Filter1"
+                                   Disabled="_loading"
+                                   OnClick="LoadSinglePageAsync">
+                            Load page 1
+                        </MudButton>
+                        @if (_singlePage.Count > 0)
+                        {
+                            <MudText Typo="Typo.caption">Loaded @_singlePage.Count contacts from page 1.</MudText>
+                        }
+                        @if (_singlePage.Count > 0)
+                        {
+                            @foreach (var contact in _singlePage)
+                            {
+                                <MudPaper Class="probe-card" Elevation="0">
+                                    <MudText Typo="Typo.body2">@contact.DisplayName</MudText>
+                                </MudPaper>
+                            }
+                        }
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudPaper Class="workbench-panel" Elevation="0">
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.h6">Auto-pagination</MudText>
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary"
+                                   StartIcon="@Icons.Material.Filled.AllInclusive"
+                                   Disabled="_loading"
+                                   OnClick="LoadAllAsync">
+                            Load all contacts
+                        </MudButton>
+                        @if (_allContacts.Count > 0)
+                        {
+                            <MudText Typo="Typo.caption">Loaded @_allContacts.Count contacts from all pages.</MudText>
+                        }
+                        @if (_allContacts.Count > 0)
+                        {
+                            @foreach (var contact in _allContacts)
+                            {
+                                <MudPaper Class="probe-card" Elevation="0">
+                                    <MudText Typo="Typo.body2">@contact.DisplayName</MudText>
+                                </MudPaper>
+                            }
+                        }
+                    </MudStack>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        @if (!string.IsNullOrWhiteSpace(_error))
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">@_error</MudAlert>
+        }
+        else if (!_loading && _singlePage.Count == 0 && _allContacts.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info" Class="mt-4">
+                No contacts returned for the current view filter.
+            </MudAlert>
+        }
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private List<ContactSummary> _singlePage = new();
+    private List<ContactSummary> _allContacts = new();
+
+    private async Task LoadSinglePageAsync()
+    {
+        await WithClientAsync(async client =>
+        {
+            _singlePage = (await client.Contacts.GetContactsPageAsync(page: 1, perPage: 25, view: "all")).Items;
+        });
+    }
+
+    private async Task LoadAllAsync()
+    {
+        await WithClientAsync(async client =>
+        {
+            _allContacts = new List<ContactSummary>();
+            await foreach (var contact in client.Contacts.GetAllContactsAsync(perPage: 25, view: "all"))
+            {
+                _allContacts.Add(contact);
+            }
+        });
+    }
+
+    private async Task WithClientAsync(Func<FreeAgentClient, Task> action)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

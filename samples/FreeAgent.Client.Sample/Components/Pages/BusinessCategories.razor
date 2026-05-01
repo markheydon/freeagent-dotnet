@@ -1,0 +1,106 @@
+@page "/company/business-categories"
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Business Categories — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <MudPaper Class="hero-panel compact" Elevation="0">
+        <MudStack Spacing="1">
+            <MudText Typo="Typo.overline" Class="section-kicker">Company endpoint</MudText>
+            <MudText Typo="Typo.h4">Business categories</MudText>
+            <MudText Typo="Typo.body1" Class="hero-copy">
+                Calls <code>CompanyService.GetBusinessCategoriesAsync()</code> and renders all categories returned by FreeAgent.
+            </MudText>
+        </MudStack>
+    </MudPaper>
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.List"
+                           Disabled="_loading"
+                           OnClick="FetchAsync">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Loading…</span>
+                    }
+                    else
+                    {
+                        <span>Load business categories</span>
+                    }
+                </MudButton>
+
+                @if (!string.IsNullOrWhiteSpace(_error))
+                {
+                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                }
+
+                @if (_categories.Count > 0)
+                {
+                    <MudText Typo="Typo.subtitle1">@_categories.Count categories returned</MudText>
+                    <MudGrid Spacing="2">
+                        @foreach (var category in _categories)
+                        {
+                            <MudItem xs="12" sm="6" md="4">
+                                <MudPaper Class="probe-card" Elevation="0">
+                                    <MudText Typo="Typo.body2">@category</MudText>
+                                </MudPaper>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private List<string> _categories = new();
+
+    private async Task FetchAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _categories = new List<string>();
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var categories = await client.Company.GetBusinessCategoriesAsync();
+            _categories = categories.OrderBy(static x => x).ToList();
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

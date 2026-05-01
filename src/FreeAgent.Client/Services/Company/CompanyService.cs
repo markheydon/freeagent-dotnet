@@ -1,0 +1,75 @@
+using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Models.Company;
+using FreeAgent.Client.Services;
+using CompanyModel = FreeAgent.Client.Models.Company.Company;
+
+namespace FreeAgent.Client.Services.Company;
+
+/// <summary>
+/// Service for interacting with the FreeAgent Company API.
+/// </summary>
+public class CompanyService : ServiceBase
+{
+    /// <summary>
+    /// Initializes a new instance of the CompanyService.
+    /// </summary>
+    /// <param name="httpClient">FreeAgent HTTP client</param>
+    public CompanyService(FreeAgentHttpClient httpClient)
+        : base(httpClient)
+    {
+    }
+
+    /// <summary>
+    /// Gets the company information.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Company information</returns>
+    public async Task<CompanyModel> GetCompanyAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await HttpClient.GetAsync<CompanyResponse>("company", cancellationToken);
+
+        if (response.Company == null)
+        {
+            throw new FreeAgentApiException("Company data missing from API response");
+        }
+
+        return response.Company;
+    }
+
+    /// <summary>
+    /// Lists all business categories that can be used for company classification.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Business categories</returns>
+    public async Task<IReadOnlyList<string>> GetBusinessCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await HttpClient.GetAsync<BusinessCategoriesResponse>("company/business_categories", cancellationToken);
+
+        if (response.BusinessCategories is null)
+        {
+            throw new FreeAgentApiException("Business categories missing from API response");
+        }
+
+        return response.BusinessCategories;
+    }
+
+    /// <summary>
+    /// Gets upcoming tax timeline events for the authenticated company.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Tax timeline items</returns>
+    /// <remarks>
+    /// Minimum FreeAgent access level: Tax, Accounting and Users.
+    /// </remarks>
+    public async Task<IReadOnlyList<TaxTimelineItem>> GetTaxTimelineAsync(CancellationToken cancellationToken = default)
+    {
+        var response = await HttpClient.GetAsync<TaxTimelineResponse>("company/tax_timeline", cancellationToken);
+
+        if (response.TimelineItems is null)
+        {
+            throw new FreeAgentApiException("Tax timeline items missing from API response");
+        }
+
+        return response.TimelineItems;
+    }
+}

@@ -1,0 +1,116 @@
+@page "/company/tax-timeline"
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject NavigationManager NavigationManager
+
+<PageTitle>Tax Timeline — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <MudPaper Class="hero-panel compact" Elevation="0">
+        <MudStack Spacing="1">
+            <MudText Typo="Typo.overline" Class="section-kicker">Company endpoint</MudText>
+            <MudText Typo="Typo.h4">Upcoming tax events</MudText>
+            <MudText Typo="Typo.body1" Class="hero-copy">
+                Calls <code>CompanyService.GetTaxTimelineAsync()</code>. This endpoint requires
+                FreeAgent access level <strong>Tax, Accounting and Users</strong>.
+            </MudText>
+        </MudStack>
+    </MudPaper>
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Event"
+                           Disabled="_loading"
+                           OnClick="FetchAsync">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Loading…</span>
+                    }
+                    else
+                    {
+                        <span>Load tax timeline</span>
+                    }
+                </MudButton>
+
+                @if (!string.IsNullOrWhiteSpace(_error))
+                {
+                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                }
+
+                @if (_items.Count > 0)
+                {
+                    <MudTimeline>
+                        @foreach (var item in _items)
+                        {
+                            <MudTimelineItem Color="Color.Primary">
+                                <ChildContent>
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudStack Spacing="1">
+                                            <MudText Typo="Typo.subtitle2">@item.Description</MudText>
+                                            <MudText Typo="Typo.body2">@item.Nature</MudText>
+                                            <MudText Typo="Typo.caption">Date: @item.DatedOn.ToString("yyyy-MM-dd")</MudText>
+                                            @if (item.AmountDue.HasValue)
+                                            {
+                                                <MudText Typo="Typo.caption">Amount due: @item.AmountDue.Value</MudText>
+                                            }
+                                        </MudStack>
+                                    </MudPaper>
+                                </ChildContent>
+                            </MudTimelineItem>
+                        }
+                    </MudTimeline>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private List<TaxTimelineItem> _items = new();
+
+    private async Task FetchAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _items = new List<TaxTimelineItem>();
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var items = await client.Company.GetTaxTimelineAsync();
+            _items = items.OrderBy(static i => i.DatedOn).ToList();
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}
