@@ -450,7 +450,7 @@ public class FreeAgentHttpClientRetryTests
         var observedAuthorizations = new List<string>();
         var syncLock = new object();
 
-        using var oauthHttpClient = new HttpClient(new LambdaHttpMessageHandler(request =>
+        using var oauthHttpClient = new HttpClient(new AsyncLambdaHttpMessageHandler(async request =>
         {
             if (!request.RequestUri!.AbsoluteUri.Contains("token_endpoint", StringComparison.OrdinalIgnoreCase))
             {
@@ -458,7 +458,7 @@ public class FreeAgentHttpClientRetryTests
             }
 
             Interlocked.Increment(ref refreshCallCount);
-            Thread.Sleep(100);
+            await Task.Delay(100);
 
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -728,6 +728,22 @@ public class FreeAgentHttpClientRetryTests
         {
             cancellationToken.ThrowIfCancellationRequested();
             return Task.FromResult(_handler(request));
+        }
+    }
+
+    private sealed class AsyncLambdaHttpMessageHandler : HttpMessageHandler
+    {
+        private readonly Func<HttpRequestMessage, Task<HttpResponseMessage>> _handler;
+
+        public AsyncLambdaHttpMessageHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
+        {
+            _handler = handler ?? throw new ArgumentNullException(nameof(handler));
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return _handler(request);
         }
     }
 }

@@ -128,11 +128,17 @@ public class FreeAgentHttpClient : IDisposable
         _currentToken = token ?? throw new ArgumentNullException(nameof(token));
         _ownsHttpClient = false;
         _options = options ?? new FreeAgentHttpClientOptions();
-        _environment = environment;
 
         if (_httpClient.BaseAddress == null)
         {
             _httpClient.BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(environment));
+            _environment = environment;
+        }
+        else
+        {
+            _environment = _httpClient.BaseAddress.Host.Equals("api.sandbox.freeagent.com", StringComparison.OrdinalIgnoreCase)
+                ? FreeAgentEnvironment.Sandbox
+                : FreeAgentEnvironment.Production;
         }
 
         _httpClient.DefaultRequestHeaders.Remove("Authorization");
@@ -165,12 +171,13 @@ public class FreeAgentHttpClient : IDisposable
         IEnumerable<KeyValuePair<string, string>>? requestHeaders,
         CancellationToken cancellationToken = default)
     {
-        ValidateRequestHeaders(requestHeaders);
+        var headers = requestHeaders?.ToArray();
+        ValidateRequestHeaders(headers);
 
         return await ExecuteWithRetryAsync(
             HttpMethod.Get,
             endpoint,
-            createRequest: () => CreateRequestMessage(HttpMethod.Get, endpoint, contentFactory: null, requestHeaders),
+            createRequest: () => CreateRequestMessage(HttpMethod.Get, endpoint, contentFactory: null, headers),
             deserialize: (response, ct) => HandleResponseAsync<T>(response, ct),
             cancellationToken);
     }
@@ -200,12 +207,13 @@ public class FreeAgentHttpClient : IDisposable
         IEnumerable<KeyValuePair<string, string>>? requestHeaders,
         CancellationToken cancellationToken = default)
     {
-        ValidateRequestHeaders(requestHeaders);
+        var headers = requestHeaders?.ToArray();
+        ValidateRequestHeaders(headers);
 
         return await ExecuteWithRetryAsync(
             HttpMethod.Get,
             endpoint,
-            createRequest: () => CreateRequestMessage(HttpMethod.Get, endpoint, contentFactory: null, requestHeaders),
+            createRequest: () => CreateRequestMessage(HttpMethod.Get, endpoint, contentFactory: null, headers),
             deserialize: async (response, ct) =>
             {
                 var data = await HandleResponseAsync<T>(response, ct);
@@ -247,14 +255,15 @@ public class FreeAgentHttpClient : IDisposable
         IEnumerable<KeyValuePair<string, string>>? requestHeaders,
         CancellationToken cancellationToken = default)
     {
-        ValidateRequestHeaders(requestHeaders);
+        var headers = requestHeaders?.ToArray();
+        ValidateRequestHeaders(headers);
 
         var bufferedContent = await BufferedHttpContent.CreateAsync(content, cancellationToken);
 
         return await ExecuteWithRetryAsync(
             HttpMethod.Post,
             endpoint,
-            createRequest: () => CreateRequestMessage(HttpMethod.Post, endpoint, bufferedContent.CreateContent, requestHeaders),
+            createRequest: () => CreateRequestMessage(HttpMethod.Post, endpoint, bufferedContent.CreateContent, headers),
             deserialize: (response, ct) => HandleResponseAsync<T>(response, ct),
             cancellationToken);
     }
@@ -287,14 +296,15 @@ public class FreeAgentHttpClient : IDisposable
         IEnumerable<KeyValuePair<string, string>>? requestHeaders,
         CancellationToken cancellationToken = default)
     {
-        ValidateRequestHeaders(requestHeaders);
+        var headers = requestHeaders?.ToArray();
+        ValidateRequestHeaders(headers);
 
         var bufferedContent = await BufferedHttpContent.CreateAsync(content, cancellationToken);
 
         return await ExecuteWithRetryAsync(
             HttpMethod.Put,
             endpoint,
-            createRequest: () => CreateRequestMessage(HttpMethod.Put, endpoint, bufferedContent.CreateContent, requestHeaders),
+            createRequest: () => CreateRequestMessage(HttpMethod.Put, endpoint, bufferedContent.CreateContent, headers),
             deserialize: (response, ct) => HandleResponseAsync<T>(response, ct),
             cancellationToken);
     }
@@ -320,12 +330,13 @@ public class FreeAgentHttpClient : IDisposable
         IEnumerable<KeyValuePair<string, string>>? requestHeaders,
         CancellationToken cancellationToken = default)
     {
-        ValidateRequestHeaders(requestHeaders);
+        var headers = requestHeaders?.ToArray();
+        ValidateRequestHeaders(headers);
 
         await ExecuteWithRetryAsync(
             HttpMethod.Delete,
             endpoint,
-            createRequest: () => CreateRequestMessage(HttpMethod.Delete, endpoint, contentFactory: null, requestHeaders),
+            createRequest: () => CreateRequestMessage(HttpMethod.Delete, endpoint, contentFactory: null, headers),
             deserialize: static async (response, ct) =>
             {
                 if (!response.IsSuccessStatusCode)
@@ -373,6 +384,9 @@ public class FreeAgentHttpClient : IDisposable
                 {
                     var retryDelay = GetRetryDelay(attempts, response);
                     response.Dispose();
+                    response = null;
+                    request?.Dispose();
+                    request = null;
                     await Task.Delay(retryDelay, cancellationToken);
                     continue;
                 }
@@ -400,6 +414,8 @@ public class FreeAgentHttpClient : IDisposable
                 if (CanRetry(method, null, attempts))
                 {
                     var retryDelay = GetRetryDelay(attempts);
+                    request?.Dispose();
+                    request = null;
                     await Task.Delay(retryDelay, cancellationToken);
                     continue;
                 }
@@ -416,6 +432,8 @@ public class FreeAgentHttpClient : IDisposable
                 if (CanRetry(method, null, attempts))
                 {
                     var retryDelay = GetRetryDelay(attempts);
+                    request?.Dispose();
+                    request = null;
                     await Task.Delay(retryDelay, cancellationToken);
                     continue;
                 }
