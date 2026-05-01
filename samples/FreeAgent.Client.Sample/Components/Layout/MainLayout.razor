@@ -68,6 +68,12 @@
                     Contacts Pagination
                 </MudNavLink>
             </MudNavGroup>
+
+            <MudNavGroup Title="Developer Tools" Icon="@Icons.Material.Filled.Handyman" Expanded="@IsDeveloperToolsRoute">
+                <MudNavLink Href="/sandbox/rate-limit-test" Icon="@Icons.Material.Filled.Speed">
+                    Sandbox Rate-Limit Test
+                </MudNavLink>
+            </MudNavGroup>
         </MudNavMenu>
     </MudDrawer>
 
@@ -111,6 +117,9 @@
     private bool IsContactsRoute =>
         CurrentPath.Equals("contacts", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("contacts/", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsDeveloperToolsRoute =>
+        CurrentPath.StartsWith("sandbox/", StringComparison.OrdinalIgnoreCase);
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
     {

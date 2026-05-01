@@ -11,9 +11,12 @@ namespace FreeAgent.Client.Infrastructure.Http;
 /// </summary>
 public class FreeAgentHttpClient : IDisposable
 {
+    private const string RateLimitTestHeaderName = "X-RateLimit-Test";
+
     private readonly HttpClient _httpClient;
     private readonly bool _ownsHttpClient;
     private readonly FreeAgentOAuthClient? _oauthClient;
+    private readonly FreeAgentEnvironment _environment;
     private OAuthTokenResponse? _currentToken;
     private readonly SemaphoreSlim _rateLimitSemaphore = new(1, 1);
     private readonly SemaphoreSlim _tokenRefreshSemaphore = new(1, 1);
@@ -44,6 +47,7 @@ public class FreeAgentHttpClient : IDisposable
         }
 
         _options = options ?? new FreeAgentHttpClientOptions();
+        _environment = environment;
         _httpClient = new HttpClient { BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(environment)) };
         _ownsHttpClient = true;
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
@@ -66,6 +70,7 @@ public class FreeAgentHttpClient : IDisposable
         _oauthClient = oauthClient ?? throw new ArgumentNullException(nameof(oauthClient));
         _currentToken = token ?? throw new ArgumentNullException(nameof(token));
         _options = options ?? new FreeAgentHttpClientOptions();
+        _environment = environment;
 
         _httpClient = new HttpClient { BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(environment)) };
         _ownsHttpClient = true;
@@ -95,7 +100,49 @@ public class FreeAgentHttpClient : IDisposable
             _httpClient.BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(FreeAgentEnvironment.Production));
         }
 
+        _environment = _httpClient.BaseAddress.Host.Equals("api.sandbox.freeagent.com", StringComparison.OrdinalIgnoreCase)
+            ? FreeAgentEnvironment.Sandbox
+            : FreeAgentEnvironment.Production;
+
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
+    }
+
+    /// <summary>
+    /// Initializes a new instance with a custom HttpClient and OAuth token refresh support.
+    /// </summary>
+    /// <param name="httpClient">Custom HttpClient instance for API requests</param>
+    /// <param name="oauthClient">OAuth client for token refresh</param>
+    /// <param name="token">Initial OAuth token</param>
+    /// <param name="environment">Target API environment. Defaults to <see cref="FreeAgentEnvironment.Production"/>.</param>
+    /// <param name="options">HTTP client options</param>
+    public FreeAgentHttpClient(
+        HttpClient httpClient,
+        FreeAgentOAuthClient oauthClient,
+        OAuthTokenResponse token,
+        FreeAgentEnvironment environment = FreeAgentEnvironment.Production,
+        FreeAgentHttpClientOptions? options = null)
+    {
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _oauthClient = oauthClient ?? throw new ArgumentNullException(nameof(oauthClient));
+        _currentToken = token ?? throw new ArgumentNullException(nameof(token));
+        _ownsHttpClient = false;
+        _options = options ?? new FreeAgentHttpClientOptions();
+
+        if (_httpClient.BaseAddress == null)
+        {
+            _httpClient.BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(environment));
+            _environment = environment;
+        }
+        else
+        {
+            _environment = _httpClient.BaseAddress.Host.Equals("api.sandbox.freeagent.com", StringComparison.OrdinalIgnoreCase)
+                ? FreeAgentEnvironment.Sandbox
+                : FreeAgentEnvironment.Production;
+        }
+
+        _httpClient.DefaultRequestHeaders.Remove("Authorization");
+        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {token.AccessToken}");
         _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
     }
 
@@ -108,10 +155,29 @@ public class FreeAgentHttpClient : IDisposable
     /// <returns>Deserialized response</returns>
     public async Task<T> GetAsync<T>(string endpoint, CancellationToken cancellationToken = default)
     {
+        return await GetAsync<T>(endpoint, requestHeaders: null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends a GET request to the API with per-request headers.
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="endpoint">API endpoint (relative to base URL)</param>
+    /// <param name="requestHeaders">Headers to apply to this request only</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Deserialized response</returns>
+    public async Task<T> GetAsync<T>(
+        string endpoint,
+        IEnumerable<KeyValuePair<string, string>>? requestHeaders,
+        CancellationToken cancellationToken = default)
+    {
+        var headers = requestHeaders?.ToArray();
+        ValidateRequestHeaders(headers);
+
         return await ExecuteWithRetryAsync(
             HttpMethod.Get,
             endpoint,
-            send: ct => _httpClient.GetAsync(endpoint, ct),
+            createRequest: () => CreateRequestMessage(HttpMethod.Get, endpoint, contentFactory: null, headers),
             deserialize: (response, ct) => HandleResponseAsync<T>(response, ct),
             cancellationToken);
     }
@@ -125,10 +191,29 @@ public class FreeAgentHttpClient : IDisposable
     /// <returns>Deserialized response and response headers</returns>
     public async Task<FreeAgentHttpResponse<T>> GetWithMetadataAsync<T>(string endpoint, CancellationToken cancellationToken = default)
     {
+        return await GetWithMetadataAsync<T>(endpoint, requestHeaders: null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends a GET request and returns deserialized payload with selected response headers.
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="endpoint">API endpoint (relative to base URL)</param>
+    /// <param name="requestHeaders">Headers to apply to this request only</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Deserialized response and response headers</returns>
+    public async Task<FreeAgentHttpResponse<T>> GetWithMetadataAsync<T>(
+        string endpoint,
+        IEnumerable<KeyValuePair<string, string>>? requestHeaders,
+        CancellationToken cancellationToken = default)
+    {
+        var headers = requestHeaders?.ToArray();
+        ValidateRequestHeaders(headers);
+
         return await ExecuteWithRetryAsync(
             HttpMethod.Get,
             endpoint,
-            send: ct => _httpClient.GetAsync(endpoint, ct),
+            createRequest: () => CreateRequestMessage(HttpMethod.Get, endpoint, contentFactory: null, headers),
             deserialize: async (response, ct) =>
             {
                 var data = await HandleResponseAsync<T>(response, ct);
@@ -152,12 +237,33 @@ public class FreeAgentHttpClient : IDisposable
     /// <returns>Deserialized response</returns>
     public async Task<T> PostAsync<T>(string endpoint, HttpContent content, CancellationToken cancellationToken = default)
     {
+        return await PostAsync<T>(endpoint, content, requestHeaders: null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends a POST request to the API with per-request headers.
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="endpoint">API endpoint (relative to base URL)</param>
+    /// <param name="content">Request content</param>
+    /// <param name="requestHeaders">Headers to apply to this request only</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Deserialized response</returns>
+    public async Task<T> PostAsync<T>(
+        string endpoint,
+        HttpContent content,
+        IEnumerable<KeyValuePair<string, string>>? requestHeaders,
+        CancellationToken cancellationToken = default)
+    {
+        var headers = requestHeaders?.ToArray();
+        ValidateRequestHeaders(headers);
+
         var bufferedContent = await BufferedHttpContent.CreateAsync(content, cancellationToken);
 
         return await ExecuteWithRetryAsync(
             HttpMethod.Post,
             endpoint,
-            send: ct => _httpClient.PostAsync(endpoint, bufferedContent.CreateContent(), ct),
+            createRequest: () => CreateRequestMessage(HttpMethod.Post, endpoint, bufferedContent.CreateContent, headers),
             deserialize: (response, ct) => HandleResponseAsync<T>(response, ct),
             cancellationToken);
     }
@@ -172,12 +278,33 @@ public class FreeAgentHttpClient : IDisposable
     /// <returns>Deserialized response</returns>
     public async Task<T> PutAsync<T>(string endpoint, HttpContent content, CancellationToken cancellationToken = default)
     {
+        return await PutAsync<T>(endpoint, content, requestHeaders: null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends a PUT request to the API with per-request headers.
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="endpoint">API endpoint (relative to base URL)</param>
+    /// <param name="content">Request content</param>
+    /// <param name="requestHeaders">Headers to apply to this request only</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Deserialized response</returns>
+    public async Task<T> PutAsync<T>(
+        string endpoint,
+        HttpContent content,
+        IEnumerable<KeyValuePair<string, string>>? requestHeaders,
+        CancellationToken cancellationToken = default)
+    {
+        var headers = requestHeaders?.ToArray();
+        ValidateRequestHeaders(headers);
+
         var bufferedContent = await BufferedHttpContent.CreateAsync(content, cancellationToken);
 
         return await ExecuteWithRetryAsync(
             HttpMethod.Put,
             endpoint,
-            send: ct => _httpClient.PutAsync(endpoint, bufferedContent.CreateContent(), ct),
+            createRequest: () => CreateRequestMessage(HttpMethod.Put, endpoint, bufferedContent.CreateContent, headers),
             deserialize: (response, ct) => HandleResponseAsync<T>(response, ct),
             cancellationToken);
     }
@@ -189,10 +316,27 @@ public class FreeAgentHttpClient : IDisposable
     /// <param name="cancellationToken">Cancellation token</param>
     public async Task DeleteAsync(string endpoint, CancellationToken cancellationToken = default)
     {
+        await DeleteAsync(endpoint, requestHeaders: null, cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends a DELETE request to the API with per-request headers.
+    /// </summary>
+    /// <param name="endpoint">API endpoint (relative to base URL)</param>
+    /// <param name="requestHeaders">Headers to apply to this request only</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    public async Task DeleteAsync(
+        string endpoint,
+        IEnumerable<KeyValuePair<string, string>>? requestHeaders,
+        CancellationToken cancellationToken = default)
+    {
+        var headers = requestHeaders?.ToArray();
+        ValidateRequestHeaders(headers);
+
         await ExecuteWithRetryAsync(
             HttpMethod.Delete,
             endpoint,
-            send: ct => _httpClient.DeleteAsync(endpoint, ct),
+            createRequest: () => CreateRequestMessage(HttpMethod.Delete, endpoint, contentFactory: null, headers),
             deserialize: static async (response, ct) =>
             {
                 if (!response.IsSuccessStatusCode)
@@ -209,7 +353,7 @@ public class FreeAgentHttpClient : IDisposable
     private async Task<TResult> ExecuteWithRetryAsync<TResult>(
         HttpMethod method,
         string endpoint,
-        Func<CancellationToken, Task<HttpResponseMessage>> send,
+        Func<HttpRequestMessage> createRequest,
         Func<HttpResponseMessage, CancellationToken, Task<TResult>> deserialize,
         CancellationToken cancellationToken)
     {
@@ -220,13 +364,15 @@ public class FreeAgentHttpClient : IDisposable
         while (true)
         {
             attempts++;
+            HttpRequestMessage? request = null;
             HttpResponseMessage? response = null;
 
             try
             {
                 await ApplyRateLimitAsync(cancellationToken);
 
-                response = await send(cancellationToken);
+                request = createRequest();
+                response = await _httpClient.SendAsync(request, cancellationToken);
                 await HandleRateLimitHeadersAsync(response);
 
                 if (response.IsSuccessStatusCode)
@@ -238,6 +384,9 @@ public class FreeAgentHttpClient : IDisposable
                 {
                     var retryDelay = GetRetryDelay(attempts, response);
                     response.Dispose();
+                    response = null;
+                    request?.Dispose();
+                    request = null;
                     await Task.Delay(retryDelay, cancellationToken);
                     continue;
                 }
@@ -265,6 +414,8 @@ public class FreeAgentHttpClient : IDisposable
                 if (CanRetry(method, null, attempts))
                 {
                     var retryDelay = GetRetryDelay(attempts);
+                    request?.Dispose();
+                    request = null;
                     await Task.Delay(retryDelay, cancellationToken);
                     continue;
                 }
@@ -281,6 +432,8 @@ public class FreeAgentHttpClient : IDisposable
                 if (CanRetry(method, null, attempts))
                 {
                     var retryDelay = GetRetryDelay(attempts);
+                    request?.Dispose();
+                    request = null;
                     await Task.Delay(retryDelay, cancellationToken);
                     continue;
                 }
@@ -294,7 +447,52 @@ public class FreeAgentHttpClient : IDisposable
             }
             finally
             {
+                request?.Dispose();
                 response?.Dispose();
+            }
+        }
+    }
+
+    private static HttpRequestMessage CreateRequestMessage(
+        HttpMethod method,
+        string endpoint,
+        Func<HttpContent>? contentFactory,
+        IEnumerable<KeyValuePair<string, string>>? requestHeaders)
+    {
+        var request = new HttpRequestMessage(method, endpoint);
+
+        if (contentFactory is not null)
+        {
+            request.Content = contentFactory();
+        }
+
+        if (requestHeaders is null)
+        {
+            return request;
+        }
+
+        foreach (var requestHeader in requestHeaders)
+        {
+            request.Headers.TryAddWithoutValidation(requestHeader.Key, requestHeader.Value);
+        }
+
+        return request;
+    }
+
+    private void ValidateRequestHeaders(IEnumerable<KeyValuePair<string, string>>? requestHeaders)
+    {
+        if (requestHeaders is null)
+        {
+            return;
+        }
+
+        foreach (var requestHeader in requestHeaders)
+        {
+            if (requestHeader.Key.Equals(RateLimitTestHeaderName, StringComparison.OrdinalIgnoreCase)
+                && _environment != FreeAgentEnvironment.Sandbox)
+            {
+                throw new InvalidOperationException(
+                    $"Header '{RateLimitTestHeaderName}' is only supported when targeting the sandbox environment.");
             }
         }
     }

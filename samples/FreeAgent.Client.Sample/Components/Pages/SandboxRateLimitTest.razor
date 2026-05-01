@@ -1,0 +1,381 @@
+@page "/sandbox/rate-limit-test"
+@using System.Globalization
+@using System.Text.Json
+@inject TokenStore TokenStore
+@inject NavigationManager NavigationManager
+
+<PageTitle>Sandbox Rate-Limit Test - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Developer tooling"
+                         Title="Sandbox rate-limit test"
+                         CallUnderTest="FreeAgentHttpClient.GetWithMetadataAsync&lt;JsonElement&gt;(..., requestHeaders)"
+                         Description="Runs repeated calls against the company endpoint to inspect live sandbox rate-limiting behaviour."
+                         EndpointPath="/v2/company" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3">
+            This tooling page needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+
+    @if (TokenStore.IsConnected && !IsSandboxConnection)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-3">
+            Sandbox-only tooling: your current OAuth session targets <strong>@ConnectedEnvironmentName</strong>.
+            Reconnect using the sandbox environment to run this test safely.
+        </MudAlert>
+    }
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12" md="4">
+            <MudPaper Class="workbench-panel" Elevation="0">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h6">Run settings</MudText>
+
+                    <MudNumericField T="int"
+                                     Label="Number of requests"
+                                     Variant="Variant.Outlined"
+                                     Min="1"
+                                     Max="25"
+                                     Immediate="true"
+                                     Disabled="@IsExecutionDisabled"
+                                     Value="_requestCount"
+                                     ValueChanged="OnRequestCountChanged" />
+
+                    <MudSwitch T="bool"
+                               Label="Send sandbox header X-RateLimit-Test=true"
+                               Color="Color.Primary"
+                               Disabled="@IsExecutionDisabled"
+                               Value="_sendRateLimitTestHeader"
+                               ValueChanged="OnSendRateLimitHeaderChanged" />
+
+                    <MudText Typo="Typo.caption">
+                        This executes sequential requests against <code>GET /v2/company</code> using the SDK HTTP client seam.
+                    </MudText>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Disabled="@IsExecutionDisabled"
+                               StartIcon="@Icons.Material.Filled.PlayArrow"
+                               OnClick="RunTestAsync">
+                        @if (_running)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Running...</span>
+                        }
+                        else
+                        {
+                            <span>Run test</span>
+                        }
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Text"
+                               Color="Color.Default"
+                               StartIcon="@Icons.Material.Filled.ClearAll"
+                               Disabled="@(_running || _results.Count == 0)"
+                               OnClick="ClearResults">
+                        Clear results
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="8">
+            <MudPaper Class="workbench-panel" Elevation="0">
+                <MudStack Spacing="2">
+                    <MudStack Row="true" Spacing="1" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudText Typo="Typo.h6">Attempt results</MudText>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Success">Success: @SuccessCount</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Warning">Rate limited: @RateLimitedCount</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Error">Errors: @ErrorCount</MudChip>
+                    </MudStack>
+
+                    @if (_results.Count == 0 && !_running)
+                    {
+                        <MudText Typo="Typo.body2" Class="hero-copy">
+                            Configure the test and run attempts to inspect live rate-limit headers and outcomes.
+                        </MudText>
+                    }
+
+                    @if (_results.Count > 0)
+                    {
+                        <MudTable Items="@_results" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh>Attempt</MudTh>
+                                <MudTh>Timestamp (UTC)</MudTh>
+                                <MudTh>Outcome</MudTh>
+                                <MudTh>Retry-After</MudTh>
+                                <MudTh>Limit</MudTh>
+                                <MudTh>Remaining</MudTh>
+                                <MudTh>Reset</MudTh>
+                                <MudTh>Details</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Attempt">@context.AttemptNumber</MudTd>
+                                <MudTd DataLabel="Timestamp (UTC)">@context.TimestampUtc.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture)</MudTd>
+                                <MudTd DataLabel="Outcome">
+                                    <MudChip T="string"
+                                             Variant="Variant.Filled"
+                                             Size="Size.Small"
+                                             Color="@GetOutcomeColour(context.Outcome)">
+                                        @GetOutcomeLabel(context.Outcome)
+                                    </MudChip>
+                                </MudTd>
+                                <MudTd DataLabel="Retry-After">@context.RetryAfterDisplay</MudTd>
+                                <MudTd DataLabel="Limit">@context.RateLimitLimit</MudTd>
+                                <MudTd DataLabel="Remaining">@context.RateLimitRemaining</MudTd>
+                                <MudTd DataLabel="Reset">@context.RateLimitReset</MudTd>
+                                <MudTd DataLabel="Details">@context.Details</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    }
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private const int MinRequestCount = 1;
+    private const int MaxRequestCount = 25;
+
+    private int _requestCount = 6;
+    private bool _sendRateLimitTestHeader = true;
+    private bool _running;
+    private readonly List<RateLimitAttemptResult> _results = new();
+
+    private bool IsConnected => TokenStore.IsConnected;
+
+    private bool IsSandboxConnection =>
+        IsConnected && TokenStore.ConnectedEnvironment == FreeAgentEnvironment.Sandbox;
+
+    private bool IsExecutionDisabled => _running || !IsConnected || !IsSandboxConnection;
+
+    private string ConnectedEnvironmentName => TokenStore.ConnectedEnvironment.ToString();
+
+    private int SuccessCount => _results.Count(static result => result.Outcome == AttemptOutcome.Success);
+
+    private int RateLimitedCount => _results.Count(static result => result.Outcome == AttemptOutcome.RateLimited);
+
+    private int ErrorCount => _results.Count(static result => result.Outcome == AttemptOutcome.Error);
+
+    private void OnRequestCountChanged(int value)
+    {
+        _requestCount = Math.Clamp(value, MinRequestCount, MaxRequestCount);
+    }
+
+    private void OnSendRateLimitHeaderChanged(bool value)
+    {
+        _sendRateLimitTestHeader = value;
+    }
+
+    private async Task RunTestAsync()
+    {
+        if (IsExecutionDisabled)
+        {
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        var options = new FreeAgentHttpClientOptions
+        {
+            MaxNetworkRetries = 0,
+            MinimumRequestSpacing = TimeSpan.Zero,
+            UseRetryJitter = false
+        };
+
+        var requestHeaders = _sendRateLimitTestHeader
+            ? new[]
+            {
+                new KeyValuePair<string, string>("X-RateLimit-Test", "true")
+            }
+            : null;
+
+        _running = true;
+        _results.Clear();
+
+        try
+        {
+            using var httpClient = new FreeAgentHttpClient(token.AccessToken, TokenStore.ConnectedEnvironment, options);
+
+            for (var attempt = 1; attempt <= _requestCount; attempt++)
+            {
+                var timestamp = DateTime.UtcNow;
+
+                try
+                {
+                    var response = await httpClient.GetWithMetadataAsync<JsonElement>("company", requestHeaders);
+                    _results.Add(CreateSuccessResult(attempt, timestamp, response));
+                }
+                catch (FreeAgentRateLimitException ex)
+                {
+                    _results.Add(CreateRateLimitedResult(attempt, timestamp, ex));
+                }
+                catch (FreeAgentApiException ex)
+                {
+                    _results.Add(CreateErrorResult(attempt, timestamp, ex));
+                }
+                catch (Exception ex)
+                {
+                    _results.Add(new RateLimitAttemptResult(
+                        attempt,
+                        timestamp,
+                        AttemptOutcome.Error,
+                        RetryAfterDisplay: "-",
+                        RateLimitLimit: "-",
+                        RateLimitRemaining: "-",
+                        RateLimitReset: "-",
+                        Details: Truncate(ex.Message, 140)));
+                }
+            }
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    private static RateLimitAttemptResult CreateSuccessResult(
+        int attempt,
+        DateTime timestamp,
+        FreeAgentHttpResponse<JsonElement> response)
+    {
+        return new RateLimitAttemptResult(
+            attempt,
+            timestamp,
+            AttemptOutcome.Success,
+            GetHeaderSingleValue(response.Headers, "Retry-After"),
+            GetHeaderSingleValue(response.Headers, "X-RateLimit-Limit"),
+            GetHeaderSingleValue(response.Headers, "X-RateLimit-Remaining"),
+            GetRateLimitResetDisplay(response.Headers),
+            Details: "200 OK");
+    }
+
+    private static RateLimitAttemptResult CreateRateLimitedResult(int attempt, DateTime timestamp, FreeAgentRateLimitException ex)
+    {
+        return new RateLimitAttemptResult(
+            attempt,
+            timestamp,
+            AttemptOutcome.RateLimited,
+            ex.RetryAfter is null
+                ? "-"
+                : $"{ex.RetryAfter.Value.TotalSeconds:0.###}s",
+            RateLimitLimit: "-",
+            RateLimitRemaining: "0",
+            RateLimitReset: "-",
+            Details: BuildRateLimitedDetails(ex));
+    }
+
+    private static RateLimitAttemptResult CreateErrorResult(int attempt, DateTime timestamp, FreeAgentApiException ex)
+    {
+        var detail = ex.StatusCode is null
+            ? Truncate(ex.Message, 140)
+            : $"{(int)ex.StatusCode.Value} {ex.StatusCode.Value}";
+
+        return new RateLimitAttemptResult(
+            attempt,
+            timestamp,
+            AttemptOutcome.Error,
+            RetryAfterDisplay: "-",
+            RateLimitLimit: "-",
+            RateLimitRemaining: "-",
+            RateLimitReset: "-",
+            Details: detail);
+    }
+
+    private static string BuildRateLimitedDetails(FreeAgentRateLimitException ex)
+    {
+        if (ex.StatusCode is null)
+        {
+            return Truncate(ex.Message, 140);
+        }
+
+        return $"{(int)ex.StatusCode.Value} {ex.StatusCode.Value}";
+    }
+
+    private static string GetHeaderSingleValue(IReadOnlyDictionary<string, IReadOnlyList<string>> headers, string name)
+    {
+        return headers.TryGetValue(name, out var values) && values.Count > 0
+            ? values[0]
+            : "-";
+    }
+
+    private static string GetRateLimitResetDisplay(IReadOnlyDictionary<string, IReadOnlyList<string>> headers)
+    {
+        if (!headers.TryGetValue("X-RateLimit-Reset", out var values) || values.Count == 0)
+        {
+            return "-";
+        }
+
+        var value = values[0];
+        if (!long.TryParse(value, out var unixSeconds))
+        {
+            return value;
+        }
+
+        return DateTimeOffset.FromUnixTimeSeconds(unixSeconds)
+            .UtcDateTime
+            .ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture);
+    }
+
+    private static string Truncate(string value, int maxLength)
+    {
+        if (value.Length <= maxLength)
+        {
+            return value;
+        }
+
+        return value[..maxLength];
+    }
+
+    private static Color GetOutcomeColour(AttemptOutcome outcome)
+    {
+        return outcome switch
+        {
+            AttemptOutcome.Success => Color.Success,
+            AttemptOutcome.RateLimited => Color.Warning,
+            _ => Color.Error
+        };
+    }
+
+    private static string GetOutcomeLabel(AttemptOutcome outcome)
+    {
+        return outcome switch
+        {
+            AttemptOutcome.Success => "Success",
+            AttemptOutcome.RateLimited => "Rate limited",
+            _ => "Error"
+        };
+    }
+
+    private void ClearResults()
+    {
+        _results.Clear();
+    }
+
+    private enum AttemptOutcome
+    {
+        Success,
+        RateLimited,
+        Error
+    }
+
+    private sealed record RateLimitAttemptResult(
+        int AttemptNumber,
+        DateTime TimestampUtc,
+        AttemptOutcome Outcome,
+        string RetryAfterDisplay,
+        string RateLimitLimit,
+        string RateLimitRemaining,
+        string RateLimitReset,
+        string Details);
+}
