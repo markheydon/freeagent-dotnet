@@ -12,7 +12,7 @@ FreeAgent.NET is an open-source, modern .NET SDK for the FreeAgent REST API. It 
 
 ## Tech Stack
 
-- .NET 10.0 (LTS).
+- .NET 8.0 (LTS) and .NET 10.0 (LTS), with .NET 10 as the primary focus.
 - xUnit for testing.
 - Microsoft.Extensions.Http (NuGet).
 - No database (API client only).
@@ -23,7 +23,7 @@ FreeAgent.NET is an open-source, modern .NET SDK for the FreeAgent REST API. It 
 - No UI, CLI, or end-user tooling.
 - No business-rule abstraction.
 - No handling of OAuth flows beyond programmatic token exchange/refresh.
-- Targeting .NET 10 LTS.
+- Targeting .NET 8 LTS and .NET 10 LTS, with .NET 10 as the primary focus.
 
 ## Coding Conventions
 
@@ -48,6 +48,11 @@ FreeAgent.NET is an open-source, modern .NET SDK for the FreeAgent REST API. It 
 ## Sample and Test App Sync
 
 The Blazor sample (`samples/FreeAgent.Client.Sample`) must reflect the **current, implemented** state of the SDK — not planned or aspirational endpoints.
+
+Framework targeting note:
+- The SDK package targets .NET 8.0 and .NET 10.0.
+- The current Blazor sample app is intentionally .NET 10.0-only.
+- "Sample sync" means endpoint capability parity, not target framework parity.
 
 - Every API endpoint implemented in `src/FreeAgent.Client/Services/` must have a corresponding page or component in the sample app that exercises it.
 - When a new service or endpoint is added to the SDK, a matching UI page in the sample app must be added in the same PR.

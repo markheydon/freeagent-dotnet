@@ -16,7 +16,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - ✅ Pagination support (single-page and auto-pagination)
 - ✅ Company API support (company details, business categories, tax timeline)
 - ✅ Contacts API support (list page and auto-pagination)
-- ✅ Built for .NET 10.0
+- ✅ Supports .NET 8.0 and .NET 10.0 (primary focus)
 - ✅ Fully async/await
 - ✅ Comprehensive XML documentation
 
@@ -38,7 +38,7 @@ using FreeAgent.Client.Authentication;
 var oauthClient = new FreeAgentOAuthClient(
     clientId: "your-client-id",
     clientSecret: "your-client-secret",
-    redirectUri: "http://localhost:5000/callback"
+    redirectUri: "https://localhost:5001/callback"
 );
 
 // Step 1: Generate authorization URL and redirect user
@@ -208,7 +208,10 @@ dotnet pack src/FreeAgent.Client/FreeAgent.Client.csproj -c Release
 ## Development
 
 Requirements:
-- .NET 10.0 SDK or later
+- .NET 8.0 SDK (runtime and SDK)
+- .NET 10.0 SDK (runtime and SDK)
+
+The published package targets both .NET 8.0 and .NET 10.0. Both runtimes are required locally to build and test the SDK across both target frameworks. To run tests for a single framework, use `dotnet test -f net10.0` or `dotnet test -f net8.0`.
 
 ## Contributing
 

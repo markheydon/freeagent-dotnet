@@ -1,3 +1,4 @@
+using FreeAgent.Client.Infrastructure.Serialization;
 using System.Text.Json.Serialization;
 
 namespace FreeAgent.Client.Models.Company;
@@ -5,7 +6,7 @@ namespace FreeAgent.Client.Models.Company;
 /// <summary>
 /// Represents VAT accounting basis values used by FreeAgent.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<InitialVatBasis>))]
 public enum InitialVatBasis
 {
     /// <summary>Cash basis (wire value: "Cash").</summary>

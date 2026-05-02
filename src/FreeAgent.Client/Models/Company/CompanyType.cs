@@ -1,3 +1,4 @@
+using FreeAgent.Client.Infrastructure.Serialization;
 using System.Text.Json.Serialization;
 
 namespace FreeAgent.Client.Models.Company;
@@ -5,7 +6,7 @@ namespace FreeAgent.Client.Models.Company;
 /// <summary>
 /// Represents the legal type of a FreeAgent company.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<CompanyType>))]
 public enum CompanyType
 {
     /// <summary>UK limited company.</summary>
