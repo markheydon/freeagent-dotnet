@@ -36,7 +36,7 @@ This Code of Conduct applies within all community spaces, and also applies when 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behaviour may be reported to the project maintainer via GitHub private channels where available, or by opening a private vulnerability report route under the repository Security tab when safety is a concern.
+Instances of abusive, harassing, or otherwise unacceptable behaviour may be reported privately to the project maintainer using the dedicated conduct-reporting contact method published by this project. Do not use the repository Security tab or private vulnerability reporting for Code of Conduct reports; those channels are reserved for security vulnerabilities only.
 
 All complaints will be reviewed and investigated promptly and fairly.
 
