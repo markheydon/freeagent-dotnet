@@ -1,6 +1,5 @@
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Models.Company;
-using FreeAgent.Client.Services;
 using CompanyModel = FreeAgent.Client.Models.Company.Company;
 
 namespace FreeAgent.Client.Services.Company;
@@ -8,15 +7,17 @@ namespace FreeAgent.Client.Services.Company;
 /// <summary>
 /// Service for interacting with the FreeAgent Company API.
 /// </summary>
-public class CompanyService : ServiceBase
+public sealed class CompanyService
 {
+    private readonly IFreeAgentRequestClient _requestClient;
+
     /// <summary>
     /// Initializes a new instance of the CompanyService.
     /// </summary>
-    /// <param name="httpClient">FreeAgent HTTP client</param>
-    public CompanyService(FreeAgentHttpClient httpClient)
-        : base(httpClient)
+    /// <param name="requestClient">Internal FreeAgent request client dependency.</param>
+    internal CompanyService(IFreeAgentRequestClient requestClient)
     {
+        _requestClient = requestClient ?? throw new ArgumentNullException(nameof(requestClient));
     }
 
     /// <summary>
@@ -26,7 +27,7 @@ public class CompanyService : ServiceBase
     /// <returns>Company information</returns>
     public async Task<CompanyModel> GetCompanyAsync(CancellationToken cancellationToken = default)
     {
-        var response = await HttpClient.GetAsync<CompanyResponse>("company", cancellationToken);
+        var response = await _requestClient.GetAsync<CompanyResponse>("company", cancellationToken);
 
         if (response.Company == null)
         {
@@ -43,7 +44,7 @@ public class CompanyService : ServiceBase
     /// <returns>Business categories</returns>
     public async Task<IReadOnlyList<string>> GetBusinessCategoriesAsync(CancellationToken cancellationToken = default)
     {
-        var response = await HttpClient.GetAsync<BusinessCategoriesResponse>("company/business_categories", cancellationToken);
+        var response = await _requestClient.GetAsync<BusinessCategoriesResponse>("company/business_categories", cancellationToken);
 
         if (response.BusinessCategories is null)
         {
@@ -63,7 +64,7 @@ public class CompanyService : ServiceBase
     /// </remarks>
     public async Task<IReadOnlyList<TaxTimelineItem>> GetTaxTimelineAsync(CancellationToken cancellationToken = default)
     {
-        var response = await HttpClient.GetAsync<TaxTimelineResponse>("company/tax_timeline", cancellationToken);
+        var response = await _requestClient.GetAsync<TaxTimelineResponse>("company/tax_timeline", cancellationToken);
 
         if (response.TimelineItems is null)
         {

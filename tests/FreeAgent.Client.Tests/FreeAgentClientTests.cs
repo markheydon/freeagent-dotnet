@@ -1,4 +1,7 @@
 using FreeAgent.Client.Infrastructure.Authentication;
+using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Services.Company;
+using FreeAgent.Client.Services.Contacts;
 using Xunit;
 
 namespace FreeAgent.Client.Tests;
@@ -35,5 +38,21 @@ public class FreeAgentClientTests
 
         Assert.NotNull(client.Company);
         Assert.NotNull(client.Contacts);
+    }
+
+    [Fact]
+    public void HttpPlumbing_IsNotPublicApi()
+    {
+        Assert.False(typeof(FreeAgentHttpClient).IsPublic);
+    }
+
+    [Fact]
+    public void ServiceTypes_AreSealed_WithNoPublicConstructors()
+    {
+        Assert.True(typeof(CompanyService).IsSealed);
+        Assert.True(typeof(ContactService).IsSealed);
+
+        Assert.Empty(typeof(CompanyService).GetConstructors());
+        Assert.Empty(typeof(ContactService).GetConstructors());
     }
 }

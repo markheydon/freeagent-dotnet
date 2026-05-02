@@ -9,12 +9,22 @@ namespace FreeAgent.Client.Infrastructure.Http;
 /// <summary>
 /// HTTP client for FreeAgent API with authentication and rate limiting support.
 /// </summary>
-public class FreeAgentHttpClient : IDisposable
+internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
 {
     private const string RateLimitTestHeaderName = "X-RateLimit-Test";
 
+    // Shared singletons — one per environment — used when the caller does not supply an HttpClient.
+    // A single long-lived HttpClient per process avoids socket exhaustion (the well-known footgun).
+    // This mirrors the strategy used by the official Stripe.NET SDK.
+    private static readonly Lazy<HttpClient> LazyDefaultProductionHttpClient
+        = new(() => new HttpClient { BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(FreeAgentEnvironment.Production)) });
+
+    private static readonly Lazy<HttpClient> LazyDefaultSandboxHttpClient
+        = new(() => new HttpClient { BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(FreeAgentEnvironment.Sandbox)) });
+
     private readonly HttpClient _httpClient;
     private readonly bool _ownsHttpClient;
+    private string? _accessToken;
     private readonly FreeAgentOAuthClient? _oauthClient;
     private readonly FreeAgentEnvironment _environment;
     private OAuthTokenResponse? _currentToken;
@@ -33,6 +43,12 @@ public class FreeAgentHttpClient : IDisposable
     /// <summary>
     /// Initializes a new instance with an access token.
     /// </summary>
+    /// <remarks>
+    /// This constructor uses a shared, process-wide <see cref="HttpClient"/> singleton (one per
+    /// environment) to avoid socket exhaustion. To supply your own <see cref="HttpClient"/> — for
+    /// example, one obtained from <c>IHttpClientFactory</c> — use the overload that accepts an
+    /// <see cref="HttpClient"/> parameter.
+    /// </remarks>
     /// <param name="accessToken">OAuth access token</param>
     /// <param name="environment">Target API environment. Defaults to <see cref="FreeAgentEnvironment.Production"/>.</param>
     /// <param name="options">HTTP client options</param>
@@ -48,15 +64,22 @@ public class FreeAgentHttpClient : IDisposable
 
         _options = options ?? new FreeAgentHttpClientOptions();
         _environment = environment;
-        _httpClient = new HttpClient { BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(environment)) };
-        _ownsHttpClient = true;
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
+        _accessToken = accessToken;
+        _httpClient = environment == FreeAgentEnvironment.Sandbox
+            ? LazyDefaultSandboxHttpClient.Value
+            : LazyDefaultProductionHttpClient.Value;
+        _ownsHttpClient = false;
     }
 
     /// <summary>
     /// Initializes a new instance with OAuth client and token for automatic token refresh.
     /// </summary>
+    /// <remarks>
+    /// This constructor uses a shared, process-wide <see cref="HttpClient"/> singleton (one per
+    /// environment) to avoid socket exhaustion. To supply your own <see cref="HttpClient"/> — for
+    /// example, one obtained from <c>IHttpClientFactory</c> — use the overload that accepts an
+    /// <see cref="HttpClient"/> parameter.
+    /// </remarks>
     /// <param name="oauthClient">OAuth client for token refresh</param>
     /// <param name="token">Initial OAuth token</param>
     /// <param name="environment">Target API environment. Defaults to <see cref="FreeAgentEnvironment.Production"/>.</param>
@@ -71,11 +94,10 @@ public class FreeAgentHttpClient : IDisposable
         _currentToken = token ?? throw new ArgumentNullException(nameof(token));
         _options = options ?? new FreeAgentHttpClientOptions();
         _environment = environment;
-
-        _httpClient = new HttpClient { BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(environment)) };
-        _ownsHttpClient = true;
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {token.AccessToken}");
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
+        _httpClient = environment == FreeAgentEnvironment.Sandbox
+            ? LazyDefaultSandboxHttpClient.Value
+            : LazyDefaultProductionHttpClient.Value;
+        _ownsHttpClient = false;
     }
 
     /// <summary>
@@ -95,6 +117,8 @@ public class FreeAgentHttpClient : IDisposable
             throw new ArgumentNullException(nameof(accessToken));
         }
 
+        _accessToken = accessToken;
+
         if (_httpClient.BaseAddress == null)
         {
             _httpClient.BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(FreeAgentEnvironment.Production));
@@ -103,9 +127,6 @@ public class FreeAgentHttpClient : IDisposable
         _environment = _httpClient.BaseAddress.Host.Equals("api.sandbox.freeagent.com", StringComparison.OrdinalIgnoreCase)
             ? FreeAgentEnvironment.Sandbox
             : FreeAgentEnvironment.Production;
-
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
     }
 
     /// <summary>
@@ -141,9 +162,6 @@ public class FreeAgentHttpClient : IDisposable
                 : FreeAgentEnvironment.Production;
         }
 
-        _httpClient.DefaultRequestHeaders.Remove("Authorization");
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {token.AccessToken}");
-        _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
     }
 
     /// <summary>
@@ -453,13 +471,16 @@ public class FreeAgentHttpClient : IDisposable
         }
     }
 
-    private static HttpRequestMessage CreateRequestMessage(
+    private HttpRequestMessage CreateRequestMessage(
         HttpMethod method,
         string endpoint,
         Func<HttpContent>? contentFactory,
         IEnumerable<KeyValuePair<string, string>>? requestHeaders)
     {
         var request = new HttpRequestMessage(method, endpoint);
+
+        request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {GetCurrentAccessToken()}");
+        request.Headers.TryAddWithoutValidation("User-Agent", "FreeAgent.Client/1.0");
 
         if (contentFactory is not null)
         {
@@ -478,6 +499,9 @@ public class FreeAgentHttpClient : IDisposable
 
         return request;
     }
+
+    private string GetCurrentAccessToken()
+        => _accessToken ?? _currentToken?.AccessToken ?? string.Empty;
 
     private void ValidateRequestHeaders(IEnumerable<KeyValuePair<string, string>>? requestHeaders)
     {
@@ -517,9 +541,6 @@ public class FreeAgentHttpClient : IDisposable
                     }
 
                     _currentToken = newToken;
-
-                    _httpClient.DefaultRequestHeaders.Remove("Authorization");
-                    _httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {newToken.AccessToken}");
                 }
             }
             finally
@@ -607,13 +628,7 @@ public class FreeAgentHttpClient : IDisposable
             throw new FreeAgentApiException($"API request failed: {response.StatusCode} - {content}");
         }
 
-        var result = JsonSerializer.Deserialize<T>(content, JsonOptions);
-
-        if (result == null)
-        {
-            throw new FreeAgentApiException("Failed to deserialize API response");
-        }
-
+        var result = JsonSerializer.Deserialize<T>(content, JsonOptions) ?? throw new FreeAgentApiException("Failed to deserialize API response");
         return result;
     }
 
