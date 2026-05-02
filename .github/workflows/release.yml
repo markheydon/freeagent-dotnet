@@ -19,7 +19,9 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.x'
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Validate tag matches package version
         run: |
@@ -37,11 +39,20 @@ jobs:
       - name: Restore
         run: dotnet restore FreeAgent.slnx
 
-      - name: Build
-        run: dotnet build FreeAgent.slnx --no-restore --configuration Release
+      - name: Build SDK (net8.0)
+        run: dotnet build src/FreeAgent.Client/FreeAgent.Client.csproj --no-restore --configuration Release -f net8.0
 
-      - name: Test
-        run: dotnet test FreeAgent.slnx --no-build --configuration Release --logger "trx;LogFileName=results.trx"
+      - name: Build SDK (net10.0)
+        run: dotnet build src/FreeAgent.Client/FreeAgent.Client.csproj --no-restore --configuration Release -f net10.0
+
+      - name: Build Sample
+        run: dotnet build samples/FreeAgent.Client.Sample/FreeAgent.Client.Sample.csproj --no-restore --configuration Release
+
+      - name: Test (net8.0)
+        run: dotnet test tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj --configuration Release -f net8.0 --logger "trx;LogFileName=results-net8.trx"
+
+      - name: Test (net10.0)
+        run: dotnet test tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj --configuration Release -f net10.0 --logger "trx;LogFileName=results-net10.trx"
 
       - name: Pack
         run: dotnet pack src/FreeAgent.Client/FreeAgent.Client.csproj --no-build --configuration Release --output ./nupkg

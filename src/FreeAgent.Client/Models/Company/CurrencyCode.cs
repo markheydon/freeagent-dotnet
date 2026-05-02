@@ -1,3 +1,4 @@
+using FreeAgent.Client.Infrastructure.Serialization;
 using System.Text.Json.Serialization;
 
 namespace FreeAgent.Client.Models.Company;
@@ -5,7 +6,7 @@ namespace FreeAgent.Client.Models.Company;
 /// <summary>
 /// Represents ISO 4217 currency codes supported by FreeAgent.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter))]
+[JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<CurrencyCode>))]
 public enum CurrencyCode
 {
     /// <summary>British pound sterling.</summary>
