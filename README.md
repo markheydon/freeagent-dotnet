@@ -208,9 +208,10 @@ dotnet pack src/FreeAgent.Client/FreeAgent.Client.csproj -c Release
 ## Development
 
 Requirements:
-- .NET 10.0 SDK
+- .NET 8.0 SDK (runtime and SDK)
+- .NET 10.0 SDK (runtime and SDK)
 
-The published package supports both .NET 8.0 and .NET 10.0. The repository itself uses a .NET 10 sample app, so the .NET 10 SDK is required for full solution build and test.
+The published package targets both .NET 8.0 and .NET 10.0. Both runtimes are required locally to build and test the SDK across both target frameworks. To run tests for a single framework, use `dotnet test -f net10.0` or `dotnet test -f net8.0`.
 
 ## Contributing
 

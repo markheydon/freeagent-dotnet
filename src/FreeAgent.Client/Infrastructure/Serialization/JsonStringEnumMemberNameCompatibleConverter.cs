@@ -34,12 +34,7 @@ public sealed class JsonStringEnumMemberNameCompatibleConverter<TEnum> : JsonCon
             return parsed;
         }
 
-        if (Enum.TryParse<TEnum>(value, ignoreCase: false, out parsed))
-        {
-            return parsed;
-        }
-
-        throw new JsonException($"Unable to convert \"{value}\" to {typeof(TEnum).Name}.");
+        throw new JsonException($"Unknown {typeof(TEnum).Name} value: \"{value}\".");
     }
 
     /// <inheritdoc />
