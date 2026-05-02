@@ -12,6 +12,14 @@ namespace FreeAgent.Client.Tests.Infrastructure.Http;
 public class FreeAgentHttpClientRetryTests
 {
     [Fact]
+    public void FreeAgentHttpClientOptions_MinimumRequestSpacing_DefaultsToZero()
+    {
+        var options = new FreeAgentHttpClientOptions();
+
+        Assert.Equal(TimeSpan.Zero, options.MinimumRequestSpacing);
+    }
+
+    [Fact]
     public async Task GetAsync_WhenServerError_RetriesAndSucceeds()
     {
         var attemptCount = 0;

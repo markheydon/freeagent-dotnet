@@ -1,6 +1,6 @@
 @page "/sandbox/rate-limit-test"
 @using System.Globalization
-@using System.Text.Json
+@using System.Net
 @inject TokenStore TokenStore
 @inject NavigationManager NavigationManager
 
@@ -9,7 +9,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Developer tooling"
                          Title="Sandbox rate-limit test"
-                         CallUnderTest="FreeAgentHttpClient.GetWithMetadataAsync&lt;JsonElement&gt;(..., requestHeaders)"
+                         CallUnderTest="FreeAgentClient.Company.GetCompanyAsync(...)"
                          Description="Runs repeated calls against the company endpoint to inspect live sandbox rate-limiting behaviour."
                          EndpointPath="/v2/company" />
 
@@ -53,7 +53,7 @@
                                ValueChanged="OnSendRateLimitHeaderChanged" />
 
                     <MudText Typo="Typo.caption">
-                        This executes sequential requests against <code>GET /v2/company</code> using the SDK HTTP client seam.
+                        This executes sequential requests against <code>GET /v2/company</code> via <code>FreeAgentClient</code>.
                     </MudText>
 
                     <MudButton Variant="Variant.Filled"
@@ -193,19 +193,18 @@
             UseRetryJitter = false
         };
 
-        var requestHeaders = _sendRateLimitTestHeader
-            ? new[]
-            {
-                new KeyValuePair<string, string>("X-RateLimit-Test", "true")
-            }
-            : null;
-
         _running = true;
         _results.Clear();
 
         try
         {
-            using var httpClient = new FreeAgentHttpClient(token.AccessToken, TokenStore.ConnectedEnvironment, options);
+            using var metadataHandler = new ResponseMetadataCaptureHandler(new HttpClientHandler(), _sendRateLimitTestHeader);
+            using var transportHttpClient = new HttpClient(metadataHandler)
+            {
+                BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(TokenStore.ConnectedEnvironment))
+            };
+
+            using var client = new FreeAgentClient(transportHttpClient, token.AccessToken, options);
 
             for (var attempt = 1; attempt <= _requestCount; attempt++)
             {
@@ -213,16 +212,16 @@
 
                 try
                 {
-                    var response = await httpClient.GetWithMetadataAsync<JsonElement>("company", requestHeaders);
-                    _results.Add(CreateSuccessResult(attempt, timestamp, response));
+                    await client.Company.GetCompanyAsync();
+                    _results.Add(CreateSuccessResult(attempt, timestamp, metadataHandler.LastResponse));
                 }
                 catch (FreeAgentRateLimitException ex)
                 {
-                    _results.Add(CreateRateLimitedResult(attempt, timestamp, ex));
+                    _results.Add(CreateRateLimitedResult(attempt, timestamp, ex, metadataHandler.LastResponse));
                 }
                 catch (FreeAgentApiException ex)
                 {
-                    _results.Add(CreateErrorResult(attempt, timestamp, ex));
+                    _results.Add(CreateErrorResult(attempt, timestamp, ex, metadataHandler.LastResponse));
                 }
                 catch (Exception ex)
                 {
@@ -247,20 +246,26 @@
     private static RateLimitAttemptResult CreateSuccessResult(
         int attempt,
         DateTime timestamp,
-        FreeAgentHttpResponse<JsonElement> response)
+        CapturedResponseMetadata? response)
     {
         return new RateLimitAttemptResult(
             attempt,
             timestamp,
             AttemptOutcome.Success,
-            GetHeaderSingleValue(response.Headers, "Retry-After"),
-            GetHeaderSingleValue(response.Headers, "X-RateLimit-Limit"),
-            GetHeaderSingleValue(response.Headers, "X-RateLimit-Remaining"),
-            GetRateLimitResetDisplay(response.Headers),
-            Details: "200 OK");
+            GetHeaderSingleValue(response?.Headers, "Retry-After"),
+            GetHeaderSingleValue(response?.Headers, "X-RateLimit-Limit"),
+            GetHeaderSingleValue(response?.Headers, "X-RateLimit-Remaining"),
+            GetRateLimitResetDisplay(response?.Headers),
+            Details: response is null
+                ? "200 OK"
+                : $"{(int)response.StatusCode} {response.StatusCode}");
     }
 
-    private static RateLimitAttemptResult CreateRateLimitedResult(int attempt, DateTime timestamp, FreeAgentRateLimitException ex)
+    private static RateLimitAttemptResult CreateRateLimitedResult(
+        int attempt,
+        DateTime timestamp,
+        FreeAgentRateLimitException ex,
+        CapturedResponseMetadata? response)
     {
         return new RateLimitAttemptResult(
             attempt,
@@ -269,26 +274,32 @@
             ex.RetryAfter is null
                 ? "-"
                 : $"{ex.RetryAfter.Value.TotalSeconds:0.###}s",
-            RateLimitLimit: "-",
-            RateLimitRemaining: "0",
-            RateLimitReset: "-",
+            RateLimitLimit: GetHeaderSingleValue(response?.Headers, "X-RateLimit-Limit"),
+            RateLimitRemaining: GetHeaderSingleValue(response?.Headers, "X-RateLimit-Remaining"),
+            RateLimitReset: GetRateLimitResetDisplay(response?.Headers),
             Details: BuildRateLimitedDetails(ex));
     }
 
-    private static RateLimitAttemptResult CreateErrorResult(int attempt, DateTime timestamp, FreeAgentApiException ex)
+    private static RateLimitAttemptResult CreateErrorResult(
+        int attempt,
+        DateTime timestamp,
+        FreeAgentApiException ex,
+        CapturedResponseMetadata? response)
     {
-        var detail = ex.StatusCode is null
-            ? Truncate(ex.Message, 140)
-            : $"{(int)ex.StatusCode.Value} {ex.StatusCode.Value}";
+        var detail = response is not null
+            ? $"{(int)response.StatusCode} {response.StatusCode}"
+            : ex.StatusCode is null
+                ? Truncate(ex.Message, 140)
+                : $"{(int)ex.StatusCode.Value} {ex.StatusCode.Value}";
 
         return new RateLimitAttemptResult(
             attempt,
             timestamp,
             AttemptOutcome.Error,
-            RetryAfterDisplay: "-",
-            RateLimitLimit: "-",
-            RateLimitRemaining: "-",
-            RateLimitReset: "-",
+            RetryAfterDisplay: GetHeaderSingleValue(response?.Headers, "Retry-After"),
+            RateLimitLimit: GetHeaderSingleValue(response?.Headers, "X-RateLimit-Limit"),
+            RateLimitRemaining: GetHeaderSingleValue(response?.Headers, "X-RateLimit-Remaining"),
+            RateLimitReset: GetRateLimitResetDisplay(response?.Headers),
             Details: detail);
     }
 
@@ -302,16 +313,16 @@
         return $"{(int)ex.StatusCode.Value} {ex.StatusCode.Value}";
     }
 
-    private static string GetHeaderSingleValue(IReadOnlyDictionary<string, IReadOnlyList<string>> headers, string name)
+    private static string GetHeaderSingleValue(IReadOnlyDictionary<string, IReadOnlyList<string>>? headers, string name)
     {
-        return headers.TryGetValue(name, out var values) && values.Count > 0
+        return headers is not null && headers.TryGetValue(name, out var values) && values.Count > 0
             ? values[0]
             : "-";
     }
 
-    private static string GetRateLimitResetDisplay(IReadOnlyDictionary<string, IReadOnlyList<string>> headers)
+    private static string GetRateLimitResetDisplay(IReadOnlyDictionary<string, IReadOnlyList<string>>? headers)
     {
-        if (!headers.TryGetValue("X-RateLimit-Reset", out var values) || values.Count == 0)
+        if (headers is null || !headers.TryGetValue("X-RateLimit-Reset", out var values) || values.Count == 0)
         {
             return "-";
         }
@@ -356,6 +367,50 @@
             _ => "Error"
         };
     }
+
+    private sealed class ResponseMetadataCaptureHandler : DelegatingHandler
+    {
+        private readonly bool _sendRateLimitHeader;
+
+        public ResponseMetadataCaptureHandler(HttpMessageHandler innerHandler, bool sendRateLimitHeader)
+            : base(innerHandler)
+        {
+            _sendRateLimitHeader = sendRateLimitHeader;
+        }
+
+        public CapturedResponseMetadata? LastResponse { get; private set; }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            request.Headers.Remove("X-RateLimit-Test");
+
+            if (_sendRateLimitHeader)
+            {
+                request.Headers.TryAddWithoutValidation("X-RateLimit-Test", "true");
+            }
+
+            var response = await base.SendAsync(request, cancellationToken);
+            var headers = response.Headers.ToDictionary(
+                static header => header.Key,
+                static header => (IReadOnlyList<string>)header.Value.ToList(),
+                StringComparer.OrdinalIgnoreCase);
+
+            if (response.Content is not null)
+            {
+                foreach (var contentHeader in response.Content.Headers)
+                {
+                    headers[contentHeader.Key] = contentHeader.Value.ToList();
+                }
+            }
+
+            LastResponse = new CapturedResponseMetadata(response.StatusCode, headers);
+            return response;
+        }
+    }
+
+    private sealed record CapturedResponseMetadata(
+        HttpStatusCode StatusCode,
+        IReadOnlyDictionary<string, IReadOnlyList<string>> Headers);
 
     private void ClearResults()
     {

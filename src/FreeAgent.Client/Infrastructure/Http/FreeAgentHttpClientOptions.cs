@@ -31,9 +31,11 @@ public class FreeAgentHttpClientOptions
     public double RetryJitterFactor { get; set; } = 0.2d;
 
     /// <summary>
-    /// Adds a minimum delay between outbound requests as a conservative baseline rate-limit guard.
+    /// Adds a minimum delay between outbound requests.
+    /// Defaults to <see cref="TimeSpan.Zero"/> so callers are not proactively throttled unless they opt in.
+    /// Set this to a positive value to add a conservative spacing guard alongside retry backoff and 429 handling.
     /// </summary>
-    public TimeSpan MinimumRequestSpacing { get; set; } = TimeSpan.FromMilliseconds(1000);
+    public TimeSpan MinimumRequestSpacing { get; set; } = TimeSpan.Zero;
 
     /// <summary>
     /// Additional HTTP methods to allow retry for, intended only when the caller guarantees operation safety.

@@ -1,21 +1,22 @@
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Services;
 
 namespace FreeAgent.Client.Services.Contacts;
 
 /// <summary>
 /// Service for interacting with FreeAgent contacts.
 /// </summary>
-public class ContactService : ServiceBase
+public sealed class ContactService
 {
+    private readonly IFreeAgentRequestClient _requestClient;
+
     /// <summary>
     /// Initializes a new instance of the contact service.
     /// </summary>
-    /// <param name="httpClient">FreeAgent HTTP client</param>
-    public ContactService(FreeAgentHttpClient httpClient)
-        : base(httpClient)
+    /// <param name="requestClient">Internal FreeAgent request client dependency.</param>
+    internal ContactService(IFreeAgentRequestClient requestClient)
     {
+        _requestClient = requestClient ?? throw new ArgumentNullException(nameof(requestClient));
     }
 
     /// <summary>
@@ -38,7 +39,7 @@ public class ContactService : ServiceBase
         ArgumentException.ThrowIfNullOrWhiteSpace(view);
 
         var endpoint = $"contacts?page={page}&per_page={perPage}&view={Uri.EscapeDataString(view)}";
-        var response = await HttpClient.GetWithMetadataAsync<ContactsResponse>(endpoint, cancellationToken);
+        var response = await _requestClient.GetWithMetadataAsync<ContactsResponse>(endpoint, cancellationToken);
 
         if (response.Data.Contacts is null)
         {
