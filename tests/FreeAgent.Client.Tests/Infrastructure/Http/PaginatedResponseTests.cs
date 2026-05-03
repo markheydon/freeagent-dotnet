@@ -6,6 +6,12 @@ namespace FreeAgent.Client.Tests.Infrastructure.Http;
 public class PaginatedResponseTests
 {
     [Fact]
+    public void Constructor_WithNullItems_ThrowsArgumentNullException()
+    {
+        Assert.Throws<ArgumentNullException>(() => new PaginatedResponse<string>(1, 10, 25, null!));
+    }
+
+    [Fact]
     public void HasNextPage_WithMorePages_ReturnsTrue()
     {
         var response = new PaginatedResponse<string>(1, 10, 25, Array.Empty<string>());
