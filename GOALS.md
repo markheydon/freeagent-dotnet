@@ -3,7 +3,7 @@
 
 **Project:** FreeAgent.NET
 **Owner:** Mark Heydon
-**Last updated:** 29 April 2026
+**Last updated:** 3 May 2026
 
 ---
 
@@ -21,6 +21,7 @@ These are the outcomes this project must achieve to be considered successful.
 - **G3:** Support automatic pagination without consumers managing pages explicitly.
 - **G4:** Be safe, stable, and boring to depend on in production systems.
 - **G5:** Enable external contributions without destabilising the public API.
+- **G6:** Include protocol-level OAuth helpers (authorisation URL construction, code exchange, token refresh) as SDK utilities, but not UI/browser orchestration or app-level flow management.
 
 ---
 
@@ -43,9 +44,10 @@ I will stop work on this project if:
 
 ## What This Is NOT For
 (See also: SCOPE.md)
-- No UI, CLI, or end‑user tooling.
-- No business‑rule abstraction (e.g. VAT logic, accounting rules, reporting opinions).
-- No handling of OAuth authorisation flows beyond obtaining and refreshing OAuth tokens programmatically (i.e., no UI or browser-based flows; only direct token exchange and refresh are supported).
+
+- No UI, CLI, or end-user tooling.
+- No business-rule abstraction (e.g. VAT logic, accounting rules, reporting opinions).
+- No SDK-managed UI/browser journeys, callback endpoint hosting, app/session/token persistence, or orchestration of end-user OAuth flows. Protocol-level helpers (authorisation URL construction, code exchange, token refresh) are in scope; UI and flow management are not.
 - No attempt to reshape FreeAgent concepts into alternative domain models.
 - No support for undocumented or experimental FreeAgent API endpoints.
 
@@ -54,4 +56,5 @@ I will stop work on this project if:
 ## Revision History
 | Date | Change | Reason |
 |---|---|---|
+| 3 May 2026 | Clarified OAuth protocol-level helpers in scope; revised out-of-scope OAuth bullet | Broadened SDK utility remit |
 | 29 April 2026 | Initial draft - project kickoff | Project kickoff |

@@ -1,6 +1,6 @@
 ---
 title: "ADR-0007: .NET 8 and .NET 10 Targeting Strategy"
-status: "Proposed"
+status: "Accepted"
 date: "2026-05-01"
 authors: "Mark Heydon (Project Owner)"
 tags: ["architecture", "decision", "target-frameworks", "compatibility"]
@@ -12,7 +12,7 @@ superseded_by: ""
 
 ## Status
 
-**Proposed**
+**Accepted**
 
 ## Context
 

@@ -1,6 +1,6 @@
 ---
 title: "ADR-0006: Sample App as Living Reference and Sync Requirement"
-status: "Proposed"
+status: "Accepted"
 date: "2026-05-01"
 authors: "Mark Heydon (Project Owner)"
 tags: ["architecture", "decision", "sample-app", "reference"]
@@ -12,7 +12,7 @@ superseded_by: ""
 
 ## Status
 
-**Proposed**
+**Accepted**
 
 ## Context
 
