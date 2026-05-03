@@ -1,6 +1,6 @@
 ---
 title: "ADR-0008: OAuth Protocol Helpers Scope Boundary"
-status: "Proposed"
+status: "Accepted"
 date: "2026-05-03"
 authors: "Mark Heydon (Project Owner)"
 tags: ["architecture", "decision", "oauth", "scope"]
@@ -12,7 +12,7 @@ superseded_by: ""
 
 ## Status
 
-**Proposed**
+**Accepted**
 
 ## Context
 

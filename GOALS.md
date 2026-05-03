@@ -18,10 +18,10 @@ These are the outcomes this project must achieve to be considered successful.
 
 - **G1:** Provide a clean, strongly typed .NET SDK for the FreeAgent REST API.
 - **G2:** Deliver a Stripe.NET‑quality developer experience (discoverable, consistent, pleasant to use).
-- **G3:** Include protocol-level OAuth helpers (authorisation URL construction, code exchange, token refresh) as SDK utilities, but not UI/browser orchestration or app-level flow management.
-- **G4:** Support automatic pagination without consumers managing pages explicitly.
-- **G5:** Be safe, stable, and boring to depend on in production systems.
-- **G6:** Enable external contributions without destabilising the public API.
+- **G3:** Support automatic pagination without consumers managing pages explicitly.
+- **G4:** Be safe, stable, and boring to depend on in production systems.
+- **G5:** Enable external contributions without destabilising the public API.
+- **G6:** Include protocol-level OAuth helpers (authorisation URL construction, code exchange, token refresh) as SDK utilities, but not UI/browser orchestration or app-level flow management.
 
 ---
 
