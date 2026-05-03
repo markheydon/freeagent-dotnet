@@ -1,3 +1,4 @@
+using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Models.Contacts;
 
@@ -48,13 +49,11 @@ public sealed class ContactService
 
         var total = ParseTotalCount(response) ?? EstimateTotalWithoutHeader(page, perPage, response.Data.Contacts.Count);
 
-        return new PaginatedResponse<ContactSummary>
-        {
-            Page = page,
-            PerPage = perPage,
-            Total = total,
-            Items = response.Data.Contacts
-        };
+        return new PaginatedResponse<ContactSummary>(
+            page,
+            perPage,
+            total,
+            response.Data.Contacts);
     }
 
     /// <summary>

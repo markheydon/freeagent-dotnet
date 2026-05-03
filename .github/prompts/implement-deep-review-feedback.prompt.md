@@ -17,7 +17,7 @@ Finally, consider that the feedback given is likely part of a much bigger review
 
 ## Confirm with the human what changes to make
 
-After you've understood the feedback and the necessary changes, you should stop and ask the human what they actually want to happen. Even if you you've reviewed the feedback and it appears to includes very specific details of the changes needed, you should still stop and check-in with the human and ask them what they want to do.
+After you've understood the feedback and the necessary changes, you should stop and ask the human what they actually want to happen. Even if you've reviewed the feedback and it appears to include very specific details of the changes needed, you should still stop and check-in with the human and ask them what they want to do.
 
 In some cases, this might just be exactly the same as the feedback, but in other cases, the human might have specific preferences on how to implement the changes, want to provide additional context or guidance, or might want to prioritise certain changes over others. The human might also want to completely ignore the details in the feedback and do something different.
 
