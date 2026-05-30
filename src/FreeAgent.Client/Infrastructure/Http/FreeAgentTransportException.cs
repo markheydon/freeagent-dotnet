@@ -5,7 +5,7 @@ namespace FreeAgent.Client;
 /// <summary>
 /// Base exception for transport-level failures that occur before a successful API response is processed.
 /// </summary>
-public class FreeAgentTransportException : FreeAgentApiException
+internal class FreeAgentTransportException : FreeAgentApiException
 {
     /// <summary>
     /// Initializes a new instance of the exception.

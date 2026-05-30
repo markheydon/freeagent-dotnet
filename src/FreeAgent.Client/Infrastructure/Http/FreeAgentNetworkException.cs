@@ -5,7 +5,7 @@ namespace FreeAgent.Client;
 /// <summary>
 /// Exception thrown when a network-level failure occurs while calling the FreeAgent API.
 /// </summary>
-public class FreeAgentNetworkException : FreeAgentTransportException
+internal class FreeAgentNetworkException : FreeAgentTransportException
 {
     /// <summary>
     /// Initializes a new instance of the exception.

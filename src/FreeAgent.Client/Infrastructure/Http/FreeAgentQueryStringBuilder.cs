@@ -17,6 +17,10 @@ internal static class FreeAgentQueryStringBuilder
         foreach (var queryParameter in queryParameters)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(queryParameter.Key);
+            if (queryParameter.Value is null)
+            {
+                throw new ArgumentException("Query parameter value cannot be null.", nameof(queryParameters));
+            }
 
             builder.Append(separator);
             builder.Append(Uri.EscapeDataString(queryParameter.Key));
