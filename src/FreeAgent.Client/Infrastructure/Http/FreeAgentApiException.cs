@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace FreeAgent.Client.Infrastructure.Http;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Exception thrown when FreeAgent API requests fail.

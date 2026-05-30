@@ -4,7 +4,7 @@ namespace FreeAgent.Client.Infrastructure.Http;
 /// Wraps a deserialized API response with selected HTTP header metadata.
 /// </summary>
 /// <typeparam name="T">Response payload type</typeparam>
-public sealed class FreeAgentHttpResponse<T>
+internal sealed class FreeAgentHttpResponse<T>
 {
     /// <summary>
     /// Initializes a new instance.

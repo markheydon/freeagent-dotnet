@@ -1,9 +1,9 @@
-namespace FreeAgent.Client.Infrastructure.Authentication;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Exception thrown when OAuth authentication fails.
 /// </summary>
-public class FreeAgentOAuthException : Exception
+public class FreeAgentOAuthException : FreeAgentApiException
 {
     /// <summary>
     /// Initializes a new instance of the exception.

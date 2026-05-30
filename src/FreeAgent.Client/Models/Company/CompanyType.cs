@@ -1,5 +1,5 @@
-using FreeAgent.Client.Infrastructure.Serialization;
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Serialization;
 
 namespace FreeAgent.Client.Models.Company;
 

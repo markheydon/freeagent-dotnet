@@ -1,5 +1,5 @@
 using System.Text.Json;
-using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client;
 
 namespace FreeAgent.Client.Sample.Services;
 
@@ -8,6 +8,17 @@ namespace FreeAgent.Client.Sample.Services;
 /// </summary>
 public sealed class ApiDiagnosticsService
 {
+    private readonly HttpClient _httpClient;
+
+    /// <summary>
+    /// Initialises the diagnostics service with a DI-managed HTTP client.
+    /// </summary>
+    /// <param name="httpClient">HTTP client managed by DI.</param>
+    public ApiDiagnosticsService(HttpClient httpClient)
+    {
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+    }
+
     /// <summary>
     /// Fetches a raw endpoint payload for diagnostics.
     /// </summary>
@@ -34,15 +45,13 @@ public sealed class ApiDiagnosticsService
 
         try
         {
-            using var httpClient = new HttpClient
-            {
-                BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(environment))
-            };
+            var endpoint = relativeEndpoint.TrimStart('/');
+            var requestUri = new Uri($"{GetApiBaseUrl(environment)}{endpoint}");
+            using var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+            request.Headers.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
+            request.Headers.TryAddWithoutValidation("User-Agent", "FreeAgent.Client.Sample/1.0");
 
-            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Authorization", $"Bearer {accessToken}");
-            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", "FreeAgent.Client.Sample/1.0");
-
-            using var response = await httpClient.GetAsync(relativeEndpoint, cancellationToken);
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
             var raw = await response.Content.ReadAsStringAsync(cancellationToken);
 
             if (string.IsNullOrWhiteSpace(raw))
@@ -70,4 +79,11 @@ public sealed class ApiDiagnosticsService
     {
         WriteIndented = true
     };
+
+    private static string GetApiBaseUrl(FreeAgentEnvironment environment)
+    {
+        return environment == FreeAgentEnvironment.Sandbox
+            ? "https://api.sandbox.freeagent.com/v2/"
+            : "https://api.freeagent.com/v2/";
+    }
 }

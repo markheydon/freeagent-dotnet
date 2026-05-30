@@ -1,11 +1,11 @@
 using System.Net;
 
-namespace FreeAgent.Client.Infrastructure.Http;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Exception thrown when a request to the FreeAgent API times out.
 /// </summary>
-public class FreeAgentTimeoutException : FreeAgentTransportException
+internal class FreeAgentTimeoutException : FreeAgentTransportException
 {
     /// <summary>
     /// Initializes a new instance of the exception.

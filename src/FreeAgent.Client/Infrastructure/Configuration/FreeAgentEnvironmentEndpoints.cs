@@ -3,7 +3,7 @@ namespace FreeAgent.Client.Infrastructure.Configuration;
 /// <summary>
 /// Provides canonical API and OAuth endpoint URLs for each FreeAgent environment.
 /// </summary>
-public static class FreeAgentEnvironmentEndpoints
+internal static class FreeAgentEnvironmentEndpoints
 {
     /// <summary>
     /// Gets the REST API base URL for the selected environment.

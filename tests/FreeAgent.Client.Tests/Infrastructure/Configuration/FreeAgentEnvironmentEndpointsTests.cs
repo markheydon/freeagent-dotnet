@@ -1,3 +1,4 @@
+using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Configuration;
 
 namespace FreeAgent.Client.Tests.Infrastructure.Configuration;
