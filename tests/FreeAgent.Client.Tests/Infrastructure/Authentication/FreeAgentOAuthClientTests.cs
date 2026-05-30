@@ -1,7 +1,7 @@
-using FreeAgent.Client;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using FreeAgent.Client;
 using Xunit;
 
 namespace FreeAgent.Client.Tests.Infrastructure.Authentication;

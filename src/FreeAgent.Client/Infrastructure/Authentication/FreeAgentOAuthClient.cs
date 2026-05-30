@@ -157,13 +157,7 @@ public class FreeAgentOAuthClient : IDisposable
                 throw new FreeAgentOAuthException($"Token request failed: {response.StatusCode} - {responseBody}");
             }
 
-            var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<OAuthTokenResponse>(responseBody, JsonOptions);
-
-            if (tokenResponse == null)
-            {
-                throw new FreeAgentOAuthException("Failed to deserialize token response");
-            }
-
+            var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<OAuthTokenResponse>(responseBody, JsonOptions) ?? throw new FreeAgentOAuthException("Failed to deserialize token response");
             tokenResponse.InitialiseExpiryUtc();
 
             return tokenResponse;

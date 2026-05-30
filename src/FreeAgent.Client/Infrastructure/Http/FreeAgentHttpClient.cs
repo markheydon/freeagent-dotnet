@@ -145,10 +145,7 @@ internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
         _accessToken = accessToken;
         _oauthClient = oauthClient;
 
-        if (token is not null)
-        {
-            token.EnsureExpiryUtc();
-        }
+        token?.EnsureExpiryUtc();
 
         _currentToken = token;
     }

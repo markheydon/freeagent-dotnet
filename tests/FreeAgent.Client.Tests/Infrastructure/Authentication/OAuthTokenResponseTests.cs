@@ -1,5 +1,5 @@
-using FreeAgent.Client;
 using System.Text.Json;
+using FreeAgent.Client;
 using Xunit;
 
 namespace FreeAgent.Client.Tests.Infrastructure.Authentication;

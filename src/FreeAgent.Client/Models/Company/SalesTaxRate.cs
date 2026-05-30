@@ -1,6 +1,6 @@
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Globalization;
 
 namespace FreeAgent.Client.Models.Company;
 
@@ -42,59 +42,59 @@ internal sealed class SalesTaxRateJsonConverter : JsonConverter<SalesTaxRate>
                 };
 
             case JsonTokenType.String:
-            {
-                var stringValue = reader.GetString();
-                if (decimal.TryParse(stringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedRate))
                 {
+                    var stringValue = reader.GetString();
+                    if (decimal.TryParse(stringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedRate))
+                    {
+                        return new SalesTaxRate
+                        {
+                            Rate = parsedRate
+                        };
+                    }
+
                     return new SalesTaxRate
                     {
-                        Rate = parsedRate
+                        Name = stringValue
                     };
                 }
 
-                return new SalesTaxRate
-                {
-                    Name = stringValue
-                };
-            }
-
             case JsonTokenType.StartObject:
-            {
-                using var document = JsonDocument.ParseValue(ref reader);
-                var model = new SalesTaxRate();
-
-                foreach (var property in document.RootElement.EnumerateObject())
                 {
-                    if (property.NameEquals("name") && property.Value.ValueKind == JsonValueKind.String)
-                    {
-                        model.Name = property.Value.GetString();
-                        continue;
-                    }
+                    using var document = JsonDocument.ParseValue(ref reader);
+                    var model = new SalesTaxRate();
 
-                    if (property.NameEquals("rate"))
+                    foreach (var property in document.RootElement.EnumerateObject())
                     {
-                        if (property.Value.ValueKind == JsonValueKind.Number)
+                        if (property.NameEquals("name") && property.Value.ValueKind == JsonValueKind.String)
                         {
-                            model.Rate = property.Value.GetDecimal();
+                            model.Name = property.Value.GetString();
                             continue;
                         }
 
-                        if (property.Value.ValueKind == JsonValueKind.String)
+                        if (property.NameEquals("rate"))
                         {
-                            var rateText = property.Value.GetString();
-                            if (decimal.TryParse(rateText, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedRate))
+                            if (property.Value.ValueKind == JsonValueKind.Number)
                             {
-                                model.Rate = parsedRate;
+                                model.Rate = property.Value.GetDecimal();
                                 continue;
                             }
+
+                            if (property.Value.ValueKind == JsonValueKind.String)
+                            {
+                                var rateText = property.Value.GetString();
+                                if (decimal.TryParse(rateText, NumberStyles.Any, CultureInfo.InvariantCulture, out var parsedRate))
+                                {
+                                    model.Rate = parsedRate;
+                                    continue;
+                                }
+                            }
                         }
+
+                        model.AdditionalData[property.Name] = property.Value.Clone();
                     }
 
-                    model.AdditionalData[property.Name] = property.Value.Clone();
+                    return model;
                 }
-
-                return model;
-            }
 
             case JsonTokenType.Null:
                 return new SalesTaxRate();
