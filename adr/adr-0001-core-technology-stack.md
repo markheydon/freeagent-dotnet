@@ -25,7 +25,7 @@ This decision is based on the constraints and assumptions outlined in the projec
 - **Section 9: Dependencies**
   - .NET 10.0 (LTS).
   - xUnit for testing.
-  - Microsoft.Extensions.Http for HTTP client abstraction.
+  - HTTP client abstraction via standard .NET APIs. (Microsoft.Extensions.Http was considered but is not a required dependency.)
   - No database or ORM.
   - No UI or CLI dependencies.
   - No business-rule abstraction libraries.
@@ -38,7 +38,7 @@ The following technology stack is adopted for the initial and ongoing developmen
 
 - **.NET 10.0 (LTS):** Primary runtime and language platform.
 - **xUnit:** Unit testing framework.
-- **Microsoft.Extensions.Http:** HTTP client abstraction.
+- Microsoft.Extensions.Http was previously used for HTTP client abstraction but is no longer a required dependency. The SDK now uses standard .NET HTTP APIs internally.
 - **No database:** API client only, no persistence layer.
 - **SDK-oriented architecture:** Client + services + models + HTTP/auth support components, optimised for NuGet consumption rather than app-layer architecture.
 - **Solo-maintained:** Project is maintained by a single developer.

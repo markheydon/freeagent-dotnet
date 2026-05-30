@@ -12,7 +12,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - ✅ OAuth 2.0 authentication with automatic token refresh
 - ✅ Rate limiting support to respect API constraints
 - ✅ Bounded retries for transient failures
-- ✅ Typed transport exception hierarchy
+- ✅ Typed SDK exception model
 - ✅ Pagination support (single-page and auto-pagination)
 - ✅ Company API support (company details, business categories, tax timeline)
 - ✅ Contacts API support (list page and auto-pagination)
@@ -33,7 +33,7 @@ dotnet add package FreeAgent.Client
 First, create an OAuth client to handle the authentication flow:
 
 ```csharp
-using FreeAgent.Client.Authentication;
+using FreeAgent.Client;
 
 var oauthClient = new FreeAgentOAuthClient(
     clientId: "your-client-id",
@@ -93,7 +93,7 @@ await foreach (var contact in client.Contacts.GetAllContactsAsync(perPage: 50))
 Tokens can be refreshed manually:
 
 ```csharp
-if (token.IsExpiringSoon && !string.IsNullOrEmpty(token.RefreshToken))
+if (token.TimeUntilExpiry < TimeSpan.FromMinutes(5) && !string.IsNullOrEmpty(token.RefreshToken))
 {
     var newToken = await oauthClient.RefreshTokenAsync(token.RefreshToken);
     // Update your stored token
@@ -126,7 +126,7 @@ More endpoints will be added in future releases.
 The client automatically handles FreeAgent rate limiting:
 
 - Respects `X-RateLimit-*` headers from the API
-- Default safety delay of 1 second between requests
+- Default minimum delay between requests is zero unless configured otherwise
 
 ## Retries
 
@@ -145,8 +145,7 @@ You can configure retry behavior through `FreeAgentHttpClientOptions` on `FreeAg
 The library provides specific exception types:
 
 ```csharp
-using FreeAgent.Client.Http;
-using FreeAgent.Client.Authentication;
+using FreeAgent.Client;
 
 try
 {
@@ -159,32 +158,18 @@ catch (FreeAgentRateLimitException ex)
     Console.WriteLine($"Attempts: {ex.AttemptCount}");
     Console.WriteLine($"Retry-After: {ex.RetryAfter}");
 }
-catch (FreeAgentTimeoutException ex)
+catch (FreeAgentOAuthException ex)
 {
-    // Handle timeout
-    Console.WriteLine($"Timeout calling {ex.RequestPath}: {ex.Message}");
+    // Handle OAuth errors
+    Console.WriteLine($"OAuth error: {ex.Message}");
 }
-catch (FreeAgentNetworkException ex)
-{
-    // Handle network failures
-    Console.WriteLine($"Network error calling {ex.RequestPath}: {ex.Message}");
-}
-catch (FreeAgentTransportException ex)
-{
-    // Handle other transport-layer failures
-    Console.WriteLine($"Transport error: {ex.Message}");
-}
+// (Timeout, network, and transport exceptions are surfaced as FreeAgentApiException)
 catch (FreeAgentApiException ex)
 {
     // Handle other API errors
     Console.WriteLine($"API error: {ex.Message}");
     Console.WriteLine($"Status code: {ex.StatusCode}");
     Console.WriteLine($"Attempts: {ex.AttemptCount}");
-}
-catch (FreeAgentOAuthException ex)
-{
-    // Handle OAuth errors
-    Console.WriteLine($"OAuth error: {ex.Message}");
 }
 ```
 

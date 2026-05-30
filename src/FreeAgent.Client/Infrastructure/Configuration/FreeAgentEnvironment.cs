@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Infrastructure.Configuration;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Specifies the FreeAgent API environment to target.

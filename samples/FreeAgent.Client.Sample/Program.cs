@@ -1,4 +1,4 @@
-using FreeAgent.Client.Infrastructure.Authentication;
+using FreeAgent.Client;
 using FreeAgent.Client.Sample.Components;
 using FreeAgent.Client.Sample.Services;
 using MudBlazor.Services;
@@ -19,7 +19,7 @@ builder.Services.AddMudServices(config =>
 // In a multi-user scenario, tokens would be shared across all circuits/sessions.
 builder.Services.AddSingleton<TokenStore>();
 builder.Services.AddSingleton<OAuthService>();
-builder.Services.AddSingleton<ApiDiagnosticsService>();
+builder.Services.AddHttpClient<ApiDiagnosticsService>();
 
 var app = builder.Build();
 

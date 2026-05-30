@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http;
+using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Services.Contacts;
 using FreeAgent.Client.Tests.TestSupport;
@@ -49,6 +50,78 @@ public class ContactServiceTests
         Assert.True(page.HasNextPage);
         Assert.Equal("Acme Ltd", page.Items[0].DisplayName);
         Assert.Equal("Jane Globex", page.Items[1].DisplayName);
+    }
+
+    [Fact]
+    public async Task GetContactsPageAsync_WhenViewContainsSpaces_EscapesViewQueryParameter()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Contains("view=clients%20only", request.RequestUri!.Query, StringComparison.Ordinal);
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "contacts": [
+                    { "url": "https://api.freeagent.com/v2/contacts/1", "organisation_name": "Acme Ltd" }
+                  ]
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+
+        var options = new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
+        var service = new ContactService(client);
+
+        var page = await service.GetContactsPageAsync(page: 1, perPage: 25, view: "clients only");
+
+        Assert.Equal(1, page.Total);
+        Assert.False(page.HasNextPage);
+    }
+
+    [Fact]
+    public async Task GetContactsPageAsync_WhenTotalHeaderIsInvalid_FallsBackToEstimatedTotal()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Contains("page=1", request.RequestUri!.Query);
+
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "contacts": [
+                    { "url": "https://api.freeagent.com/v2/contacts/1", "organisation_name": "Acme Ltd" },
+                    { "url": "https://api.freeagent.com/v2/contacts/2", "organisation_name": "Globex Corp" }
+                  ]
+                }
+                """)
+            };
+
+            response.Headers.TryAddWithoutValidation("X-Total-Count", "invalid");
+            return response;
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+
+        var options = new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
+        var service = new ContactService(client);
+
+        var page = await service.GetContactsPageAsync(page: 1, perPage: 2, view: "all");
+
+        Assert.Equal(3, page.Total);
+        Assert.True(page.HasNextPage);
     }
 
     [Fact]

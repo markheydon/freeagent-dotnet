@@ -195,14 +195,14 @@
 
     private string EnvironmentName => ActiveEnvironment.ToString();
 
-    private string SdkApiTarget => FreeAgentEnvironmentEndpoints.GetApiBaseUrl(ActiveEnvironment);
+    private string SdkApiTarget => GetApiBaseUrl(ActiveEnvironment);
 
     private string RedirectUri => Configuration["FreeAgent:RedirectUri"] ?? "https://localhost:5001/oauth/callback";
 
     private int ExpiresInMinutes =>
         _token is null
             ? 0
-            : Math.Max(0, (int)(_token.IssuedAt.AddSeconds(_token.ExpiresIn) - DateTime.UtcNow).TotalMinutes);
+            : Math.Max(0, (int)_token.TimeUntilExpiry.TotalMinutes);
 
     protected override void OnInitialized()
     {
@@ -235,5 +235,12 @@
     private void OnSelectedEnvironmentChanged(FreeAgentEnvironment environment)
     {
         OAuthService.SelectedEnvironment = environment;
+    }
+
+    private static string GetApiBaseUrl(FreeAgentEnvironment environment)
+    {
+        return environment == FreeAgentEnvironment.Sandbox
+            ? "https://api.sandbox.freeagent.com/v2/"
+            : "https://api.freeagent.com/v2/";
     }
 }

@@ -50,5 +50,12 @@
 
     private string EnvironmentName => ActiveEnvironment.ToString();
 
-    private string SdkApiBaseUrl => FreeAgentEnvironmentEndpoints.GetApiBaseUrl(ActiveEnvironment);
+    private string SdkApiBaseUrl => GetApiBaseUrl(ActiveEnvironment);
+
+    private static string GetApiBaseUrl(FreeAgentEnvironment environment)
+    {
+        return environment == FreeAgentEnvironment.Sandbox
+            ? "https://api.sandbox.freeagent.com/v2/"
+            : "https://api.freeagent.com/v2/";
+    }
 }

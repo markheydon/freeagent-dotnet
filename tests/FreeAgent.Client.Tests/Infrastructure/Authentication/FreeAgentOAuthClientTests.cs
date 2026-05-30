@@ -1,5 +1,7 @@
-using FreeAgent.Client.Infrastructure.Authentication;
-using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using Xunit;
 
 namespace FreeAgent.Client.Tests.Infrastructure.Authentication;
@@ -97,5 +99,74 @@ public class FreeAgentOAuthClientTests
         var url = client.GetAuthorizationUrl();
 
         Assert.Contains("https://api.freeagent.com/v2/approve_app", url);
+    }
+
+    [Fact]
+    public async Task ExchangeCodeForTokenAsync_InitialisesExpiresAtUtc()
+    {
+        using var httpClient = new HttpClient(new LambdaHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    "{\"access_token\":\"new-access\",\"token_type\":\"Bearer\",\"refresh_token\":\"refresh\",\"expires_in\":3600}",
+                    Encoding.UTF8,
+                    "application/json")
+            }));
+
+        var client = new FreeAgentOAuthClient(
+            "test-client-id",
+            "test-secret",
+            "http://localhost/callback",
+            httpClient,
+            FreeAgentEnvironment.Production);
+
+        var before = DateTimeOffset.UtcNow;
+        var token = await client.ExchangeCodeForTokenAsync("auth-code");
+        var after = DateTimeOffset.UtcNow;
+
+        Assert.NotNull(token.ExpiresAtUtc);
+        Assert.True(token.ExpiresAtUtc >= before.AddSeconds(3599));
+        Assert.True(token.ExpiresAtUtc <= after.AddSeconds(3601));
+    }
+
+    [Fact]
+    public async Task RefreshTokenAsync_InitialisesExpiresAtUtc()
+    {
+        using var httpClient = new HttpClient(new LambdaHttpMessageHandler(_ =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    "{\"access_token\":\"new-access\",\"token_type\":\"Bearer\",\"refresh_token\":\"refresh\",\"expires_in\":1800}",
+                    Encoding.UTF8,
+                    "application/json")
+            }));
+
+        var client = new FreeAgentOAuthClient(
+            "test-client-id",
+            "test-secret",
+            "http://localhost/callback",
+            httpClient,
+            FreeAgentEnvironment.Production);
+
+        var token = await client.RefreshTokenAsync("refresh-token");
+
+        Assert.NotNull(token.ExpiresAtUtc);
+        Assert.False(token.IsExpired);
+    }
+
+    private sealed class LambdaHttpMessageHandler : HttpMessageHandler
+    {
+        private readonly Func<HttpRequestMessage, HttpResponseMessage> _handler;
+
+        public LambdaHttpMessageHandler(Func<HttpRequestMessage, HttpResponseMessage> handler)
+        {
+            _handler = handler;
+        }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(_handler(request));
+        }
     }
 }

@@ -1,5 +1,4 @@
-using FreeAgent.Client.Infrastructure.Authentication;
-using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client;
 
 namespace FreeAgent.Client.Tests.Infrastructure.Configuration;
 

@@ -1,3 +1,4 @@
+using System.Globalization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Models.Contacts;
@@ -39,7 +40,15 @@ public sealed class ContactService
         ArgumentOutOfRangeException.ThrowIfGreaterThan(perPage, 100);
         ArgumentException.ThrowIfNullOrWhiteSpace(view);
 
-        var endpoint = $"contacts?page={page}&per_page={perPage}&view={Uri.EscapeDataString(view)}";
+        var endpoint = FreeAgentQueryStringBuilder.BuildEndpoint(
+            endpoint: "contacts",
+            queryParameters:
+            [
+                new KeyValuePair<string, string>("page", page.ToString(CultureInfo.InvariantCulture)),
+                new KeyValuePair<string, string>("per_page", perPage.ToString(CultureInfo.InvariantCulture)),
+                new KeyValuePair<string, string>("view", view)
+            ]);
+
         var response = await _requestClient.GetWithMetadataAsync<ContactsResponse>(endpoint, cancellationToken);
 
         if (response.Data.Contacts is null)
@@ -47,7 +56,7 @@ public sealed class ContactService
             throw new FreeAgentApiException("Contacts data missing from API response");
         }
 
-        var total = ParseTotalCount(response) ?? EstimateTotalWithoutHeader(page, perPage, response.Data.Contacts.Count);
+        var total = FreeAgentPaginationHelper.GetTotalCountOrEstimate(response, page, perPage, response.Data.Contacts.Count);
 
         return new PaginatedResponse<ContactSummary>(
             page,
@@ -87,27 +96,5 @@ public sealed class ContactService
 
             page = contactsPage.NextPage!.Value;
         }
-    }
-
-    private static int? ParseTotalCount(FreeAgentHttpResponse<ContactsResponse> response)
-    {
-        var headerValues = response.GetHeaderValues("X-Total-Count");
-        if (headerValues is null || headerValues.Count == 0)
-        {
-            return null;
-        }
-
-        return int.TryParse(headerValues[0], out var total) ? total : null;
-    }
-
-    private static int EstimateTotalWithoutHeader(int page, int perPage, int itemsOnPage)
-    {
-        // If the page is full and total headers are absent, force HasNextPage=true and continue until a short page is observed.
-        if (itemsOnPage == perPage)
-        {
-            return (page * perPage) + 1;
-        }
-
-        return ((page - 1) * perPage) + itemsOnPage;
     }
 }

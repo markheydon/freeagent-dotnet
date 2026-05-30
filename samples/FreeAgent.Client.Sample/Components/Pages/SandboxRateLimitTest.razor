@@ -45,13 +45,6 @@
                                      Value="_requestCount"
                                      ValueChanged="OnRequestCountChanged" />
 
-                    <MudSwitch T="bool"
-                               Label="Send sandbox header X-RateLimit-Test=true"
-                               Color="Color.Primary"
-                               Disabled="@IsExecutionDisabled"
-                               Value="_sendRateLimitTestHeader"
-                               ValueChanged="OnSendRateLimitHeaderChanged" />
-
                     <MudText Typo="Typo.caption">
                         This executes sequential requests against <code>GET /v2/company</code> via <code>FreeAgentClient</code>.
                     </MudText>
@@ -143,7 +136,6 @@
     private const int MaxRequestCount = 25;
 
     private int _requestCount = 6;
-    private bool _sendRateLimitTestHeader = true;
     private bool _running;
     private readonly List<RateLimitAttemptResult> _results = new();
 
@@ -165,11 +157,6 @@
     private void OnRequestCountChanged(int value)
     {
         _requestCount = Math.Clamp(value, MinRequestCount, MaxRequestCount);
-    }
-
-    private void OnSendRateLimitHeaderChanged(bool value)
-    {
-        _sendRateLimitTestHeader = value;
     }
 
     private async Task RunTestAsync()
@@ -198,10 +185,10 @@
 
         try
         {
-            using var metadataHandler = new ResponseMetadataCaptureHandler(new HttpClientHandler(), _sendRateLimitTestHeader);
+            using var metadataHandler = new ResponseMetadataCaptureHandler(new HttpClientHandler());
             using var transportHttpClient = new HttpClient(metadataHandler)
             {
-                BaseAddress = new Uri(FreeAgentEnvironmentEndpoints.GetApiBaseUrl(TokenStore.ConnectedEnvironment))
+                BaseAddress = new Uri(GetApiBaseUrl(TokenStore.ConnectedEnvironment))
             };
 
             using var client = new FreeAgentClient(transportHttpClient, token.AccessToken, options);
@@ -320,6 +307,13 @@
             : "-";
     }
 
+    private static string GetApiBaseUrl(FreeAgentEnvironment environment)
+    {
+        return environment == FreeAgentEnvironment.Sandbox
+            ? "https://api.sandbox.freeagent.com/v2/"
+            : "https://api.freeagent.com/v2/";
+    }
+
     private static string GetRateLimitResetDisplay(IReadOnlyDictionary<string, IReadOnlyList<string>>? headers)
     {
         if (headers is null || !headers.TryGetValue("X-RateLimit-Reset", out var values) || values.Count == 0)
@@ -370,25 +364,15 @@
 
     private sealed class ResponseMetadataCaptureHandler : DelegatingHandler
     {
-        private readonly bool _sendRateLimitHeader;
-
-        public ResponseMetadataCaptureHandler(HttpMessageHandler innerHandler, bool sendRateLimitHeader)
+        public ResponseMetadataCaptureHandler(HttpMessageHandler innerHandler)
             : base(innerHandler)
         {
-            _sendRateLimitHeader = sendRateLimitHeader;
         }
 
         public CapturedResponseMetadata? LastResponse { get; private set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            request.Headers.Remove("X-RateLimit-Test");
-
-            if (_sendRateLimitHeader)
-            {
-                request.Headers.TryAddWithoutValidation("X-RateLimit-Test", "true");
-            }
-
             var response = await base.SendAsync(request, cancellationToken);
             var headers = response.Headers.ToDictionary(
                 static header => header.Key,

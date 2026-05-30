@@ -14,7 +14,6 @@ FreeAgent.NET is an open-source, modern .NET SDK for the FreeAgent REST API. It 
 
 - .NET 8.0 (LTS) and .NET 10.0 (LTS), with .NET 10 as the primary focus.
 - xUnit for testing.
-- Microsoft.Extensions.Http (NuGet).
 - No database (API client only).
 
 ## Architecture

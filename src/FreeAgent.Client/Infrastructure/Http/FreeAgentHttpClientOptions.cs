@@ -1,7 +1,7 @@
-namespace FreeAgent.Client.Infrastructure.Http;
+namespace FreeAgent.Client;
 
 /// <summary>
-/// Configures retry and rate-limit behavior for <see cref="FreeAgentHttpClient"/>.
+/// Configures retry and rate-limit behaviour for HTTP requests made by FreeAgent clients.
 /// </summary>
 public class FreeAgentHttpClientOptions
 {
@@ -41,6 +41,12 @@ public class FreeAgentHttpClientOptions
     /// Additional HTTP methods to allow retry for, intended only when the caller guarantees operation safety.
     /// </summary>
     public ISet<string> AdditionalRetriableMethods { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Enables the internal sandbox-only X-RateLimit-Test request header used by transport tests.
+    /// Ignored when targeting production.
+    /// </summary>
+    internal bool EnableSandboxRateLimitTestHeader { get; set; }
 
     internal static bool IsMethodRetriableByDefault(HttpMethod method)
     {

@@ -1,6 +1,6 @@
 using FreeAgent.Client.Infrastructure.Configuration;
 
-namespace FreeAgent.Client.Infrastructure.Authentication;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// OAuth 2.0 client for FreeAgent API authentication.
@@ -137,23 +137,37 @@ public class FreeAgentOAuthClient : IDisposable
     private async Task<OAuthTokenResponse> RequestTokenAsync(Dictionary<string, string> requestData, CancellationToken cancellationToken)
     {
         using var content = new FormUrlEncodedContent(requestData);
-        using var response = await _httpClient.PostAsync(_tokenEndpoint, content, cancellationToken);
+        HttpResponseMessage response;
 
-        var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            throw new FreeAgentOAuthException($"Token request failed: {response.StatusCode} - {responseBody}");
+            response = await _httpClient.PostAsync(_tokenEndpoint, content, cancellationToken);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new FreeAgentOAuthException("Token request failed due to an HTTP transport error.", ex);
         }
 
-        var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<OAuthTokenResponse>(responseBody, JsonOptions);
-
-        if (tokenResponse == null)
+        using (response)
         {
-            throw new FreeAgentOAuthException("Failed to deserialize token response");
-        }
+            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
 
-        return tokenResponse;
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new FreeAgentOAuthException($"Token request failed: {response.StatusCode} - {responseBody}");
+            }
+
+            var tokenResponse = System.Text.Json.JsonSerializer.Deserialize<OAuthTokenResponse>(responseBody, JsonOptions);
+
+            if (tokenResponse == null)
+            {
+                throw new FreeAgentOAuthException("Failed to deserialize token response");
+            }
+
+            tokenResponse.InitialiseExpiryUtc();
+
+            return tokenResponse;
+        }
     }
 
     /// <summary>

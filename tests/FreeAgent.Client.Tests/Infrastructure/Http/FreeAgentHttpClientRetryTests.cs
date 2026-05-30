@@ -2,8 +2,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
-using FreeAgent.Client.Infrastructure.Authentication;
-using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Tests.TestSupport;
 
@@ -17,6 +16,36 @@ public class FreeAgentHttpClientRetryTests
         var options = new FreeAgentHttpClientOptions();
 
         Assert.Equal(TimeSpan.Zero, options.MinimumRequestSpacing);
+    }
+
+    [Fact]
+    public void Constructor_WithCustomHttpClientWithoutBaseAddress_SetsProductionBaseAddress()
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)));
+
+        using var client = new FreeAgentHttpClient(httpClient, "test-token");
+
+        Assert.Equal(new Uri("https://api.freeagent.com/v2/"), httpClient.BaseAddress);
+    }
+
+    [Fact]
+    public async Task Dispose_WhenUsingInjectedHttpClient_DoesNotDisposeInjectedClient()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.sandbox.freeagent.com/v2/")
+        };
+
+        var client = new FreeAgentHttpClient(httpClient, "test-token");
+        client.Dispose();
+
+        using var response = await httpClient.GetAsync("company");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     [Fact]
@@ -43,7 +72,7 @@ public class FreeAgentHttpClientRetryTests
 
         using var httpClient = new HttpClient(handler)
         {
-            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+            BaseAddress = new Uri("https://api.sandbox.freeagent.com/v2/")
         };
 
         var options = new FreeAgentHttpClientOptions
@@ -415,8 +444,7 @@ public class FreeAgentHttpClientRetryTests
             AccessToken = "stale-access",
             TokenType = "Bearer",
             RefreshToken = "refresh-token",
-            ExpiresIn = 60,
-            IssuedAt = DateTime.UtcNow
+            ExpiresIn = 60
         };
 
         using var apiHttpClient = new HttpClient(new LambdaHttpMessageHandler(request =>
@@ -489,8 +517,7 @@ public class FreeAgentHttpClientRetryTests
             AccessToken = "stale-access",
             TokenType = "Bearer",
             RefreshToken = "refresh-token",
-            ExpiresIn = 60,
-            IssuedAt = DateTime.UtcNow
+            ExpiresIn = 60
         };
 
         using var apiHttpClient = new HttpClient(new LambdaHttpMessageHandler(request =>
@@ -532,7 +559,7 @@ public class FreeAgentHttpClientRetryTests
     }
 
     [Fact]
-    public async Task GetAsync_WhenTimeout_ThrowsFreeAgentTimeoutException()
+    public async Task GetAsync_WhenTimeout_ThrowsFreeAgentApiException()
     {
         var handler = new QueueHttpMessageHandler(_ => throw new OperationCanceledException("simulated timeout"));
 
@@ -550,10 +577,11 @@ public class FreeAgentHttpClientRetryTests
 
         using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
 
-        var exception = await Assert.ThrowsAsync<FreeAgentTimeoutException>(() => client.GetAsync<RetryTestPayload>("company"));
+        var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() => client.GetAsync<RetryTestPayload>("company"));
 
         Assert.Equal(1, exception.AttemptCount);
         Assert.Equal("company", exception.RequestPath);
+        Assert.IsType<OperationCanceledException>(exception.InnerException);
     }
 
     [Fact]
@@ -593,7 +621,7 @@ public class FreeAgentHttpClientRetryTests
     }
 
     [Fact]
-    public async Task GetAsync_WithPerRequestHeaders_AppliesHeadersOnEveryRetryAttempt()
+    public async Task GetAsync_WhenSandboxRateLimitHeaderOptionEnabled_AppliesHeaderOnEveryRetryAttemptInSandbox()
     {
         var attemptCount = 0;
         var observedHeaderValues = new List<string>();
@@ -602,7 +630,7 @@ public class FreeAgentHttpClientRetryTests
             request =>
             {
                 attemptCount++;
-                if (request.Headers.TryGetValues("X-Correlation-Id", out var values))
+                if (request.Headers.TryGetValues("X-RateLimit-Test", out var values))
                 {
                     observedHeaderValues.Add(values.Single());
                 }
@@ -615,7 +643,7 @@ public class FreeAgentHttpClientRetryTests
             request =>
             {
                 attemptCount++;
-                if (request.Headers.TryGetValues("X-Correlation-Id", out var values))
+                if (request.Headers.TryGetValues("X-RateLimit-Test", out var values))
                 {
                     observedHeaderValues.Add(values.Single());
                 }
@@ -628,7 +656,7 @@ public class FreeAgentHttpClientRetryTests
 
         using var httpClient = new HttpClient(handler)
         {
-            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+            BaseAddress = new Uri("https://api.sandbox.freeagent.com/v2/")
         };
 
         var options = new FreeAgentHttpClientOptions
@@ -637,61 +665,29 @@ public class FreeAgentHttpClientRetryTests
             BaseRetryDelay = TimeSpan.Zero,
             MaxRetryDelay = TimeSpan.Zero,
             MinimumRequestSpacing = TimeSpan.Zero,
-            UseRetryJitter = false
+            UseRetryJitter = false,
+            EnableSandboxRateLimitTestHeader = true
         };
 
         using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
 
-        var response = await client.GetAsync<RetryTestPayload>(
-            "company",
-            [new KeyValuePair<string, string>("X-Correlation-Id", "retry-test")]);
+        var response = await client.GetAsync<RetryTestPayload>("company");
 
         Assert.Equal(2, attemptCount);
         Assert.Equal("ok", response.Value);
         Assert.Equal(2, observedHeaderValues.Count);
-        Assert.All(observedHeaderValues, value => Assert.Equal("retry-test", value));
+        Assert.All(observedHeaderValues, value => Assert.Equal("true", value));
     }
 
     [Fact]
-    public async Task GetAsync_WithRateLimitTestHeader_InSandbox_AllowsRequest()
+    public async Task GetAsync_WhenSandboxRateLimitHeaderOptionEnabledOutsideSandbox_DoesNotApplyHeader()
     {
+        var headerApplied = false;
+
         var handler = new QueueHttpMessageHandler(request =>
         {
-            var hasHeader = request.Headers.TryGetValues("X-RateLimit-Test", out var values);
-            Assert.True(hasHeader);
-            Assert.Equal("true", values?.Single());
+            headerApplied = request.Headers.TryGetValues("X-RateLimit-Test", out _);
 
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("{\"value\":\"ok\"}")
-            };
-        });
-
-        using var httpClient = new HttpClient(handler)
-        {
-            BaseAddress = new Uri("https://api.sandbox.freeagent.com/v2/")
-        };
-
-        var options = new FreeAgentHttpClientOptions
-        {
-            MinimumRequestSpacing = TimeSpan.Zero,
-            UseRetryJitter = false
-        };
-
-        using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
-
-        var response = await client.GetAsync<RetryTestPayload>(
-            "company",
-            [new KeyValuePair<string, string>("X-RateLimit-Test", "true")]);
-
-        Assert.Equal("ok", response.Value);
-    }
-
-    [Fact]
-    public async Task GetAsync_WithRateLimitTestHeader_OutsideSandbox_ThrowsInvalidOperationException()
-    {
-        var handler = new QueueHttpMessageHandler(_ =>
-        {
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("{\"value\":\"ok\"}")
@@ -706,16 +702,16 @@ public class FreeAgentHttpClientRetryTests
         var options = new FreeAgentHttpClientOptions
         {
             MinimumRequestSpacing = TimeSpan.Zero,
-            UseRetryJitter = false
+            UseRetryJitter = false,
+            EnableSandboxRateLimitTestHeader = true
         };
 
         using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
 
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => client.GetAsync<RetryTestPayload>(
-            "company",
-            [new KeyValuePair<string, string>("X-RateLimit-Test", "true")]));
+        var response = await client.GetAsync<RetryTestPayload>("company");
 
-        Assert.Contains("only supported when targeting the sandbox environment", exception.Message, StringComparison.Ordinal);
+        Assert.Equal("ok", response.Value);
+        Assert.False(headerApplied);
     }
 
     private sealed class RetryTestPayload

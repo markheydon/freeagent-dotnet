@@ -1,5 +1,3 @@
-using FreeAgent.Client.Infrastructure.Authentication;
-using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
@@ -9,7 +7,7 @@ namespace FreeAgent.Client;
 /// <summary>
 /// Main client for interacting with the FreeAgent API.
 /// </summary>
-public class FreeAgentClient : IDisposable
+public sealed class FreeAgentClient : IDisposable
 {
     private readonly FreeAgentHttpClient _httpClient;
     private bool _disposed;
@@ -34,10 +32,8 @@ public class FreeAgentClient : IDisposable
         string accessToken,
         FreeAgentEnvironment environment = FreeAgentEnvironment.Production,
         FreeAgentHttpClientOptions? options = null)
+        : this(new FreeAgentHttpClient(accessToken, environment, options))
     {
-        _httpClient = new FreeAgentHttpClient(accessToken, environment, options);
-        Company = new CompanyService(_httpClient);
-        Contacts = new ContactService(_httpClient);
     }
 
     /// <summary>
@@ -52,10 +48,8 @@ public class FreeAgentClient : IDisposable
         OAuthTokenResponse token,
         FreeAgentEnvironment environment = FreeAgentEnvironment.Production,
         FreeAgentHttpClientOptions? options = null)
+        : this(new FreeAgentHttpClient(oauthClient, token, environment, options))
     {
-        _httpClient = new FreeAgentHttpClient(oauthClient, token, environment, options);
-        Company = new CompanyService(_httpClient);
-        Contacts = new ContactService(_httpClient);
     }
 
     /// <summary>
@@ -65,8 +59,15 @@ public class FreeAgentClient : IDisposable
     /// <param name="accessToken">OAuth access token</param>
     /// <param name="options">HTTP client options</param>
     public FreeAgentClient(HttpClient httpClient, string accessToken, FreeAgentHttpClientOptions? options = null)
+        : this(new FreeAgentHttpClient(httpClient, accessToken, options))
     {
-        _httpClient = new FreeAgentHttpClient(httpClient, accessToken, options);
+    }
+
+    private FreeAgentClient(FreeAgentHttpClient httpClient)
+    {
+        ArgumentNullException.ThrowIfNull(httpClient);
+
+        _httpClient = httpClient;
         Company = new CompanyService(_httpClient);
         Contacts = new ContactService(_httpClient);
     }
@@ -84,14 +85,15 @@ public class FreeAgentClient : IDisposable
     /// Disposes managed resources.
     /// </summary>
     /// <param name="disposing">Whether to dispose managed resources</param>
-    protected virtual void Dispose(bool disposing)
+    private void Dispose(bool disposing)
     {
         if (!_disposed)
         {
             if (disposing)
             {
-                _httpClient?.Dispose();
+                _httpClient.Dispose();
             }
+
             _disposed = true;
         }
     }
