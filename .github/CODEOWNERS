@@ -10,6 +10,8 @@
 
 # Repository automation and docs
 /.github/ @markheydon
+/.agents/ @markheydon
+/.cursor/ @markheydon
 /*.md @markheydon
 /plan/ @markheydon
 /adr/ @markheydon

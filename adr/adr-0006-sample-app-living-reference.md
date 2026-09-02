@@ -59,11 +59,11 @@ Adopt a mandatory sample app sync policy:
 - **ALT-004**: **Rejection Reason**: Misleads users and reviewers about actual SDK capability.
 
 ## Implementation Notes
-- **IMP-001**: See `.github/copilot-instructions.md` for sample app sync requirements.
+- **IMP-001**: See `AGENTS.md` for sample app sync requirements.
 - **IMP-002**: See `plan/IMPLEMENTING_ENDPOINTS.md` for operational checklist.
 - **IMP-003**: See `samples/FreeAgent.Client.Sample/Components/Pages/` for sample app implementation.
 
 ## References
 - **REF-001**: [adr-0003-endpoint-implementation-workflow.md](adr-0003-endpoint-implementation-workflow.md)
 - **REF-002**: [plan/IMPLEMENTING_ENDPOINTS.md](../plan/IMPLEMENTING_ENDPOINTS.md)
-- **REF-003**: [.github/copilot-instructions.md](../.github/copilot-instructions.md)
+- **REF-003**: [AGENTS.md](../AGENTS.md)
