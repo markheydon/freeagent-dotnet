@@ -25,7 +25,10 @@ For setup and usage questions, please use [GitHub Discussions](https://github.co
 
 Requirements:
 
-- .NET 10 SDK.
+- .NET 8.0 SDK and runtime (required to build and test the SDK `net8.0` target).
+- .NET 10.0 SDK and runtime (primary SDK focus; also required for the Blazor sample).
+
+The SDK package targets both frameworks. The sample app is .NET 10.0-only.
 
 Build and test locally:
 
@@ -33,6 +36,8 @@ Build and test locally:
 dotnet build
 dotnet test
 ```
+
+To run tests for a single framework, use `dotnet test -f net10.0` or `dotnet test -f net8.0`.
 
 ## Branch and Pull Request Workflow
 

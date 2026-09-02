@@ -72,9 +72,14 @@ The app starts at `https://localhost:5001`. Your browser may show a certificate 
 
 ## 5. Test SDK Calls
 
+These pages exercise the SDK endpoints that exist today. Do not expect UI for resources that are not yet implemented.
+
 | Page | SDK call tested |
 |------|----------------|
 | [/company](https://localhost:5001/company) | `CompanyService.GetCompanyAsync()` |
+| [/company/business-categories](https://localhost:5001/company/business-categories) | `CompanyService.GetBusinessCategoriesAsync()` |
+| [/company/tax-timeline](https://localhost:5001/company/tax-timeline) | `CompanyService.GetTaxTimelineAsync()` |
+| [/contacts](https://localhost:5001/contacts) | `ContactService.GetContactsPageAsync()` and `ContactService.GetAllContactsAsync()` |
 
 
 ---

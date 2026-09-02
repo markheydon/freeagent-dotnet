@@ -4,7 +4,7 @@
 
 
 **Project:** FreeAgent.NET
-**Last updated:** 1 May 2026
+**Last updated:** 2 September 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.
@@ -19,15 +19,16 @@ create an ADR if it's a significant architectural change.
 src/
 └── FreeAgent.Client/
 	├── FreeAgentClient.cs               # Main consumer entry point
+	├── PaginatedResponse.cs             # Public pagination result type
 	├── Infrastructure/                  # Internal plumbing — not part of the public API surface
 	│   ├── Authentication/              # OAuth token exchange/refresh client and models
 	│   ├── Configuration/               # Environment enum and URL mapping
-	│   └── Http/                        # HTTP transport, rate limiting, API exceptions, pagination helpers
+	│   ├── Http/                        # HTTP transport, rate limiting, API exceptions, pagination helpers
+	│   └── Serialization/               # JSON converters and TFM compatibility
 	├── Models/                          # Resource-grouped strongly typed models
 	│   ├── Company/                     # Company resource models (Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers)
 	│   └── Contacts/                    # Contacts resource models (ContactSummary, response wrappers)
 	└── Services/                        # Resource-oriented service classes
-		├── ServiceBase.cs               # Shared abstract base for all services
 		├── Company/
 		│   └── CompanyService.cs
 		└── Contacts/
@@ -47,13 +48,12 @@ tests/
 ```
 
 **Namespace layout:**
-- `FreeAgent.Client` — top-level consumer namespace (FreeAgentClient)
+- `FreeAgent.Client` — top-level consumer namespace (`FreeAgentClient`, `PaginatedResponse<T>`)
 - `FreeAgent.Client.Infrastructure.Authentication` — OAuth types
 - `FreeAgent.Client.Infrastructure.Configuration` — FreeAgentEnvironment, FreeAgentEnvironmentEndpoints
-- `FreeAgent.Client.Infrastructure.Http` — HTTP client, exceptions, pagination
+- `FreeAgent.Client.Infrastructure.Http` — HTTP client, exceptions, pagination helpers
 - `FreeAgent.Client.Models.Company` — Company resource models
 - `FreeAgent.Client.Models.Contacts` — Contacts resource models
-- `FreeAgent.Client.Services.ServiceBase` — shared service base class
 - `FreeAgent.Client.Services.Company.CompanyService` — Company resource service
 - `FreeAgent.Client.Services.Contacts.ContactService` — Contacts resource service
 
@@ -70,8 +70,8 @@ tests/
 **New conventions:**
 - Models must be grouped by resource under Models/[Resource]/ with namespace FreeAgent.Client.Models.[Resource]
 - Cross-resource shared primitives go in Models/Shared/ if needed in future
-- All infrastructure plumbing goes under Infrastructure/ and uses internal/public as appropriate, never leaked into the top-level package namespace
-- ServiceBase is the public abstract base class for all services; new services must inherit it
+- All infrastructure plumbing goes under Infrastructure/ and uses internal/public as appropriate, never leaked into the top-level package namespace except for types that are part of the public SDK contract (for example `PaginatedResponse<T>`)
+- Resource services take `IFreeAgentRequestClient` internally; do not introduce a shared public `ServiceBase` unless an ADR says otherwise
 - Each resource service and any service-local helpers, options, or types must be placed in a resource-named subfolder under Services/ (e.g., Services/Invoices/ for invoice-related services and helpers). This keeps resource logic and extensions together and discoverable.
 ---
 
@@ -111,6 +111,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
+| 2 September 2026 | Align folder notes with current SDK (no ServiceBase; public PaginatedResponse) | Docs were describing a layout the code no longer uses |
 | 1 May 2026 | Mirror tests folder structure to source layout      | Improve test discoverability as Infrastructure/Services grow |
 | 1 May 2026 | Add resource-grouped Services structure and guidance | Service structure reorg, clarify placement of service-local helpers |
 | 1 May 2026 | Update for new folder/namespace layout              | Project structure refactor     |
