@@ -22,33 +22,33 @@ updates:
         patterns:
           - '^xunit'
           - '^Moq'
-          - 'Microsoft\\.NET\\.Test\\.Sdk'
+          - 'Microsoft\.NET\.Test\.Sdk'
           - '^coverlet'
         update-types:
           - minor
           - patch
       microsoft-extensions:
         patterns:
-          - '^Microsoft\\.Extensions\\.'
+          - '^Microsoft\.Extensions\.'
         update-types:
           - minor
           - patch
       azure:
         patterns:
-          - '^Azure\\.'
+          - '^Azure\.'
         update-types:
           - minor
           - patch
       opentelemetry:
         patterns:
-          - '^OpenTelemetry\\.'
+          - '^OpenTelemetry\.'
         update-types:
           - minor
           - patch
       analyzers:
         patterns:
           - 'Analyzer$'
-          - '^Microsoft\\.CodeAnalysis'
+          - '^Microsoft\.CodeAnalysis'
         update-types:
           - minor
           - patch
@@ -65,3 +65,8 @@ updates:
       - markheydon
     labels:
       - dependencies
+    groups:
+      patch-and-minor:
+        update-types:
+          - minor
+          - patch

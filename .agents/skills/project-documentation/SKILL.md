@@ -1,6 +1,6 @@
 ---
-name: project-documentation-mh
-description: Project-aware documentation conventions that complement the upstream documentation-writer skill. Use when writing or updating README content, docs pages, user guides, tutorials, or technical blog posts in a repository that provides project context files such as GOALS.md, SCOPE.md, CONVENTIONS.md, or .github/copilot-instructions.md.
+name: project-documentation
+description: Project-aware documentation conventions that complement the documentation-writer skill. Use when writing or updating README content, docs pages, user guides, tutorials, or technical blog posts in a repository that provides project context files such as GOALS.md, SCOPE.md, CONVENTIONS.md, or AGENTS.md.
 ---
 
 # Project Documentation Companion
@@ -30,7 +30,7 @@ Treat the writing stack as three layers:
    - `GOALS.md`
    - `SCOPE.md`
    - `CONVENTIONS.md`
-   - `.github/copilot-instructions.md`
+   - `AGENTS.md`
 3. Ground all terminology and recommendations in those files. Do not invent missing context.
 4. Choose the document location using [references/document-placement.md](references/document-placement.md).
 5. If a template or starter structure would help, use the relevant file in `assets/`.

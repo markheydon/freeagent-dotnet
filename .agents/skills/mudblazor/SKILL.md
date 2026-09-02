@@ -1,5 +1,5 @@
 ---
-name: mudblazor-mh
+name: mudblazor
 description: Guide for using the MudBlazor component library in Blazor applications. Use this when building or refactoring Blazor pages and components with MudBlazor. Covers setup, layout, component usage patterns, dialog and snackbar services, data grids, forms, colour pickers, theming, and optional bUnit examples. Also use when troubleshooting z-index, popup rendering, or styling issues.
 ---
 

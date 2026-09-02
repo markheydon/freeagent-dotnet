@@ -81,8 +81,8 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 
 ## 10. Agent Routing
 
-- Use `C# Expert` for C# implementation and test changes.
-- Use `Tech Writer` for Markdown documentation updates.
+- Follow `AGENTS.md` task routing for SDK work vs documentation.
+- Use the `implement-endpoint` skill in `.agents/skills/implement-endpoint/` for endpoint implementation and retrofit.
 
 ## Validation
 
@@ -97,8 +97,7 @@ References:
 - `GOALS.md`
 - `SCOPE.md`
 - `CONVENTIONS.md`
-- `.github/copilot-instructions.md`
-- `.github/agents/CSharpExpert.agent.md`
-- `.github/agents/tech-writer-mh.agent.md`
+- `AGENTS.md`
+- `.agents/skills/implement-endpoint/SKILL.md`
 - `plan/API_TYPE_MAPPING_POLICY.md`
 - `plan/API_TO_SDK_ALIGNMENT.md`

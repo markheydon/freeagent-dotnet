@@ -10,7 +10,7 @@ This project aims to provide a modern, strongly typed .NET SDK for the FreeAgent
 - Read [SCOPE.md](SCOPE.md) to confirm your change is in scope.
 - Read [CONVENTIONS.md](CONVENTIONS.md) for architecture and naming conventions.
 - Read [VERSIONING.md](VERSIONING.md) for compatibility and release-stage expectations.
-- For behaviour and design constraints in the sample app, read [.github/copilot-instructions.md](.github/copilot-instructions.md).
+- For behaviour and design constraints in the sample app, read [AGENTS.md](AGENTS.md).
 
 ## Ways to Contribute
 

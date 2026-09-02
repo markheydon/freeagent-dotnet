@@ -7,7 +7,7 @@ Describe what changed and why.
 - [ ] Documentation
 - [ ] Workflow or automation
 - [ ] Script update
-- [ ] Prompt/agent/skill update
+- [ ] Agent skill or Cursor rule update
 - [ ] Other
 
 ## Checklist

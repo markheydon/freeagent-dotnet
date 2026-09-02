@@ -34,7 +34,7 @@ Adopt a mandatory, plan-first endpoint implementation workflow for all SDK endpo
 
 - All endpoint work begins with a plan that validates the entity against FreeAgent docs and audits existing code for guardrail violations.
 - Guardrails enforced: every serialised property has `JsonPropertyName`, date-only fields use `DateOnly`, constrained strings use enums/strong values, wrappers are explicit, and services validate payloads.
-- Agent routing is required: C# Expert for code/tests, Tech Writer for docs.
+- Agent routing is required: SDK code/tests per `AGENTS.md`; documentation per `AGENTS.md` docs routing and the `implement-endpoint` skill.
 - Sample app and navigation must be updated in the same change as the endpoint.
 - Breaking changes are allowed pre-GA if they improve correctness, but must be called out.
 
@@ -61,7 +61,7 @@ Adopt a mandatory, plan-first endpoint implementation workflow for all SDK endpo
 - **ALT-004**: **Rejection Reason**: Incomplete enforcement allows technical debt and ambiguity to accumulate.
 
 ## Implementation Notes
-- **IMP-001**: See `.github/prompts/implement-endpoint.prompt.md` for the canonical workflow and guardrail checklist.
+- **IMP-001**: See `.agents/skills/implement-endpoint/SKILL.md` for the canonical workflow and guardrail checklist.
 - **IMP-002**: See `plan/IMPLEMENTING_ENDPOINTS.md` for the operational checklist.
 - **IMP-003**: See `AGENTS.md` for agent routing and documentation requirements.
 
@@ -70,5 +70,5 @@ Adopt a mandatory, plan-first endpoint implementation workflow for all SDK endpo
 - **REF-002**: [adr-0002-package-and-project-naming.md](adr-0002-package-and-project-naming.md)
 - **REF-003**: [plan/API_TYPE_MAPPING_POLICY.md](../plan/API_TYPE_MAPPING_POLICY.md)
 - **REF-004**: [plan/IMPLEMENTING_ENDPOINTS.md](../plan/IMPLEMENTING_ENDPOINTS.md)
-- **REF-005**: [.github/prompts/implement-endpoint.prompt.md](../.github/prompts/implement-endpoint.prompt.md)
+- **REF-005**: [.agents/skills/implement-endpoint/SKILL.md](../.agents/skills/implement-endpoint/SKILL.md)
 - **REF-006**: [AGENTS.md](../AGENTS.md)

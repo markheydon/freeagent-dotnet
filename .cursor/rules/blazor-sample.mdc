@@ -1,0 +1,14 @@
+---
+description: Blazor sample app conventions
+globs: "samples/**/*.razor,samples/**/*.razor.cs,samples/**/*.razor.css"
+alwaysApply: false
+---
+
+# Sample App
+
+The sample app is the living reference for implemented SDK capability (see ADR-0006 and `AGENTS.md`).
+
+- Do not add UI for SDK endpoints that are not yet implemented.
+- When adding or changing SDK endpoints, update sample pages and navigation in the same change.
+- For developer validation pages, show complete model output and a readable raw JSON section.
+- When editing MudBlazor UI, use the `mudblazor` skill in `.agents/skills/mudblazor/`.
