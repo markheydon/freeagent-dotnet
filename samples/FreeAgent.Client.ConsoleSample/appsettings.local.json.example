@@ -1,0 +1,7 @@
+{
+  "FreeAgent": {
+    "ClientId": "your-sandbox-oauth-identifier",
+    "ClientSecret": "your-sandbox-oauth-secret",
+    "RedirectUri": "http://127.0.0.1:8765/callback"
+  }
+}
