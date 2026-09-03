@@ -1,9 +1,21 @@
-# FreeAgent SDK Sample App
+# FreeAgent SDK Sample Apps
 
-An interactive Blazor Server app for testing the `FreeAgent.Client` SDK.
-Use it to exercise SDK calls against the FreeAgent API as new services are added to the codebase.
+Samples for trying the `FreeAgent.Client` SDK against the FreeAgent API.
+
+| Sample | Purpose |
+|--------|---------|
+| [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Minimal console app — OAuth in the browser, list contact display names |
+| [FreeAgent.Client.Sample](FreeAgent.Client.Sample/) | Blazor Server workbench for exercising SDK endpoints interactively |
 
 ---
+
+## Console sample (quick start)
+
+See [FreeAgent.Client.ConsoleSample/README.md](FreeAgent.Client.ConsoleSample/README.md) for a minimal OAuth + contacts listing example.
+
+---
+
+## Blazor sample (full workbench)
 
 ## Prerequisites
 
