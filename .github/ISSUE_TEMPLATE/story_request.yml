@@ -1,7 +1,7 @@
 name: Story request
 description: Propose a scoped story for feature, improvement, or admin planning work
-labels: [story]
-title: "story: "
+labels: [type/story, status/todo, priority/medium]
+title: "[Story] "
 body:
   - type: markdown
     attributes:
