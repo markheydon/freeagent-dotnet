@@ -2,10 +2,10 @@
 
 Samples for trying the `FreeAgent.Client` SDK against the FreeAgent API.
 
-| Sample | Purpose |
-|--------|---------|
-| [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Minimal console app — OAuth in the browser, list contact display names |
-| [FreeAgent.Client.Sample](FreeAgent.Client.Sample/) | Blazor Server workbench for exercising SDK endpoints interactively |
+| Sample | Purpose | SDK source |
+|--------|---------|------------|
+| [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Minimal console app — OAuth in the browser, list contact display names | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
+| [FreeAgent.Client.Sample](FreeAgent.Client.Sample/) | Blazor Server workbench for exercising SDK endpoints interactively | Local project reference |
 
 ---
 

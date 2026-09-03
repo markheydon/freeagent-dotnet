@@ -90,16 +90,37 @@ If the browser cannot reach the local callback (for example on a remote machine)
 
 ---
 
-## Testing against the published NuGet package
+## SDK source: local project vs NuGet package
 
-This sample references the SDK project directly for contributors. To test the **published** package instead:
+This sample is written like a **consumer app** (it imports `FreeAgent.Client` and calls the public API). In the repository it defaults to a **project reference** so contributors can run it against in-progress SDK changes without publishing.
+
+To **smoke-test the published NuGet package** instead, pass `UseLocalFreeAgentClient=false`:
 
 ```bash
-dotnet remove package FreeAgent.Client   # only if added
-dotnet add package FreeAgent.Client --version 0.1.0-alpha.1
+# From the repository root
+dotnet run --project samples/FreeAgent.Client.ConsoleSample -p:UseLocalFreeAgentClient=false
+
+# Or from this directory
+dotnet run -p:UseLocalFreeAgentClient=false
 ```
 
-Remove the `ProjectReference` from `FreeAgent.Client.ConsoleSample.csproj` when switching to the NuGet package.
+To switch back to the local SDK (default):
+
+```bash
+dotnet run
+# or explicitly:
+dotnet run -p:UseLocalFreeAgentClient=true
+```
+
+The pinned NuGet version is defined in [`Directory.Packages.props`](../../Directory.Packages.props). Bump it when testing a newer published release.
+
+### Copying this sample outside the repository
+
+If you copy the project files into your own solution, remove the `UseLocalFreeAgentClient` property and project-reference block, then add the package:
+
+```bash
+dotnet add package FreeAgent.Client --version 0.1.0-alpha.1
+```
 
 ---
 

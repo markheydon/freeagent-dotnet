@@ -15,6 +15,9 @@ using FreeAgent.Client.ConsoleSample;
 
 // Load OAuth app credentials from user-secrets, appsettings, or environment variables.
 // Register your app at https://dev.sandbox.freeagent.com (sandbox) or https://dev.freeagent.com (production).
+//
+// This project references FreeAgent.Client via a local project reference by default (repo development).
+// To run against the published NuGet package instead: dotnet run -p:UseLocalFreeAgentClient=false
 var settings = AppSettings.Load();
 
 // Always use Sandbox while learning. Production hits real customer data.
