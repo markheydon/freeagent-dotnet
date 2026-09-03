@@ -50,10 +50,10 @@ jobs:
         run: dotnet build samples/FreeAgent.Client.Sample/FreeAgent.Client.Sample.csproj --no-restore --configuration Release
 
       - name: Test (net8.0)
-        run: dotnet test tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj --configuration Release -f net8.0 --logger "trx;LogFileName=results-net8.trx"
+        run: dotnet test tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj --configuration Release -f net8.0 --report-trx --report-trx-filename results-net8.trx
 
       - name: Test (net10.0)
-        run: dotnet test tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj --configuration Release -f net10.0 --logger "trx;LogFileName=results-net10.trx"
+        run: dotnet test tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj --configuration Release -f net10.0 --report-trx --report-trx-filename results-net10.trx
 
       - name: Pack
         run: dotnet pack src/FreeAgent.Client/FreeAgent.Client.csproj --no-build --configuration Release --output ./nupkg
