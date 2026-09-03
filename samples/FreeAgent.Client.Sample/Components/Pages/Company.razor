@@ -1,9 +1,4 @@
 @page "/company"
-@using System.Collections
-@using System.Globalization
-@using System.Reflection
-@using System.Text.Json
-@using System.Text.Json.Serialization
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
 @inject ApiDiagnosticsService ApiDiagnostics
@@ -51,7 +46,7 @@
                         @_error
                     </MudAlert>
 
-                    <ApiErrorDiagnostics RawPayload="@_wireCompanyApiResponse" />
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
                 }
 
                 @if (_company is null && _error is null && !_loading)
@@ -59,192 +54,59 @@
                     <MudText Typo="Typo.body2" Class="hero-copy">Press the button above to load company details from FreeAgent.</MudText>
                 }
 
-                @if (_company is not null)
+                @if (_probe is not null && _company is not null)
                 {
-                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-                        <MudText Typo="Typo.h5">Result summary</MudText>
-                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">@_company.Currency</MudChip>
-                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@_company.Type</MudChip>
-                        <MudChip T="string"
-                                 Class="filter-chip"
-                                 Variant="@GetFilterChipVariant(MappingCheckStatus.Match)"
-                                 Color="Color.Success"
-                                 OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.Match))">
-                            Matches: @ExactMatchCount
-                        </MudChip>
-
-                        <MudChip T="string"
-                                 Class="filter-chip"
-                                 Variant="@GetFilterChipVariant(MappingCheckStatus.Mismatch)"
-                                 Color="Color.Error"
-                                 OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.Mismatch))">
-                            Mismatches: @MismatchCount
-                        </MudChip>
-
-                        @if (MissingInModelCount > 0)
-                        {
-                            <MudChip T="string"
-                                     Class="filter-chip"
-                                     Variant="@GetFilterChipVariant(MappingCheckStatus.MissingInModel)"
-                                     Color="Color.Error"
-                                     OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.MissingInModel))">
-                                Missing in model: @MissingInModelCount
-                            </MudChip>
-                        }
-
-                        <MudChip T="string"
-                                 Class="filter-chip"
-                                 Variant="@GetFilterChipVariant(MappingCheckStatus.ModelOnly)"
-                                 Color="Color.Warning"
-                                 OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.ModelOnly))">
-                            Model-only values: @ModelOnlyCount
-                        </MudChip>
-                    </MudStack>
-
-                    <MudGrid Spacing="2">
-                        <MudItem xs="12" sm="6">
-                            <MudPaper Class="probe-card" Elevation="0">
-                                <MudText Typo="Typo.caption">Name</MudText>
-                                <MudText Typo="Typo.subtitle1">@_company.Name</MudText>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudPaper Class="probe-card" Elevation="0">
-                                <MudText Typo="Typo.caption">Subdomain</MudText>
-                                <MudText Typo="Typo.subtitle1">@_company.Subdomain</MudText>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudPaper Class="probe-card" Elevation="0">
-                                <MudText Typo="Typo.caption">Registration No.</MudText>
-                                <MudText Typo="Typo.subtitle1">@ValueOrFallback(_company.CompanyRegistrationNumber)</MudText>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudPaper Class="probe-card" Elevation="0">
-                                <MudText Typo="Typo.caption">Sales Tax Status</MudText>
-                                <MudText Typo="Typo.subtitle1">@ValueOrFallback(_company.SalesTaxRegistrationStatus?.ToString())</MudText>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudPaper Class="probe-card" Elevation="0">
-                                <MudText Typo="Typo.caption">Mileage Units</MudText>
-                                <MudText Typo="Typo.subtitle1">@ValueOrFallback(_company.MileageUnits?.ToString())</MudText>
-                            </MudPaper>
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <MudPaper Class="probe-card" Elevation="0">
-                                <MudText Typo="Typo.caption">Resource URL</MudText>
-                                <MudText Typo="Typo.body2">@_company.Url</MudText>
-                            </MudPaper>
-                        </MudItem>
-                    </MudGrid>
-
-                    <MudDivider />
-
-                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
-                        <MudText Typo="Typo.h6">Wire-to-model mapping inspection</MudText>
-                        <MudSwitch @bind-Value="_mappingTableWide"
-                                   Color="Color.Primary"
-                                   Label="Wide table"
-                                   Class="wide-table-toggle" />
-                    </MudStack>
-
-                    @if (_mappingTableWide)
-                    {
-                        <MudText Typo="Typo.caption" Class="hero-copy">
-                            Wide mode keeps all columns on one row and scrolls horizontally.
-                        </MudText>
-                    }
-
-                    @if (_mappingFilter is not null)
-                    {
-                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-                            <MudText Typo="Typo.body2" Class="hero-copy">
-                                Showing @FilteredMappingRows.Count() of @_mappingRows.Count rows (@GetStatusLabel(_mappingFilter.Value)).
-                            </MudText>
-                            <MudButton Variant="Variant.Text"
-                                       Color="Color.Primary"
-                                       Size="Size.Small"
-                                       OnClick="@ClearMappingFilter">
-                                Show all
-                            </MudButton>
-                        </MudStack>
-                    }
-
-                    @if (_mappingRows.Count == 0)
-                    {
-                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
-                            Mapping diagnostics are unavailable because no raw wire payload could be parsed.
-                        </MudAlert>
-                    }
-                    else
-                    {
-                        <div class="diagnostics-table-shell @(_mappingTableWide ? "diagnostics-table-shell--wide" : null)">
-                            <MudTable Items="@FilteredMappingRows"
-                                      Dense="true"
-                                      Hover="true"
-                                      Breakpoint="@(_mappingTableWide ? Breakpoint.None : Breakpoint.Sm)"
-                                      Class="diagnostics-table">
-                                <HeaderContent>
-                                    <MudTh>Status</MudTh>
-                                    <MudTh>JSON field</MudTh>
-                                    <MudTh>Raw value</MudTh>
-                                    <MudTh>Raw kind</MudTh>
-                                    <MudTh>Model property</MudTh>
-                                    <MudTh>Model type</MudTh>
-                                    <MudTh>Model value</MudTh>
-                                </HeaderContent>
-                                <RowTemplate>
-                                    <MudTd DataLabel="Status">
-                                        <MudChip T="string" Variant="Variant.Filled" Size="Size.Small" Color="@GetStatusColor(context.Status)">
-                                            @GetStatusLabel(context.Status)
-                                        </MudChip>
-                                    </MudTd>
-                                    <MudTd DataLabel="JSON field"><code>@context.JsonFieldName</code></MudTd>
-                                    <MudTd DataLabel="Raw value" Class="diagnostics-value-cell">@context.RawValue</MudTd>
-                                    <MudTd DataLabel="Raw kind"><code>@context.RawValueKind</code></MudTd>
-                                    <MudTd DataLabel="Model property"><code>@context.PropertyName</code></MudTd>
-                                    <MudTd DataLabel="Model type"><code>@context.ModelTypeName</code></MudTd>
-                                    <MudTd DataLabel="Model value" Class="diagnostics-value-cell">@context.ModelValue</MudTd>
-                                </RowTemplate>
-                            </MudTable>
-                        </div>
-                    }
-
-                    <MudDivider />
-
-                    <MudText Typo="Typo.h6">All Company model fields</MudText>
-                    <div class="diagnostics-table-shell">
-                        <MudTable Items="@_companyFields" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
-                        <HeaderContent>
-                            <MudTh>Property</MudTh>
-                            <MudTh>JSON field</MudTh>
-                            <MudTh>Type</MudTh>
-                            <MudTh>Value</MudTh>
-                        </HeaderContent>
-                        <RowTemplate>
-                            <MudTd DataLabel="Property"><code>@context.PropertyName</code></MudTd>
-                            <MudTd DataLabel="JSON field"><code>@context.JsonFieldName</code></MudTd>
-                            <MudTd DataLabel="Type"><code>@context.TypeName</code></MudTd>
-                            <MudTd DataLabel="Value" Class="diagnostics-value-cell">@context.Value</MudTd>
-                        </RowTemplate>
-                    </MudTable>
-                    </div>
-
-                    <MudDivider />
-
-                    <MudExpansionPanels MultiExpansion="true">
-                        <MudExpansionPanel Text="Raw JSON (wire payload snapshot)">
-                            <ApiErrorDiagnostics RawPayload="@_wireCompanyApiResponse" MaxLines="120" />
-                        </MudExpansionPanel>
-
-                        <MudExpansionPanel Text="Raw JSON (SDK model snapshot)">
-                            <MudPaper Class="probe-card raw-json-panel" Elevation="0">
-                                <pre>@_companyJson</pre>
-                            </MudPaper>
-                        </MudExpansionPanel>
-                    </MudExpansionPanels>
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Company model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">@_company.Currency</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@_company.Type</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Name</MudText>
+                                        <MudText Typo="Typo.subtitle1">@_company.Name</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Subdomain</MudText>
+                                        <MudText Typo="Typo.subtitle1">@_company.Subdomain</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Registration No.</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_company.CompanyRegistrationNumber)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Sales Tax Status</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_company.SalesTaxRegistrationStatus?.ToString())</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Mileage Units</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_company.MileageUnits?.ToString())</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Resource URL</MudText>
+                                        <MudText Typo="Typo.body2">@_company.Url</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
                 }
             </MudStack>
         </MudPaper>
@@ -255,25 +117,8 @@
     private bool _loading;
     private string? _error;
     private FreeAgent.Client.Models.Company.Company? _company;
-    private string _companyJson = string.Empty;
-    private string _wireCompanyApiResponse = string.Empty;
-    private List<CompanyFieldRow> _companyFields = new();
-    private List<CompanyMappingRow> _mappingRows = new();
-    private MappingCheckStatus? _mappingFilter;
-    private bool _mappingTableWide;
-
-    private IEnumerable<CompanyMappingRow> FilteredMappingRows =>
-        _mappingFilter is null
-            ? _mappingRows
-            : _mappingRows.Where(row => row.Status == _mappingFilter.Value);
-
-    private int ExactMatchCount => _mappingRows.Count(static row => row.Status == MappingCheckStatus.Match);
-
-    private int MismatchCount => _mappingRows.Count(static row => row.Status == MappingCheckStatus.Mismatch);
-
-    private int MissingInModelCount => _mappingRows.Count(static row => row.Status == MappingCheckStatus.MissingInModel);
-
-    private int ModelOnlyCount => _mappingRows.Count(static row => row.Status == MappingCheckStatus.ModelOnly);
+    private ModelProbeSnapshot? _probe;
+    private string _wireApiResponse = string.Empty;
 
     private async Task FetchCompanyAsync()
     {
@@ -287,30 +132,25 @@
         _loading = true;
         _error = null;
         _company = null;
-        _companyJson = string.Empty;
-        _wireCompanyApiResponse = string.Empty;
-        _companyFields = [];
-        _mappingRows = [];
-        _mappingFilter = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
 
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
             _company = await client.Company.GetCompanyAsync();
 
-            _wireCompanyApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
                 "company");
 
-            _companyJson = JsonSerializer.Serialize(_company, PrettyJsonOptions);
-            _companyFields = BuildCompanyFieldRows(_company);
-            _mappingRows = BuildMappingRows(_company, _wireCompanyApiResponse);
+            _probe = ModelWireDiagnostics.Build(_company, _wireApiResponse, envelopeProperty: "company");
         }
-        catch (JsonException ex)
+        catch (System.Text.Json.JsonException ex)
         {
             _error = $"Model deserialisation error: {ex.Message}";
-            _wireCompanyApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
                 "company");
@@ -318,7 +158,7 @@
         catch (FreeAgentApiException ex)
         {
             _error = $"API error: {ex.Message}";
-            _wireCompanyApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
                 "company");
@@ -326,7 +166,7 @@
         catch (Exception ex)
         {
             _error = $"Unexpected error: {ex.Message}";
-            _wireCompanyApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
                 "company");
@@ -338,293 +178,4 @@
     }
 
     private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
-
-    private void ToggleMappingFilter(MappingCheckStatus status)
-    {
-        _mappingFilter = _mappingFilter == status ? null : status;
-    }
-
-    private void ClearMappingFilter()
-    {
-        _mappingFilter = null;
-    }
-
-    private Variant GetFilterChipVariant(MappingCheckStatus status) =>
-        _mappingFilter is null || _mappingFilter == status ? Variant.Filled : Variant.Outlined;
-
-    private static readonly JsonSerializerOptions PrettyJsonOptions = new()
-    {
-        WriteIndented = true
-    };
-
-    private static readonly JsonSerializerOptions MappingComparisonJsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
-    private static List<CompanyFieldRow> BuildCompanyFieldRows(FreeAgent.Client.Models.Company.Company company)
-    {
-        var rows = new List<CompanyFieldRow>();
-
-        foreach (var property in typeof(FreeAgent.Client.Models.Company.Company).GetProperties(BindingFlags.Instance | BindingFlags.Public))
-        {
-            var rawValue = property.GetValue(company);
-            var jsonName = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name;
-            var stringValue = rawValue switch
-            {
-                null => "Not returned",
-                string text when string.IsNullOrWhiteSpace(text) => "Not returned",
-                string text => text,
-                DateOnly date => date.ToString("yyyy-MM-dd"),
-                IEnumerable<string> stringCollection => string.Join(", ", stringCollection),
-                _ => JsonSerializer.Serialize(rawValue)
-            };
-
-            rows.Add(new CompanyFieldRow(
-                property.Name,
-                jsonName,
-                FormatTypeName(property.PropertyType),
-                stringValue));
-        }
-
-        return rows;
-    }
-
-    private static List<CompanyMappingRow> BuildMappingRows(
-        FreeAgent.Client.Models.Company.Company company,
-        string rawPayload)
-    {
-        if (string.IsNullOrWhiteSpace(rawPayload))
-        {
-            return [];
-        }
-
-        JsonElement companyElement;
-        try
-        {
-            using var document = JsonDocument.Parse(rawPayload);
-            companyElement = ExtractCompanyNode(document.RootElement);
-        }
-        catch (JsonException)
-        {
-            return [];
-        }
-
-        var rows = new List<CompanyMappingRow>();
-        foreach (var property in typeof(FreeAgent.Client.Models.Company.Company).GetProperties(BindingFlags.Instance | BindingFlags.Public))
-        {
-            var jsonName = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name;
-            var modelRawValue = property.GetValue(company);
-            JsonElement rawElement = default;
-            var hasRawValue = companyElement.ValueKind == JsonValueKind.Object && companyElement.TryGetProperty(jsonName, out rawElement);
-
-            var status = DetermineMappingStatus(
-                hasRawValue,
-                hasRawValue ? rawElement : default,
-                modelRawValue,
-                property.PropertyType);
-
-            rows.Add(new CompanyMappingRow(
-                property.Name,
-                jsonName,
-                FormatTypeName(property.PropertyType),
-                FormatModelValue(modelRawValue),
-                hasRawValue ? FormatJsonValue(rawElement) : "Not returned",
-                hasRawValue ? rawElement.ValueKind.ToString() : "Not returned",
-                status));
-        }
-
-        return rows;
-    }
-
-    private static JsonElement ExtractCompanyNode(JsonElement rootElement)
-    {
-        if (rootElement.ValueKind == JsonValueKind.Object &&
-            rootElement.TryGetProperty("company", out var companyNode) &&
-            companyNode.ValueKind == JsonValueKind.Object)
-        {
-            return companyNode.Clone();
-        }
-
-        return rootElement.Clone();
-    }
-
-    private static MappingCheckStatus DetermineMappingStatus(
-        bool hasRawValue,
-        JsonElement rawValue,
-        object? modelValue,
-        Type propertyType)
-    {
-        var hasModelValue = HasMeaningfulValue(modelValue);
-
-        if (!hasRawValue)
-        {
-            return hasModelValue ? MappingCheckStatus.ModelOnly : MappingCheckStatus.NotReturned;
-        }
-
-        if (!hasModelValue)
-        {
-            return MappingCheckStatus.MissingInModel;
-        }
-
-        return ValuesEquivalent(rawValue, modelValue!, propertyType)
-            ? MappingCheckStatus.Match
-            : MappingCheckStatus.Mismatch;
-    }
-
-    private static bool HasMeaningfulValue(object? value)
-    {
-        switch (value)
-        {
-            case null:
-                return false;
-            case string stringValue:
-                return !string.IsNullOrWhiteSpace(stringValue);
-            case IEnumerable enumerable when value is not string:
-            {
-                var enumerator = enumerable.GetEnumerator();
-                try
-                {
-                    return enumerator.MoveNext();
-                }
-                finally
-                {
-                    (enumerator as IDisposable)?.Dispose();
-                }
-            }
-            default:
-                return true;
-        }
-    }
-
-    private static bool ValuesEquivalent(JsonElement rawValue, object modelValue, Type propertyType)
-    {
-        try
-        {
-            var wireDeserialized = JsonSerializer.Deserialize(rawValue.GetRawText(), propertyType, MappingComparisonJsonOptions);
-            return SemanticJsonEquals(modelValue, wireDeserialized, propertyType);
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
-        catch (NotSupportedException)
-        {
-            return false;
-        }
-    }
-
-    private static bool SemanticJsonEquals(object? modelValue, object? wireValue, Type propertyType)
-    {
-        if (modelValue is null && wireValue is null)
-        {
-            return true;
-        }
-
-        if (modelValue is null || wireValue is null)
-        {
-            return false;
-        }
-
-        var modelJson = JsonSerializer.Serialize(modelValue, propertyType, MappingComparisonJsonOptions);
-        var wireJson = JsonSerializer.Serialize(wireValue, propertyType, MappingComparisonJsonOptions);
-
-        using var modelDocument = JsonDocument.Parse(modelJson);
-        using var wireDocument = JsonDocument.Parse(wireJson);
-        return JsonElement.DeepEquals(modelDocument.RootElement, wireDocument.RootElement);
-    }
-
-    private static string FormatJsonValue(JsonElement value)
-    {
-        return value.ValueKind switch
-        {
-            JsonValueKind.String => value.GetString() ?? string.Empty,
-            JsonValueKind.Number => value.GetRawText(),
-            JsonValueKind.True => bool.TrueString,
-            JsonValueKind.False => bool.FalseString,
-            JsonValueKind.Null => "Not returned",
-            JsonValueKind.Array or JsonValueKind.Object => JsonSerializer.Serialize(value, PrettyJsonOptions),
-            _ => value.GetRawText()
-        };
-    }
-
-    private static string FormatModelValue(object? value)
-    {
-        return value switch
-        {
-            null => "Not returned",
-            string stringValue when string.IsNullOrWhiteSpace(stringValue) => "Not returned",
-            string stringValue => stringValue,
-            DateOnly dateOnlyValue => dateOnlyValue.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-            DateTimeOffset dateTimeOffsetValue => dateTimeOffsetValue.ToString("O", CultureInfo.InvariantCulture),
-            bool boolValue => boolValue.ToString(CultureInfo.InvariantCulture),
-            int intValue => intValue.ToString(CultureInfo.InvariantCulture),
-            long longValue => longValue.ToString(CultureInfo.InvariantCulture),
-            decimal decimalValue => decimalValue.ToString(CultureInfo.InvariantCulture),
-            Enum enumValue => enumValue.ToString(),
-            IEnumerable _ when value is not string => JsonSerializer.Serialize(value, PrettyJsonOptions),
-            _ => JsonSerializer.Serialize(value, PrettyJsonOptions)
-        };
-    }
-
-    private static string GetStatusLabel(MappingCheckStatus status)
-    {
-        return status switch
-        {
-            MappingCheckStatus.Match => "Match",
-            MappingCheckStatus.Mismatch => "Mismatch",
-            MappingCheckStatus.MissingInModel => "Missing in model",
-            MappingCheckStatus.ModelOnly => "Model-only",
-            _ => "Not returned"
-        };
-    }
-
-    private static Color GetStatusColor(MappingCheckStatus status)
-    {
-        return status switch
-        {
-            MappingCheckStatus.Match => Color.Success,
-            MappingCheckStatus.Mismatch => Color.Error,
-            MappingCheckStatus.MissingInModel => Color.Error,
-            MappingCheckStatus.ModelOnly => Color.Warning,
-            _ => Color.Default
-        };
-    }
-
-    private static string FormatTypeName(Type type)
-    {
-        if (Nullable.GetUnderlyingType(type) is Type nullableType)
-        {
-            return $"{FormatTypeName(nullableType)}?";
-        }
-
-        if (type.IsGenericType)
-        {
-            var genericTypeName = type.Name[..type.Name.IndexOf('`')];
-            var genericArguments = string.Join(", ", type.GetGenericArguments().Select(FormatTypeName));
-            return $"{genericTypeName}<{genericArguments}>";
-        }
-
-        return type.Name;
-    }
-
-    private sealed record CompanyFieldRow(string PropertyName, string JsonFieldName, string TypeName, string Value);
-
-    private sealed record CompanyMappingRow(
-        string PropertyName,
-        string JsonFieldName,
-        string ModelTypeName,
-        string ModelValue,
-        string RawValue,
-        string RawValueKind,
-        MappingCheckStatus Status);
-
-    private enum MappingCheckStatus
-    {
-        Match,
-        Mismatch,
-        MissingInModel,
-        ModelOnly,
-        NotReturned
-    }
 }

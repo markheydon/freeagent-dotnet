@@ -161,6 +161,21 @@ code {
     cursor: pointer;
 }
 
+.contacts-filter-grid {
+    align-items: end;
+}
+
+.contacts-load-button-item {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 0.125rem;
+}
+
+.contacts-load-button {
+    min-height: 2.5rem;
+    white-space: nowrap;
+}
+
 @media (max-width: 960px) {
     .sample-main {
         padding: 5rem 0.75rem 1rem;

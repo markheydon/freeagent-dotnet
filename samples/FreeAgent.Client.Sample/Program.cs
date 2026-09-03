@@ -14,6 +14,8 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.PreventDuplicates = false;
 });
 
+builder.Services.AddHttpContextAccessor();
+
 // NOTE: TokenStore and OAuthService are registered as singletons.
 // This sample is intended for local, single-user development use only.
 // In a multi-user scenario, tokens would be shared across all circuits/sessions.
@@ -31,6 +33,12 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseAntiforgery();
+
+app.Use(async (context, next) =>
+{
+    context.RequestServices.GetRequiredService<TokenStore>().TryRestoreFromCurrentRequest();
+    await next();
+});
 
 app.MapStaticAssets();
 
@@ -80,6 +88,12 @@ app.MapGet("/oauth/callback", async (
         return Results.Redirect("/?auth_error=unexpected_error");
     }
 
+    return Results.Redirect("/");
+});
+
+app.MapGet("/oauth/disconnect", (TokenStore tokenStore) =>
+{
+    tokenStore.ClearToken();
     return Results.Redirect("/");
 });
 

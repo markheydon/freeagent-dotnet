@@ -3,11 +3,12 @@ using FreeAgent.Client;
 namespace FreeAgent.Client.Sample.Services;
 
 /// <summary>
-/// Thread-safe in-memory store for the active FreeAgent OAuth token.
-/// Token lifetime is scoped to the application process; tokens are lost on restart.
+/// Thread-safe store for the active FreeAgent OAuth token.
+/// Restores and persists the session in a short-lived browser cookie for local development.
 /// </summary>
 public sealed class TokenStore
 {
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly Lock _lock = new();
     private OAuthTokenResponse? _token;
     private FreeAgentEnvironment _connectedEnvironment = FreeAgentEnvironment.Production;
@@ -15,10 +16,20 @@ public sealed class TokenStore
     private FreeAgentEnvironment _pendingEnvironment = FreeAgentEnvironment.Production;
 
     /// <summary>
+    /// Initialises the token store.
+    /// </summary>
+    public TokenStore(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+    }
+
+    /// <summary>
     /// Returns the stored token, or <c>null</c> if not connected.
     /// </summary>
     public OAuthTokenResponse? GetToken()
     {
+        TryRestoreFromCurrentRequest();
+
         lock (_lock)
         {
             return _token;
@@ -31,11 +42,14 @@ public sealed class TokenStore
     public void SetToken(OAuthTokenResponse token, FreeAgentEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(token);
+
         lock (_lock)
         {
             _token = token;
             _connectedEnvironment = environment;
         }
+
+        PersistCurrentSession();
     }
 
     /// <summary>
@@ -48,6 +62,8 @@ public sealed class TokenStore
             _token = null;
             _connectedEnvironment = FreeAgentEnvironment.Production;
         }
+
+        ClearPersistedSession();
     }
 
     /// <summary>
@@ -57,6 +73,8 @@ public sealed class TokenStore
     {
         get
         {
+            TryRestoreFromCurrentRequest();
+
             lock (_lock)
             {
                 return _connectedEnvironment;
@@ -71,10 +89,49 @@ public sealed class TokenStore
     {
         get
         {
+            TryRestoreFromCurrentRequest();
+
             lock (_lock)
             {
                 return _token is not null;
             }
+        }
+    }
+
+    /// <summary>
+    /// Restores a previously persisted OAuth session from the current HTTP request, if present.
+    /// </summary>
+    public void TryRestoreFromCurrentRequest()
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext is null)
+        {
+            return;
+        }
+
+        lock (_lock)
+        {
+            if (_token is not null)
+            {
+                return;
+            }
+        }
+
+        if (!OAuthSessionPersistence.TryLoad(httpContext.Request, out var token, out var environment)
+            || token is null)
+        {
+            return;
+        }
+
+        lock (_lock)
+        {
+            if (_token is not null)
+            {
+                return;
+            }
+
+            _token = token;
+            _connectedEnvironment = environment;
         }
     }
 
@@ -116,5 +173,41 @@ public sealed class TokenStore
             _pendingEnvironment = FreeAgentEnvironment.Production;
             return valid;
         }
+    }
+
+    private void PersistCurrentSession()
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext is null)
+        {
+            return;
+        }
+
+        OAuthTokenResponse? token;
+        FreeAgentEnvironment environment;
+
+        lock (_lock)
+        {
+            if (_token is null)
+            {
+                return;
+            }
+
+            token = _token;
+            environment = _connectedEnvironment;
+        }
+
+        OAuthSessionPersistence.Save(httpContext.Response, token, environment);
+    }
+
+    private void ClearPersistedSession()
+    {
+        var httpContext = _httpContextAccessor.HttpContext;
+        if (httpContext is null)
+        {
+            return;
+        }
+
+        OAuthSessionPersistence.Clear(httpContext.Response);
     }
 }

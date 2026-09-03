@@ -60,7 +60,7 @@
                     @if (TokenStore.IsConnected)
                     {
                         <MudAlert Severity="Severity.Success" Dense="true" Variant="Variant.Outlined">
-                            Active OAuth session stored in memory for this app process.
+                            Active OAuth session restored from a browser cookie (up to 1 hour) or stored in memory for this app process.
                         </MudAlert>
 
                         <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Lock">
@@ -99,7 +99,7 @@
                     {
                         <MudText Typo="Typo.body2">
                             Start the OAuth flow to connect a local developer session to FreeAgent.
-                            The app redirects to FreeAgent, handles the callback, and stores the token in memory.
+                            The app redirects to FreeAgent, handles the callback, and stores the token in a short-lived browser cookie.
                         </MudText>
 
                         <MudSelect T="FreeAgentEnvironment"
@@ -227,9 +227,7 @@
 
     private void Disconnect()
     {
-        TokenStore.ClearToken();
-        _token = null;
-        NavigationManager.NavigateTo("/", forceLoad: false);
+        NavigationManager.NavigateTo("/oauth/disconnect", forceLoad: true);
     }
 
     private void OnSelectedEnvironmentChanged(FreeAgentEnvironment environment)
