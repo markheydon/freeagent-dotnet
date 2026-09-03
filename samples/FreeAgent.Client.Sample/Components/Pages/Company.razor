@@ -65,22 +65,40 @@
                         <MudText Typo="Typo.h5">Result summary</MudText>
                         <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">@_company.Currency</MudChip>
                         <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@_company.Type</MudChip>
-                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">Matches: @ExactMatchCount</MudChip>
+                        <MudChip T="string"
+                                 Class="filter-chip"
+                                 Variant="@GetFilterChipVariant(MappingCheckStatus.Match)"
+                                 Color="Color.Success"
+                                 OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.Match))">
+                            Matches: @ExactMatchCount
+                        </MudChip>
 
-                        @if (MismatchCount > 0)
-                        {
-                            <MudChip T="string" Variant="Variant.Filled" Color="Color.Error">Mismatches: @MismatchCount</MudChip>
-                        }
+                        <MudChip T="string"
+                                 Class="filter-chip"
+                                 Variant="@GetFilterChipVariant(MappingCheckStatus.Mismatch)"
+                                 Color="Color.Error"
+                                 OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.Mismatch))">
+                            Mismatches: @MismatchCount
+                        </MudChip>
 
                         @if (MissingInModelCount > 0)
                         {
-                            <MudChip T="string" Variant="Variant.Filled" Color="Color.Error">Missing in model: @MissingInModelCount</MudChip>
+                            <MudChip T="string"
+                                     Class="filter-chip"
+                                     Variant="@GetFilterChipVariant(MappingCheckStatus.MissingInModel)"
+                                     Color="Color.Error"
+                                     OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.MissingInModel))">
+                                Missing in model: @MissingInModelCount
+                            </MudChip>
                         }
 
-                        @if (ModelOnlyCount > 0)
-                        {
-                            <MudChip T="string" Variant="Variant.Filled" Color="Color.Warning">Model-only values: @ModelOnlyCount</MudChip>
-                        }
+                        <MudChip T="string"
+                                 Class="filter-chip"
+                                 Variant="@GetFilterChipVariant(MappingCheckStatus.ModelOnly)"
+                                 Color="Color.Warning"
+                                 OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.ModelOnly))">
+                            Model-only values: @ModelOnlyCount
+                        </MudChip>
                     </MudStack>
 
                     <MudGrid Spacing="2">
@@ -124,7 +142,35 @@
 
                     <MudDivider />
 
-                    <MudText Typo="Typo.h6">Wire-to-model mapping inspection</MudText>
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
+                        <MudText Typo="Typo.h6">Wire-to-model mapping inspection</MudText>
+                        <MudSwitch @bind-Value="_mappingTableWide"
+                                   Color="Color.Primary"
+                                   Label="Wide table"
+                                   Class="wide-table-toggle" />
+                    </MudStack>
+
+                    @if (_mappingTableWide)
+                    {
+                        <MudText Typo="Typo.caption" Class="hero-copy">
+                            Wide mode keeps all columns on one row and scrolls horizontally.
+                        </MudText>
+                    }
+
+                    @if (_mappingFilter is not null)
+                    {
+                        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                            <MudText Typo="Typo.body2" Class="hero-copy">
+                                Showing @FilteredMappingRows.Count() of @_mappingRows.Count rows (@GetStatusLabel(_mappingFilter.Value)).
+                            </MudText>
+                            <MudButton Variant="Variant.Text"
+                                       Color="Color.Primary"
+                                       Size="Size.Small"
+                                       OnClick="@ClearMappingFilter">
+                                Show all
+                            </MudButton>
+                        </MudStack>
+                    }
 
                     @if (_mappingRows.Count == 0)
                     {
@@ -134,36 +180,43 @@
                     }
                     else
                     {
-                        <MudTable Items="@_mappingRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
-                            <HeaderContent>
-                                <MudTh>Status</MudTh>
-                                <MudTh>JSON field</MudTh>
-                                <MudTh>Raw value</MudTh>
-                                <MudTh>Raw kind</MudTh>
-                                <MudTh>Model property</MudTh>
-                                <MudTh>Model type</MudTh>
-                                <MudTh>Model value</MudTh>
-                            </HeaderContent>
-                            <RowTemplate>
-                                <MudTd DataLabel="Status">
-                                    <MudChip T="string" Variant="Variant.Filled" Size="Size.Small" Color="@GetStatusColor(context.Status)">
-                                        @GetStatusLabel(context.Status)
-                                    </MudChip>
-                                </MudTd>
-                                <MudTd DataLabel="JSON field"><code>@context.JsonFieldName</code></MudTd>
-                                <MudTd DataLabel="Raw value">@context.RawValue</MudTd>
-                                <MudTd DataLabel="Raw kind"><code>@context.RawValueKind</code></MudTd>
-                                <MudTd DataLabel="Model property"><code>@context.PropertyName</code></MudTd>
-                                <MudTd DataLabel="Model type"><code>@context.ModelTypeName</code></MudTd>
-                                <MudTd DataLabel="Model value">@context.ModelValue</MudTd>
-                            </RowTemplate>
-                        </MudTable>
+                        <div class="diagnostics-table-shell @(_mappingTableWide ? "diagnostics-table-shell--wide" : null)">
+                            <MudTable Items="@FilteredMappingRows"
+                                      Dense="true"
+                                      Hover="true"
+                                      Breakpoint="@(_mappingTableWide ? Breakpoint.None : Breakpoint.Sm)"
+                                      Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>JSON field</MudTh>
+                                    <MudTh>Raw value</MudTh>
+                                    <MudTh>Raw kind</MudTh>
+                                    <MudTh>Model property</MudTh>
+                                    <MudTh>Model type</MudTh>
+                                    <MudTh>Model value</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Status">
+                                        <MudChip T="string" Variant="Variant.Filled" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                            @GetStatusLabel(context.Status)
+                                        </MudChip>
+                                    </MudTd>
+                                    <MudTd DataLabel="JSON field"><code>@context.JsonFieldName</code></MudTd>
+                                    <MudTd DataLabel="Raw value" Class="diagnostics-value-cell">@context.RawValue</MudTd>
+                                    <MudTd DataLabel="Raw kind"><code>@context.RawValueKind</code></MudTd>
+                                    <MudTd DataLabel="Model property"><code>@context.PropertyName</code></MudTd>
+                                    <MudTd DataLabel="Model type"><code>@context.ModelTypeName</code></MudTd>
+                                    <MudTd DataLabel="Model value" Class="diagnostics-value-cell">@context.ModelValue</MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
                     }
 
                     <MudDivider />
 
                     <MudText Typo="Typo.h6">All Company model fields</MudText>
-                    <MudTable Items="@_companyFields" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+                    <div class="diagnostics-table-shell">
+                        <MudTable Items="@_companyFields" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
                         <HeaderContent>
                             <MudTh>Property</MudTh>
                             <MudTh>JSON field</MudTh>
@@ -174,9 +227,10 @@
                             <MudTd DataLabel="Property"><code>@context.PropertyName</code></MudTd>
                             <MudTd DataLabel="JSON field"><code>@context.JsonFieldName</code></MudTd>
                             <MudTd DataLabel="Type"><code>@context.TypeName</code></MudTd>
-                            <MudTd DataLabel="Value">@context.Value</MudTd>
+                            <MudTd DataLabel="Value" Class="diagnostics-value-cell">@context.Value</MudTd>
                         </RowTemplate>
                     </MudTable>
+                    </div>
 
                     <MudDivider />
 
@@ -205,6 +259,13 @@
     private string _wireCompanyApiResponse = string.Empty;
     private List<CompanyFieldRow> _companyFields = new();
     private List<CompanyMappingRow> _mappingRows = new();
+    private MappingCheckStatus? _mappingFilter;
+    private bool _mappingTableWide;
+
+    private IEnumerable<CompanyMappingRow> FilteredMappingRows =>
+        _mappingFilter is null
+            ? _mappingRows
+            : _mappingRows.Where(row => row.Status == _mappingFilter.Value);
 
     private int ExactMatchCount => _mappingRows.Count(static row => row.Status == MappingCheckStatus.Match);
 
@@ -230,6 +291,7 @@
         _wireCompanyApiResponse = string.Empty;
         _companyFields = [];
         _mappingRows = [];
+        _mappingFilter = null;
 
         try
         {
@@ -277,9 +339,27 @@
 
     private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
 
+    private void ToggleMappingFilter(MappingCheckStatus status)
+    {
+        _mappingFilter = _mappingFilter == status ? null : status;
+    }
+
+    private void ClearMappingFilter()
+    {
+        _mappingFilter = null;
+    }
+
+    private Variant GetFilterChipVariant(MappingCheckStatus status) =>
+        _mappingFilter is null || _mappingFilter == status ? Variant.Filled : Variant.Outlined;
+
     private static readonly JsonSerializerOptions PrettyJsonOptions = new()
     {
         WriteIndented = true
+    };
+
+    private static readonly JsonSerializerOptions MappingComparisonJsonOptions = new()
+    {
+        PropertyNameCaseInsensitive = true
     };
 
     private static List<CompanyFieldRow> BuildCompanyFieldRows(FreeAgent.Client.Models.Company.Company company)
@@ -419,141 +499,39 @@
 
     private static bool ValuesEquivalent(JsonElement rawValue, object modelValue, Type propertyType)
     {
-        var actualType = Nullable.GetUnderlyingType(propertyType) ?? propertyType;
-
-        if (actualType.IsEnum)
+        try
         {
-            return EnumValueMatchesRaw(rawValue, actualType, modelValue);
+            var wireDeserialized = JsonSerializer.Deserialize(rawValue.GetRawText(), propertyType, MappingComparisonJsonOptions);
+            return SemanticJsonEquals(modelValue, wireDeserialized, propertyType);
         }
-
-        if (actualType == typeof(DateOnly) && modelValue is DateOnly dateOnlyValue)
+        catch (JsonException)
         {
-            return rawValue.ValueKind == JsonValueKind.String
-                && DateOnly.TryParse(rawValue.GetString(), out var parsedDate)
-                && parsedDate == dateOnlyValue;
+            return false;
         }
-
-        if (actualType == typeof(DateTimeOffset) && modelValue is DateTimeOffset dateTimeOffsetValue)
+        catch (NotSupportedException)
         {
-            return rawValue.ValueKind == JsonValueKind.String
-                && DateTimeOffset.TryParse(rawValue.GetString(), out var parsedDateTimeOffset)
-                && parsedDateTimeOffset == dateTimeOffsetValue;
+            return false;
         }
-
-        if (actualType == typeof(string) && modelValue is string stringValue)
-        {
-            return rawValue.ValueKind == JsonValueKind.String
-                && string.Equals(rawValue.GetString(), stringValue, StringComparison.Ordinal);
-        }
-
-        if (actualType == typeof(bool) && modelValue is bool boolValue)
-        {
-            return (rawValue.ValueKind == JsonValueKind.True || rawValue.ValueKind == JsonValueKind.False)
-                && rawValue.GetBoolean() == boolValue;
-        }
-
-        if (TryReadDecimal(rawValue, out var rawDecimal) && TryReadDecimal(modelValue, out var modelDecimal))
-        {
-            return rawDecimal == modelDecimal;
-        }
-
-        if (rawValue.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
-        {
-            try
-            {
-                using var modelDocument = JsonDocument.Parse(JsonSerializer.Serialize(modelValue));
-                return JsonElement.DeepEquals(rawValue, modelDocument.RootElement);
-            }
-            catch (JsonException)
-            {
-                return false;
-            }
-        }
-
-        return string.Equals(
-            FormatJsonValue(rawValue),
-            FormatModelValue(modelValue),
-            StringComparison.Ordinal);
     }
 
-    private static bool EnumValueMatchesRaw(JsonElement rawValue, Type enumType, object modelValue)
+    private static bool SemanticJsonEquals(object? modelValue, object? wireValue, Type propertyType)
     {
-        if (rawValue.ValueKind != JsonValueKind.String)
+        if (modelValue is null && wireValue is null)
+        {
+            return true;
+        }
+
+        if (modelValue is null || wireValue is null)
         {
             return false;
         }
 
-        var rawString = rawValue.GetString();
-        if (string.IsNullOrWhiteSpace(rawString))
-        {
-            return false;
-        }
+        var modelJson = JsonSerializer.Serialize(modelValue, propertyType, MappingComparisonJsonOptions);
+        var wireJson = JsonSerializer.Serialize(wireValue, propertyType, MappingComparisonJsonOptions);
 
-        var memberName = modelValue.ToString();
-        if (string.IsNullOrWhiteSpace(memberName))
-        {
-            return false;
-        }
-
-        var member = enumType.GetMember(memberName).FirstOrDefault();
-        var wireName = member?.GetCustomAttribute<JsonStringEnumMemberNameAttribute>()?.Name;
-
-        return !string.IsNullOrWhiteSpace(wireName)
-            ? string.Equals(rawString, wireName, StringComparison.Ordinal)
-            : NormalizeToken(rawString) == NormalizeToken(memberName);
-    }
-
-    private static string NormalizeToken(string value) =>
-        value.Replace("-", string.Empty, StringComparison.Ordinal)
-            .Replace("_", string.Empty, StringComparison.Ordinal)
-            .Replace(" ", string.Empty, StringComparison.Ordinal)
-            .Trim()
-            .ToLowerInvariant();
-
-    private static bool TryReadDecimal(JsonElement rawValue, out decimal value)
-    {
-        if (rawValue.ValueKind == JsonValueKind.Number)
-        {
-            return rawValue.TryGetDecimal(out value);
-        }
-
-        if (rawValue.ValueKind == JsonValueKind.String)
-        {
-            return decimal.TryParse(rawValue.GetString(), NumberStyles.Any, CultureInfo.InvariantCulture, out value);
-        }
-
-        value = default;
-        return false;
-    }
-
-    private static bool TryReadDecimal(object rawValue, out decimal value)
-    {
-        switch (rawValue)
-        {
-            case decimal decimalValue:
-                value = decimalValue;
-                return true;
-            case int intValue:
-                value = intValue;
-                return true;
-            case long longValue:
-                value = longValue;
-                return true;
-            case short shortValue:
-                value = shortValue;
-                return true;
-            case double doubleValue:
-                value = Convert.ToDecimal(doubleValue, CultureInfo.InvariantCulture);
-                return true;
-            case float floatValue:
-                value = Convert.ToDecimal(floatValue, CultureInfo.InvariantCulture);
-                return true;
-            case string stringValue:
-                return decimal.TryParse(stringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out value);
-            default:
-                value = default;
-                return false;
-        }
+        using var modelDocument = JsonDocument.Parse(modelJson);
+        using var wireDocument = JsonDocument.Parse(wireJson);
+        return JsonElement.DeepEquals(modelDocument.RootElement, wireDocument.RootElement);
     }
 
     private static string FormatJsonValue(JsonElement value)
