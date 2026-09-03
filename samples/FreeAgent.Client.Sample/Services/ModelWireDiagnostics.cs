@@ -66,7 +66,8 @@ public static class ModelWireDiagnostics
 
     private static readonly JsonSerializerOptions MappingComparisonJsonOptions = new()
     {
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        NumberHandling = JsonNumberHandling.AllowReadingFromString
     };
 
     /// <summary>

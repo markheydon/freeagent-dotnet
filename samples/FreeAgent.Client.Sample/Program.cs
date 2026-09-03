@@ -1,6 +1,7 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Sample.Components;
 using FreeAgent.Client.Sample.Services;
+using FreeAgent.Client.Sample.Services.Turpinverse;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,6 +22,10 @@ builder.Services.AddHttpContextAccessor();
 // In a multi-user scenario, tokens would be shared across all circuits/sessions.
 builder.Services.AddSingleton<TokenStore>();
 builder.Services.AddSingleton<OAuthService>();
+builder.Services.AddSingleton<ConnectedCompanyContext>();
+builder.Services.AddSingleton<TurpinverseContactCatalog>();
+builder.Services.AddSingleton<TurpinverseContactSeeder>();
+builder.Services.AddSingleton<SampleContactSeeder>();
 builder.Services.AddHttpClient<ApiDiagnosticsService>();
 
 var app = builder.Build();

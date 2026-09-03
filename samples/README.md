@@ -11,6 +11,9 @@ Use it to exercise SDK calls against the FreeAgent API as new services are added
 - A FreeAgent developer account and registered OAuth app
   - Production apps: <https://dev.freeagent.com>
   - Sandbox apps: <https://dev.sandbox.freeagent.com>
+- A FreeAgent **sandbox account** for OAuth approval (separate from the developer portal):
+  - Sign up: <https://signup.sandbox.freeagent.com/signup>
+  - Log in: <https://login.sandbox.freeagent.com/login>
 
 ---
 

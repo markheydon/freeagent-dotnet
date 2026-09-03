@@ -14,12 +14,6 @@ public class Contact
     public string Url { get; set; } = string.Empty;
 
     /// <summary>
-    /// Contact display name.
-    /// </summary>
-    [JsonPropertyName("contact_name")]
-    public string? ContactName { get; set; }
-
-    /// <summary>
     /// Contact first name.
     /// </summary>
     [JsonPropertyName("first_name")]
@@ -214,20 +208,15 @@ public class Contact
     {
         get
         {
-            if (!string.IsNullOrWhiteSpace(ContactName))
+            var fullName = string.Join(" ", new[] { FirstName, LastName }.Where(static x => !string.IsNullOrWhiteSpace(x)));
+            if (!string.IsNullOrWhiteSpace(fullName))
             {
-                return ContactName;
+                return fullName;
             }
 
             if (!string.IsNullOrWhiteSpace(OrganisationName))
             {
                 return OrganisationName;
-            }
-
-            var fullName = string.Join(" ", new[] { FirstName, LastName }.Where(static x => !string.IsNullOrWhiteSpace(x)));
-            if (!string.IsNullOrWhiteSpace(fullName))
-            {
-                return fullName;
             }
 
             return Url;

@@ -1,9 +1,12 @@
 @page "/contacts/detail"
 @using FreeAgent.Client.Models.Contacts
 @using FreeAgent.Client.Sample.Services
+@using FreeAgent.Client.Sample.Services.Turpinverse
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
 @inject ApiDiagnosticsService ApiDiagnostics
+@inject TurpinverseContactSeeder TurpinverseContactSeeder
+@inject SampleContactSeeder SampleContactSeeder
 @inject NavigationManager NavigationManager
 
 <PageTitle>Contact detail — FreeAgent SDK Sample</PageTitle>
@@ -41,6 +44,9 @@
                     <MudText Typo="Typo.body2" Class="hero-copy">
                         Pick a contact ID from the <MudLink Href="/contacts">contacts list</MudLink>, or pass
                         <code>?id=12345</code> in the URL. Each successful operation shows wire-to-model mapping below.
+                        Seed contacts from <MudLink Href="https://turpinverse.uk/" Target="_blank">Turpinverse</MudLink>
+                        canon for realistic demo data. Existing contacts are matched by email and updated when canon changes.
+                        Use the full-detail probe contact to exercise every writable field.
                     </MudText>
                     <MudNumericField @bind-Value="_contactId" Label="Contact ID" Min="1" />
                     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
@@ -48,7 +54,11 @@
                                    StartIcon="@Icons.Material.Filled.CloudDownload"
                                    OnClick="GetContactAsync">Get contact</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
-                                   OnClick="CreateContactAsync">Create test contact</MudButton>
+                                   OnClick="CreateRichardTurpinAsync">Create Richard Turpin</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateAllTurpinverseContactsAsync">Create all Turpinverse contacts</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading"
+                                   OnClick="CreateFullDetailProbeContactAsync">Create full-detail probe contact</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _contactId is null"
                                    OnClick="UpdateContactAsync">Update organisation name</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _contactId is null"
@@ -148,24 +158,114 @@
             envelopeProperty: "contact");
     }
 
-    private async Task CreateContactAsync()
+    private async Task CreateRichardTurpinAsync()
     {
         await RunOperationAsync(
             async client =>
             {
-                var name = $"SDK Sample {DateTime.UtcNow:yyyyMMdd-HHmmss}";
-                _contact = await client.Contacts.CreateContactAsync(new Contact
-                {
-                    OrganisationName = name,
-                    Status = ContactStatus.Active
-                });
+                var result = await TurpinverseContactSeeder.CreateRichardTurpinAsync(client);
+                _contact = result.Contact;
                 _contactId = ContactUrlParser.ParseId(_contact.Url);
-                _operationMessage = _contactId is null
-                    ? $"Created contact \"{name}\" but could not parse ID from URL."
-                    : $"Created contact {_contactId.Value}: {name}";
+                _operationMessage = result.Action == ContactSeedAction.Updated
+                    ? $"Updated Richard Turpin (contact {_contactId}) from current Turpinverse canon."
+                    : _contactId is null
+                        ? "Created Richard Turpin but could not parse ID from URL."
+                        : $"Created Richard Turpin as contact {_contactId.Value}.";
                 return _contactId is null ? null : $"contacts/{_contactId}";
             },
             envelopeProperty: "contact");
+    }
+
+    private async Task CreateFullDetailProbeContactAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await SampleContactSeeder.CreateFullDetailProbeAsync(client);
+                _contact = result.Contact;
+                _contactId = ContactUrlParser.ParseId(_contact.Url);
+                _operationMessage = result.Action == ContactSeedAction.Updated
+                    ? $"Updated full-detail probe contact {_contactId} from current fixture."
+                    : _contactId is null
+                        ? "Created full-detail probe contact but could not parse ID from URL."
+                        : $"Created full-detail probe contact {_contactId.Value}.";
+                return _contactId is null ? null : $"contacts/{_contactId}";
+            },
+            envelopeProperty: "contact");
+    }
+
+    private async Task CreateAllTurpinverseContactsAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var result = await TurpinverseContactSeeder.CreateAllContactsAsync(client);
+            var lastTouched = result.Updated.Count > 0
+                ? result.Updated[^1]
+                : result.Created.Count > 0
+                    ? result.Created[^1]
+                    : null;
+
+            if (lastTouched is not null)
+            {
+                _contact = lastTouched;
+                _contactId = ContactUrlParser.ParseId(_contact.Url);
+
+                if (_contactId is not null)
+                {
+                    _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                        token.AccessToken,
+                        TokenStore.ConnectedEnvironment,
+                        $"contacts/{_contactId}");
+
+                    _probe = ModelWireDiagnostics.Build(_contact, _wireApiResponse, "contact");
+                }
+            }
+            else
+            {
+                _contact = null;
+                _contactId = null;
+            }
+
+            var summaryParts = new List<string>();
+            if (result.Created.Count > 0)
+            {
+                summaryParts.Add($"created {result.Created.Count}");
+            }
+
+            if (result.Updated.Count > 0)
+            {
+                summaryParts.Add($"updated {result.Updated.Count}");
+            }
+
+            _operationMessage = summaryParts.Count == 0
+                ? "No Turpinverse contacts were created or updated."
+                : $"Turpinverse sync complete: {string.Join(", ", summaryParts)}.";
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private async Task UpdateContactAsync()

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "essex-gang",
+    "tradingName": "Essex Solutions Group"
+  },
+  {
+    "id": "turpin-enterprises",
+    "tradingName": "Turpin Enterprises"
+  },
+  {
+    "id": "millington-inn",
+    "tradingName": "Rose & Crown Hospitality"
+  },
+  {
+    "id": "york-assize-court",
+    "tradingName": "York Due Diligence Partners"
+  },
+  {
+    "id": "king-equine-trading",
+    "tradingName": "King Equine Partners"
+  },
+  {
+    "id": "brazier-legal",
+    "tradingName": "Brazier Legal Associates"
+  },
+  {
+    "id": "bayes-horsemanship",
+    "tradingName": "Bayes Horsemanship Academy"
+  },
+  {
+    "id": "york-racing-society",
+    "tradingName": "York Racing Society"
+  },
+  {
+    "id": "epping-forest-authority",
+    "tradingName": "Epping Forest Authority"
+  },
+  {
+    "id": "highway-commission",
+    "tradingName": "Highway Commission"
+  }
+]
