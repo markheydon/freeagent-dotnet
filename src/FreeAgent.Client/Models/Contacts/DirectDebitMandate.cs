@@ -17,12 +17,14 @@ public class DirectDebitMandate
     /// Maximum collection amount.
     /// </summary>
     [JsonPropertyName("max_amount")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
     public decimal? MaxAmount { get; set; }
 
     /// <summary>
     /// Remaining collection amount in the current interval.
     /// </summary>
     [JsonPropertyName("remaining_amount")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
     public decimal? RemainingAmount { get; set; }
 
     /// <summary>

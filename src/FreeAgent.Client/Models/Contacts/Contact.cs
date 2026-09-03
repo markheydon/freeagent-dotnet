@@ -149,6 +149,7 @@ public class Contact
     /// Account balance for the contact.
     /// </summary>
     [JsonPropertyName("account_balance")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
     public decimal? AccountBalance { get; set; }
 
     /// <summary>

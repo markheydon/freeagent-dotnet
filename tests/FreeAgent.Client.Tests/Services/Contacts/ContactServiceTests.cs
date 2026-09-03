@@ -338,6 +338,32 @@ public class ContactServiceTests
     }
 
     [Fact]
+    public async Task CreateContactAsync_DeserializesStringAccountBalance()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Created)
+        {
+            Content = new StringContent("""
+            {
+              "contact": {
+                "url": "https://api.freeagent.com/v2/contacts/239273",
+                "organisation_name": "SDK Sample",
+                "account_balance": "0.0",
+                "status": "Active"
+              }
+            }
+            """)
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ContactService(client);
+
+        var created = await service.CreateContactAsync(new Contact { OrganisationName = "SDK Sample" });
+
+        Assert.Equal(0m, created.AccountBalance);
+    }
+
+    [Fact]
     public async Task GetContactAsync_WhenPayloadMissing_ThrowsFreeAgentApiException()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
