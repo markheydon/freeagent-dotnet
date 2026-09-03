@@ -4,7 +4,8 @@ Maintainer guide for publishing `FreeAgent.Client` to NuGet.org. Consumer-facing
 
 ## Prerequisites
 
-- [ ] `NUGET_API_KEY` configured in repository secrets (NuGet.org API key scoped to push `FreeAgent.Client`)
+- [ ] NuGet.org **Trusted Publishing** policy configured for `markheydon/freeagent-dotnet` and workflow `release.yml`, scoped to `FreeAgent.Client`
+- [ ] `NUGET_USER` repository secret set to your nuget.org username (profile name, not email)
 - [ ] `<Version>` in [FreeAgent.Client.csproj](../src/FreeAgent.Client/FreeAgent.Client.csproj) matches the intended tag
 - [ ] `main` is green on CI
 - [ ] Contacts and Company resources complete for the release scope
@@ -29,6 +30,7 @@ Maintainer guide for publishing `FreeAgent.Client` to NuGet.org. Consumer-facing
 4. **Monitor** the [Release workflow](../.github/workflows/release.yml):
    - Validates tag matches csproj version
    - Builds and tests `net8.0` and `net10.0`
+   - Exchanges a GitHub OIDC token for a short-lived NuGet API key (Trusted Publishing)
    - Packs and pushes to NuGet (`--skip-duplicate` for safe re-runs)
    - Creates a GitHub Release (prerelease when tag contains `-alpha`, `-beta`, etc.)
 
@@ -50,7 +52,7 @@ Inspect `./nupkg/*.nupkg` without publishing.
 | Symptom | Action |
 |---------|--------|
 | Tag/csproj version mismatch | Workflow fails validation — align `<Version>` and tag |
-| `403` on NuGet push | Check `NUGET_API_KEY` secret and package ID ownership |
+| `403` on NuGet push | Check Trusted Publishing policy (repo, workflow file, package glob) and `NUGET_USER` secret |
 | Package already exists | Expected on re-run; workflow uses `--skip-duplicate` |
 | Missing `net8.0` build on CI | Ensure setup-dotnet installs `8.0.x` and `10.0.x` |
 
