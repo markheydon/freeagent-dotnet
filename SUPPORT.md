@@ -22,6 +22,7 @@ Use the repository templates:
 
 ## Before Opening a New Thread
 
+- Check the [developer documentation](docs/README.md) (getting started, pagination, error handling, API coverage).
 - Check [README.md](README.md) and [VERSIONING.md](VERSIONING.md).
 - Search existing issues and discussions for similar topics.
 - For API behaviour questions, check the upstream [FreeAgent API documentation](https://dev.freeagent.com/docs).

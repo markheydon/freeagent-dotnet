@@ -62,12 +62,6 @@ public class Company
     public SalesTaxRegistrationStatus? SalesTaxRegistrationStatus { get; set; }
 
     /// <summary>
-    /// VAT number.
-    /// </summary>
-    [JsonPropertyName("sales_tax_number")]
-    public string? SalesTaxNumber { get; set; }
-
-    /// <summary>
     /// Company start date.
     /// </summary>
     [JsonPropertyName("company_start_date")]
@@ -114,7 +108,7 @@ public class Company
     /// Date format preference used throughout the account.
     /// </summary>
     [JsonPropertyName("short_date_format")]
-    public string? ShortDateFormat { get; set; }
+    public ShortDateFormat? ShortDateFormat { get; set; }
 
     /// <summary>
     /// FreeAgent accounting start date.

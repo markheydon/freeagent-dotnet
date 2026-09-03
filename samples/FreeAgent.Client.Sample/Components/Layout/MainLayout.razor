@@ -1,6 +1,8 @@
 @implements IDisposable
 @inherits LayoutComponentBase
 @inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ConnectedCompanyContext ConnectedCompanyContext
 @inject NavigationManager NavigationManager
 
 <MudThemeProvider Theme="_theme" />
@@ -28,13 +30,45 @@
 
         <MudSpacer />
 
-        <MudChip T="string"
-                 Color="@(TokenStore.IsConnected ? Color.Success : Color.Default)"
-                 Variant="Variant.Outlined"
-                 Size="Size.Small"
-                 Icon="@(TokenStore.IsConnected ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)">
-            @(TokenStore.IsConnected ? "Connected" : "Awaiting auth")
-        </MudChip>
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Class="appbar-actions">
+            <MudChip T="string"
+                     Variant="Variant.Outlined"
+                     Size="Size.Small"
+                     Color="Color.Default">
+                @FreeAgentWebUrls.GetEnvironmentLabel(ActiveEnvironment)
+            </MudChip>
+
+            @if (TokenStore.IsConnected && !string.IsNullOrWhiteSpace(ConnectedCompanyContext.AccountUrl))
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           Href="@ConnectedCompanyContext.AccountUrl"
+                           Target="_blank"
+                           StartIcon="@Icons.Material.Filled.OpenInNew">
+                    Open @(ConnectedCompanyContext.CompanyName ?? "account")
+                </MudButton>
+            }
+            else
+            {
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           Href="@FreeAgentWebUrls.GetLoginUrl(ActiveEnvironment)"
+                           Target="_blank"
+                           StartIcon="@Icons.Material.Filled.Login">
+                    @FreeAgentWebUrls.GetEnvironmentLabel(ActiveEnvironment) login
+                </MudButton>
+            }
+
+            <MudChip T="string"
+                     Color="@(TokenStore.IsConnected ? Color.Success : Color.Default)"
+                     Variant="Variant.Outlined"
+                     Size="Size.Small"
+                     Icon="@(TokenStore.IsConnected ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.RadioButtonUnchecked)">
+                @(TokenStore.IsConnected ? "Connected" : "Awaiting auth")
+            </MudChip>
+        </MudStack>
     </MudAppBar>
 
     <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Variant="DrawerVariant.Responsive" Class="sample-drawer">
@@ -65,7 +99,10 @@
 
             <MudNavGroup Title="Contacts" Icon="@Icons.Material.Filled.Contacts" Expanded="@IsContactsRoute">
                 <MudNavLink Href="/contacts" Icon="@Icons.Material.Filled.AllInclusive">
-                    Contacts Pagination
+                    Contacts list
+                </MudNavLink>
+                <MudNavLink Href="/contacts/detail" Icon="@Icons.Material.Filled.Person">
+                    Contact CRUD
                 </MudNavLink>
             </MudNavGroup>
 
@@ -84,15 +121,47 @@
 
 @code {
     private bool _drawerOpen = true;
+    private bool _wasConnected;
+    private bool _companyRefreshFailed;
 
     protected override void OnInitialized()
     {
         NavigationManager.LocationChanged += HandleLocationChanged;
+        _wasConnected = TokenStore.IsConnected;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await SyncConnectedCompanyAsync();
     }
 
     public void Dispose()
     {
         NavigationManager.LocationChanged -= HandleLocationChanged;
+    }
+
+    private async Task SyncConnectedCompanyAsync()
+    {
+        var isConnected = TokenStore.IsConnected;
+        if (isConnected == _wasConnected && (!isConnected || ConnectedCompanyContext.IsLoaded || _companyRefreshFailed))
+        {
+            return;
+        }
+
+        _wasConnected = isConnected;
+
+        if (isConnected)
+        {
+            var refreshed = await ConnectedCompanyContext.RefreshAsync();
+            _companyRefreshFailed = !refreshed;
+        }
+        else
+        {
+            ConnectedCompanyContext.Clear();
+            _companyRefreshFailed = false;
+        }
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private void ToggleDrawer()
@@ -123,8 +192,15 @@
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
     {
-        _ = InvokeAsync(StateHasChanged);
+        _ = InvokeAsync(async () =>
+        {
+            await SyncConnectedCompanyAsync();
+            StateHasChanged();
+        });
     }
+
+    private FreeAgentEnvironment ActiveEnvironment =>
+        TokenStore.IsConnected ? TokenStore.ConnectedEnvironment : OAuthService.SelectedEnvironment;
 
     private readonly MudTheme _theme = new()
     {

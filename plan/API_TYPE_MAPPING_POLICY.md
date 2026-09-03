@@ -74,7 +74,7 @@ Post-GA:
 - [ ] Converted constrained strings to enum or strong value type where appropriate.
 - [ ] Confirmed wrapper models exist and are validated.
 - [ ] Added or updated tests for wire mapping and parsing behaviour.
-- [ ] Updated sample app when endpoint behaviour changed.
+- [ ] Updated sample probe pages when endpoint behaviour changed (see [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md)).
 - [ ] Documented any intentional deviations.
 
 ## Handling API Changes and Deviations

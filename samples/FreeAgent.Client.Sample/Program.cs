@@ -1,6 +1,7 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Sample.Components;
 using FreeAgent.Client.Sample.Services;
+using FreeAgent.Client.Sample.Services.Turpinverse;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,11 +15,17 @@ builder.Services.AddMudServices(config =>
     config.SnackbarConfiguration.PreventDuplicates = false;
 });
 
+builder.Services.AddHttpContextAccessor();
+
 // NOTE: TokenStore and OAuthService are registered as singletons.
 // This sample is intended for local, single-user development use only.
 // In a multi-user scenario, tokens would be shared across all circuits/sessions.
 builder.Services.AddSingleton<TokenStore>();
 builder.Services.AddSingleton<OAuthService>();
+builder.Services.AddSingleton<ConnectedCompanyContext>();
+builder.Services.AddSingleton<TurpinverseContactCatalog>();
+builder.Services.AddSingleton<TurpinverseContactSeeder>();
+builder.Services.AddSingleton<SampleContactSeeder>();
 builder.Services.AddHttpClient<ApiDiagnosticsService>();
 
 var app = builder.Build();
@@ -32,7 +39,33 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAntiforgery();
 
+app.Use(async (context, next) =>
+{
+    context.RequestServices.GetRequiredService<TokenStore>().TryRestoreFromCurrentRequest();
+    await next();
+});
+
 app.MapStaticAssets();
+
+// OAuth start — sets CSRF cookie and redirects to FreeAgent (must be a full HTTP request, not Blazor interactive).
+app.MapGet("/oauth/start", (
+    string? environment,
+    TokenStore tokenStore,
+    OAuthService oauthService,
+    HttpContext httpContext) =>
+{
+    if (!oauthService.IsConfigured)
+    {
+        return Results.Redirect("/?auth_error=not_configured");
+    }
+
+    var selectedEnvironment = ParseEnvironment(environment) ?? oauthService.SelectedEnvironment;
+    oauthService.SelectedEnvironment = selectedEnvironment;
+
+    var state = tokenStore.GenerateAndStorePendingState(selectedEnvironment, httpContext.Response);
+    var authorizationUrl = oauthService.BuildAuthorizationUrl(state);
+    return Results.Redirect(authorizationUrl);
+});
 
 // OAuth authorization callback — FreeAgent redirects here after the user approves or denies the app.
 app.MapGet("/oauth/callback", async (
@@ -40,7 +73,8 @@ app.MapGet("/oauth/callback", async (
     string? state,
     string? error,
     TokenStore tokenStore,
-    OAuthService oauthService) =>
+    OAuthService oauthService,
+    HttpContext httpContext) =>
 {
     // FreeAgent returned an error (e.g. user denied access)
     if (!string.IsNullOrEmpty(error))
@@ -61,8 +95,9 @@ app.MapGet("/oauth/callback", async (
 
     try
     {
+        oauthService.SelectedEnvironment = pendingEnvironment;
         var token = await oauthService.ExchangeCodeAsync(code);
-        tokenStore.SetToken(token, pendingEnvironment);
+        tokenStore.SetToken(token, pendingEnvironment, httpContext.Response);
     }
     catch (FreeAgentOAuthException ex)
     {
@@ -82,6 +117,17 @@ app.MapGet("/oauth/callback", async (
 
     return Results.Redirect("/");
 });
+
+app.MapGet("/oauth/disconnect", (TokenStore tokenStore, HttpContext httpContext) =>
+{
+    tokenStore.ClearToken(httpContext.Response);
+    return Results.Redirect("/");
+});
+
+static FreeAgentEnvironment? ParseEnvironment(string? value) =>
+    Enum.TryParse<FreeAgentEnvironment>(value, ignoreCase: true, out var environment)
+        ? environment
+        : null;
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

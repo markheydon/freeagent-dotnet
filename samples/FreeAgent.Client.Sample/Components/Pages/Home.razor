@@ -60,7 +60,7 @@
                     @if (TokenStore.IsConnected)
                     {
                         <MudAlert Severity="Severity.Success" Dense="true" Variant="Variant.Outlined">
-                            Active OAuth session stored in memory for this app process.
+                            Active OAuth session restored from a browser cookie (up to 1 hour) or stored in memory for this app process.
                         </MudAlert>
 
                         <MudChip T="string" Color="Color.Info" Variant="Variant.Outlined" Icon="@Icons.Material.Filled.Lock">
@@ -99,7 +99,7 @@
                     {
                         <MudText Typo="Typo.body2">
                             Start the OAuth flow to connect a local developer session to FreeAgent.
-                            The app redirects to FreeAgent, handles the callback, and stores the token in memory.
+                            The app redirects to FreeAgent, handles the callback, and stores the token in a short-lived browser cookie.
                         </MudText>
 
                         <MudSelect T="FreeAgentEnvironment"
@@ -114,6 +114,11 @@
 
                         <MudText Typo="Typo.caption">
                             Sandbox uses api.sandbox.freeagent.com and is safe for isolated testing.
+                            Sign in to your sandbox account at
+                            <MudLink Href="https://login.sandbox.freeagent.com/login" Target="_blank">login.sandbox.freeagent.com</MudLink>
+                            (not the developer portal at dev.freeagent.com).
+                            Need an account?
+                            <MudLink Href="https://signup.sandbox.freeagent.com/signup" Target="_blank">Create a sandbox account</MudLink>.
                         </MudText>
 
                         @if (!OAuthService.IsConfigured)
@@ -213,6 +218,7 @@
             "invalid_state" => "Authentication failed: invalid state parameter. Please try connecting again.",
             "missing_params" => "Authentication failed: missing parameters in the FreeAgent callback.",
             "access_denied" => "Access denied. You did not approve the FreeAgent authorization request.",
+            "not_configured" => "OAuth credentials are not configured. Set user secrets as described in samples/README.md.",
             { Length: > 0 } msg => $"Authentication failed: {msg}",
             _ => null
         };
@@ -220,16 +226,13 @@
 
     private void Connect()
     {
-        var state = TokenStore.GenerateAndStorePendingState(OAuthService.SelectedEnvironment);
-        var url = OAuthService.BuildAuthorizationUrl(state);
-        NavigationManager.NavigateTo(url, forceLoad: true);
+        var environment = Uri.EscapeDataString(OAuthService.SelectedEnvironment.ToString());
+        NavigationManager.NavigateTo($"/oauth/start?environment={environment}", forceLoad: true);
     }
 
     private void Disconnect()
     {
-        TokenStore.ClearToken();
-        _token = null;
-        NavigationManager.NavigateTo("/", forceLoad: false);
+        NavigationManager.NavigateTo("/oauth/disconnect", forceLoad: true);
     }
 
     private void OnSelectedEnvironmentChanged(FreeAgentEnvironment environment)

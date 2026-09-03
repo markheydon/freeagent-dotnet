@@ -23,6 +23,8 @@ For setup and usage questions, please use [GitHub Discussions](https://github.co
 
 ## Development Setup
 
+See **[docs/contributing-setup.md](docs/contributing-setup.md)** for SDK installation, verifying `dotnet --list-sdks`, and building `FreeAgent.slnx`.
+
 Requirements:
 
 - .NET 8.0 SDK and runtime (required to build and test the SDK `net8.0` target).
@@ -33,7 +35,7 @@ The SDK package targets both frameworks. The sample app is .NET 10.0-only.
 Build and test locally:
 
 ```bash
-dotnet build
+dotnet build FreeAgent.slnx
 dotnet test
 ```
 
@@ -58,7 +60,7 @@ To run tests for a single framework, use `dotnet test -f net10.0` or `dotnet tes
 
 The Blazor sample is a living reference of what the SDK implements today.
 
-If you add, remove, or rename SDK endpoints under `src/FreeAgent.Client/Services/`, update `samples/FreeAgent.Client.Sample` in the same PR so the sample remains aligned.
+If you add, remove, or rename SDK endpoints under `src/FreeAgent.Client/Services/`, update `samples/FreeAgent.Client.Sample` in the same PR so the sample remains aligned. Follow [`docs/contributing/sample-probe-pages.md`](docs/contributing/sample-probe-pages.md) for wire-to-model probe pages (see Company and Contacts as references).
 
 ## Testing Guidance
 

@@ -82,11 +82,22 @@ Add or update tests to cover:
 
 ## Step 6 — Sample App Sync
 
+Follow the probe-page standard documented in [`docs/contributing/sample-probe-pages.md`](../../docs/contributing/sample-probe-pages.md). Use **Company** and **Contacts** as reference implementations.
+
 1. Add or update page(s) under `samples/FreeAgent.Client.Sample/Components/Pages/`.
 2. Update navigation in `samples/FreeAgent.Client.Sample/Components/Layout/MainLayout.razor`.
 3. Do not add sample UI for endpoints not implemented in SDK.
-4. Show complete endpoint output (all mapped model properties).
-5. Include a readable raw JSON output section for full payload inspection.
+4. On each probe page, include:
+   - `EndpointProbeHeader` (call under test, environment, endpoint path)
+   - `ModelProbeResults` built via `ModelWireDiagnostics.Build(...)` after successful SDK calls
+   - `ApiErrorDiagnostics` on failures
+   - A readable raw JSON section (provided by `ModelProbeResults`)
+5. For **list** endpoints: per-row mapping inspection from the wire array item (see `Contacts.razor`).
+6. For **CRUD** endpoints: detail page with `?id=` deep links; fetch wire JSON after create/update; show `MudProgressLinear` while operations run (see `ContactDetail.razor`).
+7. Add seed fixtures when demo data helps field coverage (narrative canon and/or a full-detail probe contact); upsert by a stable natural key when re-running should refresh existing records.
+8. Only model wire fields that appear in the official FreeAgent API docs.
+
+Update [`samples/README.md`](../../samples/README.md) and [`docs/reference/api-coverage.md`](../../docs/reference/api-coverage.md) in the same change.
 
 ## Step 7 — Documentation
 
@@ -105,6 +116,7 @@ Highlight any breaking changes applied during retrofit (DateTime → DateOnly, s
 
 ## References
 
+- `docs/contributing/sample-probe-pages.md`
 - `plan/IMPLEMENTING_ENDPOINTS.md`
 - `plan/API_TYPE_MAPPING_POLICY.md`
 - `plan/API_TO_SDK_ALIGNMENT.md`

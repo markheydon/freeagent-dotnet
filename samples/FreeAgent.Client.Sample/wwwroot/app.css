@@ -54,7 +54,25 @@ body {
 }
 
 .sample-page {
+    width: 100%;
     max-width: 1200px;
+}
+
+@media (min-width: 1400px) {
+    .sample-page {
+        max-width: min(1680px, calc(100vw - 20rem));
+    }
+
+    .sample-main {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+
+@media (min-width: 1920px) {
+    .sample-page {
+        max-width: min(2200px, calc(100vw - 18rem));
+    }
 }
 
 .hero-panel,
@@ -86,6 +104,11 @@ body {
     box-shadow: var(--panel-shadow);
 }
 
+.contact-crud-progress {
+    margin: -1.5rem -1.5rem 0;
+    border-radius: 0;
+}
+
 .probe-card {
     padding: 1rem;
     background: rgba(248, 250, 248, 0.95);
@@ -111,6 +134,51 @@ code {
     padding: 0.1rem 0.35rem;
     border-radius: 8px;
     background: rgba(15, 118, 110, 0.08);
+}
+
+.diagnostics-table-shell {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.diagnostics-table-shell--wide .diagnostics-table .mud-table-root {
+    min-width: 72rem;
+}
+
+.diagnostics-table .diagnostics-value-cell {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+.diagnostics-table-shell--wide .diagnostics-value-cell {
+    min-width: 10rem;
+    max-width: 28rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.wide-table-toggle {
+    margin-left: auto;
+}
+
+.filter-chip {
+    cursor: pointer;
+}
+
+.contacts-filter-grid {
+    align-items: end;
+}
+
+.contacts-load-button-item {
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 0.125rem;
+}
+
+.contacts-load-button {
+    min-height: 2.5rem;
+    white-space: nowrap;
 }
 
 @media (max-width: 960px) {

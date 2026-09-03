@@ -53,6 +53,8 @@ The package will be promoted to stable `1.0.0` when all of the following are tru
 
 Releases are triggered by pushing a Git tag that matches `v*.*.*` (e.g. `v0.1.0-alpha.1`, `v0.1.0-beta.1`, `v1.0.0`).
 
+See [plan/RELEASE.md](plan/RELEASE.md) for the maintainer runbook.
+
 The release workflow will:
 
 - Build and test the solution.

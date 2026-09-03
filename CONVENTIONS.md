@@ -27,7 +27,7 @@ src/
 	│   └── Serialization/               # JSON converters and TFM compatibility
 	├── Models/                          # Resource-grouped strongly typed models
 	│   ├── Company/                     # Company resource models (Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers)
-	│   └── Contacts/                    # Contacts resource models (ContactSummary, response wrappers)
+	│   └── Contacts/                    # Contacts resource models (Contact, response wrappers)
 	└── Services/                        # Resource-oriented service classes
 		├── Company/
 		│   └── CompanyService.cs
@@ -60,7 +60,7 @@ tests/
 **Key naming rules (unchanged):**
 - Service: [Resource]Service (CompanyService, ContactService)
 - Response wrapper: [Resource]Response (CompanyResponse, ContactsResponse)
-- Resource model: [Resource] (Company, ContactSummary)
+- Resource model: [Resource] (Company, Contact)
 - Support model: descriptive noun (TaxTimelineItem, AnnualAccountingPeriod, SalesTaxRate)
 - Exception: [Product][Context]Exception (FreeAgentApiException)
 - Test class: [ClassName]Tests

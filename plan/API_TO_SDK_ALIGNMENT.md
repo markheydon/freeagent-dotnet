@@ -27,7 +27,7 @@ Per endpoint:
 2. Compare model field types and wrappers with [plan/API_TYPE_MAPPING_POLICY.md](API_TYPE_MAPPING_POLICY.md).
 3. Compare service behaviour, pagination, and payload guards.
 4. Confirm tests cover mapping, envelope handling, errors, and pagination.
-5. Confirm sample app page and navigation reflect current implementation.
+5. Confirm sample probe pages and navigation reflect current implementation (see [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md)).
 6. Record and classify drift before implementing changes.
 
 ## Drift Severity Matrix
