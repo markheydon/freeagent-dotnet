@@ -47,13 +47,34 @@ app.Use(async (context, next) =>
 
 app.MapStaticAssets();
 
+// OAuth start — sets CSRF cookie and redirects to FreeAgent (must be a full HTTP request, not Blazor interactive).
+app.MapGet("/oauth/start", (
+    string? environment,
+    TokenStore tokenStore,
+    OAuthService oauthService,
+    HttpContext httpContext) =>
+{
+    if (!oauthService.IsConfigured)
+    {
+        return Results.Redirect("/?auth_error=not_configured");
+    }
+
+    var selectedEnvironment = ParseEnvironment(environment) ?? oauthService.SelectedEnvironment;
+    oauthService.SelectedEnvironment = selectedEnvironment;
+
+    var state = tokenStore.GenerateAndStorePendingState(selectedEnvironment, httpContext.Response);
+    var authorizationUrl = oauthService.BuildAuthorizationUrl(state);
+    return Results.Redirect(authorizationUrl);
+});
+
 // OAuth authorization callback — FreeAgent redirects here after the user approves or denies the app.
 app.MapGet("/oauth/callback", async (
     string? code,
     string? state,
     string? error,
     TokenStore tokenStore,
-    OAuthService oauthService) =>
+    OAuthService oauthService,
+    HttpContext httpContext) =>
 {
     // FreeAgent returned an error (e.g. user denied access)
     if (!string.IsNullOrEmpty(error))
@@ -74,8 +95,9 @@ app.MapGet("/oauth/callback", async (
 
     try
     {
+        oauthService.SelectedEnvironment = pendingEnvironment;
         var token = await oauthService.ExchangeCodeAsync(code);
-        tokenStore.SetToken(token, pendingEnvironment);
+        tokenStore.SetToken(token, pendingEnvironment, httpContext.Response);
     }
     catch (FreeAgentOAuthException ex)
     {
@@ -96,11 +118,16 @@ app.MapGet("/oauth/callback", async (
     return Results.Redirect("/");
 });
 
-app.MapGet("/oauth/disconnect", (TokenStore tokenStore) =>
+app.MapGet("/oauth/disconnect", (TokenStore tokenStore, HttpContext httpContext) =>
 {
-    tokenStore.ClearToken();
+    tokenStore.ClearToken(httpContext.Response);
     return Results.Redirect("/");
 });
+
+static FreeAgentEnvironment? ParseEnvironment(string? value) =>
+    Enum.TryParse<FreeAgentEnvironment>(value, ignoreCase: true, out var environment)
+        ? environment
+        : null;
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

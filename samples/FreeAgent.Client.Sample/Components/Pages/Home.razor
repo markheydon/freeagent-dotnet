@@ -218,6 +218,7 @@
             "invalid_state" => "Authentication failed: invalid state parameter. Please try connecting again.",
             "missing_params" => "Authentication failed: missing parameters in the FreeAgent callback.",
             "access_denied" => "Access denied. You did not approve the FreeAgent authorization request.",
+            "not_configured" => "OAuth credentials are not configured. Set user secrets as described in samples/README.md.",
             { Length: > 0 } msg => $"Authentication failed: {msg}",
             _ => null
         };
@@ -225,9 +226,8 @@
 
     private void Connect()
     {
-        var state = TokenStore.GenerateAndStorePendingState(OAuthService.SelectedEnvironment);
-        var url = OAuthService.BuildAuthorizationUrl(state);
-        NavigationManager.NavigateTo(url, forceLoad: true);
+        var environment = Uri.EscapeDataString(OAuthService.SelectedEnvironment.ToString());
+        NavigationManager.NavigateTo($"/oauth/start?environment={environment}", forceLoad: true);
     }
 
     private void Disconnect()

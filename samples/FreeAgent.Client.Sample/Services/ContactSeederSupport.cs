@@ -27,10 +27,22 @@ internal static class ContactSeederSupport
                            view: ContactViews.All,
                            cancellationToken: cancellationToken))
         {
-            if (!string.IsNullOrWhiteSpace(contact.Email))
+            if (string.IsNullOrWhiteSpace(contact.Email))
             {
-                contactsByEmail.TryAdd(contact.Email, contact);
+                continue;
             }
+
+            if (contactsByEmail.TryGetValue(contact.Email, out var existing))
+            {
+                if (CompareContactIds(contact, existing) > 0)
+                {
+                    contactsByEmail[contact.Email] = contact;
+                }
+
+                continue;
+            }
+
+            contactsByEmail[contact.Email] = contact;
         }
 
         return contactsByEmail;
@@ -40,11 +52,12 @@ internal static class ContactSeederSupport
         FreeAgentClient client,
         string email,
         Contact desired,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        Dictionary<string, Contact>? existingContacts = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(email);
 
-        var existingContacts = await LoadExistingContactsByEmailAsync(client, cancellationToken);
+        existingContacts ??= await LoadExistingContactsByEmailAsync(client, cancellationToken);
         if (!existingContacts.TryGetValue(email, out var existingMatch))
         {
             var created = await client.Contacts.CreateContactAsync(desired, cancellationToken);
@@ -107,4 +120,11 @@ internal static class ContactSeederSupport
         || !string.IsNullOrWhiteSpace(contact.Region)
         || !string.IsNullOrWhiteSpace(contact.Postcode)
         || !string.IsNullOrWhiteSpace(contact.Country);
+
+    private static int CompareContactIds(Contact left, Contact right)
+    {
+        var leftId = ContactUrlParser.ParseId(left.Url) ?? 0;
+        var rightId = ContactUrlParser.ParseId(right.Url) ?? 0;
+        return leftId.CompareTo(rightId);
+    }
 }

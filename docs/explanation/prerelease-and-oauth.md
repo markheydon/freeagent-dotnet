@@ -26,6 +26,10 @@ See [VERSIONING.md](../../VERSIONING.md) for stage progression (alpha → beta �
 
 Your application integrates the protocol helpers into its own auth stack. The [sample app](../../samples/README.md) demonstrates one possible Blazor Server integration for development — it is not part of the NuGet package.
 
+## Sample app session storage (development only)
+
+The Blazor sample persists OAuth tokens and in-flight CSRF state in short-lived, `HttpOnly` browser cookies so local sessions survive page reloads and app restarts. Cookie payloads are **not encrypted** and are suitable **only for local single-user development**. Do not reuse this pattern in production applications; store tokens server-side with appropriate encryption and session management instead.
+
 ## Goals alignment
 
 This boundary supports [GOALS.md](../../GOALS.md) **G6**: protocol-level OAuth helpers without UI or flow management abstractions.

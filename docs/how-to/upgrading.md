@@ -18,6 +18,14 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP comp
 3. Run your test suite — model mapping changes (for example `string` to enum, `DateTime` to `DateOnly`) are the most common breaks during alpha.
 4. Check [API coverage](../reference/api-coverage.md) for newly implemented endpoints.
 
+## Recent breaking changes (alpha)
+
+### Contacts list returns full `Contact` models
+
+`ContactService.GetContactsPageAsync` and `GetAllContactsAsync` now return `Contact` instead of the removed `ContactSummary` type. Update any code that depended on the slimmer list shape.
+
+When creating or updating contacts, read-only API fields (`url`, balances, mandate state, timestamps) are ignored during serialisation. You can still round-trip a `Contact` retrieved from the API without sending those fields back.
+
 ## Stable releases
 
 Stable `1.0.0` will follow the criteria in [VERSIONING.md](../../VERSIONING.md). Until then, treat every upgrade as potentially breaking.

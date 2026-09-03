@@ -4,13 +4,13 @@ using FreeAgent.Client;
 namespace FreeAgent.Client.Sample.Services;
 
 /// <summary>
-/// Persists the sample app OAuth session in a short-lived browser cookie for local development.
-/// Tokens are stored as plaintext JSON and must not be used outside local single-user scenarios.
+/// Persists the in-flight OAuth CSRF state in a short-lived browser cookie so callbacks
+/// still validate after an app restart during local development.
 /// </summary>
-internal static class OAuthSessionPersistence
+internal static class OAuthPendingStatePersistence
 {
-    private const string CookieName = "freeagent.sample.oauth";
-    private static readonly TimeSpan CookieLifetime = TimeSpan.FromHours(1);
+    private const string CookieName = "freeagent.sample.oauth.pending";
+    private static readonly TimeSpan CookieLifetime = TimeSpan.FromMinutes(15);
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -18,26 +18,16 @@ internal static class OAuthSessionPersistence
         WriteIndented = false
     };
 
-    public static void Save(HttpResponse response, OAuthTokenResponse token, FreeAgentEnvironment environment)
+    public static void Save(HttpResponse response, string state, FreeAgentEnvironment environment)
     {
-        if (token.ExpiresAtUtc is null)
-        {
-            token.InitialiseExpiryUtc();
-        }
-
-        var payload = new PersistedOAuthSession(
-            token,
-            environment,
-            DateTimeOffset.UtcNow);
-
+        var payload = new PersistedOAuthPendingState(state, environment, DateTimeOffset.UtcNow);
         var json = JsonSerializer.Serialize(payload, JsonOptions);
-
         response.Cookies.Append(CookieName, json, CreateCookieOptions(response.HttpContext.Request.IsHttps));
     }
 
-    public static bool TryLoad(HttpRequest request, out OAuthTokenResponse? token, out FreeAgentEnvironment environment)
+    public static bool TryLoad(HttpRequest request, out string? state, out FreeAgentEnvironment environment)
     {
-        token = null;
+        state = null;
         environment = FreeAgentEnvironment.Production;
 
         if (!request.Cookies.TryGetValue(CookieName, out var json) || string.IsNullOrWhiteSpace(json))
@@ -47,8 +37,8 @@ internal static class OAuthSessionPersistence
 
         try
         {
-            var payload = JsonSerializer.Deserialize<PersistedOAuthSession>(json, JsonOptions);
-            if (payload?.Token is null)
+            var payload = JsonSerializer.Deserialize<PersistedOAuthPendingState>(json, JsonOptions);
+            if (payload is null || string.IsNullOrWhiteSpace(payload.State))
             {
                 return false;
             }
@@ -58,17 +48,7 @@ internal static class OAuthSessionPersistence
                 return false;
             }
 
-            if (payload.Token.ExpiresAtUtc is null)
-            {
-                payload.Token.InitialiseExpiryUtc();
-            }
-
-            if (payload.Token.IsExpired)
-            {
-                return false;
-            }
-
-            token = payload.Token;
+            state = payload.State;
             environment = payload.Environment;
             return true;
         }
@@ -94,8 +74,8 @@ internal static class OAuthSessionPersistence
             Path = "/"
         };
 
-    private sealed record PersistedOAuthSession(
-        OAuthTokenResponse Token,
+    private sealed record PersistedOAuthPendingState(
+        string State,
         FreeAgentEnvironment Environment,
         DateTimeOffset StoredAtUtc);
 }

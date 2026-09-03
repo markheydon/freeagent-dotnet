@@ -149,7 +149,7 @@ public sealed class ContactService
     {
         ArgumentNullException.ThrowIfNull(contact);
 
-        var content = FreeAgentJsonSerializer.CreateContent(new ContactRequest { Contact = contact });
+        var content = FreeAgentJsonSerializer.CreateContent(new ContactRequest { Contact = ContactWritePayload.FromContact(contact) });
         var response = await _requestClient.PostAsync<ContactResponse>("contacts", content, cancellationToken);
 
         if (response.Contact is null)
@@ -172,7 +172,7 @@ public sealed class ContactService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(contactId);
         ArgumentNullException.ThrowIfNull(contact);
 
-        var content = FreeAgentJsonSerializer.CreateContent(new ContactRequest { Contact = contact });
+        var content = FreeAgentJsonSerializer.CreateContent(new ContactRequest { Contact = ContactWritePayload.FromContact(contact) });
         var response = await _requestClient.PutAsync<ContactResponse>($"contacts/{contactId}", content, cancellationToken);
 
         if (response.Contact is null)

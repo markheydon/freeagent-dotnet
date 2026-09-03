@@ -41,6 +41,14 @@ public sealed class TokenStore
     /// </summary>
     public void SetToken(OAuthTokenResponse token, FreeAgentEnvironment environment)
     {
+        SetToken(token, environment, response: null);
+    }
+
+    /// <summary>
+    /// Stores the token received from a successful OAuth exchange and persists the session cookie when the HTTP response allows it.
+    /// </summary>
+    public void SetToken(OAuthTokenResponse token, FreeAgentEnvironment environment, HttpResponse? response)
+    {
         ArgumentNullException.ThrowIfNull(token);
 
         lock (_lock)
@@ -49,7 +57,7 @@ public sealed class TokenStore
             _connectedEnvironment = environment;
         }
 
-        PersistCurrentSession();
+        PersistCurrentSession(response);
     }
 
     /// <summary>
@@ -57,13 +65,21 @@ public sealed class TokenStore
     /// </summary>
     public void ClearToken()
     {
+        ClearToken(response: null);
+    }
+
+    /// <summary>
+    /// Clears the stored token (disconnect) and removes the session cookie when the HTTP response allows it.
+    /// </summary>
+    public void ClearToken(HttpResponse? response)
+    {
         lock (_lock)
         {
             _token = null;
             _connectedEnvironment = FreeAgentEnvironment.Production;
         }
 
-        ClearPersistedSession();
+        ClearPersistedSession(response);
     }
 
     /// <summary>
@@ -142,12 +158,22 @@ public sealed class TokenStore
     /// </summary>
     public string GenerateAndStorePendingState(FreeAgentEnvironment environment)
     {
+        return GenerateAndStorePendingState(environment, response: null);
+    }
+
+    /// <summary>
+    /// Generates and stores pending OAuth state, persisting a CSRF cookie when the HTTP response allows it.
+    /// </summary>
+    public string GenerateAndStorePendingState(FreeAgentEnvironment environment, HttpResponse? response)
+    {
         var state = Convert.ToBase64String(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
         lock (_lock)
         {
             _pendingState = state;
             _pendingEnvironment = environment;
         }
+
+        PersistPendingState(state, environment, response);
         return state;
     }
 
@@ -164,21 +190,45 @@ public sealed class TokenStore
     public bool ValidateAndClearState(string state, out FreeAgentEnvironment pendingEnvironment)
     {
         ArgumentNullException.ThrowIfNull(state);
+
+        string? expectedState;
+        FreeAgentEnvironment environment;
+
         lock (_lock)
         {
-            var valid = _pendingState is not null &&
-                        string.Equals(_pendingState, state, StringComparison.Ordinal);
+            expectedState = _pendingState;
+            environment = _pendingEnvironment;
             _pendingState = null;
-            pendingEnvironment = _pendingEnvironment;
             _pendingEnvironment = FreeAgentEnvironment.Production;
-            return valid;
         }
+
+        if (expectedState is null)
+        {
+            var httpContext = _httpContextAccessor.HttpContext;
+            if (httpContext is not null
+                && OAuthPendingStatePersistence.TryLoad(httpContext.Request, out var cookieState, out var cookieEnvironment)
+                && cookieState is not null)
+            {
+                expectedState = cookieState;
+                environment = cookieEnvironment;
+            }
+        }
+
+        ClearPendingState(_httpContextAccessor.HttpContext?.Response);
+
+        var valid = expectedState is not null &&
+                    string.Equals(expectedState, state, StringComparison.Ordinal);
+        pendingEnvironment = valid ? environment : FreeAgentEnvironment.Production;
+        return valid;
     }
 
-    private void PersistCurrentSession()
+    private static HttpResponse? ResolveResponse(HttpResponse? response, IHttpContextAccessor httpContextAccessor) =>
+        response ?? httpContextAccessor.HttpContext?.Response;
+
+    private void PersistCurrentSession(HttpResponse? response)
     {
-        var httpContext = _httpContextAccessor.HttpContext;
-        if (httpContext is null)
+        response = ResolveResponse(response, _httpContextAccessor);
+        if (response is null || response.HasStarted)
         {
             return;
         }
@@ -197,17 +247,39 @@ public sealed class TokenStore
             environment = _connectedEnvironment;
         }
 
-        OAuthSessionPersistence.Save(httpContext.Response, token, environment);
+        OAuthSessionPersistence.Save(response, token, environment);
     }
 
-    private void ClearPersistedSession()
+    private void ClearPersistedSession(HttpResponse? response)
     {
-        var httpContext = _httpContextAccessor.HttpContext;
-        if (httpContext is null)
+        response = ResolveResponse(response, _httpContextAccessor);
+        if (response is null || response.HasStarted)
         {
             return;
         }
 
-        OAuthSessionPersistence.Clear(httpContext.Response);
+        OAuthSessionPersistence.Clear(response);
+    }
+
+    private void PersistPendingState(string state, FreeAgentEnvironment environment, HttpResponse? response)
+    {
+        response = ResolveResponse(response, _httpContextAccessor);
+        if (response is null || response.HasStarted)
+        {
+            return;
+        }
+
+        OAuthPendingStatePersistence.Save(response, state, environment);
+    }
+
+    private void ClearPendingState(HttpResponse? response)
+    {
+        response = ResolveResponse(response, _httpContextAccessor);
+        if (response is null || response.HasStarted)
+        {
+            return;
+        }
+
+        OAuthPendingStatePersistence.Clear(response);
     }
 }

@@ -51,12 +51,15 @@ internal static class TurpinverseContactMapper
 
     private static (string FirstName, string LastName) SplitName(string displayName)
     {
-        var parts = displayName.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-        return parts.Length switch
+        var trimmed = displayName.Trim();
+        var lastSpace = trimmed.LastIndexOf(' ');
+        if (lastSpace <= 0)
         {
-            0 => (string.Empty, string.Empty),
-            1 => (parts[0], string.Empty),
-            _ => (parts[0], parts[1])
-        };
+            return trimmed.Length == 0
+                ? (string.Empty, string.Empty)
+                : (trimmed, string.Empty);
+        }
+
+        return (trimmed[..lastSpace], trimmed[(lastSpace + 1)..]);
     }
 }

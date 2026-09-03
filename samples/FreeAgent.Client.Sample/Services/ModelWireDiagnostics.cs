@@ -319,7 +319,16 @@ public static class ModelWireDiagnostics
 
         using var modelDocument = JsonDocument.Parse(modelJson);
         using var wireDocument = JsonDocument.Parse(wireJson);
-        return JsonElement.DeepEquals(modelDocument.RootElement, wireDocument.RootElement);
+        return JsonElementsEqual(modelDocument.RootElement, wireDocument.RootElement);
+    }
+
+    private static bool JsonElementsEqual(JsonElement left, JsonElement right)
+    {
+#if NET9_0_OR_GREATER
+        return JsonElement.DeepEquals(left, right);
+#else
+        return left.GetRawText() == right.GetRawText();
+#endif
     }
 
     private static string FormatJsonValue(JsonElement value) =>

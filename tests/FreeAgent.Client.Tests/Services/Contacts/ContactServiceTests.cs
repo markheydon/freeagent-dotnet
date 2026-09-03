@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
@@ -376,5 +377,90 @@ public class ContactServiceTests
         var service = new ContactService(client);
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetContactAsync(1));
+    }
+
+    [Fact]
+    public async Task GetContactsPageAsync_WhenContactsMissing_ThrowsFreeAgentApiException()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""{ "contacts": null }""")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ContactService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetContactsPageAsync());
+    }
+
+    [Fact]
+    public async Task CreateContactAsync_DoesNotSerializeReadOnlyFields()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            Assert.DoesNotContain("\"url\"", body, StringComparison.Ordinal);
+            Assert.DoesNotContain("created_at", body, StringComparison.Ordinal);
+            Assert.DoesNotContain("updated_at", body, StringComparison.Ordinal);
+            Assert.DoesNotContain("account_balance", body, StringComparison.Ordinal);
+
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "contact": {
+                    "url": "https://api.freeagent.com/v2/contacts/70",
+                    "organisation_name": "New Co",
+                    "status": "Active"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ContactService(client);
+
+        await service.CreateContactAsync(new Contact { OrganisationName = "New Co" });
+    }
+
+    [Fact]
+    public async Task UpdateContactAsync_DoesNotSerializeReadOnlyFields()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            Assert.DoesNotContain("\"url\"", body, StringComparison.Ordinal);
+            Assert.DoesNotContain("created_at", body, StringComparison.Ordinal);
+            Assert.DoesNotContain("account_balance", body, StringComparison.Ordinal);
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "contact": {
+                    "url": "https://api.freeagent.com/v2/contacts/42",
+                    "organisation_name": "Renamed"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ContactService(client);
+
+        var contact = new Contact
+        {
+            Url = "https://api.freeagent.com/v2/contacts/42",
+            OrganisationName = "Renamed",
+            AccountBalance = 99m,
+            CreatedAt = DateTimeOffset.Parse("2026-01-01T00:00:00Z", CultureInfo.InvariantCulture)
+        };
+
+        await service.UpdateContactAsync(42, contact);
     }
 }
