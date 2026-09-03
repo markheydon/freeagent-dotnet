@@ -80,6 +80,7 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/company/business-categories](https://localhost:5001/company/business-categories) | `CompanyService.GetBusinessCategoriesAsync()` |
 | [/company/tax-timeline](https://localhost:5001/company/tax-timeline) | `CompanyService.GetTaxTimelineAsync()` |
 | [/contacts](https://localhost:5001/contacts) | `ContactService.GetContactsPageAsync()` and `ContactService.GetAllContactsAsync()` |
+| [/contacts/detail](https://localhost:5001/contacts/detail) | `ContactService.GetContactAsync()`, `CreateContactAsync()`, `UpdateContactAsync()`, `DeleteContactAsync()` |
 
 
 ---

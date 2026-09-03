@@ -1,0 +1,214 @@
+@page "/contacts/detail"
+@using System.Reflection
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using FreeAgent.Client.Models.Contacts
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Contact detail — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Contacts endpoint"
+                         Title="Get, create, update, and delete contacts"
+                         CallUnderTest="ContactService.GetContactAsync / CreateContactAsync / UpdateContactAsync / DeleteContactAsync"
+                         Description="Exercises single-contact CRUD operations against the FreeAgent API."
+                         EndpointPath="/v2/contacts/:id" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudStack Spacing="3">
+            @if (_error is not null)
+            {
+                <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                          CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                <ApiErrorDiagnostics RawPayload="@_rawApiResponse" />
+            }
+
+            <MudPaper Class="workbench-panel" Elevation="0">
+                <MudStack Spacing="2">
+                    <MudNumericField @bind-Value="_contactId" Label="Contact ID" Min="1" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   OnClick="GetContactAsync">Get contact</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateContactAsync">Create test contact</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _contactId is null"
+                                   OnClick="UpdateContactAsync">Update organisation name</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _contactId is null"
+                                   OnClick="DeleteContactAsync">Delete contact</MudButton>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+
+            @if (_contact is not null)
+            {
+                <MudPaper Class="workbench-panel" Elevation="0">
+                    <MudText Typo="Typo.h6" Class="mb-2">Model output</MudText>
+                    <MudSimpleTable Dense="true" Hover="true" Bordered="true">
+                        <tbody>
+                        @foreach (var property in GetContactProperties(_contact))
+                        {
+                            <tr>
+                                <td><strong>@property.Name</strong></td>
+                                <td>@property.Value</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </MudSimpleTable>
+                </MudPaper>
+
+                <MudPaper Class="workbench-panel" Elevation="0">
+                    <MudText Typo="Typo.h6" Class="mb-2">Raw JSON</MudText>
+                    <MudText Typo="Typo.body2" Style="white-space: pre-wrap; font-family: monospace;">@_rawJson</MudText>
+                </MudPaper>
+            }
+        </MudStack>
+    }
+</MudContainer>
+
+@code {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
+    private bool _loading;
+    private string? _error;
+    private string? _rawApiResponse;
+    private string? _rawJson;
+    private Contact? _contact;
+    private long? _contactId;
+
+    private async Task GetContactAsync()
+    {
+        if (_contactId is null or < 1)
+        {
+            _error = "Enter a contact ID.";
+            return;
+        }
+
+        await WithClientAsync(async client =>
+        {
+            _contact = await client.Contacts.GetContactAsync(_contactId.Value);
+            _rawJson = JsonSerializer.Serialize(_contact, JsonOptions);
+        }, $"contacts/{_contactId}");
+    }
+
+    private async Task CreateContactAsync()
+    {
+        await WithClientAsync(async client =>
+        {
+            var name = $"SDK Sample {DateTime.UtcNow:yyyyMMdd-HHmmss}";
+            _contact = await client.Contacts.CreateContactAsync(new Contact
+            {
+                OrganisationName = name,
+                Status = ContactStatus.Active
+            });
+            _contactId = ParseContactId(_contact.Url);
+            _rawJson = JsonSerializer.Serialize(_contact, JsonOptions);
+        }, "contacts");
+    }
+
+    private async Task UpdateContactAsync()
+    {
+        if (_contactId is null)
+        {
+            return;
+        }
+
+        await WithClientAsync(async client =>
+        {
+            var existing = _contact ?? await client.Contacts.GetContactAsync(_contactId.Value);
+            existing.OrganisationName = $"{existing.OrganisationName} (updated)";
+            _contact = await client.Contacts.UpdateContactAsync(_contactId.Value, existing);
+            _rawJson = JsonSerializer.Serialize(_contact, JsonOptions);
+        }, $"contacts/{_contactId}");
+    }
+
+    private async Task DeleteContactAsync()
+    {
+        if (_contactId is null)
+        {
+            return;
+        }
+
+        await WithClientAsync(async client =>
+        {
+            await client.Contacts.DeleteContactAsync(_contactId.Value);
+            _contact = null;
+            _rawJson = "Contact deleted.";
+        }, $"contacts/{_contactId}");
+    }
+
+    private static long? ParseContactId(string url)
+    {
+        var segments = url.TrimEnd('/').Split('/');
+        return long.TryParse(segments[^1], out var id) ? id : null;
+    }
+
+    private static IEnumerable<(string Name, string Value)> GetContactProperties(Contact contact)
+    {
+        foreach (var property in typeof(Contact).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (property.Name is nameof(Contact.DisplayName))
+            {
+                continue;
+            }
+
+            var value = property.GetValue(contact);
+            yield return (property.Name, value?.ToString() ?? "—");
+        }
+
+        yield return ("DisplayName", contact.DisplayName);
+    }
+
+    private async Task WithClientAsync(Func<FreeAgentClient, Task> action, string diagnosticsEndpoint)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _rawApiResponse = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

@@ -11,5 +11,5 @@ public class ContactsResponse
     /// Contact list payload.
     /// </summary>
     [JsonPropertyName("contacts")]
-    public List<ContactSummary>? Contacts { get; set; }
+    public List<Contact>? Contacts { get; set; }
 }
