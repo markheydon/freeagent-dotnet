@@ -155,6 +155,70 @@ public class CompanyServiceTests
     }
 
     [Fact]
+    public async Task GetCompanyAsync_DeserializesKilometersMileageUnit()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""
+            {
+              "company": {
+                "url": "https://api.freeagent.com/v2/company",
+                "id": 12345,
+                "name": "My Company",
+                "subdomain": "my-company",
+                "type": "UkLimitedCompany",
+                "currency": "GBP",
+                "mileage_units": "kilometers"
+              }
+            }
+            """)
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token");
+        var service = new CompanyService(client);
+
+        var company = await service.GetCompanyAsync();
+
+        Assert.Equal(MileageUnit.Kilometers, company.MileageUnits);
+    }
+
+    [Fact]
+    public async Task GetCompanyAsync_DeserializesShortDateFormat()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""
+            {
+              "company": {
+                "url": "https://api.freeagent.com/v2/company",
+                "id": 12345,
+                "name": "My Company",
+                "subdomain": "my-company",
+                "type": "UkLimitedCompany",
+                "currency": "GBP",
+                "short_date_format": "dd-mm-yyyy"
+              }
+            }
+            """)
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token");
+        var service = new CompanyService(client);
+
+        var company = await service.GetCompanyAsync();
+
+        Assert.Equal(ShortDateFormat.DayMonthYearDashes, company.ShortDateFormat);
+    }
+
+    [Fact]
     public async Task GetCompanyAsync_WhenPayloadMissing_ThrowsFreeAgentApiException()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)

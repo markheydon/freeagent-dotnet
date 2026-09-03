@@ -1,18 +1,16 @@
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Infrastructure.Serialization;
 
 namespace FreeAgent.Client.Models.Company;
 
 /// <summary>
 /// Represents the mileage unit system used by a FreeAgent company.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<MileageUnit>))]
+[JsonConverter(typeof(MileageUnitJsonConverter))]
 public enum MileageUnit
 {
     /// <summary>Miles (wire value: "miles").</summary>
-    [JsonStringEnumMemberName("miles")]
     Miles,
-    /// <summary>Kilometres (wire value: "kilometres").</summary>
-    [JsonStringEnumMemberName("kilometres")]
+
+    /// <summary>Kilometres (wire values: "kilometers" or "kilometres").</summary>
     Kilometers
 }
