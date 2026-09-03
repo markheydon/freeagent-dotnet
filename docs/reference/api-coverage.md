@@ -2,6 +2,8 @@
 
 This reference lists FreeAgent API resources implemented in the SDK today. It reflects **actual code**, not planned work.
 
+For how resources relate to each other and a suggested implementation order, see the [API entity map](../explanation/api-entity-map.md).
+
 Source: [`src/FreeAgent.Client/Services/`](../../src/FreeAgent.Client/Services/)
 
 ## Company

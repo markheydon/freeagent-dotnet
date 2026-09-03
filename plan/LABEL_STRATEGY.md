@@ -1,70 +1,120 @@
 # Label Strategy
 
-> The **single source of truth** for all label definitions across `markheydon` repositories is:
-> [`markheydon/github-workflows — plan/LABEL_STRATEGY.md`](https://github.com/markheydon/github-workflows/blob/main/plan/LABEL_STRATEGY.md)
->
-> This file is a local reference summary only. When the cross-repo strategy changes,
-> update this file to keep it in sync.
+The **canonical label taxonomy** for `markheydon` repositories is maintained in
+[`markheydon/solo-dev-board — plan/LABEL_STRATEGY.md`](https://github.com/markheydon/solo-dev-board/blob/main/plan/LABEL_STRATEGY.md).
+
+This repository uses the same prefixed label groups. Pull request titles follow
+[`solo-dev-board — plan/PULL_REQUEST_POLICY.md`](https://github.com/markheydon/solo-dev-board/blob/main/plan/PULL_REQUEST_POLICY.md).
 
 ---
 
-## Core Work Item Labels
+## Required labels
 
-Every issue should have exactly one of these labels.
+### Issues
 
-| Label | Board | Description |
-|-------|-------|-------------|
-| `story` | ✅ | A user-facing feature, improvement, documentation change, or technical task. This is the **primary unit of work** on the project board. |
-| `bug` | ✅ | Something isn't working as expected. |
-| `epic` | ❌ | A large body of work made up of multiple stories. Epics group stories and are never tracked directly on the board. |
+Every issue should have:
 
-### Labels deliberately NOT used
+| Group | Cardinality | Examples |
+|-------|-------------|----------|
+| `type/*` | exactly one | `type/story`, `type/chore`, `type/documentation` |
+| `status/*` | exactly one | `status/todo`, `status/in-progress`, `status/done` |
+| `priority/*` | exactly one | `priority/medium` (default), `priority/high` |
 
-The following labels have been **excluded** from this strategy. Do not create or use them:
+`size/*` is optional at creation; add during planning when useful.
 
-| Label | Reason |
-|-------|--------|
-| `feature` | Superseded by `story`. |
-| `chore` | Not a label in this strategy — maintenance and governance work is categorised as `story`. |
-| `improvement` | Superseded by `story`. |
-| `technical` | Superseded by `story`. |
-| `dependency` | Replaced by `blocked`. |
+Issue titles use a `[Type]` prefix matching the `type/*` label (for example `[Story] Implement Users resource`).
 
----
+### Pull requests
 
-## Modifier Labels
+Every pull request should have:
 
-These can be applied alongside a core label. An issue may have multiple modifiers.
+| Group | Cardinality | Examples |
+|-------|-------------|----------|
+| `type/*` | exactly one | same vocabulary as issues |
+| `status/*` | exactly one | `status/in-review` (open), `status/done` (merged/closed) |
+| `priority/*` | exactly one | `priority/medium` unless triaged otherwise |
 
-| Label | Description |
-|-------|-------------|
-| `priority-high` | High priority — address before other items. |
-| `blocked` | Blocked by another issue or external dependency. |
-| `not-started` | Work has not yet started (explicit backlog filtering). |
-| `out-of-scope` | Intentionally deferred — may be revisited. |
-| `feedback-required` | Waiting for feedback before work can proceed. |
-| `waiting-for-details` | Further details required before work can start. |
+PR titles use `[Type] <imperative summary> (#issue)` when a tracking issue exists.
 
 ---
 
-## Issue Template ↔ Label Mapping
+## Type labels
 
-| Template | Label applied | Rationale |
-|----------|--------------|-----------|
-| `feature_request.yml` | `story` | Feature requests are stories — they drive board inclusion. |
-| `chore_request.yml` | *(none — applied at triage)* | Chore work is labelled `story` at triage if it warrants board tracking. Not all chores need to be on the board. |
-| `story_request.yml` | `story` | Broad planning/admin work. |
-| Bug report | `bug` | Standard core label. |
+| Label | Use for |
+|-------|---------|
+| `type/epic` | Named product theme spanning multiple features |
+| `type/feature` | Groups related stories (for example Foundations cluster #55) |
+| `type/story` | User-facing SDK deliverable |
+| `type/enabler` | Technical prerequisite that unblocks stories |
+| `type/test` | Test coverage deliverable |
+| `type/bug` | Unexpected or broken behaviour |
+| `type/chore` | Maintenance, CI, dependencies, governance |
+| `type/documentation` | Documentation-only changes |
 
 ---
 
-## Decision Guide
+## Status labels
 
-1. Is this a large body of work containing multiple sub-tasks? → `epic`
-2. Is this a new feature, improvement, docs change, or technical task? → `story`
-3. Is something broken or not working as expected? → `bug`
-4. Is it blocked? → add `blocked`
-5. Is it urgent? → add `priority-high`
-6. Is it on the backlog but not yet started? → add `not-started`
-7. Has it been deferred? → add `out-of-scope`
-8. Waiting on feedback? → add `feedback-required` or `waiting-for-details`
+| Label | Use for |
+|-------|---------|
+| `status/todo` | Ready to start, not yet in progress |
+| `status/in-progress` | Actively being worked |
+| `status/blocked` | Waiting on external dependency |
+| `status/ice-box` | Shelved; not in active queue |
+| `status/in-review` | Open PR awaiting review |
+| `status/done` | Closed issue or merged/closed PR |
+
+---
+
+## Priority labels
+
+| Label | Use for |
+|-------|---------|
+| `priority/critical` | Blocking all progress or production |
+| `priority/high` | Current release / sprint |
+| `priority/medium` | Default for new work |
+| `priority/low` | Nice to have; deferrable |
+
+---
+
+## Size labels (optional)
+
+`size/xs` through `size/xl` — effort estimate; add at planning time, not required on creation.
+
+---
+
+## Issue template defaults
+
+| Template | Default `type/*` | Default `status/*` | Default `priority/*` |
+|----------|------------------|--------------------|-----------------------|
+| `feature_request.yml` | `type/story` | `status/todo` | `priority/medium` |
+| `story_request.yml` | `type/story` | `status/todo` | `priority/medium` |
+| `chore_request.yml` | `type/chore` | `status/todo` | `priority/medium` |
+| `bug_report.yml` | `type/bug` | `status/todo` | `priority/medium` |
+
+Dependabot PRs receive `type/chore`, `status/todo`, and `priority/medium` via [`.github/dependabot.yml`](../.github/dependabot.yml).
+
+---
+
+## Deprecated labels (safe to delete)
+
+These unprefixed labels are **retired** in this repository. Remove them from GitHub once no open issues or PRs reference them:
+
+`story`, `bug`, `epic`, `documentation`, `enhancement`, `dependencies`, `blocked`, `priority-high`, `not-started`, `feedback-required`, `out-of-scope`, `waiting-for-details`
+
+---
+
+## Decision guide
+
+1. Large theme spanning multiple features? → `type/epic` or `type/feature`
+2. User-facing SDK capability? → `type/story`
+3. Unblocks other stories technically? → `type/enabler`
+4. Test-only deliverable? → `type/test`
+5. Broken behaviour? → `type/bug`
+6. CI, deps, tooling, governance? → `type/chore`
+7. Docs only? → `type/documentation`
+8. Open PR? → `status/in-review`; merged/closed → `status/done`
+9. Unsure on priority? → `priority/medium`
+
+For full definitions, colours, and AI collaborator guidance, see the
+[solo-dev-board label strategy](https://github.com/markheydon/solo-dev-board/blob/main/plan/LABEL_STRATEGY.md).

@@ -1,7 +1,7 @@
 name: Feature request
 description: Propose a new capability or enhancement for the SDK
-title: "feat: "
-labels: [story]
+title: "[Story] "
+labels: [type/story, status/todo, priority/medium]
 body:
   - type: markdown
     attributes:

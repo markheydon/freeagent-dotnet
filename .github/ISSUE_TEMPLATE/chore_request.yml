@@ -1,6 +1,7 @@
 name: Chore request
 description: Propose maintenance, tooling, docs, or governance work
-title: "chore: "
+title: "[Chore] "
+labels: [type/chore, status/todo, priority/medium]
 body:
   - type: markdown
     attributes:
