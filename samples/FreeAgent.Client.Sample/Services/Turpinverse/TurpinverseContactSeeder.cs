@@ -22,7 +22,7 @@ public sealed class TurpinverseContactSeeder
         ArgumentNullException.ThrowIfNull(client);
 
         var richard = _catalog.RichardTurpin;
-        var desired = TurpinverseContactMapper.ToFreeAgentContact(richard, _catalog.OrganisationTradingNames);
+        var desired = TurpinverseContactMapper.ToFreeAgentContact(richard, _catalog.OrganisationsById);
         var (contact, action) = await ContactSeederSupport.UpsertByEmailAsync(
             client,
             richard.Email,
@@ -46,7 +46,7 @@ public sealed class TurpinverseContactSeeder
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var desired = TurpinverseContactMapper.ToFreeAgentContact(persona, _catalog.OrganisationTradingNames);
+            var desired = TurpinverseContactMapper.ToFreeAgentContact(persona, _catalog.OrganisationsById);
 
             if (existingContacts.TryGetValue(persona.Email, out var existingMatch))
             {

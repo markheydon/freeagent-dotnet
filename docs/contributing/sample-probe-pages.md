@@ -77,7 +77,7 @@ Follow `Components/Pages/ContactDetail.razor`:
 
 Optional seed helpers (when useful for testing):
 
-- **Narrative demo data** — bundled canon (see Turpinverse under `Data/` and `Services/Turpinverse/`).
+- **Narrative demo data** — bundled canon (see Turpinverse under `Data/` and `Services/Turpinverse/`). FreeAgent contact address fields are billing-oriented (they appear on invoices), so Turpinverse maps the primary organisation's `registeredOffice` — not persona home addresses.
 - **Full-field probe fixture** — one contact with every writable attribute populated (`SampleContactFixtures`, `SampleContactSeeder`).
 - **Upsert by stable key** — match existing records by email (contacts) or an equivalent natural key; update when canon changes (`ContactSeederSupport`).
 

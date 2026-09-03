@@ -16,7 +16,7 @@ public sealed class TurpinverseContactCatalog
     };
 
     private readonly Lazy<IReadOnlyList<TurpinversePersona>> _personas;
-    private readonly Lazy<IReadOnlyDictionary<string, string>> _organisationTradingNames;
+    private readonly Lazy<IReadOnlyDictionary<string, TurpinverseOrganisation>> _organisationsById;
 
     public TurpinverseContactCatalog(IWebHostEnvironment environment)
     {
@@ -25,9 +25,9 @@ public sealed class TurpinverseContactCatalog
         _personas = new Lazy<IReadOnlyList<TurpinversePersona>>(() =>
             LoadJson<TurpinversePersona[]>(environment, "turpinverse-personas.json") ?? []);
 
-        _organisationTradingNames = new Lazy<IReadOnlyDictionary<string, string>>(() =>
+        _organisationsById = new Lazy<IReadOnlyDictionary<string, TurpinverseOrganisation>>(() =>
             (LoadJson<TurpinverseOrganisation[]>(environment, "turpinverse-organisations.json") ?? [])
-            .ToDictionary(static organisation => organisation.Id, static organisation => organisation.TradingName, StringComparer.Ordinal));
+            .ToDictionary(static organisation => organisation.Id, StringComparer.Ordinal));
     }
 
     public IReadOnlyList<TurpinversePersona> Personas => _personas.Value;
@@ -35,7 +35,7 @@ public sealed class TurpinverseContactCatalog
     public TurpinversePersona RichardTurpin =>
         Personas.First(static persona => persona.Id == RichardTurpinPersonaId);
 
-    public IReadOnlyDictionary<string, string> OrganisationTradingNames => _organisationTradingNames.Value;
+    public IReadOnlyDictionary<string, TurpinverseOrganisation> OrganisationsById => _organisationsById.Value;
 
     private static T? LoadJson<T>(IWebHostEnvironment environment, string fileName)
     {
