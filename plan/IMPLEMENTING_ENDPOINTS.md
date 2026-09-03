@@ -10,6 +10,7 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 
 ## 2. Plan First, Then Implement
 
+- Consult the [API entity map](../docs/explanation/api-entity-map.md) before choosing the next resource — it shows documented URI dependencies and suggested implementation layers.
 - Start with a concise implementation plan before editing code.
 - Include an explicit contract check against `plan/API_TYPE_MAPPING_POLICY.md`.
 - Include a drift check against `plan/API_TO_SDK_ALIGNMENT.md`.
@@ -81,6 +82,7 @@ Follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-p
 - **Seed data (when useful):** provide narrative demo data and/or a full-field probe fixture; upsert by a stable key so re-running updates existing sandbox records.
 - Model only fields documented in the official FreeAgent API — do not invent wire properties.
 - Update [`samples/README.md`](../samples/README.md) and [`docs/reference/api-coverage.md`](../docs/reference/api-coverage.md).
+- If the official docs expose URI links not yet shown on the relevant [entity map cluster](../docs/explanation/api-entity-map.md), update that cluster page in the same change.
 
 ## 9. Update README
 
