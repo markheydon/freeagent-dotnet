@@ -16,6 +16,7 @@ Internal engineering policy lives in the repository root (`GOALS.md`, `SCOPE.md`
 | [API coverage](reference/api-coverage.md) | Reference | What the SDK implements today |
 | [Prerelease and OAuth scope](explanation/prerelease-and-oauth.md) | Explanation | Versioning and OAuth boundaries |
 | [Contributor setup](contributing-setup.md) | How-to | Contributors cloning this repository |
+| [Sample probe pages](contributing/sample-probe-pages.md) | How-to | Building wire-to-model sample pages |
 
 ## Related links
 

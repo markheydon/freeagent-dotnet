@@ -44,6 +44,8 @@ Use `dotnet test -f net10.0` or `dotnet test -f net8.0` to test a single target 
 
 The Blazor sample requires .NET 10 and FreeAgent OAuth credentials. See [samples/README.md](../samples/README.md).
 
+When adding or retrofitting SDK endpoints, build sample probe pages per [Sample probe pages](contributing/sample-probe-pages.md). Use **Company** and **Contacts** as references.
+
 ## Before contributing
 
 Read [CONTRIBUTING.md](../CONTRIBUTING.md), [CONVENTIONS.md](../CONVENTIONS.md), and [AGENTS.md](../AGENTS.md).

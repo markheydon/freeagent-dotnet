@@ -67,11 +67,20 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 
 ## 8. Keep the Sample App Honest (Mandatory)
 
+Follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md). **Company** and **Contacts** are the reference probe implementations.
+
 - Add/update sample pages under `samples/FreeAgent.Client.Sample/Components/Pages/` for every implemented endpoint.
 - Update sample navigation in `samples/FreeAgent.Client.Sample/Components/Layout/MainLayout.razor` in the same change.
 - Do not add sample UI for endpoints not implemented in the SDK.
-- For developer validation pages, include complete model output, not summary-only cards.
-- Include a readable raw JSON section to inspect full payload shape from the SDK model.
+- Reuse shared probe components:
+  - `EndpointProbeHeader` — page context and call under test
+  - `ModelWireDiagnostics` + `ModelProbeResults` — wire-to-model mapping with filter chips and raw JSON
+  - `ApiErrorDiagnostics` — failed API responses
+- **List endpoints:** load a page via the SDK, fetch matching wire JSON, and offer per-row mapping inspection (`Contacts.razor`).
+- **CRUD endpoints:** support `?id=` deep links, fetch wire JSON after create/update, and show a progress bar during long operations (`ContactDetail.razor`).
+- **Seed data (when useful):** provide narrative demo data and/or a full-field probe fixture; upsert by a stable key so re-running updates existing sandbox records.
+- Model only fields documented in the official FreeAgent API — do not invent wire properties.
+- Update [`samples/README.md`](../samples/README.md) and [`docs/reference/api-coverage.md`](../docs/reference/api-coverage.md).
 
 ## 9. Update README
 

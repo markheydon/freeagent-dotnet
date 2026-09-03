@@ -51,6 +51,13 @@ Rules:
 - Do not add sample UI for endpoints that do not yet exist in the SDK.
 - The sample app is the living reference for "what this SDK can do today". Keep it honest.
 
+Probe-page standard (mandatory for new and retrofitted endpoints):
+
+- Follow [`docs/contributing/sample-probe-pages.md`](docs/contributing/sample-probe-pages.md).
+- Use **Company** (`/company`) and **Contacts** (`/contacts`, `/contacts/detail`) as reference implementations.
+- Reuse `EndpointProbeHeader`, `ModelWireDiagnostics`, `ModelProbeResults`, and `ApiErrorDiagnostics` — do not build one-off mapping UIs.
+- List pages must support per-row wire-to-model inspection; CRUD pages must support deep links, post-mutation wire fetch, and a visible loading progress bar.
+
 ## Skills
 
 Project skills live in `.agents/skills/`. Read the matching `SKILL.md` when the task matches its description.

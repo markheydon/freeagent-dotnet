@@ -60,7 +60,7 @@ To run tests for a single framework, use `dotnet test -f net10.0` or `dotnet tes
 
 The Blazor sample is a living reference of what the SDK implements today.
 
-If you add, remove, or rename SDK endpoints under `src/FreeAgent.Client/Services/`, update `samples/FreeAgent.Client.Sample` in the same PR so the sample remains aligned.
+If you add, remove, or rename SDK endpoints under `src/FreeAgent.Client/Services/`, update `samples/FreeAgent.Client.Sample` in the same PR so the sample remains aligned. Follow [`docs/contributing/sample-probe-pages.md`](docs/contributing/sample-probe-pages.md) for wire-to-model probe pages (see Company and Contacts as references).
 
 ## Testing Guidance
 

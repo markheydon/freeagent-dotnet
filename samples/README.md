@@ -77,13 +77,15 @@ The app starts at `https://localhost:5001`. Your browser may show a certificate 
 
 These pages exercise the SDK endpoints that exist today. Do not expect UI for resources that are not yet implemented.
 
-| Page | SDK call tested |
-|------|----------------|
-| [/company](https://localhost:5001/company) | `CompanyService.GetCompanyAsync()` |
-| [/company/business-categories](https://localhost:5001/company/business-categories) | `CompanyService.GetBusinessCategoriesAsync()` |
-| [/company/tax-timeline](https://localhost:5001/company/tax-timeline) | `CompanyService.GetTaxTimelineAsync()` |
-| [/contacts](https://localhost:5001/contacts) | `ContactService.GetContactsPageAsync()` and `ContactService.GetAllContactsAsync()` |
-| [/contacts/detail](https://localhost:5001/contacts/detail) | `ContactService.GetContactAsync()`, `CreateContactAsync()`, `UpdateContactAsync()`, `DeleteContactAsync()` |
+| Page | SDK call tested | Probe features |
+|------|-----------------|----------------|
+| [/company](https://localhost:5001/company) | `CompanyService.GetCompanyAsync()` | Wire-to-model mapping, raw JSON |
+| [/company/business-categories](https://localhost:5001/company/business-categories) | `CompanyService.GetBusinessCategoriesAsync()` | List output |
+| [/company/tax-timeline](https://localhost:5001/company/tax-timeline) | `CompanyService.GetTaxTimelineAsync()` | List output |
+| [/contacts](https://localhost:5001/contacts) | `ContactService.GetContactsPageAsync()` and `GetAllContactsAsync()` | Per-row mapping inspection, list filters |
+| [/contacts/detail](https://localhost:5001/contacts/detail) | `GetContactAsync()`, `CreateContactAsync()`, `UpdateContactAsync()`, `DeleteContactAsync()` | CRUD probes, Turpinverse seed data, full-detail fixture, progress bar |
+
+Contributors adding endpoints should follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md).
 
 
 ---
@@ -109,7 +111,8 @@ See the page in the running app for full details and usage instructions.
 
 ## Notes for Contributors
 
-- **Token lifetime:** The token is held in memory. It is lost when the app restarts; reconnect to get a new one. The SDK handles automatic token refresh within an active session.
+- **Probe pages:** When adding SDK endpoints, follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md). Copy patterns from Company and Contacts.
+- **Token lifetime:** The OAuth session is restored from a short-lived browser cookie (~1 hour). Reconnect after expiry or app restart if needed.
 - **Sandbox vs production:** Choose the target environment from the Connect panel before starting OAuth. After connecting, disconnect to switch environments.
 - **Port:** The sample uses port `5001` (HTTPS). If you change it in `Properties/launchSettings.json`, update the redirect URI in both your FreeAgent app registration and your user secrets.
 - **Do not commit credentials.** `appsettings.json` contains only empty placeholders. User secrets are stored outside the repository in your OS user profile.

@@ -6,7 +6,8 @@ Source: [`src/FreeAgent.Client/Services/`](../../src/FreeAgent.Client/Services/)
 
 ## Company
 
-Docs: https://dev.freeagent.com/docs/company
+Docs: https://dev.freeagent.com/docs/company  
+Sample: `/company`, `/company/business-categories`, `/company/tax-timeline`
 
 | Method | SDK API |
 |--------|---------|
@@ -16,7 +17,8 @@ Docs: https://dev.freeagent.com/docs/company
 
 ## Contacts
 
-Docs: https://dev.freeagent.com/docs/contacts
+Docs: https://dev.freeagent.com/docs/contacts  
+Sample: `/contacts` (list + per-row mapping), `/contacts/detail` (CRUD + seed data)
 
 | Method | SDK API |
 |--------|---------|
