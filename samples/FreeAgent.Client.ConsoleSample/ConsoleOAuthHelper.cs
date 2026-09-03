@@ -1,3 +1,4 @@
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Net;
 using System.Text;
@@ -52,11 +53,11 @@ internal static class ConsoleOAuthHelper
         Console.WriteLine();
         Console.WriteLine(authorizationUrl);
         Console.WriteLine();
-        Console.WriteLine("Tip: on WSL, copy-paste this URL manually — auto-open can truncate query parameters.");
+        Console.WriteLine(
+            "Tip: on WSL, copy-paste this URL manually and paste the full redirect URL back — " +
+            "auto-capture usually does not work across the WSL/Windows network boundary.");
 
-        TryOpenBrowser(authorizationUrl);
-
-        // Try to catch the redirect automatically with a local web server.
+        // Start the listener before opening the browser so a fast redirect is not missed.
         if (TryCreateListener(redirectUri, out var listener))
         {
             try
@@ -64,6 +65,8 @@ internal static class ConsoleOAuthHelper
                 Console.WriteLine($"Step 2 — waiting for FreeAgent to redirect to {redirectUri}");
                 Console.WriteLine("(A local page will confirm when authorisation completes.)");
                 Console.WriteLine();
+
+                TryOpenBrowser(authorizationUrl);
 
                 return await WaitForBrowserCallbackAsync(listener, state, cancellationToken);
             }
@@ -88,9 +91,10 @@ internal static class ConsoleOAuthHelper
             Console.WriteLine("Could not start a local callback listener on the redirect URI.");
             Console.WriteLine("Paste the full redirect URL from your browser after you approve access.");
             Console.WriteLine();
+
+            TryOpenBrowser(authorizationUrl);
         }
 
-        // Fallback: user copies the full redirect URL (or just the code) from the browser address bar.
         return await PromptForAuthorizationCodeAsync(state, cancellationToken);
     }
 
@@ -122,28 +126,14 @@ internal static class ConsoleOAuthHelper
         await context.Response.OutputStream.WriteAsync(responseBytes, cancellationToken);
         context.Response.Close();
 
-        // FreeAgent appends ?code=...&state=... to the redirect URI on success.
-        var code = request.QueryString["code"];
-        var state = request.QueryString["state"];
-
-        if (!string.Equals(state, expectedState, StringComparison.Ordinal))
-        {
-            throw new InvalidOperationException("OAuth state mismatch. Start the sample again and retry.");
-        }
-
-        if (string.IsNullOrWhiteSpace(code))
-        {
-            throw new InvalidOperationException("The callback did not include an authorisation code.");
-        }
-
-        return code;
+        return ExtractAuthorizationCode(ParseQueryParameters(request.QueryString), expectedState);
     }
 
     private static async Task<string> PromptForAuthorizationCodeAsync(
         string expectedState,
         CancellationToken cancellationToken)
     {
-        Console.WriteLine("Paste the full redirect URL (or just the authorisation code) and press Enter:");
+        Console.WriteLine("Paste the full redirect URL (including ?code=...&state=...) and press Enter:");
         var input = await ReadLineAsync(cancellationToken);
         return ParseAuthorizationCode(input, expectedState);
     }
@@ -155,38 +145,88 @@ internal static class ConsoleOAuthHelper
             throw new InvalidOperationException("No authorisation response was provided.");
         }
 
-        var trimmed = input.Trim();
+        var query = ExtractQueryFromRedirectUrl(input.Trim());
+        return ExtractAuthorizationCode(ParseQueryParameters(query), expectedState);
+    }
 
-        // User pasted just the code value directly.
-        if (!trimmed.Contains('?', StringComparison.Ordinal))
+    private static string ExtractQueryFromRedirectUrl(string redirectUrl)
+    {
+        if (!redirectUrl.Contains('?', StringComparison.Ordinal))
         {
-            return trimmed;
+            throw new InvalidOperationException(
+                "Paste the full redirect URL from your browser (including ?code=...&state=...).");
         }
 
-        // User pasted the full redirect URL — extract query parameters.
-        var query = trimmed.Contains('?', StringComparison.Ordinal)
-            ? trimmed[(trimmed.IndexOf('?', StringComparison.Ordinal) + 1)..]
-            : trimmed;
+        var withoutFragment = redirectUrl;
+        var fragmentIndex = withoutFragment.IndexOf('#', StringComparison.Ordinal);
+        if (fragmentIndex >= 0)
+        {
+            withoutFragment = withoutFragment[..fragmentIndex];
+        }
 
-        var values = query
-            .TrimStart('?')
-            .Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(part => part.Split('=', 2))
-            .Where(part => part.Length == 2)
-            .ToDictionary(
-                part => Uri.UnescapeDataString(part[0]),
-                part => Uri.UnescapeDataString(part[1]),
-                StringComparer.OrdinalIgnoreCase);
+        return withoutFragment[(withoutFragment.IndexOf('?', StringComparison.Ordinal) + 1)..];
+    }
 
+    private static Dictionary<string, string> ParseQueryParameters(string query)
+    {
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var part in query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var pair = part.Split('=', 2);
+            if (pair.Length != 2)
+            {
+                continue;
+            }
+
+            values[Uri.UnescapeDataString(pair[0])] = Uri.UnescapeDataString(pair[1]);
+        }
+
+        return values;
+    }
+
+    private static Dictionary<string, string> ParseQueryParameters(NameValueCollection queryString)
+    {
+        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var key in queryString.AllKeys)
+        {
+            if (key is null)
+            {
+                continue;
+            }
+
+            values[key] = queryString[key] ?? string.Empty;
+        }
+
+        return values;
+    }
+
+    private static string ExtractAuthorizationCode(
+        Dictionary<string, string> values,
+        string expectedState)
+    {
         if (values.TryGetValue("state", out var state)
             && !string.Equals(state, expectedState, StringComparison.Ordinal))
         {
             throw new InvalidOperationException("OAuth state mismatch. Start the sample again and retry.");
         }
 
+        if (values.TryGetValue("error", out var error))
+        {
+            var description = values.TryGetValue("error_description", out var errorDescription)
+                ? errorDescription
+                : null;
+
+            throw new InvalidOperationException(
+                description is not null
+                    ? $"OAuth authorisation failed ({error}): {description}"
+                    : $"OAuth authorisation failed: {error}");
+        }
+
         if (!values.TryGetValue("code", out var code) || string.IsNullOrWhiteSpace(code))
         {
-            throw new InvalidOperationException("Could not find an authorisation code in the pasted URL.");
+            throw new InvalidOperationException("The callback did not include an authorisation code.");
         }
 
         return code;
@@ -254,12 +294,6 @@ internal static class ConsoleOAuthHelper
         }
     }
 
-    private static async Task<string> ReadLineAsync(CancellationToken cancellationToken)
-    {
-        return await Task.Run(() =>
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            return Console.ReadLine() ?? string.Empty;
-        }, cancellationToken);
-    }
+    private static async Task<string> ReadLineAsync(CancellationToken cancellationToken) =>
+        await Console.In.ReadLineAsync(cancellationToken) ?? string.Empty;
 }

@@ -11,6 +11,12 @@ namespace FreeAgent.Client.ConsoleSample;
 /// </remarks>
 internal sealed class AppSettings
 {
+    /// <summary>Default redirect URI for this console sample's local HTTP listener.</summary>
+    public const string DefaultRedirectUri = "http://127.0.0.1:8765/callback";
+
+    /// <summary>Redirect URI used by the Blazor sample — ignored when loading shared user-secrets.</summary>
+    public const string BlazorSampleRedirectUri = "https://localhost:5001/oauth/callback";
+
     /// <summary>OAuth client identifier from the FreeAgent developer dashboard.</summary>
     public string ClientId { get; init; } = string.Empty;
 
@@ -21,7 +27,7 @@ internal sealed class AppSettings
     /// Redirect URI registered for this OAuth app. Must match exactly when authorising.
     /// The console sample defaults to a local HTTP listener; the Blazor sample uses HTTPS localhost.
     /// </summary>
-    public string RedirectUri { get; init; } = "http://127.0.0.1:8765/callback";
+    public string RedirectUri { get; init; } = DefaultRedirectUri;
 
     /// <summary>
     /// Loads settings with later sources overriding earlier ones:
@@ -38,10 +44,25 @@ internal sealed class AppSettings
             settings = settings.Merge(local);
         }
 
-        // Same user-secrets ID as the Blazor sample — no need to configure twice.
+        // Same user-secrets ID as the Blazor sample — client ID/secret are shared.
+        // Blazor's HTTPS redirect URI is ignored so the console listener default still applies.
         var userSecrets = UserSecretsConfiguration.Load();
         if (userSecrets is not null)
         {
+            if (IsBlazorSampleRedirectUri(userSecrets.RedirectUri))
+            {
+                Console.WriteLine(
+                    $"Note: Ignoring Blazor sample RedirectUri from user-secrets; using console default " +
+                    $"{DefaultRedirectUri}. Register this URI in your FreeAgent OAuth app if needed.");
+                Console.WriteLine();
+
+                userSecrets = new AppSettings
+                {
+                    ClientId = userSecrets.ClientId,
+                    ClientSecret = userSecrets.ClientSecret,
+                };
+            }
+
             settings = settings.Merge(userSecrets);
         }
 
@@ -69,7 +90,7 @@ internal sealed class AppSettings
         {
             ClientId = section.GetPropertyOrDefault(nameof(ClientId)),
             ClientSecret = section.GetPropertyOrDefault(nameof(ClientSecret)),
-            RedirectUri = section.GetPropertyOrDefault(nameof(RedirectUri), "http://127.0.0.1:8765/callback"),
+            RedirectUri = section.GetPropertyOrDefault(nameof(RedirectUri), DefaultRedirectUri),
         };
     }
 
@@ -109,4 +130,7 @@ internal sealed class AppSettings
 
     private static string Prefer(string? preferred, string fallback) =>
         string.IsNullOrWhiteSpace(preferred) ? fallback : preferred.Trim();
+
+    private static bool IsBlazorSampleRedirectUri(string redirectUri) =>
+        string.Equals(redirectUri.Trim(), BlazorSampleRedirectUri, StringComparison.OrdinalIgnoreCase);
 }

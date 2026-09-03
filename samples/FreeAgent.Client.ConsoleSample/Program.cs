@@ -39,7 +39,8 @@ Console.WriteLine();
 // --- OAuth step 1 & 2: get an authorisation code from the user ---
 // ConsoleOAuthHelper opens the browser (when possible), listens on the redirect URI,
 // and returns the ?code=... query parameter FreeAgent sends back.
-// On WSL, copy-paste the printed URL into your browser if auto-open mangles it.
+// On WSL, copy-paste the printed URL manually and paste the full redirect URL back —
+// auto-capture usually does not work across the WSL/Windows network boundary.
 var authorizationCode = await ConsoleOAuthHelper.GetAuthorizationCodeAsync(
     oauthClient,
     settings.RedirectUri);
