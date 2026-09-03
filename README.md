@@ -30,12 +30,13 @@ dotnet add package FreeAgent.Client
 ```csharp
 using FreeAgent.Client;
 
-var oauthClient = new FreeAgentOAuthClient(clientId, clientSecret, redirectUri);
+var environment = FreeAgentEnvironment.Sandbox; // or Production — pass the same value to both constructors
+var oauthClient = new FreeAgentOAuthClient(clientId, clientSecret, redirectUri, environment);
 var authUrl = oauthClient.GetAuthorizationUrl(state: "optional-state");
 // Redirect user to authUrl, then exchange the callback code:
 var token = await oauthClient.ExchangeCodeForTokenAsync(code);
 
-using var client = new FreeAgentClient(oauthClient, token);
+using var client = new FreeAgentClient(oauthClient, token, environment);
 var company = await client.Company.GetCompanyAsync();
 Console.WriteLine($"{company.Name} ({company.Currency})");
 ```

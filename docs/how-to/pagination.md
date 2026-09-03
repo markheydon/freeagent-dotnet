@@ -7,6 +7,9 @@ FreeAgent list endpoints return one page at a time. The SDK exposes both **singl
 Use when you need explicit control over page number and page size (`per_page` maximum is 100).
 
 ```csharp
+using FreeAgent.Client;
+using FreeAgent.Client.Models.Contacts;
+
 var page = await client.Contacts.GetContactsPageAsync(
     page: 1,
     perPage: 25,
@@ -34,6 +37,9 @@ Cancellation is honoured during pagination loops — pass a `CancellationToken` 
 The Contacts list supports `view`, `sort`, and `updated_since` query parameters. See [API coverage](../reference/api-coverage.md) for supported values.
 
 ```csharp
+using FreeAgent.Client;
+using FreeAgent.Client.Models.Contacts;
+
 var page = await client.Contacts.GetContactsPageAsync(
     page: 1,
     perPage: 25,

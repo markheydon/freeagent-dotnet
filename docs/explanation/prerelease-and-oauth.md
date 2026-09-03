@@ -26,6 +26,8 @@ See [VERSIONING.md](../../VERSIONING.md) for stage progression (alpha → beta �
 
 Your application integrates the protocol helpers into its own auth stack. The [sample app](../../samples/README.md) demonstrates one possible Blazor Server integration for development — it is not part of the NuGet package.
 
+`FreeAgentOAuthClient` and `FreeAgentClient` both default to `FreeAgentEnvironment.Production`. When targeting the FreeAgent sandbox, pass `FreeAgentEnvironment.Sandbox` to **both** constructors so the authorisation URL and API base address stay aligned. See [Getting started](../tutorial/getting-started.md).
+
 ## Sample app session storage (development only)
 
 The Blazor sample persists OAuth tokens and in-flight CSRF state in short-lived, `HttpOnly` browser cookies so local sessions survive page reloads and app restarts. Cookie payloads are **not encrypted** and are suitable **only for local single-user development**. Do not reuse this pattern in production applications; store tokens server-side with appropriate encryption and session management instead.

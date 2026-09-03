@@ -19,13 +19,18 @@ dotnet add package FreeAgent.Client
 
 The SDK provides protocol-level OAuth utilities (`FreeAgentOAuthClient`): authorisation URL construction, code exchange, and token refresh. It does **not** host callback endpoints or orchestrate browser flows — your application owns that.
 
+Both `FreeAgentOAuthClient` and `FreeAgentClient` default to **production**. Pass `FreeAgentEnvironment.Sandbox` on **both** when you are using a sandbox application — otherwise authorisation and API calls go to production.
+
 ```csharp
 using FreeAgent.Client;
+
+var environment = FreeAgentEnvironment.Sandbox; // or FreeAgentEnvironment.Production
 
 var oauthClient = new FreeAgentOAuthClient(
     clientId: "your-client-id",
     clientSecret: "your-client-secret",
-    redirectUri: "https://localhost:5001/callback");
+    redirectUri: "https://localhost:5001/callback",
+    environment);
 
 // Redirect the user to FreeAgent
 var authUrl = oauthClient.GetAuthorizationUrl(state: "optional-csrf-state");
@@ -37,7 +42,7 @@ var token = await oauthClient.ExchangeCodeForTokenAsync(authorizationCode);
 ## Create a client and call the API
 
 ```csharp
-using var client = new FreeAgentClient(token.AccessToken);
+using var client = new FreeAgentClient(token.AccessToken, environment);
 
 var company = await client.Company.GetCompanyAsync();
 Console.WriteLine($"{company.Name} ({company.Currency})");
@@ -46,7 +51,7 @@ Console.WriteLine($"{company.Name} ({company.Currency})");
 For automatic token refresh within a session:
 
 ```csharp
-using var client = new FreeAgentClient(oauthClient, token);
+using var client = new FreeAgentClient(oauthClient, token, environment);
 var company = await client.Company.GetCompanyAsync();
 ```
 
