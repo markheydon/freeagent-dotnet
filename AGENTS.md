@@ -59,9 +59,6 @@ Project skills live in `.agents/skills/`. Read the matching `SKILL.md` when the 
 |---|---|
 | `implement-endpoint` | Adding or retrofitting a FreeAgent API resource end-to-end |
 | `create-architectural-decision-record` | Creating or major-updating an ADR |
-| `create-implementation-plan` | Planning a feature, refactor, or upgrade |
-| `create-github-issue-feature-from-specification` | Raising a feature issue from a spec |
-| `create-github-issues-feature-from-implementation-plan` | Breaking a plan into GitHub issues |
 | `documentation-writer` | Diátaxis-aligned documentation structure |
 | `project-documentation` | Project-aware docs placement and terminology |
 | `mudblazor` | Sample app Blazor UI with MudBlazor |

@@ -23,6 +23,8 @@ For setup and usage questions, please use [GitHub Discussions](https://github.co
 
 ## Development Setup
 
+See **[docs/contributing-setup.md](docs/contributing-setup.md)** for SDK installation, verifying `dotnet --list-sdks`, and building `FreeAgent.slnx`.
+
 Requirements:
 
 - .NET 8.0 SDK and runtime (required to build and test the SDK `net8.0` target).
@@ -33,7 +35,7 @@ The SDK package targets both frameworks. The sample app is .NET 10.0-only.
 Build and test locally:
 
 ```bash
-dotnet build
+dotnet build FreeAgent.slnx
 dotnet test
 ```
 

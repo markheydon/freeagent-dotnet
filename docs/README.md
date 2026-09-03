@@ -1,13 +1,25 @@
-# docs Folder Purpose
+# FreeAgent.NET documentation
 
-This folder is reserved for future public-facing documentation served via GitHub Pages.
+Documentation in this folder is for **developers using the `FreeAgent.Client` NuGet package** — not for internal project planning.
 
-Internal planning, implementation checklists, and engineering policy documents must not be added here.
+Internal engineering policy lives in the repository root (`GOALS.md`, `SCOPE.md`, `CONVENTIONS.md`) and in [`plan/`](../plan/). Architectural decisions are in [`adr/`](../adr/).
 
-Use the `plan/` folder for internal project documentation such as:
+## Documentation map
 
-- Endpoint implementation checklists
-- API type mapping policy
-- API-to-SDK alignment and drift tracking
+| Document | Type | Audience |
+|----------|------|----------|
+| [Getting started](tutorial/getting-started.md) | Tutorial | New SDK consumers |
+| [Pagination](how-to/pagination.md) | How-to | Consumers listing resources |
+| [Error handling](how-to/error-handling.md) | How-to | Consumers handling API failures |
+| [Token refresh](how-to/token-refresh.md) | How-to | Consumers managing OAuth tokens |
+| [Upgrading](how-to/upgrading.md) | How-to | Consumers on prerelease versions |
+| [API coverage](reference/api-coverage.md) | Reference | What the SDK implements today |
+| [Prerelease and OAuth scope](explanation/prerelease-and-oauth.md) | Explanation | Versioning and OAuth boundaries |
+| [Contributor setup](contributing-setup.md) | How-to | Contributors cloning this repository |
 
-If a file in this folder is not intended for public documentation, move it to `plan/` or another appropriate internal location.
+## Related links
+
+- [README](../README.md) — repository overview and quick start
+- [VERSIONING.md](../VERSIONING.md) — prerelease policy
+- [SUPPORT.md](../SUPPORT.md) — help and issue routing
+- [FreeAgent API documentation](https://dev.freeagent.com/docs)
