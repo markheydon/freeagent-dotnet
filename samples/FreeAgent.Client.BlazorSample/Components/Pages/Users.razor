@@ -1,0 +1,271 @@
+@page "/users"
+@using FreeAgent.Client.Models.Users
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Users — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Users endpoint"
+                         Title="Users list"
+                         CallUnderTest="UserService.GetUsersAsync(...)"
+                         Description="Load users, inspect wire-to-model mapping for any row, then jump into User CRUD to test get, create, update, and delete."
+                         EndpointPath="/v2/users?view={view}"
+                         DocsUrl="https://dev.freeagent.com/docs/users" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load all users for the selected view, then use <strong>Inspect mapping</strong> on any row to see wire-to-model diagnostics.
+                        Use <strong>Open in CRUD</strong> to test single-user operations, or
+                        <MudLink Href="/users/detail">Get personal profile</MudLink> for <code>GET /v2/users/me</code>.
+                    </MudText>
+
+                    <MudGrid Spacing="2" Class="contacts-filter-grid">
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudSelect T="string"
+                                       @bind-Value="_view"
+                                       Label="View"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       FullWidth="true">
+                                <MudSelectItem Value="@UserViews.All">all</MudSelectItem>
+                                <MudSelectItem Value="@UserViews.Staff">staff</MudSelectItem>
+                                <MudSelectItem Value="@UserViews.ActiveStaff">active_staff</MudSelectItem>
+                                <MudSelectItem Value="@UserViews.Advisors">advisors</MudSelectItem>
+                                <MudSelectItem Value="@UserViews.ActiveAdvisors">active_advisors</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                                       Disabled="_loading"
+                                       Class="contacts-load-button"
+                                       OnClick="LoadUsersAsync">
+                                @if (_loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Loading…</span>
+                                }
+                                else
+                                {
+                                    <span>Load users</span>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+
+                @if (_users is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load users</strong> to fetch users from FreeAgent.</MudText>
+                }
+
+                @if (_users is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_users.Count user@(_users.Count == 1 ? string.Empty : "s") loaded
+                        </MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                    </MudStack>
+
+                    @if (_users.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No users returned for view <code>@_view</code>. Try <code>all</code>, or create a test user from
+                            <MudLink Href="/users/detail">User CRUD</MudLink>.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_userRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Name</MudTh>
+                                    <MudTh>Role</MudTh>
+                                    <MudTh>Email</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Name">@context.DisplayName</MudTd>
+                                    <MudTd DataLabel="Role">@context.Role</MudTd>
+                                    <MudTd DataLabel="Email">@ValueOrDash(context.Email)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectUserAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetCrudHref(context.Id)">
+                                                Open in CRUD
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedUser is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All User model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected user</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    ID: @UserUrlParser.ParseId(_inspectedUser.Url)
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Display name</MudText>
+                                        <MudText Typo="Typo.subtitle1">@_inspectedUser.DisplayName</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Email</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedUser.Email)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private IReadOnlyList<User>? _users;
+    private User? _inspectedUser;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+    private string _view = UserViews.All;
+
+    private IReadOnlyList<UserRow> _userRows => _users?
+        .Select(static (user, index) => new UserRow(
+            index,
+            UserUrlParser.ParseId(user.Url) ?? 0,
+            user.DisplayName,
+            user.Role?.ToString() ?? "—",
+            user.Email))
+        .ToList() ?? [];
+
+    private async Task LoadUsersAsync()
+    {
+        _users = null;
+        _inspectedUser = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var diagnosticsEndpoint = $"users?view={_view}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _users = await client.Users.GetUsersAsync(view: _view);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectUserAsync(int index)
+    {
+        if (_users is null || index < 0 || index >= _users.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedUser = _users[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "users", index, out var wireUser))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedUser, wireUser);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedUser, _wireApiResponse, envelopeProperty: "users");
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private static string GetCrudHref(long id) => $"/users/detail?id={id}";
+
+    private sealed record UserRow(int Index, long Id, string DisplayName, string Role, string? Email);
+}

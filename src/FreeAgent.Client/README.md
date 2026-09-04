@@ -10,7 +10,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - Rate limiting and bounded retries for transient failures
 - Typed exception model (`FreeAgentApiException`, `FreeAgentRateLimitException`, …)
 - Pagination (single-page and auto-pagination)
-- Company, Contacts, and Categories API support
+- Company, Contacts, Categories, and Users API support
 - `CurrencyCode` enum for documented ISO 4217 codes (reference type; not a REST resource)
 - Targets .NET 8.0 and .NET 10.0
 - Fully async/await with XML documentation

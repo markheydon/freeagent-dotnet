@@ -1,0 +1,280 @@
+@page "/users/detail"
+@using FreeAgent.Client.Models.Users
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>User detail — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Users endpoint"
+                         Title="Get, create, update, and delete users"
+                         CallUnderTest="UserService.GetUserAsync / GetCurrentUserAsync / CreateUserAsync / UpdateUserAsync / UpdateCurrentUserAsync / DeleteUserAsync"
+                         Description="Exercises single-user CRUD operations and the personal profile endpoints, with wire-to-model diagnostics after each successful call."
+                         EndpointPath="/v2/users/:id and /v2/users/me"
+                         DocsUrl="https://dev.freeagent.com/docs/users" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a user ID from the <MudLink Href="/users">users list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Use <strong>Get personal profile</strong> for
+                        <code>GET /v2/users/me</code> and <strong>Update personal profile</strong> for
+                        <code>PUT /v2/users/me</code>. Creating users requires Tax, Accounting &amp; Users access.
+                    </MudText>
+                    <MudNumericField @bind-Value="_userId" Label="User ID" Min="1" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetUserAsync">Get user</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="GetCurrentUserAsync">Get personal profile</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="UpdateCurrentUserAsync">Update personal profile</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _userId is null"
+                                   OnClick="UpdateUserAsync">Update user</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _userId is null"
+                                   OnClick="DeleteUserAsync">Delete user</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _user is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All User model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @UserUrlParser.ParseId(_user.Url)</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_user.Role?.ToString())</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Display name</MudText>
+                                        <MudText Typo="Typo.subtitle1">@_user.DisplayName</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Email</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_user.Email)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Permission level</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_user.PermissionLevel?.ToString())</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Resource URL</MudText>
+                                        <MudText Typo="Typo.body2">@_user.Url</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load user diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? UserIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private User? _user;
+    private ModelProbeSnapshot? _probe;
+    private long? _userId;
+
+    protected override void OnParametersSet()
+    {
+        if (UserIdFromQuery is > 0 && _userId != UserIdFromQuery)
+        {
+            _userId = UserIdFromQuery;
+            _operationMessage = $"User ID {_userId} loaded from URL. Press Get user to fetch diagnostics.";
+        }
+    }
+
+    private async Task GetUserAsync()
+    {
+        if (_userId is null or < 1)
+        {
+            _error = "Enter a user ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _user = await client.Users.GetUserAsync(_userId.Value);
+                _operationMessage = $"Loaded user {_userId.Value}: {_user.DisplayName}";
+                return $"users/{_userId}";
+            },
+            envelopeProperty: "user");
+    }
+
+    private async Task GetCurrentUserAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                _user = await client.Users.GetCurrentUserAsync();
+                _userId = UserUrlParser.ParseId(_user.Url);
+                _operationMessage = $"Loaded personal profile for {_user.DisplayName}.";
+                return "users/me";
+            },
+            envelopeProperty: "user");
+    }
+
+    private async Task UpdateCurrentUserAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _user ?? await client.Users.GetCurrentUserAsync();
+                existing.OpeningMileage = (existing.OpeningMileage ?? 0) + 1;
+                _user = await client.Users.UpdateCurrentUserAsync(existing);
+                _userId = UserUrlParser.ParseId(_user.Url);
+                _operationMessage = "Updated personal profile opening mileage (+1).";
+                return "users/me";
+            },
+            envelopeProperty: "user");
+    }
+
+    private async Task UpdateUserAsync()
+    {
+        if (_userId is null)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _user ?? await client.Users.GetUserAsync(_userId.Value);
+                existing.LastName = $"{existing.LastName} (updated)".Trim();
+                _user = await client.Users.UpdateUserAsync(_userId.Value, existing);
+                _operationMessage = $"Updated user {_userId.Value}.";
+                return $"users/{_userId}";
+            },
+            envelopeProperty: "user");
+    }
+
+    private async Task DeleteUserAsync()
+    {
+        if (_userId is null)
+        {
+            return;
+        }
+
+        var deletedId = _userId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Users.DeleteUserAsync(deletedId);
+                _user = null;
+                _probe = null;
+                _operationMessage = $"Deleted user {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgentClient, Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _user is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_user, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

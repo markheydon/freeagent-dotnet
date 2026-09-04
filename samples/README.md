@@ -100,6 +100,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/contacts/detail](https://localhost:5001/contacts/detail) | `GetContactAsync()`, `CreateContactAsync()`, `UpdateContactAsync()`, `DeleteContactAsync()` | CRUD probes, Turpinverse seed data, full-detail fixture, progress bar |
 | [/categories](https://localhost:5001/categories) | `CategoryService.GetCategoriesAsync()` | Per-row mapping inspection, sub accounts toggle |
 | [/categories/detail](https://localhost:5001/categories/detail) | `GetCategoryAsync()`, all `Create*CategoryAsync` / `Update*CategoryAsync`, `DeleteCategoryAsync` via write-variant selector | CRUD probes, all documented write variants, progress bar |
+| [/users](https://localhost:5001/users) | `UserService.GetUsersAsync()` | Per-row mapping inspection, view filters |
+| [/users/detail](https://localhost:5001/users/detail) | `GetUserAsync()`, `GetCurrentUserAsync()`, `CreateUserAsync()`, `UpdateUserAsync()`, `UpdateCurrentUserAsync()`, `DeleteUserAsync()` | CRUD probes, personal profile endpoints, progress bar |
 
 Contributors adding endpoints should follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md).
 
