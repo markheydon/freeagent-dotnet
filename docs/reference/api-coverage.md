@@ -89,6 +89,15 @@ FreeAgent documents supported ISO 4217 currency codes but does **not** expose a 
 
 There is no `CurrenciesService`. Additional resources will use `CurrencyCode` for currency fields as they are implemented.
 
+## Email addresses
+
+Docs: https://dev.freeagent.com/docs/email_addresses  
+Sample: `/email-addresses`
+
+| Method | SDK API |
+|--------|---------|
+| `GET /v2/email_addresses` | `client.EmailAddresses.GetEmailAddressesAsync()` |
+
 ## Not yet implemented
 
 - Invoices and other MVP resources listed in [SCOPE.md](../../SCOPE.md) — tracked via GitHub Issues

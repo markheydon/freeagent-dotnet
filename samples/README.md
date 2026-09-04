@@ -100,6 +100,7 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/contacts/detail](https://localhost:5001/contacts/detail) | `GetContactAsync()`, `CreateContactAsync()`, `UpdateContactAsync()`, `DeleteContactAsync()` | CRUD probes, Turpinverse seed data, full-detail fixture, progress bar |
 | [/categories](https://localhost:5001/categories) | `CategoryService.GetCategoriesAsync()` | Per-row mapping inspection, sub accounts toggle |
 | [/categories/detail](https://localhost:5001/categories/detail) | `GetCategoryAsync()`, all `Create*CategoryAsync` / `Update*CategoryAsync`, `DeleteCategoryAsync` via write-variant selector | CRUD probes, all documented write variants, progress bar |
+| [/email-addresses](https://localhost:5001/email-addresses) | `EmailAddressesService.GetEmailAddressesAsync()` | List output |
 
 Contributors adding endpoints should follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md).
 
