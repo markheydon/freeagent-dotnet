@@ -12,7 +12,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Categories endpoint"
                          Title="Get, create, update, and delete categories"
-                         CallUnderTest="CategoryService.GetCategoryAsync / CreateCategoryAsync / UpdateCategoryAsync / DeleteCategoryAsync"
+                         CallUnderTest="CategoryService.GetCategoryAsync / CreateIncomeCategoryAsync / UpdateIncomeCategoryAsync / DeleteCategoryAsync"
                          Description="Exercises single-category CRUD operations and shows wire-to-model diagnostics for the returned category envelope."
                          EndpointPath="/v2/categories/:nominal_code"
                          DocsUrl="https://dev.freeagent.com/docs/categories" />
@@ -151,11 +151,10 @@
         await RunOperationAsync(
             async client =>
             {
-                _category = await client.Categories.CreateCategoryAsync(new CategoryWritePayload
+                _category = await client.Categories.CreateIncomeCategoryAsync(new CreateIncomeCategoryRequest
                 {
                     Description = ProbeIncomeDescription,
-                    NominalCode = ProbeIncomeNominalCode,
-                    CategoryGroup = CategoryGroup.Income
+                    NominalCode = ProbeIncomeNominalCode
                 });
 
                 _nominalCode = _category.NominalCode ?? ProbeIncomeNominalCode;
@@ -179,7 +178,7 @@
                     ? existing.Description
                     : $"{existing.Description} (updated)";
 
-                _category = await client.Categories.UpdateCategoryAsync(_nominalCode, new CategoryWritePayload
+                _category = await client.Categories.UpdateIncomeCategoryAsync(_nominalCode, new UpdateIncomeCategoryRequest
                 {
                     Description = updatedDescription,
                     NominalCode = _nominalCode

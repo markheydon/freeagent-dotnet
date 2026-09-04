@@ -149,7 +149,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
-    public async Task CreateCategoryAsync_PostsCategoryEnvelope()
+    public async Task CreateIncomeCategoryAsync_PostsIncomeCategoryEnvelope()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -159,6 +159,7 @@ public class CategoryServiceTests
             Assert.Contains("\"category\"", body, StringComparison.Ordinal);
             Assert.Contains("\"category_group\":\"income\"", body, StringComparison.Ordinal);
             Assert.Contains("\"nominal_code\":\"047\"", body, StringComparison.Ordinal);
+            Assert.DoesNotContain("tax_reporting_name", body, StringComparison.Ordinal);
 
             return new HttpResponseMessage(HttpStatusCode.Created)
             {
@@ -180,11 +181,10 @@ public class CategoryServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new CategoryService(client);
 
-        var created = await service.CreateCategoryAsync(new CategoryWritePayload
+        var created = await service.CreateIncomeCategoryAsync(new CreateIncomeCategoryRequest
         {
             Description = "Custom Income Category",
-            NominalCode = "047",
-            CategoryGroup = CategoryGroup.Income
+            NominalCode = "047"
         });
 
         Assert.Equal("047", created.NominalCode);
@@ -192,24 +192,85 @@ public class CategoryServiceTests
     }
 
     [Fact]
-    public async Task CreateCategoryAsync_WhenCategoryGroupMissing_ThrowsArgumentException()
+    public async Task CreateCostOfSalesCategoryAsync_PostsSpendingCategoryFields()
     {
-        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Created)))
+        var handler = new QueueHttpMessageHandler(request =>
         {
-            BaseAddress = new Uri("https://api.freeagent.com/v2/")
-        };
+            var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            Assert.Contains("\"category_group\":\"cost_of_sales\"", body, StringComparison.Ordinal);
+            Assert.Contains("\"tax_reporting_name\":\"purchases\"", body, StringComparison.Ordinal);
+            Assert.Contains("\"allowable_for_tax\":true", body, StringComparison.Ordinal);
+            Assert.Contains("\"auto_sales_tax_rate\":\"Standard rate\"", body, StringComparison.Ordinal);
+
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "cost_of_sales_categories": {
+                    "url": "https://api.freeagent.com/v2/categories/101",
+                    "description": "Custom Cost of Sales Category",
+                    "nominal_code": "101"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new CategoryService(client);
 
-        await Assert.ThrowsAsync<ArgumentException>(() => service.CreateCategoryAsync(new CategoryWritePayload
+        var created = await service.CreateCostOfSalesCategoryAsync(new CreateCostOfSalesCategoryRequest
         {
-            Description = "Missing group",
-            NominalCode = "047"
-        }));
+            Description = "Custom Cost of Sales Category",
+            NominalCode = "101",
+            TaxReportingName = "purchases",
+            AllowableForTax = true,
+            AutoSalesTaxRate = CategoryAutoSalesTaxRate.StandardRate
+        });
+
+        Assert.Equal("101", created.NominalCode);
     }
 
     [Fact]
-    public async Task UpdateCategoryAsync_PutsCategoryEnvelope()
+    public async Task CreateEquityCategoryAsync_PostsEquityCategoryEnvelope()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            Assert.Contains("\"category_group\":\"equities\"", body, StringComparison.Ordinal);
+            Assert.Contains("\"nominal_code\":\"922\"", body, StringComparison.Ordinal);
+            Assert.DoesNotContain("tax_reporting_name", body, StringComparison.Ordinal);
+
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "general_categories": {
+                    "url": "https://api.freeagent.com/v2/categories/922",
+                    "description": "Custom Equity Category",
+                    "nominal_code": "922"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CategoryService(client);
+
+        var created = await service.CreateEquityCategoryAsync(new CreateEquityCategoryRequest
+        {
+            Description = "Custom Equity Category",
+            NominalCode = "922"
+        });
+
+        Assert.Equal("922", created.NominalCode);
+    }
+
+    [Fact]
+    public async Task UpdateIncomeCategoryAsync_PutsIncomeCategoryEnvelope()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -238,13 +299,51 @@ public class CategoryServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new CategoryService(client);
 
-        var updated = await service.UpdateCategoryAsync("047", new CategoryWritePayload
+        var updated = await service.UpdateIncomeCategoryAsync("047", new UpdateIncomeCategoryRequest
         {
             Description = "Renamed",
             NominalCode = "047"
         });
 
         Assert.Equal("Renamed", updated.Description);
+    }
+
+    [Fact]
+    public async Task UpdateAdminExpensesCategoryAsync_PutsSpendingCategoryFields()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            Assert.Contains("\"tax_reporting_name\":\"computer_software_costs\"", body, StringComparison.Ordinal);
+            Assert.Contains("\"allowable_for_tax\":true", body, StringComparison.Ordinal);
+            Assert.DoesNotContain("category_group", body, StringComparison.Ordinal);
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "admin_expenses_categories": {
+                    "url": "https://api.freeagent.com/v2/categories/212",
+                    "description": "Custom Admin Expenses Category",
+                    "nominal_code": "212"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CategoryService(client);
+
+        await service.UpdateAdminExpensesCategoryAsync("212", new UpdateAdminExpensesCategoryRequest
+        {
+            Description = "Custom Admin Expenses Category",
+            NominalCode = "212",
+            TaxReportingName = "computer_software_costs",
+            AllowableForTax = true,
+            AutoSalesTaxRate = CategoryAutoSalesTaxRate.StandardRate
+        });
     }
 
     [Fact]

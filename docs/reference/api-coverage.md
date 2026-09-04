@@ -46,8 +46,18 @@ Sample: `/categories` (list + per-row mapping), `/categories/detail` (CRUD)
 |--------|---------|
 | `GET /v2/categories` | `client.Categories.GetCategoriesAsync(...)` |
 | `GET /v2/categories/:nominal_code` | `client.Categories.GetCategoryAsync(nominalCode)` |
-| `POST /v2/categories` | `client.Categories.CreateCategoryAsync(category)` |
-| `PUT /v2/categories/:nominal_code` | `client.Categories.UpdateCategoryAsync(nominalCode, category)` |
+| `POST /v2/categories` (income) | `client.Categories.CreateIncomeCategoryAsync(request)` |
+| `POST /v2/categories` (cost of sales) | `client.Categories.CreateCostOfSalesCategoryAsync(request)` |
+| `POST /v2/categories` (admin expenses) | `client.Categories.CreateAdminExpensesCategoryAsync(request)` |
+| `POST /v2/categories` (current asset) | `client.Categories.CreateCurrentAssetCategoryAsync(request)` |
+| `POST /v2/categories` (liabilities) | `client.Categories.CreateLiabilitiesCategoryAsync(request)` |
+| `POST /v2/categories` (equity) | `client.Categories.CreateEquityCategoryAsync(request)` |
+| `PUT /v2/categories/:nominal_code` (income) | `client.Categories.UpdateIncomeCategoryAsync(nominalCode, request)` |
+| `PUT /v2/categories/:nominal_code` (cost of sales) | `client.Categories.UpdateCostOfSalesCategoryAsync(nominalCode, request)` |
+| `PUT /v2/categories/:nominal_code` (admin expenses) | `client.Categories.UpdateAdminExpensesCategoryAsync(nominalCode, request)` |
+| `PUT /v2/categories/:nominal_code` (current asset) | `client.Categories.UpdateCurrentAssetCategoryAsync(nominalCode, request)` |
+| `PUT /v2/categories/:nominal_code` (liabilities) | `client.Categories.UpdateLiabilitiesCategoryAsync(nominalCode, request)` |
+| `PUT /v2/categories/:nominal_code` (equity) | `client.Categories.UpdateEquityCategoryAsync(nominalCode, request)` |
 | `DELETE /v2/categories/:nominal_code` | `client.Categories.DeleteCategoryAsync(nominalCode)` |
 
 ### List query parameters

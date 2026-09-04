@@ -1,5 +1,7 @@
 using System.Text.Json;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Categories;
+using FreeAgent.Client.Services.Categories;
 
 namespace FreeAgent.Client.Tests.Models.Categories;
 
@@ -22,18 +24,40 @@ public class CategoryModelSerializationTests
         Assert.Equal(value, deserialized!.AutoSalesTaxRate);
     }
 
-    [Theory]
-    [InlineData(CategoryGroup.Income, "income")]
-    [InlineData(CategoryGroup.CostOfSales, "cost_of_sales")]
-    [InlineData(CategoryGroup.AdminExpenses, "admin_expenses")]
-    [InlineData(CategoryGroup.CurrentAssets, "current_assets")]
-    [InlineData(CategoryGroup.Liabilities, "liabilities")]
-    [InlineData(CategoryGroup.Equities, "equities")]
-    public void CategoryGroup_RoundTripsWireValue(CategoryGroup value, string wireValue)
+    [Fact]
+    public void CreateIncomeCategoryRequest_MapsToIncomeCategoryGroupWireValue()
     {
-        var json = JsonSerializer.Serialize(new CategoryWritePayload { CategoryGroup = value });
+        var payload = CategoryWritePayloadMapper.FromCreate(new CreateIncomeCategoryRequest
+        {
+            Description = "Custom Income Category",
+            NominalCode = "047"
+        });
+
+        var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
         using var document = JsonDocument.Parse(json);
 
-        Assert.Equal(wireValue, document.RootElement.GetProperty("category_group").GetString());
+        Assert.Equal("income", document.RootElement.GetProperty("category_group").GetString());
+        Assert.Equal("047", document.RootElement.GetProperty("nominal_code").GetString());
+        Assert.False(document.RootElement.TryGetProperty("tax_reporting_name", out _));
+    }
+
+    [Fact]
+    public void CreateCostOfSalesCategoryRequest_MapsSpendingFields()
+    {
+        var payload = CategoryWritePayloadMapper.FromCreate(new CreateCostOfSalesCategoryRequest
+        {
+            Description = "Custom Cost of Sales Category",
+            NominalCode = "101",
+            TaxReportingName = "purchases",
+            AllowableForTax = true,
+            AutoSalesTaxRate = CategoryAutoSalesTaxRate.StandardRate
+        });
+
+        var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
+        using var document = JsonDocument.Parse(json);
+
+        Assert.Equal("cost_of_sales", document.RootElement.GetProperty("category_group").GetString());
+        Assert.Equal("purchases", document.RootElement.GetProperty("tax_reporting_name").GetString());
+        Assert.True(document.RootElement.GetProperty("allowable_for_tax").GetBoolean());
     }
 }

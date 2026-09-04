@@ -53,43 +53,183 @@ public sealed class CategoryService
     }
 
     /// <summary>
-    /// Creates a category.
+    /// Creates an income category.
     /// </summary>
-    /// <param name="category">Category attributes to create</param>
+    /// <param name="request">Income category attributes</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created category</returns>
-    public async Task<Category> CreateCategoryAsync(CategoryWritePayload category, CancellationToken cancellationToken = default)
+    public Task<Category> CreateIncomeCategoryAsync(
+        CreateIncomeCategoryRequest request,
+        CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(category);
-
-        if (category.CategoryGroup is null)
-        {
-            throw new ArgumentException("CategoryGroup is required when creating a category.", nameof(category));
-        }
-
-        var content = FreeAgentJsonSerializer.CreateContent(new CategoryRequest { Category = category });
-        var response = await _requestClient.PostAsync<CategorySingleResponse>("categories", content, cancellationToken);
-        return CategoryResponseMapper.ToCategory(response);
+        ArgumentNullException.ThrowIfNull(request);
+        return CreateCategoryAsync(CategoryWritePayloadMapper.FromCreate(request), cancellationToken);
     }
 
     /// <summary>
-    /// Updates a category.
+    /// Creates a cost of sales category.
     /// </summary>
-    /// <param name="nominalCode">Existing category nominal code</param>
-    /// <param name="category">Category attributes to update</param>
+    /// <param name="request">Cost of sales category attributes</param>
     /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Updated category</returns>
-    public async Task<Category> UpdateCategoryAsync(
-        string nominalCode,
-        CategoryWritePayload category,
+    /// <returns>Created category</returns>
+    public Task<Category> CreateCostOfSalesCategoryAsync(
+        CreateCostOfSalesCategoryRequest request,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
-        ArgumentNullException.ThrowIfNull(category);
+        ArgumentNullException.ThrowIfNull(request);
+        return CreateCategoryAsync(CategoryWritePayloadMapper.FromCreate(request), cancellationToken);
+    }
 
-        var content = FreeAgentJsonSerializer.CreateContent(new CategoryRequest { Category = category });
-        var response = await _requestClient.PutAsync<CategorySingleResponse>($"categories/{nominalCode}", content, cancellationToken);
-        return CategoryResponseMapper.ToCategory(response);
+    /// <summary>
+    /// Creates an admin expenses category.
+    /// </summary>
+    /// <param name="request">Admin expenses category attributes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created category</returns>
+    public Task<Category> CreateAdminExpensesCategoryAsync(
+        CreateAdminExpensesCategoryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return CreateCategoryAsync(CategoryWritePayloadMapper.FromCreate(request), cancellationToken);
+    }
+
+    /// <summary>
+    /// Creates a current asset category.
+    /// </summary>
+    /// <param name="request">Current asset category attributes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created category</returns>
+    public Task<Category> CreateCurrentAssetCategoryAsync(
+        CreateCurrentAssetCategoryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return CreateCategoryAsync(CategoryWritePayloadMapper.FromCreate(request), cancellationToken);
+    }
+
+    /// <summary>
+    /// Creates a liabilities category.
+    /// </summary>
+    /// <param name="request">Liabilities category attributes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created category</returns>
+    public Task<Category> CreateLiabilitiesCategoryAsync(
+        CreateLiabilitiesCategoryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return CreateCategoryAsync(CategoryWritePayloadMapper.FromCreate(request), cancellationToken);
+    }
+
+    /// <summary>
+    /// Creates an equity category.
+    /// </summary>
+    /// <param name="request">Equity category attributes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Created category</returns>
+    public Task<Category> CreateEquityCategoryAsync(
+        CreateEquityCategoryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return CreateCategoryAsync(CategoryWritePayloadMapper.FromCreate(request), cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates an income category.
+    /// </summary>
+    /// <param name="nominalCode">Existing category nominal code</param>
+    /// <param name="request">Income category attributes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Updated category</returns>
+    public Task<Category> UpdateIncomeCategoryAsync(
+        string nominalCode,
+        UpdateIncomeCategoryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return UpdateCategoryAsync(nominalCode, CategoryWritePayloadMapper.FromUpdate(request), cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates a cost of sales category.
+    /// </summary>
+    /// <param name="nominalCode">Existing category nominal code</param>
+    /// <param name="request">Cost of sales category attributes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Updated category</returns>
+    public Task<Category> UpdateCostOfSalesCategoryAsync(
+        string nominalCode,
+        UpdateCostOfSalesCategoryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return UpdateCategoryAsync(nominalCode, CategoryWritePayloadMapper.FromUpdate(request), cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates an admin expenses category.
+    /// </summary>
+    /// <param name="nominalCode">Existing category nominal code</param>
+    /// <param name="request">Admin expenses category attributes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Updated category</returns>
+    public Task<Category> UpdateAdminExpensesCategoryAsync(
+        string nominalCode,
+        UpdateAdminExpensesCategoryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return UpdateCategoryAsync(nominalCode, CategoryWritePayloadMapper.FromUpdate(request), cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates a current asset category.
+    /// </summary>
+    /// <param name="nominalCode">Existing category nominal code</param>
+    /// <param name="request">Current asset category attributes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Updated category</returns>
+    public Task<Category> UpdateCurrentAssetCategoryAsync(
+        string nominalCode,
+        UpdateCurrentAssetCategoryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return UpdateCategoryAsync(nominalCode, CategoryWritePayloadMapper.FromUpdate(request), cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates a liabilities category.
+    /// </summary>
+    /// <param name="nominalCode">Existing category nominal code</param>
+    /// <param name="request">Liabilities category attributes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Updated category</returns>
+    public Task<Category> UpdateLiabilitiesCategoryAsync(
+        string nominalCode,
+        UpdateLiabilitiesCategoryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return UpdateCategoryAsync(nominalCode, CategoryWritePayloadMapper.FromUpdate(request), cancellationToken);
+    }
+
+    /// <summary>
+    /// Updates an equity category.
+    /// </summary>
+    /// <param name="nominalCode">Existing category nominal code</param>
+    /// <param name="request">Equity category attributes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Updated category</returns>
+    public Task<Category> UpdateEquityCategoryAsync(
+        string nominalCode,
+        UpdateEquityCategoryRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        return UpdateCategoryAsync(nominalCode, CategoryWritePayloadMapper.FromUpdate(request), cancellationToken);
     }
 
     /// <summary>
@@ -102,5 +242,26 @@ public sealed class CategoryService
         ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
 
         return _requestClient.DeleteAsync($"categories/{nominalCode}", cancellationToken);
+    }
+
+    private async Task<Category> CreateCategoryAsync(
+        CategoryWritePayload payload,
+        CancellationToken cancellationToken)
+    {
+        var content = FreeAgentJsonSerializer.CreateContent(new CategoryRequest { Category = payload });
+        var response = await _requestClient.PostAsync<CategorySingleResponse>("categories", content, cancellationToken);
+        return CategoryResponseMapper.ToCategory(response);
+    }
+
+    private async Task<Category> UpdateCategoryAsync(
+        string nominalCode,
+        CategoryWritePayload payload,
+        CancellationToken cancellationToken)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+
+        var content = FreeAgentJsonSerializer.CreateContent(new CategoryRequest { Category = payload });
+        var response = await _requestClient.PutAsync<CategorySingleResponse>($"categories/{nominalCode}", content, cancellationToken);
+        return CategoryResponseMapper.ToCategory(response);
     }
 }

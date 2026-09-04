@@ -7,7 +7,7 @@ namespace FreeAgent.Client.Models.Categories;
 /// Category group used when creating a category.
 /// </summary>
 [JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<CategoryGroup>))]
-public enum CategoryGroup
+internal enum CategoryGroup
 {
     /// <summary>Income category.</summary>
     [JsonStringEnumMemberName("income")]
