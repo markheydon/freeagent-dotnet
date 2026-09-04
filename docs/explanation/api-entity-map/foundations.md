@@ -28,7 +28,7 @@ flowchart TB
 | Company | [Company](https://dev.freeagent.com/docs/company) | [Implemented](../../reference/api-coverage.md#company) |
 | Contacts | [Contacts](https://dev.freeagent.com/docs/contacts) | [Implemented](../../reference/api-coverage.md#contacts) |
 | Users | [Users](https://dev.freeagent.com/docs/users) | Not yet |
-| Categories | [Categories](https://dev.freeagent.com/docs/categories) | Not yet |
+| Categories | [Categories](https://dev.freeagent.com/docs/categories) | [Implemented](../../reference/api-coverage.md#categories) |
 | Currencies | [Currencies](https://dev.freeagent.com/docs/currencies) | Not yet (codes only on other resources) |
 | Email addresses | [Email addresses](https://dev.freeagent.com/docs/email_addresses) | Not yet |
 

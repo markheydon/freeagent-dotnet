@@ -11,9 +11,9 @@ The sample app is the living reference for implemented SDK capability (see ADR-0
 - Do not add UI for SDK endpoints that are not yet implemented.
 - When adding or changing SDK endpoints, update sample pages and navigation in the same change.
 - Follow the probe-page standard in [`docs/contributing/sample-probe-pages.md`](../../docs/contributing/sample-probe-pages.md).
-- Reference implementations: `Company.razor` (single GET), `Contacts.razor` (list + per-row mapping), `ContactDetail.razor` (CRUD + seed data).
+- Reference implementations: `Company.razor` (single GET), `Contacts.razor` (paginated list + per-row mapping), `ContactDetail.razor` (CRUD + seed data), `Categories.razor` / `CategoryDetail.razor` (non-paginated list + multi-variant writes).
 - Reuse shared probe components:
-  - `EndpointProbeHeader` — call under test, environment, endpoint path
+  - `EndpointProbeHeader` — call under test, API docs link (`DocsUrl`), environment, endpoint path
   - `ModelWireDiagnostics` + `ModelProbeResults` — wire-to-model mapping, filter chips, raw JSON
   - `ApiErrorDiagnostics` — API error payloads
 - List pages: inspect mapping per wire array item. CRUD pages: `?id=` deep links, fetch wire JSON after create/update, `MudProgressLinear` while loading.

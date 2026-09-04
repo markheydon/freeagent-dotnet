@@ -1,0 +1,367 @@
+@page "/categories"
+@using FreeAgent.Client.Models.Categories
+@using FreeAgent.Client.Sample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Categories — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Categories endpoint"
+                         Title="Categories list"
+                         CallUnderTest="CategoryService.GetCategoriesAsync(...)"
+                         Description="Load chart-of-accounts categories, inspect wire-to-model mapping for any row, then jump into Category CRUD to test get, create, update, and delete."
+                         EndpointPath="/v2/categories?sub_accounts={true|false}"
+                         DocsUrl="https://dev.freeagent.com/docs/categories" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load all category sets grouped by wire array (admin expenses, cost of sales, income, general), sorted by nominal code within each set. Use <strong>Include sub accounts</strong> when you need <code>602-1</code> style codes. Use <strong>Inspect mapping</strong> on any row,
+                        or open <MudLink Href="/categories/detail">Category CRUD</MudLink> for single-category operations.
+                    </MudText>
+
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudSwitch @bind-Value="_includeSubAccounts" Color="Color.Primary" Label="Include sub accounts" />
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   Disabled="_loading"
+                                   OnClick="LoadCategoriesAsync">
+                            @if (_loading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Loading…</span>
+                            }
+                            else
+                            {
+                                <span>Load categories</span>
+                            }
+                        </MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_collection is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load categories</strong> to fetch chart-of-accounts categories from FreeAgent.</MudText>
+                }
+
+                @if (_collection is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_totalCategoryCount categor@(_totalCategoryCount == 1 ? "y" : "ies") loaded
+                        </MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">
+                            Sub accounts: @(_includeSubAccounts ? "included" : "excluded")
+                        </MudChip>
+                    </MudStack>
+
+                    @if (_categoryGroups.Sum(group => group.Rows.Count) == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No categories returned. Try enabling sub accounts, or create a test category from
+                            <MudLink Href="/categories/detail">Category CRUD</MudLink>.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <MudStack Spacing="4">
+                            @foreach (var group in _categoryGroups)
+                            {
+                                <MudStack Spacing="1">
+                                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                        <MudText Typo="Typo.h6">@group.SetLabel</MudText>
+                                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary" Size="Size.Small">
+                                            @group.Rows.Count categor@(group.Rows.Count == 1 ? "y" : "ies")
+                                        </MudChip>
+                                        <MudText Typo="Typo.caption" Class="hero-copy">
+                                            Wire set: <code>@group.ArrayPropertyName</code>
+                                        </MudText>
+                                    </MudStack>
+
+                                    @if (group.Rows.Count == 0)
+                                    {
+                                        <MudText Typo="Typo.body2" Class="hero-copy">No categories in this set.</MudText>
+                                    }
+                                    else
+                                    {
+                                        <div class="diagnostics-table-shell">
+                                            <MudTable Items="@group.Rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                                <HeaderContent>
+                                                    <MudTh>Code</MudTh>
+                                                    <MudTh>Description</MudTh>
+                                                    <MudTh>VAT rate</MudTh>
+                                                    <MudTh>Actions</MudTh>
+                                                </HeaderContent>
+                                                <RowTemplate>
+                                                    <MudTd DataLabel="Code"><code>@context.NominalCode</code></MudTd>
+                                                    <MudTd DataLabel="Description">@context.Description</MudTd>
+                                                    <MudTd DataLabel="VAT rate">@ValueOrDash(context.AutoSalesTaxRate)</MudTd>
+                                                    <MudTd DataLabel="Actions">
+                                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                                            <MudButton Variant="Variant.Filled"
+                                                                       Color="@(context.RowKey == _inspectedRowKey ? Color.Primary : Color.Default)"
+                                                                       Size="Size.Small"
+                                                                       OnClick="@(() => InspectCategoryAsync(context))">
+                                                                Inspect mapping
+                                                            </MudButton>
+                                                            <MudButton Variant="Variant.Outlined"
+                                                                       Color="Color.Primary"
+                                                                       Size="Size.Small"
+                                                                       Href="@GetCrudHref(context.NominalCode)">
+                                                                Open in CRUD
+                                                            </MudButton>
+                                                        </MudStack>
+                                                    </MudTd>
+                                                </RowTemplate>
+                                            </MudTable>
+                                        </div>
+                                    }
+                                </MudStack>
+                            }
+                        </MudStack>
+                    }
+                }
+
+                @if (_inspectedCategory is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Category model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected category</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    Code: @_inspectedCategory.NominalCode
+                                </MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">
+                                    @_inspectedSetLabel
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Description</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedCategory.Description)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Group description</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedCategory.GroupDescription)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private bool _includeSubAccounts;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private CategorySets? _collection;
+    private Category? _inspectedCategory;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private string? _inspectedRowKey;
+    private string? _inspectedSetLabel;
+    private IReadOnlyList<CategoryGroupSection> _categoryGroups = [];
+
+    private int _totalCategoryCount => _categoryGroups.Sum(group => group.Rows.Count);
+
+    private async Task LoadCategoriesAsync()
+    {
+        _collection = null;
+        _categoryGroups = [];
+        _inspectedCategory = null;
+        _inspectedProbe = null;
+        _inspectedRowKey = null;
+        _inspectedSetLabel = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var diagnosticsEndpoint = _includeSubAccounts ? "categories?sub_accounts=true" : "categories";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _collection = await client.Categories.GetCategoriesAsync(_includeSubAccounts);
+            _categoryGroups = BuildGroups(_collection);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectCategoryAsync(CategoryRow row)
+    {
+        _inspectedRowKey = row.RowKey;
+        _inspectedCategory = row.Category;
+        _inspectedSetLabel = row.SetLabel;
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, row.ArrayPropertyName, row.ArrayIndex, out var wireCategory))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedCategory, wireCategory);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedCategory, _wireApiResponse, row.ArrayPropertyName);
+    }
+
+    private static IReadOnlyList<CategoryGroupSection> BuildGroups(CategorySets collection)
+    {
+        return
+        [
+            BuildGroup("Admin expenses", "admin_expenses_categories", collection.AdminExpensesCategories),
+            BuildGroup("Cost of sales", "cost_of_sales_categories", collection.CostOfSalesCategories),
+            BuildGroup("Income", "income_categories", collection.IncomeCategories),
+            BuildGroup("General", "general_categories", collection.GeneralCategories)
+        ];
+    }
+
+    private static CategoryGroupSection BuildGroup(
+        string setLabel,
+        string arrayPropertyName,
+        IReadOnlyList<Category> categories)
+    {
+        var rows = new List<CategoryRow>(categories.Count);
+
+        for (var index = 0; index < categories.Count; index++)
+        {
+            var category = categories[index];
+            rows.Add(new CategoryRow(
+                $"{arrayPropertyName}:{index}",
+                setLabel,
+                arrayPropertyName,
+                index,
+                category.NominalCode ?? "—",
+                category.Description ?? "—",
+                category.AutoSalesTaxRate?.ToString(),
+                category));
+        }
+
+        rows.Sort(static (left, right) => CompareNominalCodes(left.Category.NominalCode, right.Category.NominalCode));
+
+        return new CategoryGroupSection(setLabel, arrayPropertyName, rows);
+    }
+
+    private static int CompareNominalCodes(string? left, string? right)
+    {
+        left ??= string.Empty;
+        right ??= string.Empty;
+
+        var leftParts = left.Split('-', 2, StringSplitOptions.TrimEntries);
+        var rightParts = right.Split('-', 2, StringSplitOptions.TrimEntries);
+
+        var mainCompare = CompareNominalCodePart(leftParts[0], rightParts[0]);
+        if (mainCompare != 0)
+        {
+            return mainCompare;
+        }
+
+        if (leftParts.Length == 1 && rightParts.Length == 1)
+        {
+            return 0;
+        }
+
+        if (leftParts.Length == 1)
+        {
+            return -1;
+        }
+
+        if (rightParts.Length == 1)
+        {
+            return 1;
+        }
+
+        return CompareNominalCodePart(leftParts[1], rightParts[1]);
+    }
+
+    private static int CompareNominalCodePart(string left, string right)
+    {
+        if (int.TryParse(left, out var leftNumber) && int.TryParse(right, out var rightNumber))
+        {
+            return leftNumber.CompareTo(rightNumber);
+        }
+
+        return string.Compare(left, right, StringComparison.Ordinal);
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private static string GetCrudHref(string nominalCode) => $"/categories/detail?nominal_code={Uri.EscapeDataString(nominalCode)}";
+
+    private sealed record CategoryGroupSection(
+        string SetLabel,
+        string ArrayPropertyName,
+        IReadOnlyList<CategoryRow> Rows);
+
+    private sealed record CategoryRow(
+        string RowKey,
+        string SetLabel,
+        string ArrayPropertyName,
+        int ArrayIndex,
+        string NominalCode,
+        string Description,
+        string? AutoSalesTaxRate,
+        Category Category);
+}

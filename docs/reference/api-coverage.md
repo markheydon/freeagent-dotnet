@@ -37,6 +37,37 @@ Sample: `/contacts` (list + per-row mapping), `/contacts/detail` (CRUD + seed da
 - `sort` — `name`, `created_at`, `updated_at`; prefix with `-` for descending
 - `updated_since` — ISO 8601 timestamp (`DateTimeOffset`)
 
+## Categories
+
+Docs: https://dev.freeagent.com/docs/categories  
+Sample: `/categories` (list + per-row mapping), `/categories/detail` (CRUD)
+
+| Method | SDK API |
+|--------|---------|
+| `GET /v2/categories` | `client.Categories.GetCategoriesAsync(...)` |
+| `GET /v2/categories/:nominal_code` | `client.Categories.GetCategoryAsync(nominalCode)` |
+| `POST /v2/categories` (income) | `client.Categories.CreateIncomeCategoryAsync(request)` |
+| `POST /v2/categories` (cost of sales) | `client.Categories.CreateCostOfSalesCategoryAsync(request)` |
+| `POST /v2/categories` (admin expenses) | `client.Categories.CreateAdminExpensesCategoryAsync(request)` |
+| `POST /v2/categories` (current asset) | `client.Categories.CreateCurrentAssetCategoryAsync(request)` |
+| `POST /v2/categories` (liabilities) | `client.Categories.CreateLiabilitiesCategoryAsync(request)` |
+| `POST /v2/categories` (equity) | `client.Categories.CreateEquityCategoryAsync(request)` |
+| `PUT /v2/categories/:nominal_code` (income) | `client.Categories.UpdateIncomeCategoryAsync(nominalCode, request)` |
+| `PUT /v2/categories/:nominal_code` (cost of sales) | `client.Categories.UpdateCostOfSalesCategoryAsync(nominalCode, request)` |
+| `PUT /v2/categories/:nominal_code` (admin expenses) | `client.Categories.UpdateAdminExpensesCategoryAsync(nominalCode, request)` |
+| `PUT /v2/categories/:nominal_code` (current asset) | `client.Categories.UpdateCurrentAssetCategoryAsync(nominalCode, request)` |
+| `PUT /v2/categories/:nominal_code` (liabilities) | `client.Categories.UpdateLiabilitiesCategoryAsync(nominalCode, request)` |
+| `PUT /v2/categories/:nominal_code` (equity) | `client.Categories.UpdateEquityCategoryAsync(nominalCode, request)` |
+| `DELETE /v2/categories/:nominal_code` | `client.Categories.DeleteCategoryAsync(nominalCode)` |
+
+### List query parameters
+
+- `sub_accounts` — when `true`, includes sub accounts instead of top-level accounts where they exist
+
+### Write request factories
+
+Category create/update requests use static factory methods. Variants that require `tax_reporting_name` expose discriminator-specific factories (for example `CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(..., UkLimitedCompanyCostOfSalesTaxReportingName.Purchases)`). Income and equity variants use `Create(...)`.
+
 ## OAuth (protocol helpers)
 
 | Capability | SDK API |

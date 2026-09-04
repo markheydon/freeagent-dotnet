@@ -106,6 +106,15 @@
                 </MudNavLink>
             </MudNavGroup>
 
+            <MudNavGroup Title="Categories" Icon="@Icons.Material.Filled.AccountTree" Expanded="@IsCategoriesRoute">
+                <MudNavLink Href="/categories" Icon="@Icons.Material.Filled.AllInclusive">
+                    Categories list
+                </MudNavLink>
+                <MudNavLink Href="/categories/detail" Icon="@Icons.Material.Filled.Edit">
+                    Category CRUD
+                </MudNavLink>
+            </MudNavGroup>
+
             <MudNavGroup Title="Developer Tools" Icon="@Icons.Material.Filled.Handyman" Expanded="@IsDeveloperToolsRoute">
                 <MudNavLink Href="/sandbox/rate-limit-test" Icon="@Icons.Material.Filled.Speed">
                     Sandbox Rate-Limit Test
@@ -186,6 +195,10 @@
     private bool IsContactsRoute =>
         CurrentPath.Equals("contacts", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("contacts/", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsCategoriesRoute =>
+        CurrentPath.Equals("categories", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("categories/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsDeveloperToolsRoute =>
         CurrentPath.StartsWith("sandbox/", StringComparison.OrdinalIgnoreCase);

@@ -60,8 +60,8 @@ Layers describe **dependency pressure**, not a mandatory backlog. A resource in 
 
 | Layer | Resources | Rationale |
 |-------|-----------|-----------|
-| **0 — Done** | Company, Contacts, OAuth helpers | Company context and contacts are referenced almost everywhere |
-| **1 — Cheap hubs** | Categories, Users | Few dependencies; many line items and explanations point at categories; users are required for expenses and timeslips |
+| **0 — Done** | Company, Contacts, Categories, OAuth helpers | Company context, contacts, and chart-of-accounts categories are referenced almost everywhere |
+| **1 — Cheap hubs** | Users | Few remaining foundation dependencies; users are required for expenses and timeslips |
 | **2 — Project spine** | Projects, Tasks | Projects require `contact` (done); tasks require `project`; timeslips require `task`, `project`, and `user` |
 | **3 — Sales documents** | Invoices, Estimates, Recurring invoices, Credit notes | Invoices require only `contact` on create; `project`, `bank_account`, and item `category` URIs are optional |
 | **4 — Purchases** | Bills, Expenses | Bills require `contact`; expenses require `user` and `category` |
@@ -71,13 +71,13 @@ Layers describe **dependency pressure**, not a mandatory backlog. A resource in 
 
 ### Is Invoices blocked?
 
-**No.** The only required URI when creating an invoice is `contact`, which the SDK already implements. Optional URIs (`project`, `bank_account`, `property`, `recurring_invoice`) and invoice-item URIs (`category`, `stock_item`) can remain opaque URI strings until those services are added — the same pattern Contacts already uses for inbound references.
+**No.** The only required URI when creating an invoice is `contact`, which the SDK already implements. Optional URIs (`project`, `bank_account`, `property`, `recurring_invoice`) and invoice-item `stock_item` can remain opaque URI strings until those services are added. Invoice-item `category` URIs can already resolve through the Categories service.
 
 Resources that are **nice to have nearby** (before or shortly after invoices), depending on how deeply you want sample probes and typed models to resolve links:
 
 | Resource | Why it sits near invoices |
 |----------|--------------------------|
-| **Categories** | Invoice, estimate, and bill line items reference categories; cheap hub with few dependencies |
+| **Categories** | Implemented. Invoice, estimate, and bill line items reference categories |
 | **Bank accounts** | Invoice remittance via `bank_account`; later needed for bank explanations with `paid_invoice` |
 | **Projects** | Optional on invoices; required for tasks and timeslips |
 | **Users** | Not needed for invoices; required for timeslips and expenses |

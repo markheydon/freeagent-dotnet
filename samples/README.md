@@ -96,6 +96,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/company/tax-timeline](https://localhost:5001/company/tax-timeline) | `CompanyService.GetTaxTimelineAsync()` | List output |
 | [/contacts](https://localhost:5001/contacts) | `ContactService.GetContactsPageAsync()` and `GetAllContactsAsync()` | Per-row mapping inspection, list filters |
 | [/contacts/detail](https://localhost:5001/contacts/detail) | `GetContactAsync()`, `CreateContactAsync()`, `UpdateContactAsync()`, `DeleteContactAsync()` | CRUD probes, Turpinverse seed data, full-detail fixture, progress bar |
+| [/categories](https://localhost:5001/categories) | `CategoryService.GetCategoriesAsync()` | Per-row mapping inspection, sub accounts toggle |
+| [/categories/detail](https://localhost:5001/categories/detail) | `GetCategoryAsync()`, all `Create*CategoryAsync` / `Update*CategoryAsync`, `DeleteCategoryAsync` via write-variant selector | CRUD probes, all documented write variants, progress bar |
 
 Contributors adding endpoints should follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md).
 
@@ -123,7 +125,7 @@ See the page in the running app for full details and usage instructions.
 
 ## Notes for Contributors
 
-- **Probe pages:** When adding SDK endpoints, follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md). Copy patterns from Company and Contacts.
+- **Probe pages:** When adding SDK endpoints, follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md). Copy patterns from Company, Contacts, and Categories.
 - **Token lifetime:** The OAuth session is restored from a short-lived browser cookie (~1 hour). Reconnect after expiry if needed.
 - **OAuth CSRF state:** Pending authorisation state is also stored in a short-lived cookie (~15 minutes) so callbacks still validate after an app restart during local development.
 - **Session security:** Tokens and pending OAuth state are stored as plaintext JSON in `HttpOnly` cookies. This is intentional for local development only — do not deploy the sample's cookie persistence pattern to production.

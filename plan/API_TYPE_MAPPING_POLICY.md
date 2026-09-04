@@ -37,6 +37,24 @@ Example retrofit targets:
 - Company Currency: string to CurrencyCode enum.
 - Company Type: string to CompanyType enum.
 - Company MileageUnits: string to MileageUnit enum.
+- Categories `tax_reporting_name`: per-variant, per-company-type enums with factory methods (implemented).
+
+## Per-Variant and Per-Discriminator Write Values
+
+When the API docs list allowed wire keys in a table on a write operation:
+
+1. **Closed set on one variant** — use an enum on that request type only. Do not put the enum on sibling variants that do not accept the field.
+2. **Set also varies by a documented discriminator** (for example company type) — do **not** flatten into one enum and do not add a mid-level union enum. Use discriminator-specific enums and factory methods (for example `CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(..., UkLimitedCompanyCostOfSalesTaxReportingName.Purchases)`). The developer chooses the discriminator first; IntelliSense then shows only legal values.
+3. **Wire keys** — use `JsonStringEnumMemberName` for request serialisation (for example `purchases`). Response display text (for example `Purchases`) is a different field/shape.
+4. **Feature-flagged values** (for example CIS-only names) — keep on the relevant enum with XML remarks. FreeAgent remains the authority for live account state.
+
+**Do not:**
+
+- Leave `string` with "see the FreeAgent API docs" on a public write property when the docs list allowed values.
+- Union all values from every variant and discriminator into one mega-enum.
+- Add a runtime validator on `string`, or fetch Company/settings to accept or reject values before POST — that couples writes to another resource and is business-rule/orchestration territory (see [SCOPE.md](../SCOPE.md)).
+
+See [adr-0010-documented-operations-to-sdk-methods.md](../adr/adr-0010-documented-operations-to-sdk-methods.md).
 
 ## Date and Time Policy
 
@@ -70,10 +88,12 @@ Post-GA:
 ## Endpoint Implementation and Retrofit Checklist
 
 - [ ] Mapped each API field kind using the canonical table.
+- [ ] Inventoried every operation heading on the official docs page.
+- [ ] Added a typed request and service method per documented create/update variant (no generic union payload).
 - [ ] Converted date-only fields to DateOnly.
-- [ ] Converted constrained strings to enum or strong value type where appropriate.
+- [ ] Converted constrained strings to enum or strong value type where appropriate (including per-variant and per-discriminator write tables).
 - [ ] Confirmed wrapper models exist and are validated.
-- [ ] Added or updated tests for wire mapping and parsing behaviour.
+- [ ] Added or updated tests for wire mapping and parsing behaviour (including one test per write variant).
 - [ ] Updated sample probe pages when endpoint behaviour changed (see [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md)).
 - [ ] Documented any intentional deviations.
 

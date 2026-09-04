@@ -17,8 +17,10 @@ The sample app is a **developer workbench**, not a product UI. Each probe page s
 | Pattern | Sample routes | SDK surface |
 |---------|---------------|-------------|
 | Single-resource GET | `/company` | `CompanyService.GetCompanyAsync()` |
-| List + per-row mapping | `/contacts` | `ContactService.GetContactsPageAsync(...)` |
+| List + per-row mapping (paginated) | `/contacts` | `ContactService.GetContactsPageAsync(...)` |
+| List + per-row mapping (full collection) | `/categories` | `CategoryService.GetCategoriesAsync(...)` |
 | CRUD + seed data | `/contacts/detail` | `ContactService` create/get/update/delete |
+| CRUD + write-variant selector | `/categories/detail` | `CategoryService` documented create/update variants |
 
 Read those pages before adding a new resource.
 
@@ -28,7 +30,7 @@ Reuse these sample-only components and services. Do not duplicate probe logic on
 
 | Asset | Location | Role |
 |-------|----------|------|
-| `EndpointProbeHeader` | `Components/Shared/EndpointProbeHeader.razor` | Page title, call under test, environment, endpoint path |
+| `EndpointProbeHeader` | `Components/Shared/EndpointProbeHeader.razor` | Page title, call under test, API docs link, environment, endpoint path |
 | `ModelProbeResults` | `Components/Shared/ModelProbeResults.razor` | Mapping summary chips, mapping table, all-fields table, raw JSON |
 | `ModelWireDiagnostics` | `Services/ModelWireDiagnostics.cs` | Builds `ModelProbeSnapshot` with SDK-aware equivalence checks |
 | `ApiDiagnosticsService` | `Services/ApiDiagnosticsService.cs` | Fetches raw wire JSON for a path after an SDK call |
@@ -36,7 +38,7 @@ Reuse these sample-only components and services. Do not duplicate probe logic on
 
 ### Wire-to-model comparison rules
 
-`ModelWireDiagnostics` compares wire JSON to the deserialized SDK model by:
+`ModelWireDiagnostics` compares wire JSON to the deserialised SDK model by:
 
 1. Deserialising each wire field through the **same property type** the model uses.
 2. Using `JsonNumberHandling.AllowReadingFromString` so decimal fields returned as strings (for example `account_balance`) do not false-positive.
@@ -50,30 +52,32 @@ Only add model properties that exist on the [FreeAgent API docs](https://dev.fre
 
 Follow `Components/Pages/Company.razor`:
 
-1. Render `EndpointProbeHeader` with the SDK method and `/v2/...` path.
+1. Render `EndpointProbeHeader` with the SDK method, `/v2/...` path, and `DocsUrl` pointing at the official FreeAgent docs page for the resource.
 2. On load (or button click), call the SDK service.
 3. Fetch the matching raw payload via `ApiDiagnosticsService`.
 4. Build `ModelProbeResults` with `ModelWireDiagnostics.Build(model, rawPayload, envelopeProperty)`.
 5. Show `ApiErrorDiagnostics` when the call fails.
 
-### List GET (paginated collection)
+### List GET (collection)
 
-Follow `Components/Pages/Contacts.razor`:
+Follow `Components/Pages/Contacts.razor` when the API paginates, or `Components/Pages/Categories.razor` when it returns a complete collection:
 
-1. Load one page through the SDK (`Get*PageAsync`).
+1. Load through the SDK (`Get*PageAsync` or a non-paginated list method such as `GetCategoriesAsync`).
 2. Fetch the list wire payload for the same query.
-3. For each row, offer **Inspect mapping** using `ModelWireDiagnostics.TryGetArrayItem` to pass the array item element into `ModelProbeResults`.
-4. Expose filters the SDK supports (view, sort, `updated_since`, and so on).
-5. Link to a detail/CRUD page with `?id=` when the resource has an identifier.
+3. For each row, offer **Inspect mapping** using `ModelWireDiagnostics.TryGetArrayItem` (or the matching wire array for grouped collections) to pass the array item element into `ModelProbeResults`.
+4. Expose filters the SDK supports (view, sort, `updated_since`, `sub_accounts`, and so on).
+5. Link to a detail/CRUD page with a documented identifier (`?id=` or `?nominal_code=`).
 
 ### CRUD (create, read, update, delete)
 
-Follow `Components/Pages/ContactDetail.razor`:
+Follow `Components/Pages/ContactDetail.razor` for a single create/update shape, or `Components/Pages/CategoryDetail.razor` when the SDK exposes multiple write variants.
 
 1. Support `?id=` deep links for get/update/delete.
 2. After **create** or **update**, fetch `GET /resource/:id` wire JSON so diagnostics reflect persisted state.
 3. Show `MudProgressLinear` while `_loading` is true (bulk seed operations can take several seconds).
 4. Disable action buttons during in-flight requests.
+
+When the SDK exposes **multiple write variants** for the same resource (for example `CreateIncomeCategoryAsync` and `CreateCostOfSalesCategoryAsync`), the probe page must be able to invoke **each** public write method. A variant selector on one CRUD page is sufficient; exercising only one variant is not adequate as the standard.
 
 Optional seed helpers (when useful for testing):
 
@@ -92,7 +96,8 @@ Optional seed helpers (when useful for testing):
 - [ ] SDK models, service, and tests land in the same PR as the sample pages.
 - [ ] List probe page (if the API supports listing) with per-row mapping inspection.
 - [ ] Detail or CRUD probe page (if the API supports get/create/update/delete).
-- [ ] `EndpointProbeHeader` on each page with accurate `CallUnderTest` and `EndpointPath`.
+- [ ] When multiple write variants exist, sample can invoke each SDK write method (variant selector or equivalent).
+- [ ] `EndpointProbeHeader` on each page with accurate `CallUnderTest`, `EndpointPath`, and `DocsUrl`.
 - [ ] `ModelProbeResults` after successful SDK calls; `ApiErrorDiagnostics` on failures.
 - [ ] Raw JSON panel present for full payload inspection.
 - [ ] Navigation group added in `MainLayout.razor`.
@@ -102,5 +107,6 @@ Optional seed helpers (when useful for testing):
 
 - [`plan/IMPLEMENTING_ENDPOINTS.md`](../../plan/IMPLEMENTING_ENDPOINTS.md) — full endpoint checklist
 - [`.agents/skills/implement-endpoint/SKILL.md`](../../.agents/skills/implement-endpoint/SKILL.md) — agent workflow
+- [`adr/adr-0010-documented-operations-to-sdk-methods.md`](../../adr/adr-0010-documented-operations-to-sdk-methods.md) — operation heading → typed SDK method
 - [`AGENTS.md`](../../AGENTS.md) — sample sync policy
 - [`adr/adr-0006-sample-app-living-reference.md`](../../adr/adr-0006-sample-app-living-reference.md)

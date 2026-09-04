@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -74,11 +73,5 @@ public sealed class JsonStringEnumMemberNameCompatibleConverter<TEnum> : JsonCon
         return map;
     }
 
-    private static string GetWireName(TEnum value)
-    {
-        var fieldInfo = typeof(TEnum).GetField(value.ToString(), BindingFlags.Public | BindingFlags.Static);
-        var customName = fieldInfo?.GetCustomAttribute<JsonStringEnumMemberNameAttribute>()?.Name;
-
-        return string.IsNullOrWhiteSpace(customName) ? value.ToString() : customName;
-    }
+    private static string GetWireName(TEnum value) => EnumWireValue.Get(value);
 }

@@ -64,6 +64,7 @@ Adopt a mandatory, plan-first endpoint implementation workflow for all SDK endpo
 - **IMP-001**: See `.agents/skills/implement-endpoint/SKILL.md` for the canonical workflow and guardrail checklist.
 - **IMP-002**: See `plan/IMPLEMENTING_ENDPOINTS.md` for the operational checklist.
 - **IMP-003**: See `AGENTS.md` for agent routing and documentation requirements.
+- **IMP-004**: See [adr-0010-documented-operations-to-sdk-methods.md](adr-0010-documented-operations-to-sdk-methods.md) for the rule that each documented operation heading maps to a typed SDK method (not one method per HTTP verb alone).
 
 ## References
 - **REF-001**: [adr-0001-core-technology-stack.md](adr-0001-core-technology-stack.md)
@@ -72,3 +73,4 @@ Adopt a mandatory, plan-first endpoint implementation workflow for all SDK endpo
 - **REF-004**: [plan/IMPLEMENTING_ENDPOINTS.md](../plan/IMPLEMENTING_ENDPOINTS.md)
 - **REF-005**: [.agents/skills/implement-endpoint/SKILL.md](../.agents/skills/implement-endpoint/SKILL.md)
 - **REF-006**: [AGENTS.md](../AGENTS.md)
+- **REF-007**: [adr-0010-documented-operations-to-sdk-methods.md](adr-0010-documented-operations-to-sdk-methods.md)

@@ -1,7 +1,7 @@
 # Scope
 
 **Project:** FreeAgent.NET
-**Last updated:** 3 May 2026
+**Last updated:** 4 September 2026
 
 ---
 
@@ -11,7 +11,8 @@ The following are committed for the first release:
 
 - Authenticated HTTP client for the FreeAgent API.
 - Stripe‑style service classes per core resource (e.g. Contacts, Invoices).
-- Strongly typed request and response models.
+- Strongly typed request and response models, including **per documented operation variant** when the API docs describe multiple create or update shapes for the same route.
+- Client-side validation of **official, local** API contract constraints that do not require account state (for example `per_page` ≤ 100). Do not invent analogous checks for resources that do not document them.
 - Fully abstracted pagination.
 - Typed exception hierarchy for API and transport errors.
 - NuGet packaging and publishing pipeline.
