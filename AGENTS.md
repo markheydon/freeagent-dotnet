@@ -64,7 +64,7 @@ Project skills live in `.agents/skills/`. Read the matching `SKILL.md` when the 
 
 | Skill | Use when |
 |---|---|
-| `implement-endpoint` | Adding or retrofitting a FreeAgent API resource end-to-end |
+| `implement-endpoint` | Adding or retrofitting a FreeAgent API resource end-to-end. Map **every documented operation heading** on the API docs page to a typed SDK method — not just each HTTP route. When multiple create/update shapes share a route, use a separate request type and method per variant. |
 | `create-architectural-decision-record` | Creating or major-updating an ADR |
 | `documentation-writer` | Diátaxis-aligned documentation structure |
 | `project-documentation` | Project-aware docs placement and terminology |

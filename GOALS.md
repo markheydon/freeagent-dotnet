@@ -3,7 +3,7 @@
 
 **Project:** FreeAgent.NET
 **Owner:** Mark Heydon
-**Last updated:** 3 May 2026
+**Last updated:** 4 September 2026
 
 ---
 
@@ -17,7 +17,7 @@ The FreeAgent API is powerful but lacks an official high‑quality, modern, and 
 These are the outcomes this project must achieve to be considered successful.
 
 - **G1:** Provide a clean, strongly typed .NET SDK for the FreeAgent REST API.
-- **G2:** Deliver a Stripe.NET‑quality developer experience (discoverable, consistent, pleasant to use).
+- **G2:** Deliver a Stripe.NET‑quality developer experience (discoverable, consistent, pleasant to use). Consumers should be able to perform documented write operations from IntelliSense without reconstructing payloads from FreeAgent docs.
 - **G3:** Support automatic pagination without consumers managing pages explicitly.
 - **G4:** Be safe, stable, and boring to depend on in production systems.
 - **G5:** Enable external contributions without destabilising the public API.
@@ -56,5 +56,6 @@ I will stop work on this project if:
 ## Revision History
 | Date | Change | Reason |
 |---|---|---|
+| 4 September 2026 | Clarified G2: documented write operations usable from IntelliSense without consulting API docs | ADR-0010; Categories workflow lesson |
 | 3 May 2026 | Clarified OAuth protocol-level helpers in scope; revised out-of-scope OAuth bullet | Broadened SDK utility remit |
 | 29 April 2026 | Initial draft - project kickoff | Project kickoff |

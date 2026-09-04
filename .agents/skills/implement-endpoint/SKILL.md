@@ -14,12 +14,13 @@ If the entity already exists, retrofit it to current guardrails in the same run.
 - `EntityName` (required)
 - `DocsUrlOverride` (optional FreeAgent docs URL)
 
-## Step 1 — Validate Entity Before Coding
+## Step 1 — Validate Entity and Inventory Operations
 
 1. Resolve the docs index: https://dev.freeagent.com/docs/index
 2. Validate that `EntityName` maps to a real docs page.
 3. If no matching endpoint page exists, stop immediately and report the invalid entity.
 4. If `DocsUrlOverride` is provided, validate and use that page.
+5. **Fetch the docs page and list every operation heading** (`##` / `###`) before planning — for example "List all categories", "Get a single category", "Create an income category", "Create a cost of sales category", "Update an admin expenses category". The unit of implementation is the **documented operation heading**, not the HTTP route alone.
 
 ## Step 2 — Plan First (New or Retrofit)
 
@@ -33,7 +34,9 @@ If the entity already exists, retrofit it to current guardrails in the same run.
    - Services validate wrappers and throw `FreeAgentApiException` on missing payload
 3. Flag any guardrail violations as retrofit tasks in the plan.
 4. Include in the plan:
-   - Endpoint use cases and HTTP routes (new) or existing service gaps (retrofit)
+   - **Operation heading inventory** from Step 1
+   - A table mapping **heading → HTTP route → SDK method → request type → allowed fields** (new) or existing service gaps (retrofit)
+   - **Documented use-case variants** — when the API docs describe multiple create/update shapes for the same route (for example income vs cost-of-sales categories), list each variant and the typed SDK method/request type it will map to
    - New files vs retrofit files (with specific violations listed)
    - Breaking API-surface changes expected
    - Test, sample app, and documentation changes
@@ -53,6 +56,7 @@ Apply to all new and retrofitted models:
 7. When docs are ambiguous for constrained values, do not silently guess; mark unresolved mapping and add a follow-up issue.
 8. Response payloads must use explicit wrapper/envelope models.
 9. Missing required payload branches must throw `FreeAgentApiException`.
+10. **Per-variant allowed values:** when allowed wire keys differ by operation variant, use a distinct enum on that request only. When they also differ by a documented discriminator (for example company type), use discriminator-specific enums and factory methods — do not flatten into one enum, do not leave `string` plus "see the API docs", and do not add a runtime validator that fetches Company or account settings. See [adr-0010-documented-operations-to-sdk-methods.md](../../adr/adr-0010-documented-operations-to-sdk-methods.md).
 
 Common retrofit violations:
 
@@ -61,6 +65,7 @@ Common retrofit violations:
 - String fields that should be enums per API docs
 - Missing `JsonPropertyName`
 - Response wrappers not validated in service methods
+- Generic create/update payload that unions all variant attributes
 
 ## Step 4 — Services and Pagination
 
@@ -68,6 +73,7 @@ Common retrofit violations:
 2. Keep methods async and accept `CancellationToken`.
 3. For list endpoints, provide both single-page and auto-pagination methods.
 4. Respect FreeAgent `per_page` maximum 100.
+5. **Documented use-case variants:** when the API docs describe multiple create or update shapes for the same HTTP route, expose a separate public request type and service method per variant (for example `CreateIncomeCategoryAsync`, `CreateCostOfSalesCategoryAsync`). Each request type must include only the attributes allowed for that variant. Fixed wire values such as `category_group` are set by the SDK — callers must not supply them. Do not expose a single generic create/update that forces consumers to read external docs to learn which fields apply.
 
 ## Step 5 — Tests
 
@@ -79,6 +85,7 @@ Add or update tests to cover:
 - Enum/string wire mapping exactness
 - Missing payload branch exceptions
 - Pagination behaviour and cancellation
+- **At least one test per documented write variant** — assert URL, envelope, and which fields are included or excluded in the serialised payload
 
 ## Step 6 — Sample App Sync
 
@@ -94,8 +101,9 @@ Follow the probe-page standard documented in [`docs/contributing/sample-probe-pa
    - A readable raw JSON section (provided by `ModelProbeResults`)
 5. For **list** endpoints: per-row mapping inspection from the wire array item (see `Contacts.razor`).
 6. For **CRUD** endpoints: detail page with `?id=` deep links; fetch wire JSON after create/update; show `MudProgressLinear` while operations run (see `ContactDetail.razor`).
-7. Add seed fixtures when demo data helps field coverage (narrative canon and/or a full-detail probe contact); upsert by a stable natural key when re-running should refresh existing records.
-8. Only model wire fields that appear in the official FreeAgent API docs.
+7. When the SDK exposes **multiple write variants** for the same resource, the sample must be able to invoke each public write method — a variant selector on one CRUD page is sufficient; exercising only one variant (for example income-only) is not.
+8. Add seed fixtures when demo data helps field coverage (narrative canon and/or a full-detail probe contact); upsert by a stable natural key when re-running should refresh existing records.
+9. Only model wire fields that appear in the official FreeAgent API docs.
 
 Update [`samples/README.md`](../../samples/README.md) and [`docs/reference/api-coverage.md`](../../docs/reference/api-coverage.md) in the same change.
 
@@ -116,6 +124,7 @@ Highlight any breaking changes applied during retrofit (DateTime → DateOnly, s
 
 ## References
 
+- `adr/adr-0010-documented-operations-to-sdk-methods.md`
 - `docs/contributing/sample-probe-pages.md`
 - `plan/IMPLEMENTING_ENDPOINTS.md`
 - `plan/API_TYPE_MAPPING_POLICY.md`

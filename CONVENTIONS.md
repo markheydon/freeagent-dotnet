@@ -4,7 +4,7 @@
 
 
 **Project:** FreeAgent.NET
-**Last updated:** 2 September 2026
+**Last updated:** 4 September 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.
@@ -81,6 +81,7 @@ tests/
 - **Exception hierarchy** - throw SDK-specific exception types for API and transport failures.
 - **Async-first APIs** - all network-bound operations are async and cancellation-aware.
 - **Composition over framework layering** - avoid app-style architecture layers not needed by an SDK package.
+- **Documented operation variants** - when the API docs describe multiple create or update shapes for the same HTTP route, each variant gets its own public request type and service method. Public requests expose only attributes allowed for that variant; fixed wire values (for example `category_group`) are set inside the SDK. See [adr-0010-documented-operations-to-sdk-methods.md](adr/adr-0010-documented-operations-to-sdk-methods.md).
 
 ---
 
@@ -90,7 +91,11 @@ tests/
 |---|---|---|
 | Main client | `[Product]Client` | `FreeAgentClient` |
 | Service | `[Resource]Service` | `CompanyService` |
-| Request model | `[Resource][Action]Request` | `ContactCreateRequest` |
+| Request model (single shape) | `[Resource][Action]Request` | `ContactCreateRequest` |
+| Request model (operation variant) | `[Action][Variant][Resource]Request` | `CreateIncomeCategoryRequest` |
+| Service method (operation variant) | `[Action][Variant][Resource]Async` | `CreateIncomeCategoryAsync` |
+| Discriminator factory | `For[Discriminator]` on request type | `CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(...)` |
+| Discriminator enum | `[Discriminator][Variant][Field]` | `UkLimitedCompanyCostOfSalesTaxReportingName` |
 | Response wrapper | `[Resource]Response` | `CompanyResponse` |
 | Resource model | `[Resource]` | `Company` |
 | Exception | `[Product][Context]Exception` | `FreeAgentApiException` |
@@ -111,6 +116,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
+| 4 September 2026 | Add operation-variant request/method naming and discriminator factories | ADR-0010 |
 | 2 September 2026 | Align folder notes with current SDK (no ServiceBase; public PaginatedResponse) | Docs were describing a layout the code no longer uses |
 | 1 May 2026 | Mirror tests folder structure to source layout      | Improve test discoverability as Infrastructure/Services grow |
 | 1 May 2026 | Add resource-grouped Services structure and guidance | Service structure reorg, clarify placement of service-local helpers |

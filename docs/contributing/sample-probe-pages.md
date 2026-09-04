@@ -75,6 +75,8 @@ Follow `Components/Pages/ContactDetail.razor`:
 3. Show `MudProgressLinear` while `_loading` is true (bulk seed operations can take several seconds).
 4. Disable action buttons during in-flight requests.
 
+When the SDK exposes **multiple write variants** for the same resource (for example `CreateIncomeCategoryAsync` and `CreateCostOfSalesCategoryAsync`), the probe page must be able to invoke **each** public write method. A variant selector on one CRUD page is sufficient; exercising only one variant is not adequate as the standard.
+
 Optional seed helpers (when useful for testing):
 
 - **Narrative demo data** — bundled canon (see Turpinverse under `Data/` and `Services/Turpinverse/`). FreeAgent contact address fields are billing-oriented (they appear on invoices), so Turpinverse maps the primary organisation's `registeredOffice` — not persona home addresses.
@@ -92,6 +94,7 @@ Optional seed helpers (when useful for testing):
 - [ ] SDK models, service, and tests land in the same PR as the sample pages.
 - [ ] List probe page (if the API supports listing) with per-row mapping inspection.
 - [ ] Detail or CRUD probe page (if the API supports get/create/update/delete).
+- [ ] When multiple write variants exist, sample can invoke each SDK write method (variant selector or equivalent).
 - [ ] `EndpointProbeHeader` on each page with accurate `CallUnderTest`, `EndpointPath`, and `DocsUrl`.
 - [ ] `ModelProbeResults` after successful SDK calls; `ApiErrorDiagnostics` on failures.
 - [ ] Raw JSON panel present for full payload inspection.
@@ -102,5 +105,6 @@ Optional seed helpers (when useful for testing):
 
 - [`plan/IMPLEMENTING_ENDPOINTS.md`](../../plan/IMPLEMENTING_ENDPOINTS.md) — full endpoint checklist
 - [`.agents/skills/implement-endpoint/SKILL.md`](../../.agents/skills/implement-endpoint/SKILL.md) — agent workflow
+- [`adr/adr-0010-documented-operations-to-sdk-methods.md`](../../adr/adr-0010-documented-operations-to-sdk-methods.md) — operation heading → typed SDK method
 - [`AGENTS.md`](../../AGENTS.md) — sample sync policy
 - [`adr/adr-0006-sample-app-living-reference.md`](../../adr/adr-0006-sample-app-living-reference.md)
