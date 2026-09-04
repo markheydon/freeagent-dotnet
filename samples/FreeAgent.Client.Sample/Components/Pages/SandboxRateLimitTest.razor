@@ -11,7 +11,8 @@
                          Title="Sandbox rate-limit test"
                          CallUnderTest="FreeAgentClient.Company.GetCompanyAsync(...)"
                          Description="Runs repeated calls against the company endpoint to inspect live sandbox rate-limiting behaviour."
-                         EndpointPath="/v2/company" />
+                         EndpointPath="/v2/company"
+                         DocsUrl="https://dev.freeagent.com/docs/company" />
 
     @if (!TokenStore.IsConnected)
     {

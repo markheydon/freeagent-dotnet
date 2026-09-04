@@ -16,7 +16,8 @@
                          Title="Get, create, update, and delete contacts"
                          CallUnderTest="ContactService.GetContactAsync / CreateContactAsync / UpdateContactAsync / DeleteContactAsync"
                          Description="Exercises single-contact CRUD operations and shows the same wire-to-model diagnostics as Company overview."
-                         EndpointPath="/v2/contacts/:id" />
+                         EndpointPath="/v2/contacts/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/contacts" />
 
     @if (!TokenStore.IsConnected)
     {

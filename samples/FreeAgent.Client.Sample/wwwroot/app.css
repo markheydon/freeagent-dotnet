@@ -99,6 +99,17 @@ body {
     box-shadow: var(--panel-shadow);
 }
 
+.docs-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    width: fit-content;
+}
+
+.docs-link-icon {
+    opacity: 0.85;
+}
+
 .workbench-panel {
     padding: 1.5rem;
     box-shadow: var(--panel-shadow);

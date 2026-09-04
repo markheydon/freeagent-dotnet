@@ -19,7 +19,15 @@
         <MudItem xs="12" md="4">
             <MudPaper Class="status-panel" Elevation="0">
                 <MudStack Spacing="1">
-                    <MudText Typo="Typo.subtitle2">Execution target</MudText>
+                    <MudLink Href="@DocsUrl"
+                             Target="_blank"
+                             Typo="Typo.subtitle2"
+                             Color="Color.Primary"
+                             Underline="Underline.Hover"
+                             Class="docs-link">
+                        API documentation
+                        <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="docs-link-icon" />
+                    </MudLink>
                     <MudText Typo="Typo.body2"><strong>Configured environment:</strong> @EnvironmentName</MudText>
                     <MudText Typo="Typo.body2"><strong>SDK API target:</strong> @SdkApiBaseUrl</MudText>
                     <MudText Typo="Typo.body2"><strong>Endpoint path:</strong> <code>@EndpointPath</code></MudText>
@@ -44,6 +52,9 @@
 
     [Parameter, EditorRequired]
     public string EndpointPath { get; set; } = string.Empty;
+
+    [Parameter, EditorRequired]
+    public string DocsUrl { get; set; } = string.Empty;
 
     private FreeAgentEnvironment ActiveEnvironment =>
         TokenStore.IsConnected ? TokenStore.ConnectedEnvironment : OAuthService.SelectedEnvironment;

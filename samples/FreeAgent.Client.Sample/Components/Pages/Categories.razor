@@ -13,7 +13,8 @@
                          Title="Categories list"
                          CallUnderTest="CategoryService.GetCategoriesAsync(...)"
                          Description="Load chart-of-accounts categories, inspect wire-to-model mapping for any row, then jump into Category CRUD to test get, create, update, and delete."
-                         EndpointPath="/v2/categories?sub_accounts={true|false}" />
+                         EndpointPath="/v2/categories?sub_accounts={true|false}"
+                         DocsUrl="https://dev.freeagent.com/docs/categories" />
 
     @if (!TokenStore.IsConnected)
     {

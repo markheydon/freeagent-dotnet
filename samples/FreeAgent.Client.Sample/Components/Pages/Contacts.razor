@@ -13,7 +13,8 @@
                          Title="Contacts list"
                          CallUnderTest="ContactService.GetContactsPageAsync(...)"
                          Description="Load contacts, inspect wire-to-model mapping for any row, then jump into Contact CRUD to test get, update, and delete."
-                         EndpointPath="/v2/contacts?page={page}&per_page={perPage}&view={view}" />
+                         EndpointPath="/v2/contacts?page={page}&per_page={perPage}&view={view}"
+                         DocsUrl="https://dev.freeagent.com/docs/contacts" />
 
     @if (!TokenStore.IsConnected)
     {

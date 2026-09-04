@@ -28,7 +28,7 @@ Reuse these sample-only components and services. Do not duplicate probe logic on
 
 | Asset | Location | Role |
 |-------|----------|------|
-| `EndpointProbeHeader` | `Components/Shared/EndpointProbeHeader.razor` | Page title, call under test, environment, endpoint path |
+| `EndpointProbeHeader` | `Components/Shared/EndpointProbeHeader.razor` | Page title, call under test, API docs link, environment, endpoint path |
 | `ModelProbeResults` | `Components/Shared/ModelProbeResults.razor` | Mapping summary chips, mapping table, all-fields table, raw JSON |
 | `ModelWireDiagnostics` | `Services/ModelWireDiagnostics.cs` | Builds `ModelProbeSnapshot` with SDK-aware equivalence checks |
 | `ApiDiagnosticsService` | `Services/ApiDiagnosticsService.cs` | Fetches raw wire JSON for a path after an SDK call |
@@ -50,7 +50,7 @@ Only add model properties that exist on the [FreeAgent API docs](https://dev.fre
 
 Follow `Components/Pages/Company.razor`:
 
-1. Render `EndpointProbeHeader` with the SDK method and `/v2/...` path.
+1. Render `EndpointProbeHeader` with the SDK method, `/v2/...` path, and `DocsUrl` pointing at the official FreeAgent docs page for the resource.
 2. On load (or button click), call the SDK service.
 3. Fetch the matching raw payload via `ApiDiagnosticsService`.
 4. Build `ModelProbeResults` with `ModelWireDiagnostics.Build(model, rawPayload, envelopeProperty)`.
@@ -92,7 +92,7 @@ Optional seed helpers (when useful for testing):
 - [ ] SDK models, service, and tests land in the same PR as the sample pages.
 - [ ] List probe page (if the API supports listing) with per-row mapping inspection.
 - [ ] Detail or CRUD probe page (if the API supports get/create/update/delete).
-- [ ] `EndpointProbeHeader` on each page with accurate `CallUnderTest` and `EndpointPath`.
+- [ ] `EndpointProbeHeader` on each page with accurate `CallUnderTest`, `EndpointPath`, and `DocsUrl`.
 - [ ] `ModelProbeResults` after successful SDK calls; `ApiErrorDiagnostics` on failures.
 - [ ] Raw JSON panel present for full payload inspection.
 - [ ] Navigation group added in `MainLayout.razor`.

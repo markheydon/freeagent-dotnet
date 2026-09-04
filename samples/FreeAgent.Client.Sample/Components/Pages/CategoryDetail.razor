@@ -14,7 +14,8 @@
                          Title="Get, create, update, and delete categories"
                          CallUnderTest="CategoryService.GetCategoryAsync / CreateCategoryAsync / UpdateCategoryAsync / DeleteCategoryAsync"
                          Description="Exercises single-category CRUD operations and shows wire-to-model diagnostics for the returned category envelope."
-                         EndpointPath="/v2/categories/:nominal_code" />
+                         EndpointPath="/v2/categories/:nominal_code"
+                         DocsUrl="https://dev.freeagent.com/docs/categories" />
 
     @if (!TokenStore.IsConnected)
     {
