@@ -52,7 +52,7 @@ internal static class CategoryNominalCodeValidator
         if (!int.TryParse(nominalCode, NumberStyles.None, CultureInfo.InvariantCulture, out var value))
         {
             throw new ArgumentException(
-                $"Nominal code '{nominalCode}' is not a valid integer for {variantName} categories.",
+                $"Nominal code '{nominalCode}' must be a three-digit code (for example {FormatDocumentedCode(minInclusive)}) for {variantName} categories.",
                 nameof(nominalCode));
         }
 
@@ -61,7 +61,9 @@ internal static class CategoryNominalCodeValidator
             throw new ArgumentOutOfRangeException(
                 nameof(nominalCode),
                 nominalCode,
-                $"Nominal code must be between {minInclusive} and {maxInclusive} for {variantName} categories.");
+                $"Nominal code must be between {FormatDocumentedCode(minInclusive)} and {FormatDocumentedCode(maxInclusive)} for {variantName} categories.");
         }
     }
+
+    private static string FormatDocumentedCode(int value) => value.ToString("D3", CultureInfo.InvariantCulture);
 }

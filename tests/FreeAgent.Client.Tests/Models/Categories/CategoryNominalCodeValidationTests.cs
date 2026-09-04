@@ -70,14 +70,19 @@ public class CategoryNominalCodeValidationTests
     [Theory]
     [InlineData("95")]
     [InlineData("200")]
+    [InlineData("999")]
     public void CreateCostOfSalesCategoryRequest_RejectsCodesOutsideDocumentedRange(string nominalCode)
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(
                 "Cost of sales",
                 nominalCode,
                 UkLimitedCompanyCostOfSalesTaxReportingName.Purchases,
                 allowableForTax: true));
+
+        Assert.Equal("nominalCode", exception.ParamName);
+        Assert.Contains("096", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("199", exception.Message, StringComparison.Ordinal);
     }
 
     [Theory]
@@ -131,12 +136,32 @@ public class CategoryNominalCodeValidationTests
     [Fact]
     public void UpdateAdminExpensesCategoryRequest_RejectsCodeOutsideDocumentedRange()
     {
-        Assert.Throws<ArgumentOutOfRangeException>(() =>
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
             UpdateAdminExpensesCategoryRequest.ForUkLimitedCompany(
                 "Admin",
                 "048",
                 UkLimitedCompanyAdminExpensesTaxReportingName.ComputerSoftwareCosts,
                 allowableForTax: true,
                 autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate));
+
+        Assert.Equal("nominalCode", exception.ParamName);
+        Assert.Contains("200", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("399", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void UpdateCostOfSalesCategoryRequest_RejectsCodeOutsideDocumentedRange()
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            UpdateCostOfSalesCategoryRequest.ForUkLimitedCompany(
+                "Cost of sales",
+                "999",
+                UkLimitedCompanyCostOfSalesTaxReportingName.Purchases,
+                allowableForTax: true,
+                autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate));
+
+        Assert.Equal("nominalCode", exception.ParamName);
+        Assert.Contains("096", exception.Message, StringComparison.Ordinal);
+        Assert.Contains("199", exception.Message, StringComparison.Ordinal);
     }
 }
