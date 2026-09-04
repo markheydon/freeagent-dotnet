@@ -49,8 +49,10 @@ More detail: [Getting started](docs/tutorial/getting-started.md) · [Pagination]
 ```bash
 git clone https://github.com/markheydon/freeagent-dotnet.git
 cd freeagent-dotnet
-dotnet build FreeAgent.slnx
-dotnet test
+dotnet clean FreeAgent.slnx && \
+dotnet restore FreeAgent.slnx && \
+dotnet build FreeAgent.slnx --no-restore --configuration Release -warnaserror && \
+dotnet test FreeAgent.slnx --no-build --configuration Release
 ```
 
 Contributor setup (SDK versions, WSL): [docs/contributing-setup.md](docs/contributing-setup.md)

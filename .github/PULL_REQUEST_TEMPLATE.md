@@ -16,6 +16,7 @@ Describe what changed and why.
 - [ ] I kept changes scoped and avoided unrelated edits
 - [ ] I preserved label strategy alignment with [plan/LABEL_STRATEGY.md](plan/LABEL_STRATEGY.md)
 - [ ] `dotnet format FreeAgent.slnx --verify-no-changes` passes (or I ran `dotnet format` and committed the result)
+- [ ] `dotnet clean` → `restore` → `build -warnaserror` → `test --no-build` passes for `FreeAgent.slnx` (Release)
 - [ ] I removed or redacted sensitive data from examples/logs
 
 ## Related Issues

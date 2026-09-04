@@ -32,12 +32,25 @@ Requirements:
 
 The SDK package targets both frameworks. The sample app is .NET 10.0-only.
 
-Build and test locally:
+Build and test locally (warnings fail the build; same as CI):
 
 ```bash
-dotnet build FreeAgent.slnx
-dotnet test
+dotnet clean FreeAgent.slnx
+dotnet restore FreeAgent.slnx
+dotnet build FreeAgent.slnx --no-restore --configuration Release -warnaserror
+dotnet test FreeAgent.slnx --no-build --configuration Release
 ```
+
+Or as a single chain:
+
+```bash
+dotnet clean FreeAgent.slnx && \
+dotnet restore FreeAgent.slnx && \
+dotnet build FreeAgent.slnx --no-restore --configuration Release -warnaserror && \
+dotnet test FreeAgent.slnx --no-build --configuration Release
+```
+
+`TreatWarningsAsErrors` is also set in [`Directory.Build.props`](Directory.Build.props); `-warnaserror` on the CLI keeps the same behaviour explicit when you run `dotnet build` directly.
 
 To run tests for a single framework, use `dotnet test -f net10.0` or `dotnet test -f net8.0`.
 
