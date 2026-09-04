@@ -37,7 +37,7 @@ Example retrofit targets:
 - Company Currency: string to CurrencyCode enum.
 - Company Type: string to CompanyType enum.
 - Company MileageUnits: string to MileageUnit enum.
-- Categories `tax_reporting_name`: string to per-variant, per-company-type enums with factory methods.
+- Categories `tax_reporting_name`: per-variant, per-company-type enums with factory methods (implemented).
 
 ## Per-Variant and Per-Discriminator Write Values
 

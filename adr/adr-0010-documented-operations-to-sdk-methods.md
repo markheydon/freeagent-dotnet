@@ -53,7 +53,7 @@ Adopt **documented operation heading** as the unit of public SDK surface design,
 
 - **NEG-001**: More public types and methods when a resource has many documented variants (Categories has twelve create/update headings).
 - **NEG-002**: Discriminator-specific factories add API surface area compared to a single enum or string field.
-- **NEG-003**: Requires retrofit of existing endpoints (for example Categories `TaxReportingName` as `string`) in follow-up work.
+- **NEG-003**: Requires retrofit of other endpoints that still expose generic write payloads or string constrained fields.
 
 ## Alternatives Considered
 
@@ -77,7 +77,7 @@ Adopt **documented operation heading** as the unit of public SDK surface design,
 - **IMP-001**: See [.agents/skills/implement-endpoint/SKILL.md](../.agents/skills/implement-endpoint/SKILL.md) Step 1 (heading inventory), Step 2 (plan table: heading → route → method → request → fields), Step 4 (variant rule), and Step 5 (one test per write variant).
 - **IMP-002**: See [plan/API_TYPE_MAPPING_POLICY.md](../plan/API_TYPE_MAPPING_POLICY.md) for constrained write value rules.
 - **IMP-003**: See [CONVENTIONS.md](../CONVENTIONS.md) for request/method naming when variants exist.
-- **IMP-004**: Categories typed methods (`CreateIncomeCategoryAsync`, etc.) are the reference implementation; `TaxReportingName` as `string` is known debt for a later retrofit.
+- **IMP-004**: Categories typed methods and per-discriminator `tax_reporting_name` enums with factory methods are the reference implementation for ADR-0010.
 
 ## References
 

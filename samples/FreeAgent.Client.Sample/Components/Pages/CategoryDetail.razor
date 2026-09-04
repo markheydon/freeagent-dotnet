@@ -12,8 +12,8 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Categories endpoint"
                          Title="Get, create, update, and delete categories"
-                         CallUnderTest="CategoryService.GetCategoryAsync / CreateIncomeCategoryAsync / UpdateIncomeCategoryAsync / DeleteCategoryAsync"
-                         Description="Exercises single-category CRUD operations and shows wire-to-model diagnostics for the returned category envelope."
+                         CallUnderTest="@_callUnderTest"
+                         Description="Exercises each documented category write variant via typed SDK requests and shows wire-to-model diagnostics for the returned category envelope."
                          EndpointPath="/v2/categories/:nominal_code"
                          DocsUrl="https://dev.freeagent.com/docs/categories" />
 
@@ -47,18 +47,30 @@
                 <MudStack Spacing="2">
                     <MudText Typo="Typo.body2" Class="hero-copy">
                         Pick a nominal code from the <MudLink Href="/categories">categories list</MudLink>, or pass
-                        <code>?nominal_code=001</code> in the URL. Create uses income code <code>@ProbeIncomeNominalCode</code>
-                        when available. Only user-created categories without items can be updated or deleted.
+                        <code>?nominal_code=001</code> in the URL. Select a documented write variant below to exercise
+                        the matching typed SDK method. Only user-created categories without items can be updated or deleted.
                     </MudText>
+
+                    <MudSelect T="CategoryWriteProbeVariant"
+                               @bind-Value="_writeVariant"
+                               Label="Write variant"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               FullWidth="true">
+                        @foreach (var variant in Enum.GetValues<CategoryWriteProbeVariant>())
+                        {
+                            <MudSelectItem Value="variant">@variant</MudSelectItem>
+                        }
+                    </MudSelect>
+
                     <MudTextField @bind-Value="_nominalCode" Label="Nominal code" />
+
                     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
                                    StartIcon="@Icons.Material.Filled.CloudDownload"
                                    OnClick="GetCategoryAsync">Get category</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
-                                   OnClick="CreateProbeIncomeCategoryAsync">Create probe income category</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || string.IsNullOrWhiteSpace(_nominalCode)"
-                                   OnClick="UpdateCategoryAsync">Update description</MudButton>
+                                   OnClick="ExecuteWriteVariantAsync">Run selected write variant</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || string.IsNullOrWhiteSpace(_nominalCode)"
                                    OnClick="DeleteCategoryAsync">Delete category</MudButton>
                     </MudStack>
@@ -106,9 +118,6 @@
 </MudContainer>
 
 @code {
-    private const string ProbeIncomeNominalCode = "048";
-    private const string ProbeIncomeDescription = "SDK Probe Income Category";
-
     [SupplyParameterFromQuery(Name = "nominal_code")]
     public string? NominalCodeFromQuery { get; set; }
 
@@ -116,9 +125,11 @@
     private string? _error;
     private string? _operationMessage;
     private string _wireApiResponse = string.Empty;
-    private string _nominalCode = string.Empty;
+    private string _nominalCode = CategoryWriteProbeSupport.GetDefaultNominalCode(CategoryWriteProbeVariant.CreateIncome);
+    private CategoryWriteProbeVariant _writeVariant = CategoryWriteProbeVariant.CreateIncome;
     private Category? _category;
     private ModelProbeSnapshot? _probe;
+    private string _callUnderTest = "CategoryService.GetCategoryAsync / Create*CategoryAsync / Update*CategoryAsync / DeleteCategoryAsync";
 
     protected override void OnParametersSet()
     {
@@ -137,6 +148,8 @@
             return;
         }
 
+        _callUnderTest = "CategoryService.GetCategoryAsync(...)";
+
         await RunOperationAsync(
             async client =>
             {
@@ -146,45 +159,20 @@
             });
     }
 
-    private async Task CreateProbeIncomeCategoryAsync()
+    private async Task ExecuteWriteVariantAsync()
     {
-        await RunOperationAsync(
-            async client =>
-            {
-                _category = await client.Categories.CreateIncomeCategoryAsync(new CreateIncomeCategoryRequest
-                {
-                    Description = ProbeIncomeDescription,
-                    NominalCode = ProbeIncomeNominalCode
-                });
+        _nominalCode = string.IsNullOrWhiteSpace(_nominalCode)
+            ? CategoryWriteProbeSupport.GetDefaultNominalCode(_writeVariant)
+            : _nominalCode;
 
-                _nominalCode = _category.NominalCode ?? ProbeIncomeNominalCode;
-                _operationMessage = $"Created probe income category {_nominalCode}.";
-                return $"categories/{_nominalCode}";
-            });
-    }
-
-    private async Task UpdateCategoryAsync()
-    {
-        if (string.IsNullOrWhiteSpace(_nominalCode))
-        {
-            return;
-        }
+        _callUnderTest = $"CategoryService.{CategoryWriteProbeSupport.GetSdkMethodName(_writeVariant)}(...)";
 
         await RunOperationAsync(
             async client =>
             {
-                var existing = _category ?? await client.Categories.GetCategoryAsync(_nominalCode);
-                var updatedDescription = existing.Description?.EndsWith(" (updated)", StringComparison.Ordinal) == true
-                    ? existing.Description
-                    : $"{existing.Description} (updated)";
-
-                _category = await client.Categories.UpdateIncomeCategoryAsync(_nominalCode, new UpdateIncomeCategoryRequest
-                {
-                    Description = updatedDescription,
-                    NominalCode = _nominalCode
-                });
-
-                _operationMessage = $"Updated category {_nominalCode}.";
+                _category = await CategoryWriteProbeSupport.ExecuteAsync(client, _writeVariant, _nominalCode);
+                _nominalCode = _category.NominalCode ?? _nominalCode;
+                _operationMessage = $"Executed {_writeVariant} for category {_nominalCode}.";
                 return $"categories/{_nominalCode}";
             });
     }
@@ -197,6 +185,7 @@
         }
 
         var deletedCode = _nominalCode;
+        _callUnderTest = "CategoryService.DeleteCategoryAsync(...)";
 
         await RunOperationAsync(
             async client =>

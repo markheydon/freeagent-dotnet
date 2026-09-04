@@ -64,6 +64,10 @@ Sample: `/categories` (list + per-row mapping), `/categories/detail` (CRUD)
 
 - `sub_accounts` — when `true`, includes sub accounts instead of top-level accounts where they exist
 
+### Write request factories
+
+Category create/update requests use static factory methods. Variants that require `tax_reporting_name` expose discriminator-specific factories (for example `CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(..., UkLimitedCompanyCostOfSalesTaxReportingName.Purchases)`). Income and equity variants use `Create(...)`.
+
 ## OAuth (protocol helpers)
 
 | Capability | SDK API |
