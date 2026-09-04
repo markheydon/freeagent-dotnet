@@ -76,6 +76,19 @@ Category create/update requests use static factory methods. Variants that requir
 | Code exchange | `FreeAgentOAuthClient.ExchangeCodeForTokenAsync(...)` |
 | Token refresh | `FreeAgentOAuthClient.RefreshTokenAsync(...)` |
 
+## Currencies (reference enum)
+
+Docs: https://dev.freeagent.com/docs/currencies
+
+FreeAgent documents supported ISO 4217 currency codes but does **not** expose a `/v2/currencies` REST resource. The SDK provides `CurrencyCode` in `FreeAgent.Client.Models.Shared` for typed wire values on implemented models:
+
+| Model | Property |
+|-------|----------|
+| `Company` | `Currency` |
+| `DirectDebitMandate` | `Currency` |
+
+There is no `CurrenciesService`. Additional resources will use `CurrencyCode` for currency fields as they are implemented.
+
 ## Not yet implemented
 
 - Invoices and other MVP resources listed in [SCOPE.md](../../SCOPE.md) — tracked via GitHub Issues
