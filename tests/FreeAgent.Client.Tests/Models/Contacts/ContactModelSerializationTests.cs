@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Tests.Models.Contacts;
 
@@ -69,7 +70,7 @@ public class ContactModelSerializationTests
         var contact = JsonSerializer.Deserialize<Contact>(json);
 
         Assert.NotNull(contact!.DirectDebitMandate);
-        Assert.Equal("GBP", contact.DirectDebitMandate.Currency);
+        Assert.Equal(CurrencyCode.GBP, contact.DirectDebitMandate.Currency);
         Assert.Equal(100m, contact.DirectDebitMandate.MaxAmount);
         Assert.Equal(25.5m, contact.DirectDebitMandate.RemainingAmount);
         Assert.Equal(new DateOnly(2026, 4, 1), contact.DirectDebitMandate.NextIntervalStartsOn);
@@ -85,7 +86,7 @@ public class ContactModelSerializationTests
             AccountBalance = 12.5m,
             ActiveProjectsCount = 3,
             DirectDebitMandateState = DirectDebitMandateState.Active,
-            DirectDebitMandate = new DirectDebitMandate { Currency = "GBP" },
+            DirectDebitMandate = new DirectDebitMandate { Currency = CurrencyCode.GBP },
             CreatedAt = DateTimeOffset.Parse("2026-01-01T00:00:00Z", CultureInfo.InvariantCulture),
             UpdatedAt = DateTimeOffset.Parse("2026-01-02T00:00:00Z", CultureInfo.InvariantCulture)
         });

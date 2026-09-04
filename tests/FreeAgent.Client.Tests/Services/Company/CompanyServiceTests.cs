@@ -3,6 +3,7 @@ using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Models.Company;
+using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Tests.TestSupport;
 

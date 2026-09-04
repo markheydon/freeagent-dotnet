@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Contacts;
 
@@ -8,10 +9,10 @@ namespace FreeAgent.Client.Models.Contacts;
 public class DirectDebitMandate
 {
     /// <summary>
-    /// Mandate currency code.
+    /// Mandate currency code (ISO 4217). May be <see langword="null"/> when omitted by the API.
     /// </summary>
     [JsonPropertyName("currency")]
-    public string? Currency { get; set; }
+    public CurrencyCode? Currency { get; set; }
 
     /// <summary>
     /// Maximum collection amount.

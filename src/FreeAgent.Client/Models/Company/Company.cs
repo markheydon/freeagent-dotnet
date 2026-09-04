@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Company;
 
