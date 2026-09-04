@@ -26,6 +26,7 @@ internal sealed class UserWritePayload
     public UserRole? Role { get; set; }
 
     [JsonPropertyName("opening_mileage")]
+    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
     public decimal? OpeningMileage { get; set; }
 
     [JsonPropertyName("send_invitation")]

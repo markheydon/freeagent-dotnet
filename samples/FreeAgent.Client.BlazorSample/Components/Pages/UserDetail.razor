@@ -1,4 +1,5 @@
 @page "/users/detail"
+@using System.Globalization
 @using FreeAgent.Client.Models.Users
 @using FreeAgent.Client.BlazorSample.Services
 @inject TokenStore TokenStore
@@ -50,13 +51,15 @@
                         <code>GET /v2/users/me</code> and <strong>Update personal profile</strong> for
                         <code>PUT /v2/users/me</code>. Creating users requires Tax, Accounting &amp; Users access.
                     </MudText>
-                    <MudNumericField @bind-Value="_userId" Label="User ID" Min="1" />
+                    <MudNumericField @bind-Value="_userId" @bind-Value:after="OnUserIdChanged" Label="User ID" Min="1" />
                     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
                                    StartIcon="@Icons.Material.Filled.CloudDownload"
                                    OnClick="GetUserAsync">Get user</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
                                    OnClick="GetCurrentUserAsync">Get personal profile</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateTestUserAsync">Create test user</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
                                    OnClick="UpdateCurrentUserAsync">Update personal profile</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _userId is null"
@@ -120,6 +123,8 @@
 </MudContainer>
 
 @code {
+    private const string UpdatedProbeSuffix = " (updated)";
+
     [SupplyParameterFromQuery(Name = "id")]
     public long? UserIdFromQuery { get; set; }
 
@@ -130,14 +135,31 @@
     private User? _user;
     private ModelProbeSnapshot? _probe;
     private long? _userId;
+    private long? _loadedUserId;
 
     protected override void OnParametersSet()
     {
         if (UserIdFromQuery is > 0 && _userId != UserIdFromQuery)
         {
             _userId = UserIdFromQuery;
+            ClearLoadedUserState();
             _operationMessage = $"User ID {_userId} loaded from URL. Press Get user to fetch diagnostics.";
         }
+    }
+
+    private void OnUserIdChanged()
+    {
+        if (_loadedUserId is not null && _loadedUserId != _userId)
+        {
+            ClearLoadedUserState();
+        }
+    }
+
+    private void ClearLoadedUserState()
+    {
+        _user = null;
+        _probe = null;
+        _loadedUserId = null;
     }
 
     private async Task GetUserAsync()
@@ -152,10 +174,12 @@
             async client =>
             {
                 _user = await client.Users.GetUserAsync(_userId.Value);
+                _loadedUserId = _userId;
                 _operationMessage = $"Loaded user {_userId.Value}: {_user.DisplayName}";
                 return $"users/{_userId}";
             },
-            envelopeProperty: "user");
+            envelopeProperty: "user",
+            errorDiagnosticsEndpoint: $"users/{_userId}");
     }
 
     private async Task GetCurrentUserAsync()
@@ -165,8 +189,37 @@
             {
                 _user = await client.Users.GetCurrentUserAsync();
                 _userId = UserUrlParser.ParseId(_user.Url);
+                _loadedUserId = _userId;
                 _operationMessage = $"Loaded personal profile for {_user.DisplayName}.";
                 return "users/me";
+            },
+            envelopeProperty: "user",
+            errorDiagnosticsEndpoint: "users/me");
+    }
+
+    private async Task CreateTestUserAsync()
+    {
+        var uniqueSuffix = DateTime.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _user = await client.Users.CreateUserAsync(new User
+                {
+                    Email = $"sdk-probe-{uniqueSuffix}@example.com",
+                    FirstName = "SDK",
+                    LastName = "Probe User",
+                    Role = UserRole.Employee,
+                    OpeningMileage = 0,
+                    SendInvitation = false,
+                    PermissionLevel = UserPermissionLevel.Time
+                });
+                _userId = UserUrlParser.ParseId(_user.Url);
+                _loadedUserId = _userId;
+                _operationMessage = _userId is null
+                    ? "Created test user but could not parse ID from URL."
+                    : $"Created test user {_userId.Value}: {_user.DisplayName}.";
+                return _userId is null ? null : $"users/{_userId}";
             },
             envelopeProperty: "user");
     }
@@ -180,10 +233,12 @@
                 existing.OpeningMileage = (existing.OpeningMileage ?? 0) + 1;
                 _user = await client.Users.UpdateCurrentUserAsync(existing);
                 _userId = UserUrlParser.ParseId(_user.Url);
+                _loadedUserId = _userId;
                 _operationMessage = "Updated personal profile opening mileage (+1).";
                 return "users/me";
             },
-            envelopeProperty: "user");
+            envelopeProperty: "user",
+            errorDiagnosticsEndpoint: "users/me");
     }
 
     private async Task UpdateUserAsync()
@@ -196,13 +251,15 @@
         await RunOperationAsync(
             async client =>
             {
-                var existing = _user ?? await client.Users.GetUserAsync(_userId.Value);
-                existing.LastName = $"{existing.LastName} (updated)".Trim();
+                var existing = await client.Users.GetUserAsync(_userId.Value);
+                existing.LastName = WithUpdatedProbeSuffix(existing.LastName);
                 _user = await client.Users.UpdateUserAsync(_userId.Value, existing);
+                _loadedUserId = _userId;
                 _operationMessage = $"Updated user {_userId.Value}.";
                 return $"users/{_userId}";
             },
-            envelopeProperty: "user");
+            envelopeProperty: "user",
+            errorDiagnosticsEndpoint: $"users/{_userId}");
     }
 
     private async Task DeleteUserAsync()
@@ -218,18 +275,19 @@
             async client =>
             {
                 await client.Users.DeleteUserAsync(deletedId);
-                _user = null;
-                _probe = null;
+                ClearLoadedUserState();
                 _operationMessage = $"Deleted user {deletedId}. No wire payload is returned for DELETE.";
                 return null;
             },
-            fetchWirePayload: false);
+            fetchWirePayload: false,
+            errorDiagnosticsEndpoint: $"users/{deletedId}");
     }
 
     private async Task RunOperationAsync(
         Func<FreeAgentClient, Task<string?>> action,
         string? envelopeProperty = null,
-        bool fetchWirePayload = true)
+        bool fetchWirePayload = true,
+        string? errorDiagnosticsEndpoint = null)
     {
         var token = TokenStore.GetToken();
         if (token is null)
@@ -247,10 +305,12 @@
             _wireApiResponse = string.Empty;
         }
 
+        string? diagnosticsEndpoint = errorDiagnosticsEndpoint;
+
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            var diagnosticsEndpoint = await action(client);
+            diagnosticsEndpoint = await action(client) ?? diagnosticsEndpoint;
 
             if (fetchWirePayload && _user is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
             {
@@ -265,15 +325,41 @@
         catch (FreeAgentApiException ex)
         {
             _error = $"API error: {ex.Message}";
+            await TryFetchErrorWireAsync(token, diagnosticsEndpoint);
         }
         catch (Exception ex)
         {
             _error = $"Unexpected error: {ex.Message}";
+            await TryFetchErrorWireAsync(token, diagnosticsEndpoint);
         }
         finally
         {
             _loading = false;
         }
+    }
+
+    private async Task TryFetchErrorWireAsync(OAuthTokenResponse token, string? diagnosticsEndpoint)
+    {
+        if (string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+        {
+            return;
+        }
+
+        _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            token.AccessToken,
+            TokenStore.ConnectedEnvironment,
+            diagnosticsEndpoint);
+    }
+
+    private static string WithUpdatedProbeSuffix(string? lastName)
+    {
+        var baseName = lastName;
+        if (!string.IsNullOrWhiteSpace(baseName) && baseName.EndsWith(UpdatedProbeSuffix, StringComparison.Ordinal))
+        {
+            baseName = baseName[..^UpdatedProbeSuffix.Length];
+        }
+
+        return $"{baseName}{UpdatedProbeSuffix}";
     }
 
     private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;

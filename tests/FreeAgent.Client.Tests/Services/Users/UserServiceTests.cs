@@ -335,4 +335,71 @@ public class UserServiceTests
 
         await service.CreateUserAsync(user);
     }
+
+    [Fact]
+    public async Task GetCurrentUserAsync_WhenPayloadMissing_ThrowsFreeAgentApiException()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""{ "user": null }""")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new UserService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetCurrentUserAsync());
+    }
+
+    [Fact]
+    public async Task CreateUserAsync_WhenPayloadMissing_ThrowsFreeAgentApiException()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Created)
+        {
+            Content = new StringContent("""{ "user": null }""")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new UserService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateUserAsync(new User
+        {
+            FirstName = "New",
+            LastName = "User",
+            Email = "new@example.com",
+            Role = UserRole.Employee,
+            OpeningMileage = 0
+        }));
+    }
+
+    [Fact]
+    public async Task UpdateUserAsync_WhenPayloadMissing_ThrowsFreeAgentApiException()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""{ "user": null }""")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new UserService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.UpdateUserAsync(42, new User { LastName = "Renamed" }));
+    }
+
+    [Fact]
+    public async Task UpdateCurrentUserAsync_WhenPayloadMissing_ThrowsFreeAgentApiException()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""{ "user": null }""")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new UserService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.UpdateCurrentUserAsync(new User { OpeningMileage = 120 }));
+    }
 }
