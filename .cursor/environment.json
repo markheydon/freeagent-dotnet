@@ -1,0 +1,8 @@
+{
+  "name": "FreeAgent .NET Client",
+  "install": "bash .cursor/install.sh",
+  "ports": [
+    { "port": 5000, "name": "blazor-sample-http" },
+    { "port": 5001, "name": "blazor-sample-https" }
+  ]
+}
