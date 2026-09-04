@@ -7,6 +7,18 @@ namespace FreeAgent.Client.Services.Categories;
 /// <summary>
 /// Service for interacting with FreeAgent chart-of-accounts categories.
 /// </summary>
+/// <remarks>
+/// <para>
+/// Typed create and update methods accept only three-digit nominal codes in the documented ranges
+/// (for example <c>047</c> for income). Sub-account codes (for example <c>602-1</c>) can be read
+/// and deleted via <see cref="GetCategoryAsync"/> and <see cref="DeleteCategoryAsync"/>, but are not
+/// supported by typed write request factories.
+/// </para>
+/// <para>
+/// On update, the path <c>nominalCode</c> identifies the existing category and may differ from the
+/// <c>nominal_code</c> in the request body when renaming a category.
+/// </para>
+/// </remarks>
 public sealed class CategoryService
 {
     private readonly IFreeAgentRequestClient _requestClient;
@@ -46,7 +58,7 @@ public sealed class CategoryService
     /// <returns>Category details</returns>
     public async Task<Category> GetCategoryAsync(string nominalCode, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+        CategoryNominalCodeValidator.ValidatePathSegment(nominalCode);
 
         var response = await _requestClient.GetAsync<CategorySingleResponse>($"categories/{nominalCode}", cancellationToken);
         return CategoryResponseMapper.ToCategory(response);
@@ -239,7 +251,7 @@ public sealed class CategoryService
     /// <param name="cancellationToken">Cancellation token</param>
     public Task DeleteCategoryAsync(string nominalCode, CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+        CategoryNominalCodeValidator.ValidatePathSegment(nominalCode);
 
         return _requestClient.DeleteAsync($"categories/{nominalCode}", cancellationToken);
     }
@@ -258,7 +270,7 @@ public sealed class CategoryService
         CategoryWritePayload payload,
         CancellationToken cancellationToken)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+        CategoryNominalCodeValidator.ValidatePathSegment(nominalCode);
 
         var content = FreeAgentJsonSerializer.CreateContent(new CategoryRequest { Category = payload });
         var response = await _requestClient.PutAsync<CategorySingleResponse>($"categories/{nominalCode}", content, cancellationToken);

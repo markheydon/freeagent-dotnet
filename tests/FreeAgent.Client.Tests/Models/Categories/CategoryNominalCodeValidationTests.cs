@@ -5,9 +5,9 @@ namespace FreeAgent.Client.Tests.Models.Categories;
 public class CategoryNominalCodeValidationTests
 {
     [Theory]
-    [InlineData("1")]
+    [InlineData("001")]
     [InlineData("047")]
-    [InlineData("49")]
+    [InlineData("049")]
     public void CreateIncomeCategoryRequest_AcceptsCodesInDocumentedRange(string nominalCode)
     {
         var request = CreateIncomeCategoryRequest.Create("Income", nominalCode);
@@ -18,7 +18,7 @@ public class CategoryNominalCodeValidationTests
     [Theory]
     [InlineData("050")]
     [InlineData("200")]
-    [InlineData("0")]
+    [InlineData("000")]
     public void CreateIncomeCategoryRequest_RejectsCodesOutsideDocumentedRange(string nominalCode)
     {
         var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
@@ -28,10 +28,13 @@ public class CategoryNominalCodeValidationTests
     }
 
     [Theory]
+    [InlineData("1")]
+    [InlineData("49")]
+    [InlineData("0212")]
     [InlineData("602-1")]
     [InlineData("abc")]
     [InlineData("21.2")]
-    public void CreateIncomeCategoryRequest_RejectsNonIntegerCodes(string nominalCode)
+    public void CreateIncomeCategoryRequest_RejectsNonThreeDigitCodes(string nominalCode)
     {
         var exception = Assert.Throws<ArgumentException>(() =>
             CreateIncomeCategoryRequest.Create("Income", nominalCode));
@@ -54,7 +57,6 @@ public class CategoryNominalCodeValidationTests
 
     [Theory]
     [InlineData("212")]
-    [InlineData("0212")]
     [InlineData("399")]
     public void CreateAdminExpensesCategoryRequest_AcceptsCodesInDocumentedRange(string nominalCode)
     {
@@ -68,8 +70,7 @@ public class CategoryNominalCodeValidationTests
     }
 
     [Theory]
-    [InlineData("95")]
-    [InlineData("200")]
+    [InlineData("095")]
     [InlineData("999")]
     public void CreateCostOfSalesCategoryRequest_RejectsCodesOutsideDocumentedRange(string nominalCode)
     {
@@ -83,6 +84,19 @@ public class CategoryNominalCodeValidationTests
         Assert.Equal("nominalCode", exception.ParamName);
         Assert.Contains("096", exception.Message, StringComparison.Ordinal);
         Assert.Contains("199", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void CreateCostOfSalesCategoryRequest_RejectsCodeFromAnotherVariantRange()
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(
+                "Cost of sales",
+                "200",
+                UkLimitedCompanyCostOfSalesTaxReportingName.Purchases,
+                allowableForTax: true));
+
+        Assert.Equal("nominalCode", exception.ParamName);
     }
 
     [Theory]
@@ -163,5 +177,22 @@ public class CategoryNominalCodeValidationTests
         Assert.Equal("nominalCode", exception.ParamName);
         Assert.Contains("096", exception.Message, StringComparison.Ordinal);
         Assert.Contains("199", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Theory]
+    [InlineData("../001")]
+    [InlineData("001/extra")]
+    public void ValidatePathSegment_RejectsInvalidPathCharacters(string nominalCode)
+    {
+        var exception = Assert.Throws<ArgumentException>(() =>
+            CategoryNominalCodeValidator.ValidatePathSegment(nominalCode));
+
+        Assert.Equal("nominalCode", exception.ParamName);
+    }
+
+    [Fact]
+    public void ValidatePathSegment_AllowsSubAccountCodes()
+    {
+        CategoryNominalCodeValidator.ValidatePathSegment("602-1");
     }
 }

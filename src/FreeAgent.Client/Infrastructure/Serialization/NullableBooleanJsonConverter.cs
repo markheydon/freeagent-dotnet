@@ -21,6 +21,19 @@ internal sealed class NullableBooleanJsonConverter : JsonConverter<bool?>
             case JsonTokenType.Null:
                 return null;
 
+            case JsonTokenType.Number:
+                if (reader.TryGetInt32(out var number))
+                {
+                    return number switch
+                    {
+                        0 => false,
+                        1 => true,
+                        _ => throw new JsonException($"Unable to convert numeric value {number} to boolean.")
+                    };
+                }
+
+                throw new JsonException("Unable to convert numeric JSON value to boolean.");
+
             case JsonTokenType.String:
                 {
                     var text = reader.GetString();

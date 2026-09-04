@@ -47,9 +47,41 @@ internal static class CategoryNominalCodeValidator
     internal static void ValidateEquity(string nominalCode) =>
         ValidateRange(nominalCode, Ranges.EquityMin, Ranges.EquityMax, "equity");
 
+    /// <summary>
+    /// Validates a nominal code used in URL path segments for get, update, and delete.
+    /// Sub-account codes (for example <c>602-1</c>) are allowed; path traversal characters are not.
+    /// </summary>
+    internal static void ValidatePathSegment(string nominalCode)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+
+        if (nominalCode.Contains('/', StringComparison.Ordinal)
+            || nominalCode.Contains('\\', StringComparison.Ordinal)
+            || nominalCode.Contains("..", StringComparison.Ordinal))
+        {
+            throw new ArgumentException(
+                "Nominal code must not contain path characters.",
+                nameof(nominalCode));
+        }
+    }
+
     private static void ValidateRange(string nominalCode, int minInclusive, int maxInclusive, string variantName)
     {
+        if (!IsThreeDigitCode(nominalCode))
+        {
+            throw new ArgumentException(
+                $"Nominal code '{nominalCode}' must be a three-digit code (for example {FormatDocumentedCode(minInclusive)}) for {variantName} categories.",
+                nameof(nominalCode));
+        }
+
         if (!int.TryParse(nominalCode, NumberStyles.None, CultureInfo.InvariantCulture, out var value))
+        {
+            throw new ArgumentException(
+                $"Nominal code '{nominalCode}' must be a three-digit code (for example {FormatDocumentedCode(minInclusive)}) for {variantName} categories.",
+                nameof(nominalCode));
+        }
+
+        if (!string.Equals(nominalCode, FormatDocumentedCode(value), StringComparison.Ordinal))
         {
             throw new ArgumentException(
                 $"Nominal code '{nominalCode}' must be a three-digit code (for example {FormatDocumentedCode(minInclusive)}) for {variantName} categories.",
@@ -64,6 +96,9 @@ internal static class CategoryNominalCodeValidator
                 $"Nominal code must be between {FormatDocumentedCode(minInclusive)} and {FormatDocumentedCode(maxInclusive)} for {variantName} categories.");
         }
     }
+
+    private static bool IsThreeDigitCode(string nominalCode) =>
+        nominalCode.Length == 3 && nominalCode.All(static c => c is >= '0' and <= '9');
 
     private static string FormatDocumentedCode(int value) => value.ToString("D3", CultureInfo.InvariantCulture);
 }

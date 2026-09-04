@@ -5,6 +5,8 @@ namespace FreeAgent.Client.Models.Categories;
 /// </summary>
 public sealed class CategorySets
 {
+    private IReadOnlyList<Category>? _allCategories;
+
     /// <summary>
     /// Admin expenses categories.
     /// </summary>
@@ -26,10 +28,10 @@ public sealed class CategorySets
     public IReadOnlyList<Category> GeneralCategories { get; init; } = [];
 
     /// <summary>
-    /// All categories flattened across every set.
+    /// All categories flattened across every set. The flattened list is computed once and cached.
     /// </summary>
     public IReadOnlyList<Category> AllCategories =>
-        AdminExpensesCategories
+        _allCategories ??= AdminExpensesCategories
             .Concat(CostOfSalesCategories)
             .Concat(IncomeCategories)
             .Concat(GeneralCategories)

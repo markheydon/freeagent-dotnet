@@ -456,6 +456,41 @@ public class CategoryServiceTests
     }
 
     [Fact]
+    public async Task GetCategoryAsync_WithInvalidPathCharacters_ThrowsArgumentException()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(System.Net.HttpStatusCode.OK));
+        var service = CreateService(handler);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.GetCategoryAsync("../001"));
+    }
+
+    [Fact]
+    public async Task UpdateIncomeCategoryAsync_WhenRenaming_UsesPathAndBodyNominalCodes()
+    {
+        var handler = CreateCategoryPutHandler(
+            "047",
+            body =>
+            {
+                Assert.Contains("\"nominal_code\":\"048\"", body, StringComparison.Ordinal);
+            },
+            """
+            {
+              "income_categories": {
+                "url": "https://api.freeagent.com/v2/categories/048",
+                "description": "Renamed",
+                "nominal_code": "048"
+              }
+            }
+            """);
+
+        var updated = await CreateService(handler).UpdateIncomeCategoryAsync(
+            "047",
+            UpdateIncomeCategoryRequest.Create("Renamed", "048"));
+
+        Assert.Equal("048", updated.NominalCode);
+    }
+
+    [Fact]
     public async Task DeleteCategoryAsync_SendsDelete()
     {
         var handler = new QueueHttpMessageHandler(request =>
@@ -526,11 +561,11 @@ public class CategoryServiceTests
     }
 
     private static QueueHttpMessageHandler CreateCategoryPostHandler(Action<string> assertBody, string responseJson) =>
-        new(request =>
+        new([(Func<HttpRequestMessage, Task<HttpResponseMessage>>)(async request =>
         {
             Assert.Equal(HttpMethod.Post, request.Method);
             Assert.EndsWith("/categories", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
-            var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            var body = await request.Content!.ReadAsStringAsync();
             Assert.Contains("\"category\"", body, StringComparison.Ordinal);
             assertBody(body);
 
@@ -538,19 +573,19 @@ public class CategoryServiceTests
             {
                 Content = new StringContent(responseJson)
             };
-        });
+        })]);
 
     private static QueueHttpMessageHandler CreateCategoryPutHandler(string nominalCode, Action<string> assertBody, string responseJson) =>
-        new(request =>
+        new([(Func<HttpRequestMessage, Task<HttpResponseMessage>>)(async request =>
         {
             Assert.Equal(HttpMethod.Put, request.Method);
             Assert.EndsWith($"/categories/{nominalCode}", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
-            var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            var body = await request.Content!.ReadAsStringAsync();
             assertBody(body);
 
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(responseJson)
             };
-        });
+        })]);
 }

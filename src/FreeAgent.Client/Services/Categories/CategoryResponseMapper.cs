@@ -30,16 +30,43 @@ internal static class CategoryResponseMapper
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        var category = response.AdminExpensesCategory
-            ?? response.CostOfSalesCategory
-            ?? response.IncomeCategory
-            ?? response.GeneralCategory;
+        Category? category = null;
+        var envelopeCount = 0;
 
-        if (category is null)
+        if (response.AdminExpensesCategory is not null)
+        {
+            category = response.AdminExpensesCategory;
+            envelopeCount++;
+        }
+
+        if (response.CostOfSalesCategory is not null)
+        {
+            category = response.CostOfSalesCategory;
+            envelopeCount++;
+        }
+
+        if (response.IncomeCategory is not null)
+        {
+            category = response.IncomeCategory;
+            envelopeCount++;
+        }
+
+        if (response.GeneralCategory is not null)
+        {
+            category = response.GeneralCategory;
+            envelopeCount++;
+        }
+
+        if (envelopeCount == 0)
         {
             throw new FreeAgentApiException("Category data missing from API response");
         }
 
-        return category;
+        if (envelopeCount > 1)
+        {
+            throw new FreeAgentApiException("Multiple category envelopes present in API response");
+        }
+
+        return category!;
     }
 }
