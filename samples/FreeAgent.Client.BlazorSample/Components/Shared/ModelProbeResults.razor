@@ -1,0 +1,216 @@
+@using FreeAgent.Client.BlazorSample.Services
+
+@if (Snapshot is not null)
+{
+    <MudStack Spacing="3">
+        @if (SummaryContent is not null)
+        {
+            @SummaryContent
+        }
+
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+            <MudText Typo="Typo.h5">Mapping summary</MudText>
+            <MudChip T="string"
+                     Class="filter-chip"
+                     Variant="@GetFilterChipVariant(MappingCheckStatus.Match)"
+                     Color="Color.Success"
+                     OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.Match))">
+                Matches: @Snapshot.MatchCount
+            </MudChip>
+            <MudChip T="string"
+                     Class="filter-chip"
+                     Variant="@GetFilterChipVariant(MappingCheckStatus.Mismatch)"
+                     Color="Color.Error"
+                     OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.Mismatch))">
+                Mismatches: @Snapshot.MismatchCount
+            </MudChip>
+
+            @if (Snapshot.MissingInModelCount > 0)
+            {
+                <MudChip T="string"
+                         Class="filter-chip"
+                         Variant="@GetFilterChipVariant(MappingCheckStatus.MissingInModel)"
+                         Color="Color.Error"
+                         OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.MissingInModel))">
+                    Missing in model: @Snapshot.MissingInModelCount
+                </MudChip>
+            }
+
+            <MudChip T="string"
+                     Class="filter-chip"
+                     Variant="@GetFilterChipVariant(MappingCheckStatus.ModelOnly)"
+                     Color="Color.Warning"
+                     OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.ModelOnly))">
+                Model-only values: @Snapshot.ModelOnlyCount
+            </MudChip>
+            <MudChip T="string"
+                     Class="filter-chip"
+                     Variant="@GetFilterChipVariant(MappingCheckStatus.NotReturned)"
+                     Color="Color.Default"
+                     OnClick="@(() => ToggleMappingFilter(MappingCheckStatus.NotReturned))">
+                Not returned: @Snapshot.NotReturnedCount
+            </MudChip>
+        </MudStack>
+
+        @if (HighlightContent is not null)
+        {
+            @HighlightContent
+            <MudDivider />
+        }
+
+        <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Wrap="Wrap.Wrap">
+            <MudText Typo="Typo.h6">Wire-to-model mapping inspection</MudText>
+            <MudSwitch @bind-Value="_mappingTableWide"
+                       Color="Color.Primary"
+                       Label="Wide table"
+                       Class="wide-table-toggle" />
+        </MudStack>
+
+        @if (_mappingTableWide)
+        {
+            <MudText Typo="Typo.caption" Class="hero-copy">
+                Wide mode keeps all columns on one row and scrolls horizontally.
+            </MudText>
+        }
+
+        @if (_mappingFilter is not null)
+        {
+            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                <MudText Typo="Typo.body2" Class="hero-copy">
+                    Showing @FilteredMappingRows.Count() of @Snapshot.MappingRows.Count rows (@ModelWireDiagnostics.GetStatusLabel(_mappingFilter.Value)).
+                </MudText>
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           Size="Size.Small"
+                           OnClick="ClearMappingFilter">
+                    Show all
+                </MudButton>
+            </MudStack>
+        }
+
+        @if (Snapshot.MappingRows.Count == 0)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                Mapping diagnostics are unavailable because no raw wire payload could be parsed.
+            </MudAlert>
+        }
+        else
+        {
+            <div class="diagnostics-table-shell @(_mappingTableWide ? "diagnostics-table-shell--wide" : null)">
+                <MudTable Items="@FilteredMappingRows"
+                          Dense="true"
+                          Hover="true"
+                          Breakpoint="@(_mappingTableWide ? Breakpoint.None : Breakpoint.Sm)"
+                          Class="diagnostics-table">
+                    <HeaderContent>
+                        <MudTh>Status</MudTh>
+                        <MudTh>JSON field</MudTh>
+                        <MudTh>Raw value</MudTh>
+                        <MudTh>Raw kind</MudTh>
+                        <MudTh>Model property</MudTh>
+                        <MudTh>Model type</MudTh>
+                        <MudTh>Model value</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Status">
+                            <MudChip T="string" Variant="Variant.Filled" Size="Size.Small" Color="@GetStatusColor(context.Status)">
+                                @ModelWireDiagnostics.GetStatusLabel(context.Status)
+                            </MudChip>
+                        </MudTd>
+                        <MudTd DataLabel="JSON field"><code>@context.JsonFieldName</code></MudTd>
+                        <MudTd DataLabel="Raw value" Class="diagnostics-value-cell">@context.RawValue</MudTd>
+                        <MudTd DataLabel="Raw kind"><code>@context.RawValueKind</code></MudTd>
+                        <MudTd DataLabel="Model property"><code>@context.PropertyName</code></MudTd>
+                        <MudTd DataLabel="Model type"><code>@context.ModelTypeName</code></MudTd>
+                        <MudTd DataLabel="Model value" Class="diagnostics-value-cell">@context.ModelValue</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </div>
+        }
+
+        <MudDivider />
+
+        <MudText Typo="Typo.h6">@ModelFieldsHeading</MudText>
+        <div class="diagnostics-table-shell">
+            <MudTable Items="@Snapshot.FieldRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                <HeaderContent>
+                    <MudTh>Property</MudTh>
+                    <MudTh>JSON field</MudTh>
+                    <MudTh>Type</MudTh>
+                    <MudTh>Value</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Property"><code>@context.PropertyName</code></MudTd>
+                    <MudTd DataLabel="JSON field"><code>@context.JsonFieldName</code></MudTd>
+                    <MudTd DataLabel="Type"><code>@context.TypeName</code></MudTd>
+                    <MudTd DataLabel="Value" Class="diagnostics-value-cell">@context.Value</MudTd>
+                </RowTemplate>
+            </MudTable>
+        </div>
+
+        <MudDivider />
+
+        <MudExpansionPanels MultiExpansion="true">
+            <MudExpansionPanel Text="Raw JSON (wire payload snapshot)">
+                <ApiErrorDiagnostics RawPayload="@WirePayload" MaxLines="120" />
+            </MudExpansionPanel>
+
+            <MudExpansionPanel Text="Raw JSON (SDK model snapshot)">
+                <MudPaper Class="probe-card raw-json-panel" Elevation="0">
+                    <pre>@Snapshot.ModelJson</pre>
+                </MudPaper>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </MudStack>
+}
+
+@code {
+    [Parameter]
+    public ModelProbeSnapshot? Snapshot { get; set; }
+
+    [Parameter]
+    public string WirePayload { get; set; } = string.Empty;
+
+    [Parameter]
+    public string ModelFieldsHeading { get; set; } = "All model fields";
+
+    [Parameter]
+    public RenderFragment? SummaryContent { get; set; }
+
+    [Parameter]
+    public RenderFragment? HighlightContent { get; set; }
+
+    private MappingCheckStatus? _mappingFilter;
+    private bool _mappingTableWide;
+
+    private IEnumerable<ModelMappingRow> FilteredMappingRows =>
+        Snapshot is null
+            ? []
+            : _mappingFilter is null
+                ? Snapshot.MappingRows
+                : Snapshot.MappingRows.Where(row => row.Status == _mappingFilter.Value);
+
+    private void ToggleMappingFilter(MappingCheckStatus status)
+    {
+        _mappingFilter = _mappingFilter == status ? null : status;
+    }
+
+    private void ClearMappingFilter()
+    {
+        _mappingFilter = null;
+    }
+
+    private Variant GetFilterChipVariant(MappingCheckStatus status) =>
+        _mappingFilter is null || _mappingFilter == status ? Variant.Filled : Variant.Outlined;
+
+    private static Color GetStatusColor(MappingCheckStatus status) =>
+        status switch
+        {
+            MappingCheckStatus.Match => Color.Success,
+            MappingCheckStatus.Mismatch => Color.Error,
+            MappingCheckStatus.MissingInModel => Color.Error,
+            MappingCheckStatus.ModelOnly => Color.Warning,
+            MappingCheckStatus.NotReturned => Color.Default,
+            _ => Color.Default
+        };
+}

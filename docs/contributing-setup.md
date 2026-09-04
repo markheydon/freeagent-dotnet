@@ -34,11 +34,34 @@ If `dotnet build` fails with an error about a missing **.NET 8.0 targeting pack*
 ```bash
 git clone https://github.com/markheydon/freeagent-dotnet.git
 cd freeagent-dotnet
-dotnet build FreeAgent.slnx
-dotnet test
+dotnet clean FreeAgent.slnx
+dotnet restore FreeAgent.slnx
+dotnet build FreeAgent.slnx --no-restore --configuration Release -warnaserror
+dotnet test FreeAgent.slnx --no-build --configuration Release
 ```
 
+Or as a single chain:
+
+```bash
+dotnet clean FreeAgent.slnx && \
+dotnet restore FreeAgent.slnx && \
+dotnet build FreeAgent.slnx --no-restore --configuration Release -warnaserror && \
+dotnet test FreeAgent.slnx --no-build --configuration Release
+```
+
+Warnings fail the build (`TreatWarningsAsErrors` in [`Directory.Build.props`](../Directory.Build.props); `-warnaserror` on the CLI matches that when you invoke `dotnet build` directly).
+
 Use `dotnet test -f net10.0` or `dotnet test -f net8.0` to test a single target framework.
+
+## Verify formatting
+
+CI runs `dotnet format` with `--verify-no-changes`. Check locally before pushing:
+
+```bash
+dotnet format FreeAgent.slnx --verify-no-changes
+```
+
+If changes are reported, run `dotnet format FreeAgent.slnx` and commit the result.
 
 ## Sample app
 

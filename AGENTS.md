@@ -35,7 +35,7 @@ All documentation, comments, and user-facing text in this repository **must use 
 
 ## Sample App Sync
 
-The Blazor sample (`samples/FreeAgent.Client.Sample`) must reflect the **current, implemented** state of the SDK — not planned or aspirational endpoints.
+The Blazor sample (`samples/FreeAgent.Client.BlazorSample`) must reflect the **current, implemented** state of the SDK — not planned or aspirational endpoints.
 
 Framework targeting note:
 

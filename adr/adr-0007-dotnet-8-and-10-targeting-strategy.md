@@ -75,7 +75,7 @@ Adopt a dual-target framework strategy for the SDK and its validation pipeline:
 ## Implementation Notes
 
 - `IMP-001`: Multi-target `tests/FreeAgent.Client.Tests` for explicit parity with SDK targets.
-- `IMP-002`: Keep `samples/FreeAgent.Client.Sample` on `net10.0` because it uses current Blazor and runtime APIs that are not available on .NET 8.
+- `IMP-002`: Keep `samples/FreeAgent.Client.BlazorSample` on `net10.0` because it uses current Blazor and runtime APIs that are not available on .NET 8.
 - `IMP-003`: Update CI and release workflows to run build/test checks for both `net8.0` and `net10.0` before pack/publish.
 - `IMP-004`: Keep conditional compilation minimal and introduce framework-specific branches only when required by verified incompatibility.
 - `IMP-005`: Review framework support position at regular release milestones and revise via a follow-on ADR if needed.
@@ -87,6 +87,6 @@ Adopt a dual-target framework strategy for the SDK and its validation pipeline:
 - `REF-001`: [adr-0001-core-technology-stack.md](adr-0001-core-technology-stack.md)
 - `REF-002`: [src/FreeAgent.Client/FreeAgent.Client.csproj](../src/FreeAgent.Client/FreeAgent.Client.csproj)
 - `REF-003`: [tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj](../tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj)
-- `REF-004`: [samples/FreeAgent.Client.Sample/FreeAgent.Client.Sample.csproj](../samples/FreeAgent.Client.Sample/FreeAgent.Client.Sample.csproj)
+- `REF-004`: [samples/FreeAgent.Client.BlazorSample/FreeAgent.Client.BlazorSample.csproj](../samples/FreeAgent.Client.BlazorSample/FreeAgent.Client.BlazorSample.csproj)
 - `REF-005`: [.github/workflows/ci.yml](../.github/workflows/ci.yml)
 - `REF-006`: [.github/workflows/release.yml](../.github/workflows/release.yml)

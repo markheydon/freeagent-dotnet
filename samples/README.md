@@ -5,7 +5,7 @@ Samples for trying the `FreeAgent.Client` SDK against the FreeAgent API.
 | Sample | Purpose | SDK source |
 |--------|---------|------------|
 | [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Minimal console app — OAuth in the browser, list contact display names | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
-| [FreeAgent.Client.Sample](FreeAgent.Client.Sample/) | Blazor Server workbench for exercising SDK endpoints interactively | Local project reference |
+| [FreeAgent.Client.BlazorSample](FreeAgent.Client.BlazorSample/) | Blazor Server workbench for exercising SDK endpoints interactively | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
 
 ---
 
@@ -16,6 +16,8 @@ See [FreeAgent.Client.ConsoleSample/README.md](FreeAgent.Client.ConsoleSample/RE
 ---
 
 ## Blazor sample (full workbench)
+
+See [FreeAgent.Client.BlazorSample/README.md](FreeAgent.Client.BlazorSample/README.md) for SDK source toggle details. The sections below cover OAuth setup and running the workbench.
 
 ## Prerequisites
 
@@ -50,7 +52,7 @@ See [FreeAgent.Client.ConsoleSample/README.md](FreeAgent.Client.ConsoleSample/RE
 Never put credentials in `appsettings.json`. Use .NET user secrets instead:
 
 ```bash
-cd samples/FreeAgent.Client.Sample
+cd samples/FreeAgent.Client.BlazorSample
 
 dotnet user-secrets set "FreeAgent:ClientId"     "<your-client-id>"
 dotnet user-secrets set "FreeAgent:ClientSecret" "<your-client-secret>"
@@ -67,7 +69,7 @@ dotnet user-secrets set "FreeAgent:RedirectUri" "https://localhost:5001/oauth/ca
 ## 3. Run the App
 
 ```bash
-cd samples/FreeAgent.Client.Sample
+cd samples/FreeAgent.Client.BlazorSample
 dotnet run
 ```
 

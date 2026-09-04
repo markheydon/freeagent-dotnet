@@ -30,7 +30,7 @@ Note the `http` scheme, `127.0.0.1` host, port `8765`, and `/callback` path.
 
 ### Option A — user secrets (recommended, shared with the Blazor sample)
 
-This project uses the same user-secrets ID as `FreeAgent.Client.Sample`. If you already configured the Blazor sample, **you only need to share client ID and secret** — the console app ignores the Blazor `RedirectUri` from user-secrets and keeps its own default (`http://127.0.0.1:8765/callback`).
+This project uses the same user-secrets ID as `FreeAgent.Client.BlazorSample`. If you already configured the Blazor sample, **you only need to share client ID and secret** — the console app ignores the Blazor `RedirectUri` from user-secrets and keeps its own default (`http://127.0.0.1:8765/callback`).
 
 Otherwise, from this directory:
 
@@ -130,4 +130,4 @@ dotnet add package FreeAgent.Client --version 0.1.0-alpha.1
 
 - [Getting started](../../docs/tutorial/getting-started.md)
 - [Prerelease and OAuth scope](../../docs/explanation/prerelease-and-oauth.md)
-- [Blazor sample](../FreeAgent.Client.Sample/) — fuller interactive SDK workbench
+- [Blazor sample](../FreeAgent.Client.BlazorSample/) — fuller interactive SDK workbench

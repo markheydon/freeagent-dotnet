@@ -79,8 +79,8 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 
 Follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md). **Company**, **Contacts**, and **Categories** (multi-variant writes) are the reference probe implementations.
 
-- Add/update sample pages under `samples/FreeAgent.Client.Sample/Components/Pages/` for every implemented endpoint.
-- Update sample navigation in `samples/FreeAgent.Client.Sample/Components/Layout/MainLayout.razor` in the same change.
+- Add/update sample pages under `samples/FreeAgent.Client.BlazorSample/Components/Pages/` for every implemented endpoint.
+- Update sample navigation in `samples/FreeAgent.Client.BlazorSample/Components/Layout/MainLayout.razor` in the same change.
 - Do not add sample UI for endpoints not implemented in the SDK.
 - Reuse shared probe components:
   - `EndpointProbeHeader` — page context and call under test

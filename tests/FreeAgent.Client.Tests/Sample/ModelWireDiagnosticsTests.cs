@@ -1,5 +1,5 @@
+using FreeAgent.Client.BlazorSample.Services;
 using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Sample.Services;
 
 namespace FreeAgent.Client.Tests.Sample;
 

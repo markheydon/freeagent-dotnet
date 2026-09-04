@@ -12,6 +12,6 @@
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/FreeAgent.Client.ConsoleSample/FreeAgent.Client.ConsoleSample.csproj" />
-    <Project Path="samples/FreeAgent.Client.Sample/FreeAgent.Client.Sample.csproj" />
+    <Project Path="samples/FreeAgent.Client.BlazorSample/FreeAgent.Client.BlazorSample.csproj" />
   </Folder>
 </Solution>
