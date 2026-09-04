@@ -121,7 +121,7 @@ The pinned NuGet version is defined in [`Directory.Packages.props`](../../Direct
 If you copy the project files into your own solution, remove the `UseLocalFreeAgentClient` property and project-reference block, then add the package:
 
 ```bash
-dotnet add package FreeAgent.Client --version 0.1.0-alpha.1
+dotnet add package FreeAgent.Client --version 0.1.0-alpha.2
 ```
 
 ---
