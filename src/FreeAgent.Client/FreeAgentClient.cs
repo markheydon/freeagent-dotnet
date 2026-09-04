@@ -2,6 +2,7 @@ using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
+using FreeAgent.Client.Services.EmailAddresses;
 using FreeAgent.Client.Services.Users;
 
 namespace FreeAgent.Client;
@@ -33,6 +34,11 @@ public sealed class FreeAgentClient : IDisposable
     /// Users API service.
     /// </summary>
     public UserService Users { get; }
+
+    /// <summary>
+    /// Email addresses API service.
+    /// </summary>
+    public EmailAddressesService EmailAddresses { get; }
 
     /// <summary>
     /// Initializes a new instance with an access token.
@@ -84,6 +90,7 @@ public sealed class FreeAgentClient : IDisposable
         Contacts = new ContactService(_httpClient);
         Categories = new CategoryService(_httpClient);
         Users = new UserService(_httpClient);
+        EmailAddresses = new EmailAddressesService(_httpClient);
     }
 
     /// <summary>

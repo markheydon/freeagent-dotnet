@@ -102,6 +102,7 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/categories/detail](https://localhost:5001/categories/detail) | `GetCategoryAsync()`, all `Create*CategoryAsync` / `Update*CategoryAsync`, `DeleteCategoryAsync` via write-variant selector | CRUD probes, all documented write variants, progress bar |
 | [/users](https://localhost:5001/users) | `UserService.GetUsersAsync()` | Per-row mapping inspection, view filters |
 | [/users/detail](https://localhost:5001/users/detail) | `GetUserAsync()`, `GetCurrentUserAsync()`, `CreateUserAsync()`, `UpdateUserAsync()`, `UpdateCurrentUserAsync()`, `DeleteUserAsync()` | CRUD probes, personal profile endpoints, progress bar |
+| [/email-addresses](https://localhost:5001/email-addresses) | `EmailAddressesService.GetEmailAddressesAsync()` | List output |
 
 Contributors adding endpoints should follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md).
 

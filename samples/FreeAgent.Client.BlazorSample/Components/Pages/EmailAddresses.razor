@@ -1,0 +1,127 @@
+@page "/email-addresses"
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Email Addresses — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Company endpoint"
+                         Title="Verified sender email addresses"
+                         CallUnderTest="EmailAddressesService.GetEmailAddressesAsync()"
+                         Description="Lists verified sender addresses used when emailing invoices and estimates from FreeAgent."
+                         EndpointPath="/v2/email_addresses"
+                         DocsUrl="https://dev.freeagent.com/docs/email_addresses" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.Email"
+                           Disabled="_loading"
+                           OnClick="FetchAsync">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Loading…</span>
+                    }
+                    else
+                    {
+                        <span>Load email addresses</span>
+                    }
+                </MudButton>
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+
+                    <ApiErrorDiagnostics RawPayload="@_rawApiResponse" />
+                }
+
+                @if (_emailAddresses is null && !_loading)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press the button above to load verified sender email addresses from FreeAgent.</MudText>
+                }
+                else if (_emailAddresses is not null && _emailAddresses.Count == 0 && !_loading)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">No verified sender email addresses returned.</MudText>
+                }
+
+                @if (_emailAddresses is not null && _emailAddresses.Count > 0)
+                {
+                    <MudText Typo="Typo.subtitle1">@_emailAddresses.Count address@(_emailAddresses.Count == 1 ? string.Empty : "es") returned</MudText>
+                    <MudGrid Spacing="2">
+                        @foreach (var emailAddress in _emailAddresses)
+                        {
+                            <MudItem xs="12" sm="6" md="4">
+                                <MudPaper Class="probe-card" Elevation="0">
+                                    <MudText Typo="Typo.body2">@emailAddress</MudText>
+                                </MudPaper>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string? _rawApiResponse;
+    private List<string>? _emailAddresses;
+
+    private async Task FetchAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _rawApiResponse = null;
+        _emailAddresses = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var emailAddresses = await client.EmailAddresses.GetEmailAddressesAsync();
+            _emailAddresses = emailAddresses.OrderBy(static x => x, StringComparer.OrdinalIgnoreCase).ToList();
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "email_addresses");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "email_addresses");
+        }
+        finally
+        {
+            _loading = false;
+            _emailAddresses ??= new List<string>();
+        }
+    }
+}

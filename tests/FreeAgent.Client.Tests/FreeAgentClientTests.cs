@@ -3,6 +3,8 @@ using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
+using FreeAgent.Client.Services.EmailAddresses;
+using FreeAgent.Client.Services.Users;
 using Xunit;
 
 namespace FreeAgent.Client.Tests;
@@ -23,6 +25,8 @@ public class FreeAgentClientTests
         Assert.NotNull(client.Company);
         Assert.NotNull(client.Contacts);
         Assert.NotNull(client.Categories);
+        Assert.NotNull(client.Users);
+        Assert.NotNull(client.EmailAddresses);
     }
 
     [Fact]
@@ -41,6 +45,8 @@ public class FreeAgentClientTests
         Assert.NotNull(client.Company);
         Assert.NotNull(client.Contacts);
         Assert.NotNull(client.Categories);
+        Assert.NotNull(client.Users);
+        Assert.NotNull(client.EmailAddresses);
     }
 
     [Fact]
@@ -55,9 +61,13 @@ public class FreeAgentClientTests
         Assert.True(typeof(CompanyService).IsSealed);
         Assert.True(typeof(ContactService).IsSealed);
         Assert.True(typeof(CategoryService).IsSealed);
+        Assert.True(typeof(UserService).IsSealed);
+        Assert.True(typeof(EmailAddressesService).IsSealed);
 
         Assert.Empty(typeof(CompanyService).GetConstructors());
         Assert.Empty(typeof(ContactService).GetConstructors());
         Assert.Empty(typeof(CategoryService).GetConstructors());
+        Assert.Empty(typeof(UserService).GetConstructors());
+        Assert.Empty(typeof(EmailAddressesService).GetConstructors());
     }
 }
