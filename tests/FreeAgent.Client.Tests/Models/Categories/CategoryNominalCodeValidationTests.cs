@@ -1,0 +1,142 @@
+using FreeAgent.Client.Models.Categories;
+
+namespace FreeAgent.Client.Tests.Models.Categories;
+
+public class CategoryNominalCodeValidationTests
+{
+    [Theory]
+    [InlineData("1")]
+    [InlineData("047")]
+    [InlineData("49")]
+    public void CreateIncomeCategoryRequest_AcceptsCodesInDocumentedRange(string nominalCode)
+    {
+        var request = CreateIncomeCategoryRequest.Create("Income", nominalCode);
+
+        Assert.Equal(nominalCode, request.NominalCode);
+    }
+
+    [Theory]
+    [InlineData("050")]
+    [InlineData("200")]
+    [InlineData("0")]
+    public void CreateIncomeCategoryRequest_RejectsCodesOutsideDocumentedRange(string nominalCode)
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CreateIncomeCategoryRequest.Create("Income", nominalCode));
+
+        Assert.Equal("nominalCode", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData("602-1")]
+    [InlineData("abc")]
+    [InlineData("21.2")]
+    public void CreateIncomeCategoryRequest_RejectsNonIntegerCodes(string nominalCode)
+    {
+        var exception = Assert.Throws<ArgumentException>(() =>
+            CreateIncomeCategoryRequest.Create("Income", nominalCode));
+
+        Assert.Equal("nominalCode", exception.ParamName);
+    }
+
+    [Fact]
+    public void CreateAdminExpensesCategoryRequest_RejectsCodeFromAnotherVariantRange()
+    {
+        var exception = Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CreateAdminExpensesCategoryRequest.ForUkLimitedCompany(
+                "Admin",
+                "048",
+                UkLimitedCompanyAdminExpensesTaxReportingName.ComputerSoftwareCosts,
+                allowableForTax: true));
+
+        Assert.Equal("nominalCode", exception.ParamName);
+    }
+
+    [Theory]
+    [InlineData("212")]
+    [InlineData("0212")]
+    [InlineData("399")]
+    public void CreateAdminExpensesCategoryRequest_AcceptsCodesInDocumentedRange(string nominalCode)
+    {
+        var request = CreateAdminExpensesCategoryRequest.ForUkLimitedCompany(
+            "Admin",
+            nominalCode,
+            UkLimitedCompanyAdminExpensesTaxReportingName.ComputerSoftwareCosts,
+            allowableForTax: true);
+
+        Assert.Equal(nominalCode, request.NominalCode);
+    }
+
+    [Theory]
+    [InlineData("95")]
+    [InlineData("200")]
+    public void CreateCostOfSalesCategoryRequest_RejectsCodesOutsideDocumentedRange(string nominalCode)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(
+                "Cost of sales",
+                nominalCode,
+                UkLimitedCompanyCostOfSalesTaxReportingName.Purchases,
+                allowableForTax: true));
+    }
+
+    [Theory]
+    [InlineData("672")]
+    [InlineData("720")]
+    public void CreateCurrentAssetCategoryRequest_AcceptsCodesInDocumentedRange(string nominalCode)
+    {
+        var request = CreateCurrentAssetCategoryRequest.Create(
+            "Asset",
+            nominalCode,
+            CurrentAssetTaxReportingName.Debtors);
+
+        Assert.Equal(nominalCode, request.NominalCode);
+    }
+
+    [Theory]
+    [InlineData("670")]
+    [InlineData("721")]
+    public void CreateCurrentAssetCategoryRequest_RejectsCodesOutsideDocumentedRange(string nominalCode)
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            CreateCurrentAssetCategoryRequest.Create(
+                "Asset",
+                nominalCode,
+                CurrentAssetTaxReportingName.Debtors));
+    }
+
+    [Theory]
+    [InlineData("732")]
+    [InlineData("780")]
+    public void CreateLiabilitiesCategoryRequest_AcceptsCodesInDocumentedRange(string nominalCode)
+    {
+        var request = CreateLiabilitiesCategoryRequest.ForUkLimitedCompany(
+            "Liability",
+            nominalCode,
+            UkLimitedCompanyLiabilitiesTaxReportingName.Creditors);
+
+        Assert.Equal(nominalCode, request.NominalCode);
+    }
+
+    [Theory]
+    [InlineData("922")]
+    [InlineData("960")]
+    public void CreateEquityCategoryRequest_AcceptsCodesInDocumentedRange(string nominalCode)
+    {
+        var request = CreateEquityCategoryRequest.Create("Equity", nominalCode);
+
+        Assert.Equal(nominalCode, request.NominalCode);
+    }
+
+    [Fact]
+    public void UpdateAdminExpensesCategoryRequest_RejectsCodeOutsideDocumentedRange()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            UpdateAdminExpensesCategoryRequest.ForUkLimitedCompany(
+                "Admin",
+                "048",
+                UkLimitedCompanyAdminExpensesTaxReportingName.ComputerSoftwareCosts,
+                allowableForTax: true,
+                autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate));
+    }
+}

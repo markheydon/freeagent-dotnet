@@ -1,3 +1,5 @@
+using FreeAgent.Client.Infrastructure.Serialization;
+
 namespace FreeAgent.Client.Models.Categories;
 
 /// <summary>
@@ -5,15 +7,25 @@ namespace FreeAgent.Client.Models.Categories;
 /// </summary>
 public sealed class UpdateIncomeCategoryRequest
 {
-    /// <summary>
-    /// Category name.
-    /// </summary>
-    public required string Description { get; init; }
+    internal string Description { get; private init; } = string.Empty;
+
+    internal string NominalCode { get; private init; } = string.Empty;
 
     /// <summary>
-    /// Unique nominal code from 001 to 049.
+    /// Creates a request to update an income category.
     /// </summary>
-    public required string NominalCode { get; init; }
+    public static UpdateIncomeCategoryRequest Create(string description, string nominalCode)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(description);
+        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+        CategoryNominalCodeValidator.ValidateIncome(nominalCode);
+
+        return new UpdateIncomeCategoryRequest
+        {
+            Description = description,
+            NominalCode = nominalCode
+        };
+    }
 }
 
 /// <summary>
@@ -21,31 +33,80 @@ public sealed class UpdateIncomeCategoryRequest
 /// </summary>
 public sealed class UpdateCostOfSalesCategoryRequest
 {
-    /// <summary>
-    /// Category name.
-    /// </summary>
-    public required string Description { get; init; }
+    internal string Description { get; private init; } = string.Empty;
+
+    internal string NominalCode { get; private init; } = string.Empty;
+
+    internal string TaxReportingName { get; private init; } = string.Empty;
+
+    internal bool AllowableForTax { get; private init; }
+
+    internal CategoryAutoSalesTaxRate AutoSalesTaxRate { get; private init; }
 
     /// <summary>
-    /// Unique nominal code from 096 to 199.
+    /// Creates an update request for a UK limited company cost of sales category.
     /// </summary>
-    public required string NominalCode { get; init; }
+    public static UpdateCostOfSalesCategoryRequest ForUkLimitedCompany(
+        string description,
+        string nominalCode,
+        UkLimitedCompanyCostOfSalesTaxReportingName taxReportingName,
+        bool allowableForTax,
+        CategoryAutoSalesTaxRate autoSalesTaxRate) =>
+        Create(description, nominalCode, EnumWireValue.Get(taxReportingName), allowableForTax, autoSalesTaxRate);
 
     /// <summary>
-    /// Statutory accounts reporting name wire key (for example <c>purchases</c>).
+    /// Creates an update request for a UK sole trader cost of sales category.
     /// </summary>
-    /// <remarks>Valid values depend on company type — see the FreeAgent Categories API docs.</remarks>
-    public required string TaxReportingName { get; init; }
+    public static UpdateCostOfSalesCategoryRequest ForUkSoleTrader(
+        string description,
+        string nominalCode,
+        UkSoleTraderCostOfSalesTaxReportingName taxReportingName,
+        bool allowableForTax,
+        CategoryAutoSalesTaxRate autoSalesTaxRate) =>
+        Create(description, nominalCode, EnumWireValue.Get(taxReportingName), allowableForTax, autoSalesTaxRate);
 
     /// <summary>
-    /// Whether the cost can be deducted from income when working out tax.
+    /// Creates an update request for a UK partnership cost of sales category.
     /// </summary>
-    public required bool AllowableForTax { get; init; }
+    public static UpdateCostOfSalesCategoryRequest ForUkPartnership(
+        string description,
+        string nominalCode,
+        UkPartnershipCostOfSalesTaxReportingName taxReportingName,
+        bool allowableForTax,
+        CategoryAutoSalesTaxRate autoSalesTaxRate) =>
+        Create(description, nominalCode, EnumWireValue.Get(taxReportingName), allowableForTax, autoSalesTaxRate);
 
     /// <summary>
-    /// Automatic sales tax rate.
+    /// Creates an update request for a universal or US company cost of sales category.
     /// </summary>
-    public required CategoryAutoSalesTaxRate AutoSalesTaxRate { get; init; }
+    public static UpdateCostOfSalesCategoryRequest ForUniversalAndUsCompany(
+        string description,
+        string nominalCode,
+        UniversalAndUsCostOfSalesTaxReportingName taxReportingName,
+        bool allowableForTax,
+        CategoryAutoSalesTaxRate autoSalesTaxRate) =>
+        Create(description, nominalCode, EnumWireValue.Get(taxReportingName), allowableForTax, autoSalesTaxRate);
+
+    private static UpdateCostOfSalesCategoryRequest Create(
+        string description,
+        string nominalCode,
+        string taxReportingName,
+        bool allowableForTax,
+        CategoryAutoSalesTaxRate autoSalesTaxRate)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(description);
+        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+        CategoryNominalCodeValidator.ValidateCostOfSales(nominalCode);
+
+        return new UpdateCostOfSalesCategoryRequest
+        {
+            Description = description,
+            NominalCode = nominalCode,
+            TaxReportingName = taxReportingName,
+            AllowableForTax = allowableForTax,
+            AutoSalesTaxRate = autoSalesTaxRate
+        };
+    }
 }
 
 /// <summary>
@@ -53,31 +114,80 @@ public sealed class UpdateCostOfSalesCategoryRequest
 /// </summary>
 public sealed class UpdateAdminExpensesCategoryRequest
 {
-    /// <summary>
-    /// Category name.
-    /// </summary>
-    public required string Description { get; init; }
+    internal string Description { get; private init; } = string.Empty;
+
+    internal string NominalCode { get; private init; } = string.Empty;
+
+    internal string TaxReportingName { get; private init; } = string.Empty;
+
+    internal bool AllowableForTax { get; private init; }
+
+    internal CategoryAutoSalesTaxRate AutoSalesTaxRate { get; private init; }
 
     /// <summary>
-    /// Unique nominal code from 200 to 399.
+    /// Creates an update request for a UK limited company admin expenses category.
     /// </summary>
-    public required string NominalCode { get; init; }
+    public static UpdateAdminExpensesCategoryRequest ForUkLimitedCompany(
+        string description,
+        string nominalCode,
+        UkLimitedCompanyAdminExpensesTaxReportingName taxReportingName,
+        bool allowableForTax,
+        CategoryAutoSalesTaxRate autoSalesTaxRate) =>
+        Create(description, nominalCode, EnumWireValue.Get(taxReportingName), allowableForTax, autoSalesTaxRate);
 
     /// <summary>
-    /// Statutory accounts reporting name wire key (for example <c>computer_software_costs</c>).
+    /// Creates an update request for a UK sole trader admin expenses category.
     /// </summary>
-    /// <remarks>Valid values depend on company type — see the FreeAgent Categories API docs.</remarks>
-    public required string TaxReportingName { get; init; }
+    public static UpdateAdminExpensesCategoryRequest ForUkSoleTrader(
+        string description,
+        string nominalCode,
+        UkSoleTraderAdminExpensesTaxReportingName taxReportingName,
+        bool allowableForTax,
+        CategoryAutoSalesTaxRate autoSalesTaxRate) =>
+        Create(description, nominalCode, EnumWireValue.Get(taxReportingName), allowableForTax, autoSalesTaxRate);
 
     /// <summary>
-    /// Whether the cost can be deducted from income when working out tax.
+    /// Creates an update request for a UK partnership admin expenses category.
     /// </summary>
-    public required bool AllowableForTax { get; init; }
+    public static UpdateAdminExpensesCategoryRequest ForUkPartnership(
+        string description,
+        string nominalCode,
+        UkPartnershipAdminExpensesTaxReportingName taxReportingName,
+        bool allowableForTax,
+        CategoryAutoSalesTaxRate autoSalesTaxRate) =>
+        Create(description, nominalCode, EnumWireValue.Get(taxReportingName), allowableForTax, autoSalesTaxRate);
 
     /// <summary>
-    /// Automatic sales tax rate.
+    /// Creates an update request for a universal or US company admin expenses category.
     /// </summary>
-    public required CategoryAutoSalesTaxRate AutoSalesTaxRate { get; init; }
+    public static UpdateAdminExpensesCategoryRequest ForUniversalAndUsCompany(
+        string description,
+        string nominalCode,
+        UniversalAndUsAdminExpensesTaxReportingName taxReportingName,
+        bool allowableForTax,
+        CategoryAutoSalesTaxRate autoSalesTaxRate) =>
+        Create(description, nominalCode, EnumWireValue.Get(taxReportingName), allowableForTax, autoSalesTaxRate);
+
+    private static UpdateAdminExpensesCategoryRequest Create(
+        string description,
+        string nominalCode,
+        string taxReportingName,
+        bool allowableForTax,
+        CategoryAutoSalesTaxRate autoSalesTaxRate)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(description);
+        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+        CategoryNominalCodeValidator.ValidateAdminExpenses(nominalCode);
+
+        return new UpdateAdminExpensesCategoryRequest
+        {
+            Description = description,
+            NominalCode = nominalCode,
+            TaxReportingName = taxReportingName,
+            AllowableForTax = allowableForTax,
+            AutoSalesTaxRate = autoSalesTaxRate
+        };
+    }
 }
 
 /// <summary>
@@ -85,20 +195,31 @@ public sealed class UpdateAdminExpensesCategoryRequest
 /// </summary>
 public sealed class UpdateCurrentAssetCategoryRequest
 {
-    /// <summary>
-    /// Category name.
-    /// </summary>
-    public required string Description { get; init; }
+    internal string Description { get; private init; } = string.Empty;
+
+    internal string NominalCode { get; private init; } = string.Empty;
+
+    internal string TaxReportingName { get; private init; } = string.Empty;
 
     /// <summary>
-    /// Unique nominal code from 671 to 720.
+    /// Creates an update request for a current asset category.
     /// </summary>
-    public required string NominalCode { get; init; }
+    public static UpdateCurrentAssetCategoryRequest Create(
+        string description,
+        string nominalCode,
+        CurrentAssetTaxReportingName taxReportingName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(description);
+        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+        CategoryNominalCodeValidator.ValidateCurrentAsset(nominalCode);
 
-    /// <summary>
-    /// Statutory accounts reporting name wire key (for example <c>debtors</c>).
-    /// </summary>
-    public required string TaxReportingName { get; init; }
+        return new UpdateCurrentAssetCategoryRequest
+        {
+            Description = description,
+            NominalCode = nominalCode,
+            TaxReportingName = EnumWireValue.Get(taxReportingName)
+        };
+    }
 }
 
 /// <summary>
@@ -106,20 +227,46 @@ public sealed class UpdateCurrentAssetCategoryRequest
 /// </summary>
 public sealed class UpdateLiabilitiesCategoryRequest
 {
-    /// <summary>
-    /// Category name.
-    /// </summary>
-    public required string Description { get; init; }
+    internal string Description { get; private init; } = string.Empty;
+
+    internal string NominalCode { get; private init; } = string.Empty;
+
+    internal string TaxReportingName { get; private init; } = string.Empty;
 
     /// <summary>
-    /// Unique nominal code from 731 to 780.
+    /// Creates an update request for a UK limited company liabilities category.
     /// </summary>
-    public required string NominalCode { get; init; }
+    public static UpdateLiabilitiesCategoryRequest ForUkLimitedCompany(
+        string description,
+        string nominalCode,
+        UkLimitedCompanyLiabilitiesTaxReportingName taxReportingName) =>
+        Create(description, nominalCode, EnumWireValue.Get(taxReportingName));
 
     /// <summary>
-    /// Statutory accounts reporting name wire key (for example <c>creditors</c>).
+    /// Creates an update request for a liabilities category on all other documented company types.
     /// </summary>
-    public required string TaxReportingName { get; init; }
+    public static UpdateLiabilitiesCategoryRequest ForOtherCompanyTypes(
+        string description,
+        string nominalCode,
+        OtherCompanyLiabilitiesTaxReportingName taxReportingName) =>
+        Create(description, nominalCode, EnumWireValue.Get(taxReportingName));
+
+    private static UpdateLiabilitiesCategoryRequest Create(
+        string description,
+        string nominalCode,
+        string taxReportingName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(description);
+        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+        CategoryNominalCodeValidator.ValidateLiabilities(nominalCode);
+
+        return new UpdateLiabilitiesCategoryRequest
+        {
+            Description = description,
+            NominalCode = nominalCode,
+            TaxReportingName = taxReportingName
+        };
+    }
 }
 
 /// <summary>
@@ -127,13 +274,23 @@ public sealed class UpdateLiabilitiesCategoryRequest
 /// </summary>
 public sealed class UpdateEquityCategoryRequest
 {
-    /// <summary>
-    /// Category name.
-    /// </summary>
-    public required string Description { get; init; }
+    internal string Description { get; private init; } = string.Empty;
+
+    internal string NominalCode { get; private init; } = string.Empty;
 
     /// <summary>
-    /// Unique nominal code from 921 to 960.
+    /// Creates an update request for an equity category.
     /// </summary>
-    public required string NominalCode { get; init; }
+    public static UpdateEquityCategoryRequest Create(string description, string nominalCode)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(description);
+        ArgumentException.ThrowIfNullOrWhiteSpace(nominalCode);
+        CategoryNominalCodeValidator.ValidateEquity(nominalCode);
+
+        return new UpdateEquityCategoryRequest
+        {
+            Description = description,
+            NominalCode = nominalCode
+        };
+    }
 }

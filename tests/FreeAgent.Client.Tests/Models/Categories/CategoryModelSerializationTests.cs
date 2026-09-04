@@ -25,13 +25,18 @@ public class CategoryModelSerializationTests
     }
 
     [Fact]
+    public void UkLimitedCompanyCostOfSalesTaxReportingName_UsesWireKey()
+    {
+        Assert.Equal(
+            "purchases",
+            EnumWireValue.Get(UkLimitedCompanyCostOfSalesTaxReportingName.Purchases));
+    }
+
+    [Fact]
     public void CreateIncomeCategoryRequest_MapsToIncomeCategoryGroupWireValue()
     {
-        var payload = CategoryWritePayloadMapper.FromCreate(new CreateIncomeCategoryRequest
-        {
-            Description = "Custom Income Category",
-            NominalCode = "047"
-        });
+        var payload = CategoryWritePayloadMapper.FromCreate(
+            CreateIncomeCategoryRequest.Create("Custom Income Category", "047"));
 
         var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
         using var document = JsonDocument.Parse(json);
@@ -42,16 +47,15 @@ public class CategoryModelSerializationTests
     }
 
     [Fact]
-    public void CreateCostOfSalesCategoryRequest_MapsSpendingFields()
+    public void CreateCostOfSalesCategoryRequest_ForUkLimitedCompany_MapsSpendingFields()
     {
-        var payload = CategoryWritePayloadMapper.FromCreate(new CreateCostOfSalesCategoryRequest
-        {
-            Description = "Custom Cost of Sales Category",
-            NominalCode = "101",
-            TaxReportingName = "purchases",
-            AllowableForTax = true,
-            AutoSalesTaxRate = CategoryAutoSalesTaxRate.StandardRate
-        });
+        var payload = CategoryWritePayloadMapper.FromCreate(
+            CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(
+                "Custom Cost of Sales Category",
+                "101",
+                UkLimitedCompanyCostOfSalesTaxReportingName.Purchases,
+                allowableForTax: true,
+                autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate));
 
         var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
         using var document = JsonDocument.Parse(json);
@@ -59,5 +63,21 @@ public class CategoryModelSerializationTests
         Assert.Equal("cost_of_sales", document.RootElement.GetProperty("category_group").GetString());
         Assert.Equal("purchases", document.RootElement.GetProperty("tax_reporting_name").GetString());
         Assert.True(document.RootElement.GetProperty("allowable_for_tax").GetBoolean());
+    }
+
+    [Fact]
+    public void CreateAdminExpensesCategoryRequest_ForUkLimitedCompany_MapsSpendingFields()
+    {
+        var payload = CategoryWritePayloadMapper.FromCreate(
+            CreateAdminExpensesCategoryRequest.ForUkLimitedCompany(
+                "Custom Admin Expenses Category",
+                "212",
+                UkLimitedCompanyAdminExpensesTaxReportingName.ComputerSoftwareCosts,
+                allowableForTax: true,
+                autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate));
+
+        var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"tax_reporting_name\":\"computer_software_costs\"", json, StringComparison.Ordinal);
     }
 }
