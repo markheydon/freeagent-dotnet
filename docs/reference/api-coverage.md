@@ -68,6 +68,25 @@ Sample: `/categories` (list + per-row mapping), `/categories/detail` (CRUD)
 
 Category create/update requests use static factory methods. Variants that require `tax_reporting_name` expose discriminator-specific factories (for example `CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(..., UkLimitedCompanyCostOfSalesTaxReportingName.Purchases)`). Income and equity variants use `Create(...)`.
 
+## Users
+
+Docs: https://dev.freeagent.com/docs/users  
+Sample: `/users` (list + per-row mapping), `/users/detail` (CRUD + personal profile)
+
+| Method | SDK API |
+|--------|---------|
+| `GET /v2/users` | `client.Users.GetUsersAsync(...)` |
+| `GET /v2/users/:id` | `client.Users.GetUserAsync(id)` |
+| `GET /v2/users/me` | `client.Users.GetCurrentUserAsync()` |
+| `POST /v2/users` | `client.Users.CreateUserAsync(user)` |
+| `PUT /v2/users/:id` | `client.Users.UpdateUserAsync(id, user)` |
+| `PUT /v2/users/me` | `client.Users.UpdateCurrentUserAsync(user)` |
+| `DELETE /v2/users/:id` | `client.Users.DeleteUserAsync(id)` |
+
+### List query parameters
+
+- `view` — use constants on `UserViews` (for example `UserViews.All`, `UserViews.ActiveStaff`)
+
 ## OAuth (protocol helpers)
 
 | Capability | SDK API |

@@ -3,6 +3,7 @@ using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
 using FreeAgent.Client.Services.EmailAddresses;
+using FreeAgent.Client.Services.Users;
 
 namespace FreeAgent.Client;
 
@@ -28,6 +29,11 @@ public sealed class FreeAgentClient : IDisposable
     /// Categories API service.
     /// </summary>
     public CategoryService Categories { get; }
+
+    /// <summary>
+    /// Users API service.
+    /// </summary>
+    public UserService Users { get; }
 
     /// <summary>
     /// Email addresses API service.
@@ -83,6 +89,7 @@ public sealed class FreeAgentClient : IDisposable
         Company = new CompanyService(_httpClient);
         Contacts = new ContactService(_httpClient);
         Categories = new CategoryService(_httpClient);
+        Users = new UserService(_httpClient);
         EmailAddresses = new EmailAddressesService(_httpClient);
     }
 
