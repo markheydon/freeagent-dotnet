@@ -95,6 +95,9 @@
                 <MudNavLink Href="/company/tax-timeline" Icon="@Icons.Material.Filled.Event">
                     Tax Timeline
                 </MudNavLink>
+                <MudNavLink Href="/email-addresses" Icon="@Icons.Material.Filled.Email">
+                    Email addresses
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Contacts" Icon="@Icons.Material.Filled.Contacts" Expanded="@IsContactsRoute">
@@ -190,7 +193,8 @@
 
     private bool IsCompanyRoute =>
         CurrentPath.Equals("company", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.StartsWith("company/", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.StartsWith("company/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("email-addresses", StringComparison.OrdinalIgnoreCase);
 
     private bool IsContactsRoute =>
         CurrentPath.Equals("contacts", StringComparison.OrdinalIgnoreCase)
