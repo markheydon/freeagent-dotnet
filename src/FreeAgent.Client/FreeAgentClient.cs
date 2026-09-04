@@ -1,4 +1,5 @@
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
 
@@ -21,6 +22,11 @@ public sealed class FreeAgentClient : IDisposable
     /// Contacts API service.
     /// </summary>
     public ContactService Contacts { get; }
+
+    /// <summary>
+    /// Categories API service.
+    /// </summary>
+    public CategoryService Categories { get; }
 
     /// <summary>
     /// Initializes a new instance with an access token.
@@ -70,6 +76,7 @@ public sealed class FreeAgentClient : IDisposable
         _httpClient = httpClient;
         Company = new CompanyService(_httpClient);
         Contacts = new ContactService(_httpClient);
+        Categories = new CategoryService(_httpClient);
     }
 
     /// <summary>

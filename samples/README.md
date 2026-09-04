@@ -96,6 +96,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/company/tax-timeline](https://localhost:5001/company/tax-timeline) | `CompanyService.GetTaxTimelineAsync()` | List output |
 | [/contacts](https://localhost:5001/contacts) | `ContactService.GetContactsPageAsync()` and `GetAllContactsAsync()` | Per-row mapping inspection, list filters |
 | [/contacts/detail](https://localhost:5001/contacts/detail) | `GetContactAsync()`, `CreateContactAsync()`, `UpdateContactAsync()`, `DeleteContactAsync()` | CRUD probes, Turpinverse seed data, full-detail fixture, progress bar |
+| [/categories](https://localhost:5001/categories) | `CategoryService.GetCategoriesAsync()` | Per-row mapping inspection, sub accounts toggle |
+| [/categories/detail](https://localhost:5001/categories/detail) | `GetCategoryAsync()`, `CreateCategoryAsync()`, `UpdateCategoryAsync()`, `DeleteCategoryAsync()` | CRUD probes, income fixture, progress bar |
 
 Contributors adding endpoints should follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md).
 

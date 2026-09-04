@@ -1,5 +1,6 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
 using Xunit;
@@ -21,6 +22,7 @@ public class FreeAgentClientTests
 
         Assert.NotNull(client.Company);
         Assert.NotNull(client.Contacts);
+        Assert.NotNull(client.Categories);
     }
 
     [Fact]
@@ -38,6 +40,7 @@ public class FreeAgentClientTests
 
         Assert.NotNull(client.Company);
         Assert.NotNull(client.Contacts);
+        Assert.NotNull(client.Categories);
     }
 
     [Fact]
@@ -51,8 +54,10 @@ public class FreeAgentClientTests
     {
         Assert.True(typeof(CompanyService).IsSealed);
         Assert.True(typeof(ContactService).IsSealed);
+        Assert.True(typeof(CategoryService).IsSealed);
 
         Assert.Empty(typeof(CompanyService).GetConstructors());
         Assert.Empty(typeof(ContactService).GetConstructors());
+        Assert.Empty(typeof(CategoryService).GetConstructors());
     }
 }

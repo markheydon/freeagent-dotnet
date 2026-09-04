@@ -1,0 +1,298 @@
+@page "/categories/detail"
+@using System.Text.Json
+@using FreeAgent.Client.Models.Categories
+@using FreeAgent.Client.Sample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Category detail — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Categories endpoint"
+                         Title="Get, create, update, and delete categories"
+                         CallUnderTest="CategoryService.GetCategoryAsync / CreateCategoryAsync / UpdateCategoryAsync / DeleteCategoryAsync"
+                         Description="Exercises single-category CRUD operations and shows wire-to-model diagnostics for the returned category envelope."
+                         EndpointPath="/v2/categories/:nominal_code" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a nominal code from the <MudLink Href="/categories">categories list</MudLink>, or pass
+                        <code>?nominal_code=001</code> in the URL. Create uses income code <code>@ProbeIncomeNominalCode</code>
+                        when available. Only user-created categories without items can be updated or deleted.
+                    </MudText>
+                    <MudTextField @bind-Value="_nominalCode" Label="Nominal code" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetCategoryAsync">Get category</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateProbeIncomeCategoryAsync">Create probe income category</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || string.IsNullOrWhiteSpace(_nominalCode)"
+                                   OnClick="UpdateCategoryAsync">Update description</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || string.IsNullOrWhiteSpace(_nominalCode)"
+                                   OnClick="DeleteCategoryAsync">Delete category</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _category is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Category model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">Code: @_category.NominalCode</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_category.GroupDescription)</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Description</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_category.Description)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Resource URL</MudText>
+                                        <MudText Typo="Typo.body2">@_category.Url</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load category diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private const string ProbeIncomeNominalCode = "048";
+    private const string ProbeIncomeDescription = "SDK Probe Income Category";
+
+    [SupplyParameterFromQuery(Name = "nominal_code")]
+    public string? NominalCodeFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private string _nominalCode = string.Empty;
+    private Category? _category;
+    private ModelProbeSnapshot? _probe;
+
+    protected override void OnParametersSet()
+    {
+        if (!string.IsNullOrWhiteSpace(NominalCodeFromQuery) && !string.Equals(_nominalCode, NominalCodeFromQuery, StringComparison.Ordinal))
+        {
+            _nominalCode = NominalCodeFromQuery;
+            _operationMessage = $"Nominal code {_nominalCode} loaded from URL. Press Get category to fetch diagnostics.";
+        }
+    }
+
+    private async Task GetCategoryAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_nominalCode))
+        {
+            _error = "Enter a nominal code.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _category = await client.Categories.GetCategoryAsync(_nominalCode);
+                _operationMessage = $"Loaded category {_nominalCode}: {_category.Description}";
+                return $"categories/{_nominalCode}";
+            });
+    }
+
+    private async Task CreateProbeIncomeCategoryAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                _category = await client.Categories.CreateCategoryAsync(new CategoryWritePayload
+                {
+                    Description = ProbeIncomeDescription,
+                    NominalCode = ProbeIncomeNominalCode,
+                    CategoryGroup = CategoryGroup.Income
+                });
+
+                _nominalCode = _category.NominalCode ?? ProbeIncomeNominalCode;
+                _operationMessage = $"Created probe income category {_nominalCode}.";
+                return $"categories/{_nominalCode}";
+            });
+    }
+
+    private async Task UpdateCategoryAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_nominalCode))
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _category ?? await client.Categories.GetCategoryAsync(_nominalCode);
+                var updatedDescription = existing.Description?.EndsWith(" (updated)", StringComparison.Ordinal) == true
+                    ? existing.Description
+                    : $"{existing.Description} (updated)";
+
+                _category = await client.Categories.UpdateCategoryAsync(_nominalCode, new CategoryWritePayload
+                {
+                    Description = updatedDescription,
+                    NominalCode = _nominalCode
+                });
+
+                _operationMessage = $"Updated category {_nominalCode}.";
+                return $"categories/{_nominalCode}";
+            });
+    }
+
+    private async Task DeleteCategoryAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_nominalCode))
+        {
+            return;
+        }
+
+        var deletedCode = _nominalCode;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Categories.DeleteCategoryAsync(deletedCode);
+                _category = null;
+                _probe = null;
+                _operationMessage = $"Deleted category {deletedCode}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgentClient, Task<string?>> action,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _category is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                var envelopeProperty = DetectCategoryEnvelope(_wireApiResponse);
+                _probe = ModelWireDiagnostics.Build(_category, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            if (fetchWirePayload && !string.IsNullOrWhiteSpace(_nominalCode))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    $"categories/{_nominalCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string? DetectCategoryEnvelope(string rawPayload)
+    {
+        if (string.IsNullOrWhiteSpace(rawPayload))
+        {
+            return null;
+        }
+
+        using var document = JsonDocument.Parse(rawPayload);
+        foreach (var propertyName in CategoryEnvelopeProperties)
+        {
+            if (document.RootElement.TryGetProperty(propertyName, out _))
+            {
+                return propertyName;
+            }
+        }
+
+        return null;
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+
+    private static readonly string[] CategoryEnvelopeProperties =
+    [
+        "admin_expenses_categories",
+        "cost_of_sales_categories",
+        "income_categories",
+        "general_categories"
+    ];
+}
