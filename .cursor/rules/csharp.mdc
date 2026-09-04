@@ -13,7 +13,8 @@ Follow `CONVENTIONS.md` and `AGENTS.md` for architecture and naming.
 - Add XML documentation to all public API members.
 - Use `JsonPropertyName` on every serialised/deserialised property in API models.
 - Test classes: `[ClassName]Tests`. Test methods: `Method_State_Expected`.
-- No business logic in the SDK; no app-style controller or database architecture.
+- No business-rule abstraction (VAT, accounting policy, reporting opinions) and no app-style controller or database architecture.
+- Fail-fast client checks only for official, local API contract constraints documented by FreeAgent; do not invent extra validation or fetch other resources to accept or reject a payload. See `CONVENTIONS.md` and `GOALS.md` G2.
 - Do not add NuGet packages or change architecture without an ADR and explicit instruction.
 
 For endpoint work, use the `implement-endpoint` skill in `.agents/skills/implement-endpoint/`.

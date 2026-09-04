@@ -17,8 +17,10 @@ The sample app is a **developer workbench**, not a product UI. Each probe page s
 | Pattern | Sample routes | SDK surface |
 |---------|---------------|-------------|
 | Single-resource GET | `/company` | `CompanyService.GetCompanyAsync()` |
-| List + per-row mapping | `/contacts` | `ContactService.GetContactsPageAsync(...)` |
+| List + per-row mapping (paginated) | `/contacts` | `ContactService.GetContactsPageAsync(...)` |
+| List + per-row mapping (full collection) | `/categories` | `CategoryService.GetCategoriesAsync(...)` |
 | CRUD + seed data | `/contacts/detail` | `ContactService` create/get/update/delete |
+| CRUD + write-variant selector | `/categories/detail` | `CategoryService` documented create/update variants |
 
 Read those pages before adding a new resource.
 
@@ -36,7 +38,7 @@ Reuse these sample-only components and services. Do not duplicate probe logic on
 
 ### Wire-to-model comparison rules
 
-`ModelWireDiagnostics` compares wire JSON to the deserialized SDK model by:
+`ModelWireDiagnostics` compares wire JSON to the deserialised SDK model by:
 
 1. Deserialising each wire field through the **same property type** the model uses.
 2. Using `JsonNumberHandling.AllowReadingFromString` so decimal fields returned as strings (for example `account_balance`) do not false-positive.
@@ -56,19 +58,19 @@ Follow `Components/Pages/Company.razor`:
 4. Build `ModelProbeResults` with `ModelWireDiagnostics.Build(model, rawPayload, envelopeProperty)`.
 5. Show `ApiErrorDiagnostics` when the call fails.
 
-### List GET (paginated collection)
+### List GET (collection)
 
-Follow `Components/Pages/Contacts.razor`:
+Follow `Components/Pages/Contacts.razor` when the API paginates, or `Components/Pages/Categories.razor` when it returns a complete collection:
 
-1. Load one page through the SDK (`Get*PageAsync`).
+1. Load through the SDK (`Get*PageAsync` or a non-paginated list method such as `GetCategoriesAsync`).
 2. Fetch the list wire payload for the same query.
-3. For each row, offer **Inspect mapping** using `ModelWireDiagnostics.TryGetArrayItem` to pass the array item element into `ModelProbeResults`.
-4. Expose filters the SDK supports (view, sort, `updated_since`, and so on).
-5. Link to a detail/CRUD page with `?id=` when the resource has an identifier.
+3. For each row, offer **Inspect mapping** using `ModelWireDiagnostics.TryGetArrayItem` (or the matching wire array for grouped collections) to pass the array item element into `ModelProbeResults`.
+4. Expose filters the SDK supports (view, sort, `updated_since`, `sub_accounts`, and so on).
+5. Link to a detail/CRUD page with a documented identifier (`?id=` or `?nominal_code=`).
 
 ### CRUD (create, read, update, delete)
 
-Follow `Components/Pages/ContactDetail.razor`:
+Follow `Components/Pages/ContactDetail.razor` for a single create/update shape, or `Components/Pages/CategoryDetail.razor` when the SDK exposes multiple write variants.
 
 1. Support `?id=` deep links for get/update/delete.
 2. After **create** or **update**, fetch `GET /resource/:id` wire JSON so diagnostics reflect persisted state.

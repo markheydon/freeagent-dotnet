@@ -4,7 +4,7 @@ This file defines repository-specific operating rules for AI coding and writing 
 
 ## Purpose
 
-- Keep agent behavior consistent with project goals, scope, and architecture.
+- Keep agent behaviour consistent with project goals, scope, and architecture.
 - Reduce accidental drift in documentation quality, naming, and decision records.
 - Ensure human review remains the final gate for all meaningful changes.
 
@@ -54,7 +54,7 @@ Rules:
 Probe-page standard (mandatory for new and retrofitted endpoints):
 
 - Follow [`docs/contributing/sample-probe-pages.md`](docs/contributing/sample-probe-pages.md).
-- Use **Company** (`/company`) and **Contacts** (`/contacts`, `/contacts/detail`) as reference implementations.
+- Use **Company** (`/company`), **Contacts** (`/contacts`, `/contacts/detail`), and **Categories** (`/categories`, `/categories/detail` for multi-variant writes) as reference implementations.
 - Reuse `EndpointProbeHeader`, `ModelWireDiagnostics`, `ModelProbeResults`, and `ApiErrorDiagnostics` — do not build one-off mapping UIs.
 - List pages must support per-row wire-to-model inspection; CRUD pages must support deep links, post-mutation wire fetch, and a visible loading progress bar.
 
@@ -82,7 +82,7 @@ Route work by task type, not by custom agent runtime:
 ## Allowed Actions
 
 - Suggest and implement code changes within existing SDK architecture patterns.
-- Add or update tests for changed behavior.
+- Add or update tests for changed behaviour.
 - Update repository documentation and implementation plans.
 - Raise GitHub Issues using repository templates.
 - Open draft pull requests for human review.
@@ -90,7 +90,7 @@ Route work by task type, not by custom agent runtime:
 ## Not Allowed Without Explicit Instruction
 
 - Add or remove NuGet packages.
-- Modify CI/CD pipeline behavior.
+- Modify CI/CD pipeline behaviour.
 - Change authentication or authorization logic.
 - Change secrets or environment configuration.
 - Introduce architecture pattern changes without an ADR.

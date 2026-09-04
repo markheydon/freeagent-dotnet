@@ -62,7 +62,7 @@ Adopt a mandatory sample app sync policy:
 - **IMP-001**: See `AGENTS.md` for sample app sync requirements.
 - **IMP-002**: See `plan/IMPLEMENTING_ENDPOINTS.md` for operational checklist.
 - **IMP-003**: See `samples/FreeAgent.Client.Sample/Components/Pages/` for sample app implementation.
-- **IMP-004**: Probe pages must follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md) (wire-to-model diagnostics via shared `ModelProbeResults` components; Company and Contacts are references).
+- **IMP-004**: Probe pages must follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md) (wire-to-model diagnostics via shared `ModelProbeResults` components; Company, Contacts, and Categories are references).
 
 ## References
 - **REF-001**: [adr-0003-endpoint-implementation-workflow.md](adr-0003-endpoint-implementation-workflow.md)

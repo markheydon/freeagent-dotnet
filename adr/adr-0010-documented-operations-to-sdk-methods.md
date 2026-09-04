@@ -78,6 +78,8 @@ Adopt **documented operation heading** as the unit of public SDK surface design,
 - **IMP-002**: See [plan/API_TYPE_MAPPING_POLICY.md](../plan/API_TYPE_MAPPING_POLICY.md) for constrained write value rules.
 - **IMP-003**: See [CONVENTIONS.md](../CONVENTIONS.md) for request/method naming when variants exist.
 - **IMP-004**: Categories typed methods and per-discriminator `tax_reporting_name` enums with factory methods are the reference implementation for ADR-0010.
+- **IMP-005**: Response fields that use a different shape from write keys stay as `string` unless the docs give a closed response set. Categories `tax_reporting_name` is a display label on GET (for example `Purchases`) and a snake_case write key on POST/PUT (for example `purchases`) — do not map the response field onto the write enums. Unknown or unstable response values follow [adr-0005-unknown-constrained-value-handling.md](adr-0005-unknown-constrained-value-handling.md).
+- **IMP-006**: Company and Contacts have a single create/update shape and do not need variant-method retrofit. Apply DEC-003 when a resource's docs list multiple write headings. Client-side nominal-code range checks on Categories are a documented-contract example for that resource, not a requirement to invent similar checks elsewhere.
 
 ## References
 
@@ -87,3 +89,4 @@ Adopt **documented operation heading** as the unit of public SDK surface design,
 - **REF-004**: [SCOPE.md](../SCOPE.md)
 - **REF-005**: [plan/API_TYPE_MAPPING_POLICY.md](../plan/API_TYPE_MAPPING_POLICY.md)
 - **REF-006**: [.agents/skills/implement-endpoint/SKILL.md](../.agents/skills/implement-endpoint/SKILL.md)
+- **REF-007**: [adr-0005-unknown-constrained-value-handling.md](adr-0005-unknown-constrained-value-handling.md)

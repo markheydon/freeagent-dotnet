@@ -31,7 +31,7 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 - Use `System.Text.Json`.
 - Add `JsonPropertyName` to every serialised/deserialised property, including envelope wrappers.
 - Use `DateOnly` for date-only API fields.
-- Use `DateTime`/`DateTimeOffset` only for timestamp fields, following existing repo convention.
+- Use `DateTimeOffset` for timestamp fields (not `DateTime`).
 - Model constrained string fields as enums or strong value mappings with exact wire-value behaviour.
 - Use `JsonStringEnumMemberName` on each API-facing enum member to make wire values explicit.
 - Prefer strongly typed fields; use `JsonExtensionData` only when API shape is intentionally open-ended.
@@ -45,14 +45,16 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 - Use clear naming that distinguishes single-page access from auto-pagination where relevant.
 - When the API docs describe multiple create or update variants for the same route, add a separate public request type and service method per variant. Each request type exposes only the attributes documented for that variant; fixed wire values are set inside the SDK.
 - Do not expose a generic create/update that unions all variant attributes.
+- Fail fast only on official, local contract constraints stated in the API docs. Do not invent extra validation or fetch other resources to accept or reject a payload.
 - Use explicit response wrappers and throw `FreeAgentApiException` when required payload nodes are missing.
 
 ## 5. Handle Pagination Explicitly
 
-- For list endpoints, provide both:
+- When the API paginates list results, provide both:
   - Single-page method for deterministic page control.
   - Auto-pagination method for consumer convenience.
-- Follow FreeAgent pagination limits (`per_page` max 100).
+- Do not invent pagination for endpoints that return a complete collection (for example Categories).
+- Where the API accepts `per_page`, follow FreeAgent pagination limits (`per_page` max 100) and fail fast if the caller exceeds it.
 - Preserve cancellation support during pagination loops.
 
 ## 6. Cover Errors and Retries
@@ -75,7 +77,7 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 
 ## 8. Keep the Sample App Honest (Mandatory)
 
-Follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md). **Company** and **Contacts** are the reference probe implementations.
+Follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md). **Company**, **Contacts**, and **Categories** (multi-variant writes) are the reference probe implementations.
 
 - Add/update sample pages under `samples/FreeAgent.Client.Sample/Components/Pages/` for every implemented endpoint.
 - Update sample navigation in `samples/FreeAgent.Client.Sample/Components/Layout/MainLayout.razor` in the same change.

@@ -82,7 +82,7 @@ tests/
 - **Async-first APIs** - all network-bound operations are async and cancellation-aware.
 - **Composition over framework layering** - avoid app-style architecture layers not needed by an SDK package.
 - **Documented operation variants** - when the API docs describe multiple create or update shapes for the same HTTP route, each variant gets its own public request type and service method. Public requests expose only attributes allowed for that variant; fixed wire values (for example `category_group`) are set inside the SDK. See [adr-0010-documented-operations-to-sdk-methods.md](adr/adr-0010-documented-operations-to-sdk-methods.md).
-- **Documented operation-contract validation** - validate documented write constraints client-side when they are local and do not require account state (for example `per_page` ≤ 100, nominal-code ranges on typed category variants). Account-state checks (for example code uniqueness) and accounting policy remain out of scope per [SCOPE.md](SCOPE.md).
+- **Documented operation-contract validation** - when the official FreeAgent docs state a local, account-independent constraint, validate it client-side (for example `per_page` ≤ 100). Categories nominal-code ranges are one documented case, not a template to invent similar checks on resources that do not document them. Account-state checks (for example uniqueness) and accounting policy remain out of scope per [SCOPE.md](SCOPE.md).
 
 ---
 
@@ -117,7 +117,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
-| 4 September 2026 | Add documented operation-contract validation convention | Nominal-code range checks; G2 floor clarification |
+| 4 September 2026 | Limit contract validation to official local docs constraints | G2: fail-fast without invented checks |
 | 4 September 2026 | Add operation-variant request/method naming and discriminator factories | ADR-0010 |
 | 2 September 2026 | Align folder notes with current SDK (no ServiceBase; public PaginatedResponse) | Docs were describing a layout the code no longer uses |
 | 1 May 2026 | Mirror tests folder structure to source layout      | Improve test discoverability as Infrastructure/Services grow |

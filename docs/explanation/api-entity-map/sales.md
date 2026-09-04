@@ -123,4 +123,4 @@ Resources in other clusters that point **to** invoices:
 
 ## SDK sequencing note
 
-**Invoices** need only [Contacts](foundations.md) on create. For richer probes, add [Categories](foundations.md) and optionally [Projects](projects-and-time.md) and [Bank accounts](banking.md) before or in parallel. Credit notes and reconciliations logically follow invoices.
+**Invoices** need only [Contacts](foundations.md) on create. [Categories](foundations.md) is already implemented for line-item `category` URIs. Optionally add [Projects](projects-and-time.md) and [Bank accounts](banking.md) before or in parallel. Credit notes and reconciliations logically follow invoices.

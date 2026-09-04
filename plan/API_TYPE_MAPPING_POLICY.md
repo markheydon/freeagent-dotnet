@@ -43,8 +43,8 @@ Example retrofit targets:
 
 When the API docs list allowed wire keys in a table on a write operation:
 
-1. **Closed set on one variant** — use an enum on that request type only (for example `CostOfSalesTaxReportingName` on `CreateCostOfSalesCategoryRequest`, not on income requests).
-2. **Set also varies by a documented discriminator** (for example company type) — do **not** flatten into one enum. Use discriminator-specific enums and factory methods (for example `CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(..., UkLimitedCompanyCostOfSalesTaxReportingName.Purchases)`). The developer chooses the discriminator first; IntelliSense then shows only legal values.
+1. **Closed set on one variant** — use an enum on that request type only. Do not put the enum on sibling variants that do not accept the field.
+2. **Set also varies by a documented discriminator** (for example company type) — do **not** flatten into one enum and do not add a mid-level union enum. Use discriminator-specific enums and factory methods (for example `CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(..., UkLimitedCompanyCostOfSalesTaxReportingName.Purchases)`). The developer chooses the discriminator first; IntelliSense then shows only legal values.
 3. **Wire keys** — use `JsonStringEnumMemberName` for request serialisation (for example `purchases`). Response display text (for example `Purchases`) is a different field/shape.
 4. **Feature-flagged values** (for example CIS-only names) — keep on the relevant enum with XML remarks. FreeAgent remains the authority for live account state.
 
