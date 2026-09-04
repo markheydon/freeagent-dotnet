@@ -75,5 +75,5 @@ Adopt and document a protocol-level OAuth boundary for v1.0:
 - `REF-001`: [GOALS.md](../GOALS.md)
 - `REF-002`: [SCOPE.md](../SCOPE.md)
 - `REF-003`: [src/FreeAgent.Client/Infrastructure/Authentication/FreeAgentOAuthClient.cs](../src/FreeAgent.Client/Infrastructure/Authentication/FreeAgentOAuthClient.cs)
-- `REF-004`: [samples/FreeAgent.Client.Sample/Services/OAuthService.cs](../samples/FreeAgent.Client.Sample/Services/OAuthService.cs)
-- `REF-005`: [samples/FreeAgent.Client.Sample/Services/TokenStore.cs](../samples/FreeAgent.Client.Sample/Services/TokenStore.cs)
+- `REF-004`: [samples/FreeAgent.Client.BlazorSample/Services/OAuthService.cs](../samples/FreeAgent.Client.BlazorSample/Services/OAuthService.cs)
+- `REF-005`: [samples/FreeAgent.Client.BlazorSample/Services/TokenStore.cs](../samples/FreeAgent.Client.BlazorSample/Services/TokenStore.cs)

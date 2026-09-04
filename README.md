@@ -2,6 +2,7 @@
 
 A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) with OAuth 2.0 support, rate limiting, retries, typed transport errors, and pagination.
 
+[![CI](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml/badge.svg)](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml)
 [![NuGet](https://img.shields.io/nuget/v/FreeAgent.Client.svg)](https://www.nuget.org/packages/FreeAgent.Client/)
 [![NuGet (prerelease)](https://img.shields.io/nuget/vpre/FreeAgent.Client.svg?label=nuget%20prerelease)](https://www.nuget.org/packages/FreeAgent.Client/)
 

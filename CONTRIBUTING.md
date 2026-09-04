@@ -41,6 +41,14 @@ dotnet test
 
 To run tests for a single framework, use `dotnet test -f net10.0` or `dotnet test -f net8.0`.
 
+Verify formatting before opening a pull request (same check CI runs):
+
+```bash
+dotnet format FreeAgent.slnx --verify-no-changes
+```
+
+If formatting changes are reported, run `dotnet format FreeAgent.slnx` and commit the result.
+
 ## Branch and Pull Request Workflow
 
 1. Fork the repository and create a feature branch from `main`.
@@ -60,7 +68,7 @@ To run tests for a single framework, use `dotnet test -f net10.0` or `dotnet tes
 
 The Blazor sample is a living reference of what the SDK implements today.
 
-If you add, remove, or rename SDK endpoints under `src/FreeAgent.Client/Services/`, update `samples/FreeAgent.Client.Sample` in the same PR so the sample remains aligned. Follow [`docs/contributing/sample-probe-pages.md`](docs/contributing/sample-probe-pages.md) for wire-to-model probe pages (see Company, Contacts, and Categories as references).
+If you add, remove, or rename SDK endpoints under `src/FreeAgent.Client/Services/`, update `samples/FreeAgent.Client.BlazorSample` in the same PR so the sample remains aligned. Follow [`docs/contributing/sample-probe-pages.md`](docs/contributing/sample-probe-pages.md) for wire-to-model probe pages (see Company, Contacts, and Categories as references).
 
 ## Testing Guidance
 

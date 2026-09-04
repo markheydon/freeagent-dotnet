@@ -40,6 +40,16 @@ dotnet test
 
 Use `dotnet test -f net10.0` or `dotnet test -f net8.0` to test a single target framework.
 
+## Verify formatting
+
+CI runs `dotnet format` with `--verify-no-changes`. Check locally before pushing:
+
+```bash
+dotnet format FreeAgent.slnx --verify-no-changes
+```
+
+If changes are reported, run `dotnet format FreeAgent.slnx` and commit the result.
+
 ## Sample app
 
 The Blazor sample requires .NET 10 and FreeAgent OAuth credentials. See [samples/README.md](../samples/README.md).

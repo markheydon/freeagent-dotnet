@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\samples\FreeAgent.Client.Sample\Services\ModelWireDiagnostics.cs" Link="Sample\ModelWireDiagnostics.cs" />
+    <Compile Include="..\..\samples\FreeAgent.Client.BlazorSample\Services\ModelWireDiagnostics.cs" Link="Sample\ModelWireDiagnostics.cs" />
   </ItemGroup>
 
 </Project>

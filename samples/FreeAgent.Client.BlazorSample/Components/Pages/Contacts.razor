@@ -1,0 +1,364 @@
+@page "/contacts"
+@using FreeAgent.Client.Models.Contacts
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Contacts — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Contacts endpoint"
+                         Title="Contacts list"
+                         CallUnderTest="ContactService.GetContactsPageAsync(...)"
+                         Description="Load contacts, inspect wire-to-model mapping for any row, then jump into Contact CRUD to test get, update, and delete."
+                         EndpointPath="/v2/contacts?page={page}&per_page={perPage}&view={view}"
+                         DocsUrl="https://dev.freeagent.com/docs/contacts" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load page 1, then use <strong>Inspect mapping</strong> on any row to see the same wire-to-model diagnostics as Company overview.
+                        Use <strong>Open in CRUD</strong> to test single-contact operations.
+                    </MudText>
+
+                    <MudGrid Spacing="2" Class="contacts-filter-grid">
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudSelect T="string"
+                                       @bind-Value="_view"
+                                       Label="View"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       FullWidth="true">
+                                <MudSelectItem Value="@ContactViews.Active">active</MudSelectItem>
+                                <MudSelectItem Value="@ContactViews.All">all</MudSelectItem>
+                                <MudSelectItem Value="@ContactViews.Hidden">hidden</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3" lg="2">
+                            <MudNumericField @bind-Value="_perPage"
+                                             Label="Per page"
+                                             Min="1"
+                                             Max="100"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                                       Disabled="_loading"
+                                       Class="contacts-load-button"
+                                       OnClick="LoadContactsAsync">
+                                @if (_loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Loading…</span>
+                                }
+                                else
+                                {
+                                    <span>Load page 1</span>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+
+                @if (_pageResult is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load page 1</strong> to fetch contacts from FreeAgent.</MudText>
+                }
+
+                @if (_pageResult is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_pageResult.Items.Count contact@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
+                        </MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                        @if (_pageResult.Total > 0)
+                        {
+                            <MudChip T="string" Variant="Variant.Outlined">Total: @_pageResult.Total</MudChip>
+                        }
+                    </MudStack>
+
+                    @if (_pageResult.Items.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No contacts returned for view <code>@_view</code>. Try <code>all</code>, or create a test contact from
+                            <MudLink Href="/contacts/detail">Contact CRUD</MudLink>.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_contactRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Name</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Email</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Name">@context.DisplayName</MudTd>
+                                    <MudTd DataLabel="Status">@context.Status</MudTd>
+                                    <MudTd DataLabel="Email">@ValueOrDash(context.Email)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectContactAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetCrudHref(context.Id)">
+                                                Open in CRUD
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedContact is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Contact model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected contact</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    ID: @ContactUrlParser.ParseId(_inspectedContact.Url)
+                                </MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">
+                                    Row @(_inspectedIndex + 1) on page @_pageResult?.Page
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Display name</MudText>
+                                        <MudText Typo="Typo.subtitle1">@_inspectedContact.DisplayName</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Email</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedContact.Email)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+
+                <MudExpansionPanels>
+                    <MudExpansionPanel Text="Developer probe: auto-pagination (GetAllContactsAsync)">
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.body2" Class="hero-copy">
+                                Optional check that the async enumerator walks every page.
+                            </MudText>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.AllInclusive"
+                                       Disabled="_loadingAll"
+                                       OnClick="LoadAllAsync">
+                                @if (_loadingAll)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Enumerating…</span>
+                                }
+                                else
+                                {
+                                    <span>Count all contacts</span>
+                                }
+                            </MudButton>
+
+                            @if (_allContactsCount is not null)
+                            {
+                                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+                                    <code>GetAllContactsAsync</code> yielded @_allContactsCount.Value contact@(_allContactsCount.Value == 1 ? string.Empty : "s").
+                                </MudAlert>
+                            }
+                        </MudStack>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private bool _loadingAll;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private PaginatedResponse<Contact>? _pageResult;
+    private Contact? _inspectedContact;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+    private int? _allContactsCount;
+    private string _view = ContactViews.Active;
+    private int _perPage = 25;
+
+    private IReadOnlyList<ContactRow> _contactRows => _pageResult?.Items
+        .Select(static (contact, index) => new ContactRow(
+            index,
+            ContactUrlParser.ParseId(contact.Url) ?? 0,
+            contact.DisplayName,
+            contact.Status?.ToString() ?? "—",
+            contact.Email))
+        .ToList() ?? [];
+
+    private async Task LoadContactsAsync()
+    {
+        _pageResult = null;
+        _inspectedContact = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+        _allContactsCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var diagnosticsEndpoint = $"contacts?page=1&per_page={_perPage}&view={_view}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _pageResult = await client.Contacts.GetContactsPageAsync(page: 1, perPage: _perPage, view: _view);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectContactAsync(int index)
+    {
+        if (_pageResult is null || index < 0 || index >= _pageResult.Items.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedContact = _pageResult.Items[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "contacts", index, out var wireContact))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedContact, wireContact);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedContact, _wireApiResponse, envelopeProperty: "contacts");
+    }
+
+    private async Task LoadAllAsync()
+    {
+        _allContactsCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loadingAll = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var count = 0;
+            await foreach (var _ in client.Contacts.GetAllContactsAsync(perPage: _perPage, view: _view))
+            {
+                count++;
+            }
+
+            _allContactsCount = count;
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                $"contacts?per_page={_perPage}&view={_view}");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loadingAll = false;
+        }
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private static string GetCrudHref(long id) => $"/contacts/detail?id={id}";
+
+    private sealed record ContactRow(int Index, long Id, string DisplayName, string Status, string? Email);
+}

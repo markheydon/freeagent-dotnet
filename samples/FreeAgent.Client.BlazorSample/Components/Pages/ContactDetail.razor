@@ -1,0 +1,368 @@
+@page "/contacts/detail"
+@using FreeAgent.Client.Models.Contacts
+@using FreeAgent.Client.BlazorSample.Services
+@using FreeAgent.Client.BlazorSample.Services.Turpinverse
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject TurpinverseContactSeeder TurpinverseContactSeeder
+@inject SampleContactSeeder SampleContactSeeder
+@inject NavigationManager NavigationManager
+
+<PageTitle>Contact detail — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Contacts endpoint"
+                         Title="Get, create, update, and delete contacts"
+                         CallUnderTest="ContactService.GetContactAsync / CreateContactAsync / UpdateContactAsync / DeleteContactAsync"
+                         Description="Exercises single-contact CRUD operations and shows the same wire-to-model diagnostics as Company overview."
+                         EndpointPath="/v2/contacts/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/contacts" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a contact ID from the <MudLink Href="/contacts">contacts list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Each successful operation shows wire-to-model mapping below.
+                        Seed contacts from <MudLink Href="https://turpinverse.uk/" Target="_blank">Turpinverse</MudLink>
+                        canon for realistic demo data. Existing contacts are matched by email and updated when canon changes.
+                        Use the full-detail probe contact to exercise every writable field.
+                    </MudText>
+                    <MudNumericField @bind-Value="_contactId" Label="Contact ID" Min="1" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetContactAsync">Get contact</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateRichardTurpinAsync">Create Richard Turpin</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateAllTurpinverseContactsAsync">Create all Turpinverse contacts</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading"
+                                   OnClick="CreateFullDetailProbeContactAsync">Create full-detail probe contact</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _contactId is null"
+                                   OnClick="UpdateContactAsync">Update organisation name</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _contactId is null"
+                                   OnClick="DeleteContactAsync">Delete contact</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _contact is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Contact model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @ContactUrlParser.ParseId(_contact.Url)</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_contact.Status?.ToString())</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Display name</MudText>
+                                        <MudText Typo="Typo.subtitle1">@_contact.DisplayName</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Organisation</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_contact.OrganisationName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Email</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_contact.Email)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Resource URL</MudText>
+                                        <MudText Typo="Typo.body2">@_contact.Url</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load contact diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? ContactIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private Contact? _contact;
+    private ModelProbeSnapshot? _probe;
+    private long? _contactId;
+
+    protected override void OnParametersSet()
+    {
+        if (ContactIdFromQuery is > 0 && _contactId != ContactIdFromQuery)
+        {
+            _contactId = ContactIdFromQuery;
+            _operationMessage = $"Contact ID {_contactId} loaded from URL. Press Get contact to fetch diagnostics.";
+        }
+    }
+
+    private async Task GetContactAsync()
+    {
+        if (_contactId is null or < 1)
+        {
+            _error = "Enter a contact ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _contact = await client.Contacts.GetContactAsync(_contactId.Value);
+                _operationMessage = $"Loaded contact {_contactId.Value}: {_contact.DisplayName}";
+                return $"contacts/{_contactId}";
+            },
+            envelopeProperty: "contact");
+    }
+
+    private async Task CreateRichardTurpinAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await TurpinverseContactSeeder.CreateRichardTurpinAsync(client);
+                _contact = result.Contact;
+                _contactId = ContactUrlParser.ParseId(_contact.Url);
+                _operationMessage = result.Action == ContactSeedAction.Updated
+                    ? $"Updated Richard Turpin (contact {_contactId}) from current Turpinverse canon."
+                    : _contactId is null
+                        ? "Created Richard Turpin but could not parse ID from URL."
+                        : $"Created Richard Turpin as contact {_contactId.Value}.";
+                return _contactId is null ? null : $"contacts/{_contactId}";
+            },
+            envelopeProperty: "contact");
+    }
+
+    private async Task CreateFullDetailProbeContactAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await SampleContactSeeder.CreateFullDetailProbeAsync(client);
+                _contact = result.Contact;
+                _contactId = ContactUrlParser.ParseId(_contact.Url);
+                _operationMessage = result.Action == ContactSeedAction.Updated
+                    ? $"Updated full-detail probe contact {_contactId} from current fixture."
+                    : _contactId is null
+                        ? "Created full-detail probe contact but could not parse ID from URL."
+                        : $"Created full-detail probe contact {_contactId.Value}.";
+                return _contactId is null ? null : $"contacts/{_contactId}";
+            },
+            envelopeProperty: "contact");
+    }
+
+    private async Task CreateAllTurpinverseContactsAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var result = await TurpinverseContactSeeder.CreateAllContactsAsync(client);
+            var lastTouched = result.Updated.Count > 0
+                ? result.Updated[^1]
+                : result.Created.Count > 0
+                    ? result.Created[^1]
+                    : null;
+
+            if (lastTouched is not null)
+            {
+                _contact = lastTouched;
+                _contactId = ContactUrlParser.ParseId(_contact.Url);
+
+                if (_contactId is not null)
+                {
+                    _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                        token.AccessToken,
+                        TokenStore.ConnectedEnvironment,
+                        $"contacts/{_contactId}");
+
+                    _probe = ModelWireDiagnostics.Build(_contact, _wireApiResponse, "contact");
+                }
+            }
+            else
+            {
+                _contact = null;
+                _contactId = null;
+            }
+
+            var summaryParts = new List<string>();
+            if (result.Created.Count > 0)
+            {
+                summaryParts.Add($"created {result.Created.Count}");
+            }
+
+            if (result.Updated.Count > 0)
+            {
+                summaryParts.Add($"updated {result.Updated.Count}");
+            }
+
+            _operationMessage = summaryParts.Count == 0
+                ? "No Turpinverse contacts were created or updated."
+                : $"Turpinverse sync complete: {string.Join(", ", summaryParts)}.";
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task UpdateContactAsync()
+    {
+        if (_contactId is null)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _contact ?? await client.Contacts.GetContactAsync(_contactId.Value);
+                existing.OrganisationName = $"{existing.OrganisationName} (updated)";
+                _contact = await client.Contacts.UpdateContactAsync(_contactId.Value, existing);
+                _operationMessage = $"Updated contact {_contactId.Value}.";
+                return $"contacts/{_contactId}";
+            },
+            envelopeProperty: "contact");
+    }
+
+    private async Task DeleteContactAsync()
+    {
+        if (_contactId is null)
+        {
+            return;
+        }
+
+        var deletedId = _contactId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Contacts.DeleteContactAsync(deletedId);
+                _contact = null;
+                _probe = null;
+                _operationMessage = $"Deleted contact {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgentClient, Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _contact is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_contact, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

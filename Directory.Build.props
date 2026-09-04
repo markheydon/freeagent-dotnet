@@ -3,6 +3,7 @@
     <!-- Compiler behaviour -->
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <Deterministic>true</Deterministic>
 
     <!-- Treat all warnings as errors across all projects -->

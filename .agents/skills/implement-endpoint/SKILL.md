@@ -92,8 +92,8 @@ Add or update tests to cover:
 
 Follow the probe-page standard documented in [`docs/contributing/sample-probe-pages.md`](../../docs/contributing/sample-probe-pages.md). Use **Company** (single GET), **Contacts** (paginated list + CRUD), and **Categories** (non-paginated list + multi-variant writes) as reference implementations.
 
-1. Add or update page(s) under `samples/FreeAgent.Client.Sample/Components/Pages/`.
-2. Update navigation in `samples/FreeAgent.Client.Sample/Components/Layout/MainLayout.razor`.
+1. Add or update page(s) under `samples/FreeAgent.Client.BlazorSample/Components/Pages/`.
+2. Update navigation in `samples/FreeAgent.Client.BlazorSample/Components/Layout/MainLayout.razor`.
 3. Do not add sample UI for endpoints not implemented in SDK.
 4. On each probe page, include:
    - `EndpointProbeHeader` (call under test, `DocsUrl`, environment, endpoint path)

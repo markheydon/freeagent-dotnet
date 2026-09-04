@@ -40,6 +40,9 @@ jobs:
       - name: Restore
         run: dotnet restore FreeAgent.slnx
 
+      - name: Verify formatting
+        run: dotnet format FreeAgent.slnx --no-restore --verify-no-changes --verbosity minimal
+
       - name: Build SDK (net8.0)
         run: dotnet build src/FreeAgent.Client/FreeAgent.Client.csproj --no-restore --configuration Release -f net8.0
 
@@ -47,7 +50,7 @@ jobs:
         run: dotnet build src/FreeAgent.Client/FreeAgent.Client.csproj --no-restore --configuration Release -f net10.0
 
       - name: Build Sample
-        run: dotnet build samples/FreeAgent.Client.Sample/FreeAgent.Client.Sample.csproj --no-restore --configuration Release
+        run: dotnet build samples/FreeAgent.Client.BlazorSample/FreeAgent.Client.BlazorSample.csproj --no-restore --configuration Release
 
       - name: Test (net8.0)
         run: dotnet test tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj --configuration Release -f net8.0 --report-trx --report-trx-filename results-net8.trx

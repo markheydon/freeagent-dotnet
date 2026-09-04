@@ -11,7 +11,7 @@ namespace FreeAgent.Client.ConsoleSample;
 /// Keys use the same colon syntax as ASP.NET configuration, e.g. <c>FreeAgent:ClientId</c>.
 /// </para>
 /// <para>
-/// We share <see cref="UserSecretsId"/> with <c>FreeAgent.Client.Sample</c> so secrets set
+/// We share <see cref="UserSecretsId"/> with <c>FreeAgent.Client.BlazorSample</c> so secrets set
 /// for the Blazor workbench also work here. Run from either project directory:
 /// <c>dotnet user-secrets set "FreeAgent:ClientId" "..."</c>
 /// </para>
@@ -19,7 +19,7 @@ namespace FreeAgent.Client.ConsoleSample;
 internal static class UserSecretsConfiguration
 {
     /// <summary>
-    /// Shared with <c>FreeAgent.Client.Sample</c> so the same <c>dotnet user-secrets</c> values work in both apps.
+    /// Shared with <c>FreeAgent.Client.BlazorSample</c> so the same <c>dotnet user-secrets</c> values work in both apps.
     /// </summary>
     public const string UserSecretsId = "freeagent-client-sample-v1";
 
