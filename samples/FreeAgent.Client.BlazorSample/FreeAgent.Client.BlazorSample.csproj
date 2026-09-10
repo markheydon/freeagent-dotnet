@@ -27,7 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Update="canon\**\*.json">
+    <Content Include="..\..\canon\**\*.json">
+      <Link>canon\%(RecursiveDir)%(Filename)%(Extension)</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

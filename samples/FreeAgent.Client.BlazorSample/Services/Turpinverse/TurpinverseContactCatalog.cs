@@ -3,7 +3,7 @@ using System.Text.Json;
 namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 
 /// <summary>
-/// Loads Turpinverse canon snapshots bundled with the sample app for contact seeding.
+/// Loads Turpinverse canon snapshots from the repository-root <c>canon/</c> folder.
 /// </summary>
 public sealed class TurpinverseContactCatalog
 {
@@ -42,7 +42,7 @@ public sealed class TurpinverseContactCatalog
 
     private static T? LoadJson<T>(IWebHostEnvironment environment, string fileName)
     {
-        var path = Path.Combine(environment.ContentRootPath, "canon", fileName);
+        var path = Path.Combine(TurpinverseCanonPaths.GetCanonDirectory(environment), fileName);
         if (!File.Exists(path))
         {
             throw new FileNotFoundException($"Turpinverse canon file not found: {path}");
