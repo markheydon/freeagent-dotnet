@@ -5,44 +5,67 @@ namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 internal static class TurpinverseContactMapper
 {
     /// <summary>
-    /// Maps a Turpinverse persona to a FreeAgent contact.
-    /// Contact address fields are populated from the primary organisation's registered office
+    /// Maps a Turpinverse organisation to a FreeAgent B2B contact.
+    /// The organisation trading name is the company; the primary contact persona supplies
+    /// first name, last name, email, and phone. Address fields come from the registered office
     /// (FreeAgent uses these as the contact billing address on invoices).
     /// </summary>
     public static Contact ToFreeAgentContact(
-        TurpinversePersona persona,
-        IReadOnlyDictionary<string, TurpinverseOrganisation> organisationsById)
+        TurpinverseOrganisation organisation,
+        IReadOnlyDictionary<string, TurpinversePersona> personasById)
     {
-        var (firstName, lastName) = SplitName(persona.DisplayName);
-        var primaryOrganisation = ResolvePrimaryOrganisation(persona, organisationsById);
+        var primaryContact = ResolvePrimaryContact(organisation, personasById);
+        var (firstName, lastName) = primaryContact is null
+            ? (string.Empty, string.Empty)
+            : SplitName(primaryContact.DisplayName);
 
         return new Contact
         {
             FirstName = firstName,
             LastName = lastName,
-            OrganisationName = primaryOrganisation?.TradingName,
-            Email = persona.Email,
-            PhoneNumber = persona.Phone,
+            OrganisationName = organisation.TradingName,
+            Email = primaryContact?.Email,
+            PhoneNumber = primaryContact?.Phone,
             Status = ContactStatus.Active,
-            Address1 = primaryOrganisation?.RegisteredOffice?.Address1,
-            Address2 = primaryOrganisation?.RegisteredOffice?.Address2,
-            Address3 = primaryOrganisation?.RegisteredOffice?.Address3,
-            Town = primaryOrganisation?.RegisteredOffice?.Town,
-            Region = primaryOrganisation?.RegisteredOffice?.Region,
-            Postcode = primaryOrganisation?.RegisteredOffice?.Postcode,
-            Country = primaryOrganisation?.RegisteredOffice?.Country
+            Address1 = organisation.RegisteredOffice?.Address1,
+            Address2 = organisation.RegisteredOffice?.Address2,
+            Address3 = organisation.RegisteredOffice?.Address3,
+            Town = organisation.RegisteredOffice?.Town,
+            Region = organisation.RegisteredOffice?.Region,
+            Postcode = organisation.RegisteredOffice?.Postcode,
+            Country = organisation.RegisteredOffice?.Country
         };
     }
 
-    private static TurpinverseOrganisation? ResolvePrimaryOrganisation(
-        TurpinversePersona persona,
-        IReadOnlyDictionary<string, TurpinverseOrganisation> organisationsById)
+    public static string ResolveUpsertEmail(
+        TurpinverseOrganisation organisation,
+        IReadOnlyDictionary<string, TurpinversePersona> personasById)
     {
-        foreach (var organisationId in persona.OrganisationIds)
+        var primaryContact = ResolvePrimaryContact(organisation, personasById);
+        if (primaryContact is null || string.IsNullOrWhiteSpace(primaryContact.Email))
         {
-            if (organisationsById.TryGetValue(organisationId, out var organisation))
+            throw new InvalidOperationException(
+                $"Organisation '{organisation.Id}' has no primary contact with an email address.");
+        }
+
+        return primaryContact.Email;
+    }
+
+    private static TurpinversePersona? ResolvePrimaryContact(
+        TurpinverseOrganisation organisation,
+        IReadOnlyDictionary<string, TurpinversePersona> personasById)
+    {
+        if (!string.IsNullOrWhiteSpace(organisation.PrimaryContactId)
+            && personasById.TryGetValue(organisation.PrimaryContactId, out var primaryContact))
+        {
+            return primaryContact;
+        }
+
+        foreach (var personaId in organisation.MemberPersonaIds)
+        {
+            if (personasById.TryGetValue(personaId, out var member))
             {
-                return organisation;
+                return member;
             }
         }
 

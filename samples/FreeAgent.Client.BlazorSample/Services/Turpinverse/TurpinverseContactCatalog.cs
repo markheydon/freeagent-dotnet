@@ -7,6 +7,7 @@ namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 /// </summary>
 public sealed class TurpinverseContactCatalog
 {
+    public const string TurpinEnterprisesOrganisationId = "turpin-enterprises";
     public const string RichardTurpinPersonaId = "dick-turpin";
     public const string RichardTurpinEmail = "richard.turpin@turpinverse.uk";
 
@@ -15,31 +16,33 @@ public sealed class TurpinverseContactCatalog
         PropertyNameCaseInsensitive = true
     };
 
-    private readonly Lazy<IReadOnlyList<TurpinversePersona>> _personas;
-    private readonly Lazy<IReadOnlyDictionary<string, TurpinverseOrganisation>> _organisationsById;
+    private readonly Lazy<IReadOnlyList<TurpinverseOrganisation>> _organisations;
+    private readonly Lazy<IReadOnlyDictionary<string, TurpinversePersona>> _personasById;
 
     public TurpinverseContactCatalog(IWebHostEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(environment);
 
-        _personas = new Lazy<IReadOnlyList<TurpinversePersona>>(() =>
-            LoadJson<TurpinversePersona[]>(environment, "turpinverse-personas.json") ?? []);
+        _organisations = new Lazy<IReadOnlyList<TurpinverseOrganisation>>(() =>
+            LoadJson<TurpinverseOrganisation[]>(environment, "organisations.json") ?? []);
 
-        _organisationsById = new Lazy<IReadOnlyDictionary<string, TurpinverseOrganisation>>(() =>
-            (LoadJson<TurpinverseOrganisation[]>(environment, "turpinverse-organisations.json") ?? [])
-            .ToDictionary(static organisation => organisation.Id, StringComparer.Ordinal));
+        _personasById = new Lazy<IReadOnlyDictionary<string, TurpinversePersona>>(() =>
+            (LoadJson<TurpinversePersona[]>(environment, "personas.json") ?? [])
+            .ToDictionary(static persona => persona.Id, StringComparer.Ordinal));
     }
 
-    public IReadOnlyList<TurpinversePersona> Personas => _personas.Value;
+    public IReadOnlyList<TurpinverseOrganisation> Organisations => _organisations.Value;
 
-    public TurpinversePersona RichardTurpin =>
-        Personas.First(static persona => persona.Id == RichardTurpinPersonaId);
+    public IReadOnlyDictionary<string, TurpinversePersona> PersonasById => _personasById.Value;
 
-    public IReadOnlyDictionary<string, TurpinverseOrganisation> OrganisationsById => _organisationsById.Value;
+    public TurpinverseOrganisation TurpinEnterprises =>
+        Organisations.First(static organisation => organisation.Id == TurpinEnterprisesOrganisationId);
+
+    public TurpinversePersona RichardTurpin => PersonasById[RichardTurpinPersonaId];
 
     private static T? LoadJson<T>(IWebHostEnvironment environment, string fileName)
     {
-        var path = Path.Combine(environment.ContentRootPath, "Data", fileName);
+        var path = Path.Combine(environment.ContentRootPath, "canon", fileName);
         if (!File.Exists(path))
         {
             throw new FileNotFoundException($"Turpinverse canon file not found: {path}");

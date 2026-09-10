@@ -58,6 +58,12 @@ public sealed class TurpinverseOrganisation
     [JsonPropertyName("tradingName")]
     public string TradingName { get; set; } = string.Empty;
 
+    [JsonPropertyName("primaryContactId")]
+    public string? PrimaryContactId { get; set; }
+
+    [JsonPropertyName("memberPersonaIds")]
+    public IReadOnlyList<string> MemberPersonaIds { get; set; } = [];
+
     [JsonPropertyName("registeredOffice")]
     public TurpinverseAddress? RegisteredOffice { get; set; }
 }
