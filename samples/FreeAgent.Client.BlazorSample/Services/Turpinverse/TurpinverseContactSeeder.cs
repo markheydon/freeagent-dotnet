@@ -4,7 +4,8 @@ using FreeAgent.Client.Models.Contacts;
 namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 
 /// <summary>
-/// Seeds FreeAgent contacts from bundled Turpinverse persona canon.
+/// Seeds FreeAgent contacts from upstream Turpinverse organisation canon.
+/// Each organisation becomes one B2B contact with the primary contact persona on the record.
 /// </summary>
 public sealed class TurpinverseContactSeeder
 {
@@ -15,67 +16,84 @@ public sealed class TurpinverseContactSeeder
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
     }
 
-    public async Task<TurpinverseSeedResult> CreateRichardTurpinAsync(
+    public async Task<TurpinverseSeedResult> CreateTurpinEnterprisesAsync(
         FreeAgentClient client,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        var richard = _catalog.RichardTurpin;
-        var desired = TurpinverseContactMapper.ToFreeAgentContact(richard, _catalog.OrganisationsById);
-        var (contact, action) = await ContactSeederSupport.UpsertByEmailAsync(
-            client,
-            richard.Email,
-            desired,
-            cancellationToken);
-
-        return new TurpinverseSeedResult(contact, richard.DisplayName, action);
+        await _catalog.EnsureLoadedAsync(forceRefresh: true, cancellationToken).ConfigureAwait(false);
+        var organisation = _catalog.TurpinEnterprises;
+        return await UpsertOrganisationContactAsync(client, organisation, cancellationToken);
     }
 
-    public async Task<TurpinverseBulkSeedResult> CreateAllContactsAsync(
+    public async Task<TurpinverseBulkSeedResult> CreateAllOrganisationContactsAsync(
         FreeAgentClient client,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(client);
 
+        await _catalog.EnsureLoadedAsync(forceRefresh: true, cancellationToken).ConfigureAwait(false);
         var existingContacts = await ContactSeederSupport.LoadExistingContactsByEmailAsync(client, cancellationToken);
         var created = new List<Contact>();
         var updated = new List<Contact>();
+        var failures = new List<TurpinverseSeedFailure>();
 
-        foreach (var persona in _catalog.Personas)
+        foreach (var organisation in _catalog.Organisations)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var desired = TurpinverseContactMapper.ToFreeAgentContact(persona, _catalog.OrganisationsById);
-
-            if (existingContacts.TryGetValue(persona.Email, out var existingMatch))
+            try
             {
-                var contactId = ContactUrlParser.ParseId(existingMatch.Url)
-                    ?? throw new InvalidOperationException($"Could not parse contact ID from URL '{existingMatch.Url}'.");
+                var result = await UpsertOrganisationContactAsync(
+                    client,
+                    organisation,
+                    cancellationToken,
+                    existingContacts);
 
-                var current = await client.Contacts.GetContactAsync(contactId, cancellationToken);
-                ContactSeederSupport.MergeWritableFields(current, desired);
-                var updatedContact = await client.Contacts.UpdateContactAsync(contactId, current, cancellationToken);
-                updated.Add(updatedContact);
-                existingContacts[persona.Email] = updatedContact;
-                continue;
+                if (result.Action == ContactSeedAction.Created)
+                {
+                    created.Add(result.Contact);
+                }
+                else
+                {
+                    updated.Add(result.Contact);
+                }
             }
-
-            var createdContact = await client.Contacts.CreateContactAsync(desired, cancellationToken);
-            created.Add(createdContact);
-
-            if (!string.IsNullOrWhiteSpace(createdContact.Email))
+            catch (Exception ex) when (ex is InvalidOperationException or FreeAgentApiException)
             {
-                existingContacts[createdContact.Email] = createdContact;
+                failures.Add(new TurpinverseSeedFailure(organisation.Id, organisation.TradingName, ex.Message));
             }
         }
 
-        return new TurpinverseBulkSeedResult(created, updated);
+        return new TurpinverseBulkSeedResult(created, updated, failures);
+    }
+
+    private async Task<TurpinverseSeedResult> UpsertOrganisationContactAsync(
+        FreeAgentClient client,
+        TurpinverseOrganisation organisation,
+        CancellationToken cancellationToken,
+        Dictionary<string, Contact>? existingContacts = null)
+    {
+        var desired = TurpinverseContactMapper.ToFreeAgentContact(organisation, _catalog.PersonasById);
+        var upsertEmail = TurpinverseContactMapper.ResolveUpsertEmail(organisation, _catalog.PersonasById);
+        var (contact, action) = await ContactSeederSupport.UpsertByEmailAsync(
+            client,
+            upsertEmail,
+            desired,
+            cancellationToken,
+            existingContacts);
+
+        var displayName = TurpinverseContactMapper.ResolveDisplayName(organisation, _catalog.PersonasById);
+        return new TurpinverseSeedResult(contact, displayName, action);
     }
 }
 
 public sealed record TurpinverseSeedResult(Contact Contact, string DisplayName, ContactSeedAction Action);
 
+public sealed record TurpinverseSeedFailure(string OrganisationId, string TradingName, string Message);
+
 public sealed record TurpinverseBulkSeedResult(
     IReadOnlyList<Contact> Created,
-    IReadOnlyList<Contact> Updated);
+    IReadOnlyList<Contact> Updated,
+    IReadOnlyList<TurpinverseSeedFailure> Failures);

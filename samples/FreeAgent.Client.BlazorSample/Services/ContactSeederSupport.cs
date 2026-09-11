@@ -61,6 +61,11 @@ internal static class ContactSeederSupport
         if (!existingContacts.TryGetValue(email, out var existingMatch))
         {
             var created = await client.Contacts.CreateContactAsync(desired, cancellationToken);
+            if (!string.IsNullOrWhiteSpace(created.Email))
+            {
+                existingContacts[created.Email] = created;
+            }
+
             return (created, ContactSeedAction.Created);
         }
 
