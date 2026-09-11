@@ -1,13 +1,11 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Options;
 
 namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 
 /// <summary>
-/// Loads Turpinverse canon JSON files from the upstream GitHub repository on demand,
-/// with optional bundled fallback for offline development.
+/// Loads Turpinverse canon JSON files from the upstream GitHub repository on demand.
 /// </summary>
 public sealed class TurpinverseCanonClient
 {
@@ -16,21 +14,14 @@ public sealed class TurpinverseCanonClient
         PropertyNameCaseInsensitive = true
     };
 
-    private const string FallbackDirectoryName = "canon-fallback";
-
     private readonly HttpClient _httpClient;
-    private readonly IWebHostEnvironment _environment;
     private readonly TurpinverseCanonOptions _options;
     private readonly ConcurrentDictionary<string, string> _jsonCache = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _loadLocks = new(StringComparer.Ordinal);
 
-    public TurpinverseCanonClient(
-        HttpClient httpClient,
-        IWebHostEnvironment environment,
-        IOptions<TurpinverseCanonOptions> options)
+    public TurpinverseCanonClient(HttpClient httpClient, IOptions<TurpinverseCanonOptions> options)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _environment = environment ?? throw new ArgumentNullException(nameof(environment));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
     }
 
@@ -76,12 +67,6 @@ public sealed class TurpinverseCanonClient
 
     private async Task<string> LoadRawJsonUncachedAsync(string fileName, CancellationToken cancellationToken)
     {
-        if (_options.PreferLocalFallback
-            && TryReadLocalFallback(fileName, out var preferredLocalJson))
-        {
-            return preferredLocalJson;
-        }
-
         var url = BuildGitHubRawUrl(fileName);
         try
         {
@@ -91,11 +76,6 @@ public sealed class TurpinverseCanonClient
                 return await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             }
 
-            if (TryReadLocalFallback(fileName, out var fallbackAfterHttpError))
-            {
-                return fallbackAfterHttpError;
-            }
-
             throw CreateFetchException(
                 fileName,
                 url,
@@ -103,15 +83,10 @@ public sealed class TurpinverseCanonClient
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {
-            if (TryReadLocalFallback(fileName, out var fallbackJson))
-            {
-                return fallbackJson;
-            }
-
             throw CreateFetchException(
                 fileName,
                 url,
-                "Could not reach GitHub and no bundled fallback canon is available.",
+                "Could not reach GitHub.",
                 ex);
         }
     }
@@ -139,19 +114,6 @@ public sealed class TurpinverseCanonClient
         string.IsNullOrWhiteSpace(_options.CanonRef)
             ? "main"
             : _options.CanonRef.Trim();
-
-    private bool TryReadLocalFallback(string fileName, out string json)
-    {
-        var path = Path.Combine(_environment.ContentRootPath, "Data", FallbackDirectoryName, fileName);
-        if (!File.Exists(path))
-        {
-            json = string.Empty;
-            return false;
-        }
-
-        json = File.ReadAllText(path);
-        return true;
-    }
 
     private static TurpinverseCanonFetchException CreateFetchException(
         string fileName,

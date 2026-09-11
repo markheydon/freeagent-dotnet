@@ -16,10 +16,4 @@ public sealed class TurpinverseCanonOptions
     /// Git branch, tag, or commit SHA for canon files under <c>canon/</c>.
     /// </summary>
     public string CanonRef { get; set; } = "main";
-
-    /// <summary>
-    /// When <see langword="true"/>, read bundled fallback canon under <c>Data/canon-fallback/</c>
-    /// before attempting GitHub. When GitHub is unreachable, fallback files are used automatically if present.
-    /// </summary>
-    public bool PreferLocalFallback { get; set; }
 }
