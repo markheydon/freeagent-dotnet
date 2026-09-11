@@ -26,4 +26,10 @@
     <PackageReference Include="FreeAgent.Client" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Data\canon-fallback\**\*.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

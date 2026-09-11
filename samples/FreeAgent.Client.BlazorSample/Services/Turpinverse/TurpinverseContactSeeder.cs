@@ -22,7 +22,7 @@ public sealed class TurpinverseContactSeeder
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        await _catalog.EnsureLoadedAsync(cancellationToken).ConfigureAwait(false);
+        await _catalog.EnsureLoadedAsync(forceRefresh: true, cancellationToken).ConfigureAwait(false);
         var organisation = _catalog.TurpinEnterprises;
         return await UpsertOrganisationContactAsync(client, organisation, cancellationToken);
     }
@@ -33,32 +33,40 @@ public sealed class TurpinverseContactSeeder
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        await _catalog.EnsureLoadedAsync(cancellationToken).ConfigureAwait(false);
+        await _catalog.EnsureLoadedAsync(forceRefresh: true, cancellationToken).ConfigureAwait(false);
         var existingContacts = await ContactSeederSupport.LoadExistingContactsByEmailAsync(client, cancellationToken);
         var created = new List<Contact>();
         var updated = new List<Contact>();
+        var failures = new List<TurpinverseSeedFailure>();
 
         foreach (var organisation in _catalog.Organisations)
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var result = await UpsertOrganisationContactAsync(
-                client,
-                organisation,
-                cancellationToken,
-                existingContacts);
+            try
+            {
+                var result = await UpsertOrganisationContactAsync(
+                    client,
+                    organisation,
+                    cancellationToken,
+                    existingContacts);
 
-            if (result.Action == ContactSeedAction.Created)
-            {
-                created.Add(result.Contact);
+                if (result.Action == ContactSeedAction.Created)
+                {
+                    created.Add(result.Contact);
+                }
+                else
+                {
+                    updated.Add(result.Contact);
+                }
             }
-            else
+            catch (Exception ex) when (ex is InvalidOperationException or FreeAgentApiException)
             {
-                updated.Add(result.Contact);
+                failures.Add(new TurpinverseSeedFailure(organisation.Id, organisation.TradingName, ex.Message));
             }
         }
 
-        return new TurpinverseBulkSeedResult(created, updated);
+        return new TurpinverseBulkSeedResult(created, updated, failures);
     }
 
     private async Task<TurpinverseSeedResult> UpsertOrganisationContactAsync(
@@ -76,17 +84,16 @@ public sealed class TurpinverseContactSeeder
             cancellationToken,
             existingContacts);
 
-        var primaryContact = _catalog.PersonasById.GetValueOrDefault(organisation.PrimaryContactId ?? string.Empty);
-        var displayName = primaryContact is null
-            ? organisation.TradingName
-            : $"{organisation.TradingName} ({primaryContact.DisplayName})";
-
+        var displayName = TurpinverseContactMapper.ResolveDisplayName(organisation, _catalog.PersonasById);
         return new TurpinverseSeedResult(contact, displayName, action);
     }
 }
 
 public sealed record TurpinverseSeedResult(Contact Contact, string DisplayName, ContactSeedAction Action);
 
+public sealed record TurpinverseSeedFailure(string OrganisationId, string TradingName, string Message);
+
 public sealed record TurpinverseBulkSeedResult(
     IReadOnlyList<Contact> Created,
-    IReadOnlyList<Contact> Updated);
+    IReadOnlyList<Contact> Updated,
+    IReadOnlyList<TurpinverseSeedFailure> Failures);

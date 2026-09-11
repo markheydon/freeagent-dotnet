@@ -51,7 +51,17 @@ internal static class TurpinverseContactMapper
         return primaryContact.Email;
     }
 
-    private static TurpinversePersona? ResolvePrimaryContact(
+    public static string ResolveDisplayName(
+        TurpinverseOrganisation organisation,
+        IReadOnlyDictionary<string, TurpinversePersona> personasById)
+    {
+        var primaryContact = ResolvePrimaryContact(organisation, personasById);
+        return primaryContact is null
+            ? organisation.TradingName
+            : $"{organisation.TradingName} ({primaryContact.DisplayName})";
+    }
+
+    public static TurpinversePersona? ResolvePrimaryContact(
         TurpinverseOrganisation organisation,
         IReadOnlyDictionary<string, TurpinversePersona> personasById)
     {

@@ -6,8 +6,6 @@ namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 public sealed class TurpinverseContactCatalog : IDisposable
 {
     public const string TurpinEnterprisesOrganisationId = "turpin-enterprises";
-    public const string RichardTurpinPersonaId = "dick-turpin";
-    public const string RichardTurpinEmail = "richard.turpin@turpinverse.uk";
 
     private readonly TurpinverseCanonClient _canonClient;
     private readonly SemaphoreSlim _loadLock = new(1, 1);
@@ -19,9 +17,11 @@ public sealed class TurpinverseContactCatalog : IDisposable
         _canonClient = canonClient ?? throw new ArgumentNullException(nameof(canonClient));
     }
 
-    public async Task EnsureLoadedAsync(CancellationToken cancellationToken = default)
+    public async Task EnsureLoadedAsync(
+        bool forceRefresh = false,
+        CancellationToken cancellationToken = default)
     {
-        if (_organisations is not null)
+        if (!forceRefresh && _organisations is not null)
         {
             return;
         }
@@ -29,9 +29,16 @@ public sealed class TurpinverseContactCatalog : IDisposable
         await _loadLock.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (_organisations is not null)
+            if (!forceRefresh && _organisations is not null)
             {
                 return;
+            }
+
+            if (forceRefresh)
+            {
+                _canonClient.ClearCache();
+                _organisations = null;
+                _personasById = null;
             }
 
             var organisations = await _canonClient.LoadJsonAsync<TurpinverseOrganisation[]>(
@@ -71,8 +78,6 @@ public sealed class TurpinverseContactCatalog : IDisposable
 
     public TurpinverseOrganisation TurpinEnterprises =>
         Organisations.First(static organisation => organisation.Id == TurpinEnterprisesOrganisationId);
-
-    public TurpinversePersona RichardTurpin => PersonasById[RichardTurpinPersonaId];
 
     private void ThrowIfNotLoaded()
     {

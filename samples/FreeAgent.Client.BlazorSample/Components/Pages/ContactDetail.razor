@@ -51,8 +51,11 @@
                         Pick a contact ID from the <MudLink Href="/contacts">contacts list</MudLink>, or pass
                         <code>?id=12345</code> in the URL. Each successful operation shows wire-to-model mapping below.
                         Seed B2B contacts from <MudLink Href="https://turpinverse.uk/" Target="_blank">Turpinverse</MudLink>
-                        canon (loaded from GitHub on demand) — one FreeAgent contact per organisation, with the primary contact persona on the record.
+                        canon — one FreeAgent contact per organisation, with the primary contact persona on the record.
+                        Each seed operation reloads canon from GitHub (or bundled fallback when offline).
                         Existing contacts are matched by the primary contact email and updated when upstream canon changes.
+                        If you previously seeded persona-based demo contacts, re-run organisation sync to refresh overlapping records;
+                        leftover persona-only contacts are not removed automatically.
                         Use the full-detail probe contact to exercise every writable field.
                     </MudText>
                     <MudNumericField @bind-Value="_contactId" Label="Contact ID" Min="1" />
@@ -257,13 +260,30 @@
                 summaryParts.Add($"updated {result.Updated.Count}");
             }
 
+            if (result.Failures.Count > 0)
+            {
+                summaryParts.Add($"failed {result.Failures.Count}");
+            }
+
             _operationMessage = summaryParts.Count == 0
                 ? "No Turpinverse organisation contacts were created or updated."
                 : $"Turpinverse organisation sync complete: {string.Join(", ", summaryParts)}.";
+
+            if (result.Failures.Count > 0)
+            {
+                var failureSummary = string.Join(
+                    "; ",
+                    result.Failures.Select(static failure => $"{failure.TradingName}: {failure.Message}"));
+                _error = $"Some organisations could not be seeded: {failureSummary}";
+            }
         }
         catch (FreeAgentApiException ex)
         {
             _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
         }
         catch (Exception ex)
         {
@@ -354,6 +374,10 @@
         catch (FreeAgentApiException ex)
         {
             _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
         }
         catch (Exception ex)
         {
