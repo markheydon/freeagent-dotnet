@@ -1,54 +1,86 @@
-using System.Text.Json;
-
 namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 
 /// <summary>
-/// Loads Turpinverse canon snapshots from the repository-root <c>canon/</c> folder.
+/// Loads Turpinverse organisation and persona canon from the upstream GitHub repository.
 /// </summary>
-public sealed class TurpinverseContactCatalog
+public sealed class TurpinverseContactCatalog : IDisposable
 {
     public const string TurpinEnterprisesOrganisationId = "turpin-enterprises";
     public const string RichardTurpinPersonaId = "dick-turpin";
     public const string RichardTurpinEmail = "richard.turpin@turpinverse.uk";
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private readonly TurpinverseCanonClient _canonClient;
+    private readonly SemaphoreSlim _loadLock = new(1, 1);
+    private IReadOnlyList<TurpinverseOrganisation>? _organisations;
+    private IReadOnlyDictionary<string, TurpinversePersona>? _personasById;
+
+    public TurpinverseContactCatalog(TurpinverseCanonClient canonClient)
     {
-        PropertyNameCaseInsensitive = true
-    };
-
-    private readonly Lazy<IReadOnlyList<TurpinverseOrganisation>> _organisations;
-    private readonly Lazy<IReadOnlyDictionary<string, TurpinversePersona>> _personasById;
-
-    public TurpinverseContactCatalog(IWebHostEnvironment environment)
-    {
-        ArgumentNullException.ThrowIfNull(environment);
-
-        _organisations = new Lazy<IReadOnlyList<TurpinverseOrganisation>>(() =>
-            LoadJson<TurpinverseOrganisation[]>(environment, "organisations.json") ?? []);
-
-        _personasById = new Lazy<IReadOnlyDictionary<string, TurpinversePersona>>(() =>
-            (LoadJson<TurpinversePersona[]>(environment, "personas.json") ?? [])
-            .ToDictionary(static persona => persona.Id, StringComparer.Ordinal));
+        _canonClient = canonClient ?? throw new ArgumentNullException(nameof(canonClient));
     }
 
-    public IReadOnlyList<TurpinverseOrganisation> Organisations => _organisations.Value;
+    public async Task EnsureLoadedAsync(CancellationToken cancellationToken = default)
+    {
+        if (_organisations is not null)
+        {
+            return;
+        }
 
-    public IReadOnlyDictionary<string, TurpinversePersona> PersonasById => _personasById.Value;
+        await _loadLock.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            if (_organisations is not null)
+            {
+                return;
+            }
+
+            var organisations = await _canonClient.LoadJsonAsync<TurpinverseOrganisation[]>(
+                "organisations.json",
+                cancellationToken) ?? [];
+
+            var personas = await _canonClient.LoadJsonAsync<TurpinversePersona[]>(
+                "personas.json",
+                cancellationToken) ?? [];
+
+            _organisations = organisations;
+            _personasById = personas.ToDictionary(static persona => persona.Id, StringComparer.Ordinal);
+        }
+        finally
+        {
+            _loadLock.Release();
+        }
+    }
+
+    public IReadOnlyList<TurpinverseOrganisation> Organisations
+    {
+        get
+        {
+            ThrowIfNotLoaded();
+            return _organisations!;
+        }
+    }
+
+    public IReadOnlyDictionary<string, TurpinversePersona> PersonasById
+    {
+        get
+        {
+            ThrowIfNotLoaded();
+            return _personasById!;
+        }
+    }
 
     public TurpinverseOrganisation TurpinEnterprises =>
         Organisations.First(static organisation => organisation.Id == TurpinEnterprisesOrganisationId);
 
     public TurpinversePersona RichardTurpin => PersonasById[RichardTurpinPersonaId];
 
-    private static T? LoadJson<T>(IWebHostEnvironment environment, string fileName)
+    private void ThrowIfNotLoaded()
     {
-        var path = Path.Combine(TurpinverseCanonPaths.GetCanonDirectory(environment), fileName);
-        if (!File.Exists(path))
+        if (_organisations is null || _personasById is null)
         {
-            throw new FileNotFoundException($"Turpinverse canon file not found: {path}");
+            throw new InvalidOperationException("Call EnsureLoadedAsync before accessing Turpinverse canon data.");
         }
-
-        var json = File.ReadAllText(path);
-        return JsonSerializer.Deserialize<T>(json, JsonOptions);
     }
+
+    public void Dispose() => _loadLock.Dispose();
 }

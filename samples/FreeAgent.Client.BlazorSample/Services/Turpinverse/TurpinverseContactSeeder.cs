@@ -4,7 +4,7 @@ using FreeAgent.Client.Models.Contacts;
 namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 
 /// <summary>
-/// Seeds FreeAgent contacts from bundled Turpinverse organisation canon.
+/// Seeds FreeAgent contacts from upstream Turpinverse organisation canon.
 /// Each organisation becomes one B2B contact with the primary contact persona on the record.
 /// </summary>
 public sealed class TurpinverseContactSeeder
@@ -22,6 +22,7 @@ public sealed class TurpinverseContactSeeder
     {
         ArgumentNullException.ThrowIfNull(client);
 
+        await _catalog.EnsureLoadedAsync(cancellationToken).ConfigureAwait(false);
         var organisation = _catalog.TurpinEnterprises;
         return await UpsertOrganisationContactAsync(client, organisation, cancellationToken);
     }
@@ -32,6 +33,7 @@ public sealed class TurpinverseContactSeeder
     {
         ArgumentNullException.ThrowIfNull(client);
 
+        await _catalog.EnsureLoadedAsync(cancellationToken).ConfigureAwait(false);
         var existingContacts = await ContactSeederSupport.LoadExistingContactsByEmailAsync(client, cancellationToken);
         var created = new List<Contact>();
         var updated = new List<Contact>();

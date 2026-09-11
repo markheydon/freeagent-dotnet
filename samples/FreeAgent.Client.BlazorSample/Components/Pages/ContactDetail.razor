@@ -51,8 +51,8 @@
                         Pick a contact ID from the <MudLink Href="/contacts">contacts list</MudLink>, or pass
                         <code>?id=12345</code> in the URL. Each successful operation shows wire-to-model mapping below.
                         Seed B2B contacts from <MudLink Href="https://turpinverse.uk/" Target="_blank">Turpinverse</MudLink>
-                        canon — one FreeAgent contact per organisation, with the primary contact persona on the record.
-                        Existing contacts are matched by the primary contact email and updated when canon changes.
+                        canon (loaded from GitHub on demand) — one FreeAgent contact per organisation, with the primary contact persona on the record.
+                        Existing contacts are matched by the primary contact email and updated when upstream canon changes.
                         Use the full-detail probe contact to exercise every writable field.
                     </MudText>
                     <MudNumericField @bind-Value="_contactId" Label="Contact ID" Min="1" />

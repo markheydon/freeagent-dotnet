@@ -26,11 +26,4 @@
     <PackageReference Include="FreeAgent.Client" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="..\..\canon\**\*.json">
-      <Link>canon\%(RecursiveDir)%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>

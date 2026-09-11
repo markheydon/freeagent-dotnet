@@ -23,6 +23,9 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<TokenStore>();
 builder.Services.AddSingleton<OAuthService>();
 builder.Services.AddSingleton<ConnectedCompanyContext>();
+builder.Services.Configure<TurpinverseCanonOptions>(
+    builder.Configuration.GetSection(TurpinverseCanonOptions.SectionName));
+builder.Services.AddHttpClient<TurpinverseCanonClient>();
 builder.Services.AddSingleton<TurpinverseContactCatalog>();
 builder.Services.AddSingleton<TurpinverseContactSeeder>();
 builder.Services.AddSingleton<SampleContactSeeder>();
