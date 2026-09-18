@@ -50,6 +50,24 @@ public sealed class TurpinverseAddress
     public string? Country { get; set; }
 }
 
+public sealed class TurpinverseProject
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [JsonPropertyName("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("summary")]
+    public string? Summary { get; set; }
+
+    [JsonPropertyName("organisationId")]
+    public string OrganisationId { get; set; } = string.Empty;
+
+    [JsonPropertyName("contactId")]
+    public string? ContactId { get; set; }
+}
+
 public sealed class TurpinverseOrganisation
 {
     [JsonPropertyName("id")]

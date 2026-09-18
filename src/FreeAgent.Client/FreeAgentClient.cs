@@ -3,6 +3,7 @@ using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
 using FreeAgent.Client.Services.EmailAddresses;
+using FreeAgent.Client.Services.Projects;
 using FreeAgent.Client.Services.Users;
 
 namespace FreeAgent.Client;
@@ -39,6 +40,11 @@ public sealed class FreeAgentClient : IDisposable
     /// Email addresses API service.
     /// </summary>
     public EmailAddressesService EmailAddresses { get; }
+
+    /// <summary>
+    /// Projects API service.
+    /// </summary>
+    public ProjectService Projects { get; }
 
     /// <summary>
     /// Initializes a new instance with an access token.
@@ -91,6 +97,7 @@ public sealed class FreeAgentClient : IDisposable
         Categories = new CategoryService(_httpClient);
         Users = new UserService(_httpClient);
         EmailAddresses = new EmailAddressesService(_httpClient);
+        Projects = new ProjectService(_httpClient);
     }
 
     /// <summary>
