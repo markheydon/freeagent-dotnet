@@ -12,7 +12,7 @@ namespace FreeAgent.Client.Tests.Services.Projects;
 public class ProjectServiceTests
 {
     [Fact]
-    public async Task GetProjectsPageAsync_ReturnsPaginatedResponse()
+    public async Task ListAsync_ReturnsPaginatedResponse()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -51,7 +51,7 @@ public class ProjectServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ProjectService(client);
 
-        var page = await service.GetProjectsPageAsync(page: 1, perPage: 2, view: ProjectViews.Active);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: ProjectViews.Active);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);
@@ -62,7 +62,7 @@ public class ProjectServiceTests
     }
 
     [Fact]
-    public async Task GetProjectsPageAsync_IncludesSortContactAndNestedFilters()
+    public async Task ListAsync_IncludesSortContactAndNestedFilters()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -79,14 +79,14 @@ public class ProjectServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ProjectService(client);
 
-        await service.GetProjectsPageAsync(
+        await service.ListAsync(
             sort: "-updated_at",
             contactId: 2,
             nested: true);
     }
 
     [Fact]
-    public async Task GetProjectsPageAsync_ContactReferenceFilter_UsesUri()
+    public async Task ListAsync_ContactReferenceFilter_UsesUri()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -104,7 +104,7 @@ public class ProjectServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ProjectService(client);
 
-        await service.GetProjectsPageAsync(
+        await service.ListAsync(
             contact: ContactReference.Parse("https://api.freeagent.com/v2/contacts/9"));
     }
 
@@ -327,7 +327,7 @@ public class ProjectServiceTests
     }
 
     [Fact]
-    public async Task GetProjectsPageAsync_MissingProjectsBranch_Throws()
+    public async Task ListAsync_MissingProjectsBranch_Throws()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -338,17 +338,17 @@ public class ProjectServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ProjectService(client);
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetProjectsPageAsync());
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListAsync());
     }
 
     [Fact]
-    public async Task GetProjectsPageAsync_ContactAndContactId_Throws()
+    public async Task ListAsync_ContactAndContactId_Throws()
     {
         using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ProjectService(client);
 
-        await Assert.ThrowsAsync<ArgumentException>(() => service.GetProjectsPageAsync(
+        await Assert.ThrowsAsync<ArgumentException>(() => service.ListAsync(
             contact: ContactReference.Parse("https://api.freeagent.com/v2/contacts/1"),
             contactId: 2));
     }
@@ -399,7 +399,7 @@ public class ProjectServiceTests
     }
 
     [Fact]
-    public async Task GetAllProjectsAsync_IteratesPagesUntilComplete()
+    public async Task ListAutoPagingAsync_IteratesPagesUntilComplete()
     {
         var page = 0;
         var handler = new QueueHttpMessageHandler(request =>
@@ -427,7 +427,7 @@ public class ProjectServiceTests
         var service = new ProjectService(client);
 
         var names = new List<string>();
-        await foreach (var project in service.GetAllProjectsAsync(perPage: 1))
+        await foreach (var project in service.ListAutoPagingAsync(perPage: 1))
         {
             names.Add(project.Name!);
         }

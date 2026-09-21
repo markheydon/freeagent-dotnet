@@ -24,7 +24,7 @@ public sealed class ProjectService
     }
 
     /// <summary>
-    /// Gets one page of projects.
+    /// Lists one page of projects.
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
@@ -36,7 +36,7 @@ public sealed class ProjectService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated projects response</returns>
     /// <exception cref="ArgumentException"><paramref name="contact"/> and <paramref name="contactId"/> are both supplied.</exception>
-    public async Task<PaginatedResponse<Project>> GetProjectsPageAsync(
+    public async Task<PaginatedResponse<Project>> ListAsync(
         int page = 1,
         int perPage = 25,
         string? view = null,
@@ -98,7 +98,7 @@ public sealed class ProjectService
     }
 
     /// <summary>
-    /// Iterates all projects across all pages.
+    /// Lists all projects across all pages.
     /// </summary>
     /// <param name="perPage">Items per page (maximum 100)</param>
     /// <param name="view">Optional view filter (for example: <see cref="ProjectViews.Active"/>)</param>
@@ -108,7 +108,7 @@ public sealed class ProjectService
     /// <param name="nested">When <see langword="true"/>, return full contact details nested in each project</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Async stream of projects</returns>
-    public async IAsyncEnumerable<Project> GetAllProjectsAsync(
+    public async IAsyncEnumerable<Project> ListAutoPagingAsync(
         int perPage = 25,
         string? view = null,
         string? sort = null,
@@ -121,7 +121,7 @@ public sealed class ProjectService
 
         while (true)
         {
-            var projectsPage = await GetProjectsPageAsync(page, perPage, view, sort, contact, contactId, nested, cancellationToken);
+            var projectsPage = await ListAsync(page, perPage, view, sort, contact, contactId, nested, cancellationToken);
 
             foreach (var project in projectsPage.Items)
             {

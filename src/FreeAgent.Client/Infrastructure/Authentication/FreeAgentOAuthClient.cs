@@ -61,10 +61,10 @@ public class FreeAgentOAuthClient : IDisposable
     }
 
     /// <summary>
-    /// Generates the authorization URL for the OAuth flow.
+    /// Generates the authorisation URL for the OAuth flow.
     /// </summary>
     /// <param name="state">Optional state parameter for CSRF protection</param>
-    /// <returns>Authorization URL</returns>
+    /// <returns>Authorisation URL</returns>
     public string GetAuthorizationUrl(string? state = null)
     {
         var queryParams = new Dictionary<string, string>
@@ -86,9 +86,9 @@ public class FreeAgentOAuthClient : IDisposable
     }
 
     /// <summary>
-    /// Exchanges an authorization code for an access token.
+    /// Exchanges an authorisation code for an access token.
     /// </summary>
-    /// <param name="code">Authorization code received from callback</param>
+    /// <param name="code">Authorisation code received from callback</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>OAuth token response</returns>
     public async Task<OAuthTokenResponse> ExchangeCodeForTokenAsync(string code, CancellationToken cancellationToken = default)

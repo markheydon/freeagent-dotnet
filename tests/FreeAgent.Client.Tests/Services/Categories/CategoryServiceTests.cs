@@ -11,7 +11,7 @@ namespace FreeAgent.Client.Tests.Services.Categories;
 public class CategoryServiceTests
 {
     [Fact]
-    public async Task GetCategoriesAsync_ReturnsAllSets()
+    public async Task ListAsync_ReturnsAllSets()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -51,7 +51,7 @@ public class CategoryServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new CategoryService(client);
 
-        var categories = await service.GetCategoriesAsync();
+        var categories = await service.ListAsync();
 
         Assert.Single(categories.AdminExpensesCategories);
         Assert.Empty(categories.CostOfSalesCategories);
@@ -63,7 +63,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
-    public async Task GetCategoriesAsync_WhenIncludeSubAccounts_AddsQueryParameter()
+    public async Task ListAsync_WhenIncludeSubAccounts_AddsQueryParameter()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -85,7 +85,7 @@ public class CategoryServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new CategoryService(client);
 
-        await service.GetCategoriesAsync(includeSubAccounts: true);
+        await service.ListAsync(includeSubAccounts: true);
     }
 
     [Fact]
@@ -504,14 +504,14 @@ public class CategoryServiceTests
     }
 
     [Fact]
-    public async Task GetCategoriesAsync_WhenPayloadMissing_ThrowsFreeAgentApiException()
+    public async Task ListAsync_WhenPayloadMissing_ThrowsFreeAgentApiException()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent("{}")
         });
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => CreateService(handler).GetCategoriesAsync());
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => CreateService(handler).ListAsync());
     }
 
     [Fact]
@@ -526,7 +526,7 @@ public class CategoryServiceTests
     }
 
     [Fact]
-    public async Task GetCategoriesAsync_DeserializesAllowableForTaxFromString()
+    public async Task ListAsync_DeserializesAllowableForTaxFromString()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -548,7 +548,7 @@ public class CategoryServiceTests
             """)
         });
 
-        var categories = await CreateService(handler).GetCategoriesAsync();
+        var categories = await CreateService(handler).ListAsync();
 
         Assert.True(categories.AdminExpensesCategories[0].AllowableForTax);
     }

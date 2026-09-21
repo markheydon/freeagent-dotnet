@@ -26,7 +26,7 @@ public sealed class UserService
     /// <param name="view">Users view filter (for example: <see cref="UserViews.ActiveStaff"/>)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>All users returned by FreeAgent for the selected view</returns>
-    public async Task<IReadOnlyList<User>> GetUsersAsync(
+    public async Task<IReadOnlyList<User>> ListAsync(
         string view = UserViews.All,
         CancellationToken cancellationToken = default)
     {

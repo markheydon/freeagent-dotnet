@@ -29,7 +29,7 @@ public sealed class EmailAddressesService
     /// Minimum FreeAgent access level: Time.
     /// Each entry is formatted as <c>Name &lt;email@example.com&gt;</c>.
     /// </remarks>
-    public async Task<IReadOnlyList<string>> GetEmailAddressesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = default)
     {
         var response = await _requestClient.GetAsync<EmailAddressesResponse>("email_addresses", cancellationToken);
 

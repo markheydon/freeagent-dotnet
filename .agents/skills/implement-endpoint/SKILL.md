@@ -72,7 +72,7 @@ Common retrofit violations:
 
 1. Follow existing service structure under `src/FreeAgent.Client/Services/`.
 2. Keep methods async and accept `CancellationToken`.
-3. When the API paginates list results, provide both single-page and auto-pagination methods. Do not invent pagination for endpoints that return a complete collection (for example Categories).
+3. When the API paginates list results, provide `ListAsync` (single page) and `ListAutoPagingAsync` (auto-pagination) on the resource service — Stripe.NET parity per [adr-0012-list-api-naming.md](../../adr/adr-0012-list-api-naming.md). Non-paginated collection endpoints use `ListAsync` only. Do not invent pagination for endpoints that return a complete collection (for example Categories).
 4. Where the API accepts `per_page`, respect the FreeAgent maximum of 100 and fail fast if the caller exceeds it.
 5. **Documented use-case variants:** when the API docs describe multiple create or update shapes for the same HTTP route, expose a separate public request type and service method per variant (for example `CreateIncomeCategoryAsync`, `CreateCostOfSalesCategoryAsync`). Each request type must include only the attributes allowed for that variant. Fixed wire values such as `category_group` are set by the SDK — callers must not supply them. Do not expose a single generic create/update that forces consumers to read external docs to learn which fields apply.
 6. **Documented local contract checks:** fail fast only on constraints the official docs state that do not require account state. Do not invent extra validation, uniqueness checks, or fetches of Company/settings. Categories nominal-code ranges are one documented example, not a pattern to copy onto undocumented fields.

@@ -11,7 +11,7 @@ namespace FreeAgent.Client.Tests.Services.EmailAddresses;
 public class EmailAddressesServiceTests
 {
     [Fact]
-    public async Task GetEmailAddressesAsync_RequestsEmailAddressesEndpoint()
+    public async Task ListAsync_RequestsEmailAddressesEndpoint()
     {
         string? requestedPath = null;
 
@@ -37,13 +37,13 @@ public class EmailAddressesServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token");
         var service = new EmailAddressesService(client);
 
-        await service.GetEmailAddressesAsync();
+        await service.ListAsync();
 
         Assert.Equal("/v2/email_addresses", requestedPath);
     }
 
     [Fact]
-    public async Task GetEmailAddressesAsync_ReturnsEmailAddresses()
+    public async Task ListAsync_ReturnsEmailAddresses()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -64,7 +64,7 @@ public class EmailAddressesServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token");
         var service = new EmailAddressesService(client);
 
-        var emailAddresses = await service.GetEmailAddressesAsync();
+        var emailAddresses = await service.ListAsync();
 
         Assert.Equal(2, emailAddresses.Count);
         Assert.Contains("John Smith <jsmith@example.com>", emailAddresses);
@@ -72,7 +72,7 @@ public class EmailAddressesServiceTests
     }
 
     [Fact]
-    public async Task GetEmailAddressesAsync_WhenEmailAddressesMissing_ThrowsFreeAgentApiException()
+    public async Task ListAsync_WhenEmailAddressesMissing_ThrowsFreeAgentApiException()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -86,7 +86,7 @@ public class EmailAddressesServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token");
         var service = new EmailAddressesService(client);
 
-        var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetEmailAddressesAsync());
+        var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListAsync());
 
         Assert.Contains("Email addresses missing", exception.Message);
     }

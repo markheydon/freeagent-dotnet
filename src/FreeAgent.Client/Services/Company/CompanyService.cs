@@ -43,7 +43,7 @@ public sealed class CompanyService
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Business categories</returns>
-    public async Task<IReadOnlyList<string>> GetBusinessCategoriesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<string>> ListBusinessCategoriesAsync(CancellationToken cancellationToken = default)
     {
         var response = await _requestClient.GetAsync<BusinessCategoriesResponse>("company/business_categories", cancellationToken);
 
@@ -56,14 +56,14 @@ public sealed class CompanyService
     }
 
     /// <summary>
-    /// Gets upcoming tax timeline events for the authenticated company.
+    /// Lists upcoming tax timeline events for the authenticated company.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Tax timeline items</returns>
     /// <remarks>
     /// Minimum FreeAgent access level: Tax, Accounting and Users.
     /// </remarks>
-    public async Task<IReadOnlyList<TaxTimelineItem>> GetTaxTimelineAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TaxTimelineItem>> ListTaxTimelineAsync(CancellationToken cancellationToken = default)
     {
         var response = await _requestClient.GetAsync<TaxTimelineResponse>("company/tax_timeline", cancellationToken);
 

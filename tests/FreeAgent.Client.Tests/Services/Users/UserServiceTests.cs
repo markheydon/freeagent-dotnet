@@ -12,7 +12,7 @@ namespace FreeAgent.Client.Tests.Services.Users;
 public class UserServiceTests
 {
     [Fact]
-    public async Task GetUsersAsync_ReturnsUsers()
+    public async Task ListAsync_ReturnsUsers()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -41,7 +41,7 @@ public class UserServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new UserService(client);
 
-        var users = await service.GetUsersAsync(view: UserViews.All);
+        var users = await service.ListAsync(view: UserViews.All);
 
         Assert.Single(users);
         Assert.Equal("Development Team", users[0].DisplayName);
@@ -50,7 +50,7 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task GetUsersAsync_DefaultView_IsAll()
+    public async Task ListAsync_DefaultView_IsAll()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -65,7 +65,7 @@ public class UserServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new UserService(client);
 
-        await service.GetUsersAsync();
+        await service.ListAsync();
     }
 
     [Fact]
@@ -262,7 +262,7 @@ public class UserServiceTests
     }
 
     [Fact]
-    public async Task GetUsersAsync_WhenUsersMissing_ThrowsFreeAgentApiException()
+    public async Task ListAsync_WhenUsersMissing_ThrowsFreeAgentApiException()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -273,7 +273,7 @@ public class UserServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new UserService(client);
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetUsersAsync());
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListAsync());
     }
 
     [Fact]

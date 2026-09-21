@@ -16,10 +16,10 @@ internal static class FreeAgentEnvironmentEndpoints
             : "https://api.freeagent.com/v2/";
 
     /// <summary>
-    /// Gets the OAuth authorization endpoint for the selected environment.
+    /// Gets the OAuth authorisation endpoint for the selected environment.
     /// </summary>
     /// <param name="environment">Target FreeAgent environment.</param>
-    /// <returns>OAuth authorization endpoint URL.</returns>
+    /// <returns>OAuth authorisation endpoint URL.</returns>
     public static string GetOAuthAuthorizationEndpoint(FreeAgentEnvironment environment) =>
         environment == FreeAgentEnvironment.Sandbox
             ? "https://api.sandbox.freeagent.com/v2/approve_app"

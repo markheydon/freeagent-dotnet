@@ -133,7 +133,7 @@ public sealed class TurpinverseProjectSeeder
     {
         var projectsByReference = new Dictionary<string, Project>(StringComparer.Ordinal);
 
-        await foreach (var project in client.Projects.GetAllProjectsAsync(cancellationToken: cancellationToken))
+        await foreach (var project in client.Projects.ListAutoPagingAsync(cancellationToken: cancellationToken))
         {
             if (string.IsNullOrWhiteSpace(project.ContractPoReference)
                 || !project.ContractPoReference.StartsWith(TurpinverseProjectMapper.ContractReferencePrefix, StringComparison.Ordinal))

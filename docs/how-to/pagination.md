@@ -1,6 +1,6 @@
 # Pagination
 
-FreeAgent list endpoints return one page at a time. The SDK exposes both **single-page** access (deterministic) and **auto-pagination** (convenience).
+FreeAgent list endpoints return one page at a time. The SDK follows the Stripe.NET pattern: **`ListAsync`** for one page and **`ListAutoPagingAsync`** to iterate every page without manual `page` management.
 
 ## Single-page access
 
@@ -10,7 +10,7 @@ Use when you need explicit control over page number and page size (`per_page` ma
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Contacts;
 
-var page = await client.Contacts.GetContactsPageAsync(
+var page = await client.Contacts.ListAsync(
     page: 1,
     perPage: 25,
     view: ContactViews.Active);
@@ -24,7 +24,7 @@ Console.WriteLine($"Has next page: {page.HasNextPage}");
 Use when you want every item without managing page numbers:
 
 ```csharp
-await foreach (var contact in client.Contacts.GetAllContactsAsync(perPage: 50))
+await foreach (var contact in client.Contacts.ListAutoPagingAsync(perPage: 50))
 {
     Console.WriteLine(contact.DisplayName);
 }
@@ -40,7 +40,7 @@ The Contacts list supports `view`, `sort`, and `updated_since` query parameters.
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Contacts;
 
-var page = await client.Contacts.GetContactsPageAsync(
+var page = await client.Contacts.ListAsync(
     page: 1,
     perPage: 25,
     view: ContactViews.Clients,
