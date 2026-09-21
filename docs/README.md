@@ -1,28 +1,13 @@
-# FreeAgent.NET documentation
+# Documentation source
 
-Documentation in this folder is for **developers using the `FreeAgent.Client` NuGet package** — not for internal project planning.
+The site homepage is [`index.md`](index.md).
 
-Internal engineering policy lives in the repository root (`GOALS.md`, `SCOPE.md`, `CONVENTIONS.md`) and in [`plan/`](../plan/). Architectural decisions are in [`adr/`](../adr/).
+Published at [markheydon.me.uk/freeagent-dotnet](https://markheydon.me.uk/freeagent-dotnet/).
 
-## Documentation map
+To preview locally:
 
-| Document | Type | Audience |
-|----------|------|----------|
-| [Getting started](tutorial/getting-started.md) | Tutorial | New SDK consumers |
-| [Pagination](how-to/pagination.md) | How-to | Consumers listing resources |
-| [Error handling](how-to/error-handling.md) | How-to | Consumers handling API failures |
-| [Token refresh](how-to/token-refresh.md) | How-to | Consumers managing OAuth tokens |
-| [Upgrading](how-to/upgrading.md) | How-to | Consumers on prerelease versions |
-| [API coverage](reference/api-coverage.md) | Reference | What the SDK implements today |
-| [API entity map](explanation/api-entity-map.md) | Explanation | How FreeAgent resources link; SDK sequencing guide |
-| [Linked resources](explanation/linked-resources.md) | Explanation | SDK pattern for URI links, hydration, and writes |
-| [Prerelease and OAuth scope](explanation/prerelease-and-oauth.md) | Explanation | Versioning and OAuth boundaries |
-| [Contributor setup](contributing-setup.md) | How-to | Contributors cloning this repository |
-| [Sample probe pages](contributing/sample-probe-pages.md) | How-to | Building wire-to-model sample pages |
+```bash
+./scripts/invoke-docs-site.sh serve
+```
 
-## Related links
-
-- [README](../README.md) — repository overview and quick start
-- [VERSIONING.md](../VERSIONING.md) — prerelease policy
-- [SUPPORT.md](../SUPPORT.md) — help and issue routing
-- [FreeAgent API documentation](https://dev.freeagent.com/docs)
+This file is excluded from the Jekyll build (see `_config.yml`).

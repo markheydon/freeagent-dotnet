@@ -1,3 +1,9 @@
+---
+title: Foundations
+parent: API entity map
+nav_order: 1
+---
+
 # Foundations
 
 Core company context and reference data that many other resources point at.

@@ -1,3 +1,9 @@
+---
+title: Purchases
+parent: API entity map
+nav_order: 3
+---
+
 # Purchases
 
 Supplier-facing documents and employee costs: bills, expenses, hire purchases, and file attachments on those records.

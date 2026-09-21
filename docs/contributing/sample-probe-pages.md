@@ -1,3 +1,9 @@
+---
+title: Sample probe pages
+parent: Contributing
+nav_order: 2
+---
+
 # Sample probe pages
 
 How to build and maintain Blazor sample pages that validate SDK wire-to-model mapping against the live FreeAgent API.

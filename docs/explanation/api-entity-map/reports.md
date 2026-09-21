@@ -1,3 +1,9 @@
+---
+title: Reports
+parent: API entity map
+nav_order: 7
+---
+
 # Reports
 
 Read-only accounting and tax reports. These endpoints are mostly **date-bounded queries** with few URI links between resources, so they are catalogued here rather than drawn as a large relationship diagram.

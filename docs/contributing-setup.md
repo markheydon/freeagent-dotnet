@@ -1,3 +1,9 @@
+---
+title: Contributor setup
+parent: Contributing
+nav_order: 1
+---
+
 # Contributor setup
 
 This guide is for developers **working on the SDK repository**, not for consumers installing the NuGet package. For package usage, start with [Getting started](../tutorial/getting-started.md).
@@ -68,6 +74,17 @@ If changes are reported, run `dotnet format FreeAgent.slnx` and commit the resul
 The Blazor sample requires .NET 10 and FreeAgent OAuth credentials. See [samples/README.md](../samples/README.md).
 
 When adding or retrofitting SDK endpoints, build sample probe pages per [Sample probe pages](contributing/sample-probe-pages.md). Use **Company** and **Contacts** as references.
+
+## Documentation site
+
+Consumer docs live in [`docs/`](../docs/) and publish to GitHub Pages. Preview locally with Docker or Podman (no Ruby install):
+
+```bash
+./scripts/invoke-docs-site.sh serve
+./scripts/invoke-docs-site.sh preview
+```
+
+See [docs/README.md](../docs/README.md) for details. When adding SDK reference pages, follow the existing pages under `docs/reference/`.
 
 ## Before contributing
 

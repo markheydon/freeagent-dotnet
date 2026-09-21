@@ -1,3 +1,9 @@
+---
+title: Getting started
+parent: Tutorial
+nav_order: 1
+---
+
 # Getting started
 
 This tutorial walks through installing the SDK, obtaining an access token, and making your first API call.
@@ -61,5 +67,6 @@ Always dispose the client when finished (`using` recommended).
 
 - [Pagination](../how-to/pagination.md) — list contacts and other paginated resources
 - [Error handling](../how-to/error-handling.md) — catch typed exceptions
-- [API coverage](../reference/api-coverage.md) — see what is implemented today
+- [API coverage](../reference/api-coverage.md) — browse the SDK reference for every implemented resource
+- [Contacts](../reference/contacts.md) — list filters, CRUD methods, and the `Contact` model
 - [Sample app](../../samples/README.md) — interactive Blazor workbench (contributors)

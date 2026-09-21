@@ -1,3 +1,9 @@
+---
+title: Projects and time
+parent: API entity map
+nav_order: 5
+---
+
 # Projects and time
 
 Client work structure: projects billed to contacts, tasks within projects, time logged against tasks, and notes on contacts or projects.

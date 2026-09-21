@@ -1,3 +1,9 @@
+---
+title: Banking
+parent: API entity map
+nav_order: 4
+---
+
 # Banking
 
 Bank accounts, imported transactions, and explanations that categorise movements and link to invoices, bills, and other resources.

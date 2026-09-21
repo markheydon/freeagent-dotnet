@@ -8,7 +8,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 
 > **Prerelease software.** This package is currently in alpha. Public APIs may change between releases. See [VERSIONING.md](VERSIONING.md).
 
-**Documentation:** [docs/](docs/) — tutorials, how-to guides, and API coverage for SDK consumers.
+**Documentation:** [markheydon.me.uk/freeagent-dotnet](https://markheydon.me.uk/freeagent-dotnet/) — tutorials, how-to guides, and SDK reference ([source](docs/)).
 
 ## Features
 
