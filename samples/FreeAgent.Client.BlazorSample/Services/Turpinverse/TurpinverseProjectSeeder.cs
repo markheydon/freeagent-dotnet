@@ -1,6 +1,7 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.Projects;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 
@@ -85,8 +86,8 @@ public sealed class TurpinverseProjectSeeder
         CancellationToken cancellationToken,
         Dictionary<string, Project>? existingProjects = null)
     {
-        var contactUrl = await ResolveOrganisationContactUrlAsync(client, project.OrganisationId, cancellationToken);
-        var desired = TurpinverseProjectMapper.ToFreeAgentProject(project, contactUrl);
+        var contact = await ResolveOrganisationContactReferenceAsync(client, project.OrganisationId, cancellationToken);
+        var desired = TurpinverseProjectMapper.ToFreeAgentProject(project, contact);
         var contractReference = TurpinverseProjectMapper.BuildContractReference(project.Id);
 
         existingProjects ??= await LoadExistingProjectsByContractReferenceAsync(client, cancellationToken);
@@ -97,8 +98,7 @@ public sealed class TurpinverseProjectSeeder
             return new TurpinverseProjectSeedResult(created, ProjectSeedAction.Created);
         }
 
-        var projectId = ProjectUrlParser.ParseId(existingMatch.Url)
-            ?? throw new InvalidOperationException($"Could not parse project ID from URL '{existingMatch.Url}'.");
+        var projectId = existingMatch.ResourceId;
 
         var current = await client.Projects.GetProjectAsync(projectId, cancellationToken);
         MergeWritableFields(current, desired);
@@ -107,7 +107,7 @@ public sealed class TurpinverseProjectSeeder
         return new TurpinverseProjectSeedResult(updated, ProjectSeedAction.Updated);
     }
 
-    private async Task<string> ResolveOrganisationContactUrlAsync(
+    private async Task<ContactReference> ResolveOrganisationContactReferenceAsync(
         FreeAgentClient client,
         string organisationId,
         CancellationToken cancellationToken)
@@ -124,7 +124,7 @@ public sealed class TurpinverseProjectSeeder
                 $"No FreeAgent contact exists for organisation '{organisation.TradingName}'. Seed contacts first from Contact CRUD.");
         }
 
-        return contact.Url;
+        return ContactReference.Parse(contact.Url);
     }
 
     private static async Task<Dictionary<string, Project>> LoadExistingProjectsByContractReferenceAsync(
@@ -150,7 +150,7 @@ public sealed class TurpinverseProjectSeeder
     private static void MergeWritableFields(Project current, Project desired)
     {
         current.Name = desired.Name;
-        current.Contact = desired.Contact;
+        current.BillingContact = desired.BillingContact;
         current.Status = desired.Status;
         current.ContractPoReference = desired.ContractPoReference;
         current.Currency = desired.Currency;

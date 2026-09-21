@@ -1,17 +1,23 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client;
+using FreeAgent.Client.Infrastructure.Serialization;
 
 namespace FreeAgent.Client.Models.Contacts;
 
 /// <summary>
 /// Represents a FreeAgent contact.
 /// </summary>
-public class Contact
+public class Contact : IFreeAgentResource
 {
     /// <summary>
     /// Contact resource URL.
     /// </summary>
     [JsonPropertyName("url")]
     public string Url { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    [JsonIgnore]
+    public long ResourceId => FreeAgentResourceId.TryParse(Url, out var id) ? id : 0;
 
     /// <summary>
     /// Contact first name.

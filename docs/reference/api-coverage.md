@@ -127,7 +127,7 @@ Sample: `/projects` (list + per-row mapping), `/projects/detail` (CRUD + Turpinv
 |--------|---------|
 | `GET /v2/projects` | `client.Projects.GetProjectsPageAsync(...)` |
 | Auto-pagination | `client.Projects.GetAllProjectsAsync(...)` |
-| `GET /v2/projects/:id` | `client.Projects.GetProjectAsync(id)` |
+| `GET /v2/projects/:id` | `client.Projects.GetProjectAsync(id)` or `GetProjectAsync(id, new ProjectGetOptions { IncludeBillingContact = true })` |
 | `POST /v2/projects` | `client.Projects.CreateProjectAsync(project)` |
 | `PUT /v2/projects/:id` | `client.Projects.UpdateProjectAsync(id, project)` |
 | `DELETE /v2/projects/:id` | `client.Projects.DeleteProjectAsync(id)` |
@@ -136,7 +136,7 @@ Sample: `/projects` (list + per-row mapping), `/projects/detail` (CRUD + Turpinv
 
 - `view` — use constants on `ProjectViews` (for example `ProjectViews.Active`, `ProjectViews.Completed`)
 - `sort` — `name`, `contact_name`, `contact_display_name`, `created_at`, `updated_at`; prefix with `-` for descending
-- `contact` — filter by billing contact resource URL
+- `contact` / `contactId` — filter by `ContactReference` or numeric contact identifier (`client.Urls.Contact(id)`)
 - `nested` — when `true`, return full contact details nested in each project
 
 ## Not yet implemented

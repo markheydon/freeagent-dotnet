@@ -66,7 +66,8 @@ public class ProjectModelSerializationTests
         var project = JsonSerializer.Deserialize<Project>(json);
 
         Assert.Equal("https://api.freeagent.com/v2/projects/1", project!.Url);
-        Assert.Equal("https://api.freeagent.com/v2/contacts/1", project.Contact);
+        Assert.Null(project.Contact);
+        Assert.Equal(1, project.ContactId);
         Assert.Equal("Acme Trading", project.ContactName);
         Assert.Equal("Test Project", project.Name);
         Assert.Equal(CurrencyCode.GBP, project.Currency);
@@ -80,7 +81,7 @@ public class ProjectModelSerializationTests
     }
 
     [Fact]
-    public void Deserialize_ContactUriFromNestedObject()
+    public void Deserialize_ContactFromNestedObject()
     {
         const string json = """
         {
@@ -93,6 +94,19 @@ public class ProjectModelSerializationTests
 
         var project = JsonSerializer.Deserialize<Project>(json);
 
-        Assert.Equal("https://api.freeagent.com/v2/contacts/9", project!.Contact);
+        Assert.Equal(9, project!.ContactId);
+        Assert.Equal("Nested Org", project.Contact!.OrganisationName);
+    }
+
+    [Fact]
+    public void WritePayload_UsesBillingContact()
+    {
+        var payload = ProjectWritePayload.FromProject(new Project
+        {
+            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/3"),
+            Name = "Example"
+        });
+
+        Assert.Equal("https://api.freeagent.com/v2/contacts/3", payload.Contact!.Value.Uri);
     }
 }

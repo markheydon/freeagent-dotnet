@@ -1,7 +1,6 @@
 @page "/projects/detail"
 @using FreeAgent.Client.Models.Projects
 @using FreeAgent.Client.Models.Shared
-@using FreeAgent.Client.BlazorSample.Services
 @using FreeAgent.Client.BlazorSample.Services.Turpinverse
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
@@ -54,11 +53,12 @@
                         Seed organisation contacts first from <MudLink Href="/contacts/detail">Contact CRUD</MudLink>.
                     </MudText>
                     <MudNumericField @bind-Value="_projectId" Label="Project ID" Min="1" />
-                    <MudTextField @bind-Value="_contactUrl"
-                                  Label="Billing contact URL (create only)"
-                                  Variant="Variant.Outlined"
-                                  Margin="Margin.Dense"
-                                  FullWidth="true" />
+                    <MudNumericField @bind-Value="_contactId"
+                                     Label="Billing contact ID (create only)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
                     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
                                    StartIcon="@Icons.Material.Filled.CloudDownload"
@@ -67,7 +67,7 @@
                                    OnClick="CreateBlackBessRouteOptimiserAsync">Create Black Bess Route Optimiser</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
                                    OnClick="CreateAllTurpinverseProjectsAsync">Create all Turpinverse projects</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || string.IsNullOrWhiteSpace(_contactUrl)"
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _contactId is null or < 1"
                                    OnClick="CreateProbeProjectAsync">Create probe project</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _projectId is null"
                                    OnClick="UpdateProjectAsync">Update project name</MudButton>
@@ -84,7 +84,7 @@
                         <SummaryContent>
                             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
                                 <MudText Typo="Typo.h5">Result summary</MudText>
-                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @ProjectUrlParser.ParseId(_project.Url)</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_project.ResourceId</MudChip>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_project.Status?.ToString())</MudChip>
                             </MudStack>
                         </SummaryContent>
@@ -99,7 +99,7 @@
                                 <MudItem xs="12" sm="6">
                                     <MudPaper Class="probe-card" Elevation="0">
                                         <MudText Typo="Typo.caption">Contact</MudText>
-                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_project.ContactName ?? _project.Contact)</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_project.Contact?.OrganisationName ?? _project.ContactName)</MudText>
                                     </MudPaper>
                                 </MudItem>
                                 <MudItem xs="12" sm="6">
@@ -140,7 +140,7 @@
     private Project? _project;
     private ModelProbeSnapshot? _probe;
     private long? _projectId;
-    private string? _contactUrl;
+    private long? _contactId;
 
     protected override void OnParametersSet()
     {
@@ -162,7 +162,9 @@
         await RunOperationAsync(
             async client =>
             {
-                _project = await client.Projects.GetProjectAsync(_projectId.Value);
+                _project = await client.Projects.GetProjectAsync(
+                    _projectId.Value,
+                    new ProjectGetOptions { IncludeBillingContact = true });
                 _operationMessage = $"Loaded project {_projectId.Value}: {_project.Name}";
                 return $"projects/{_projectId}";
             },
@@ -176,7 +178,7 @@
             {
                 var result = await TurpinverseProjectSeeder.CreateBlackBessRouteOptimiserAsync(client);
                 _project = result.Project;
-                _projectId = ProjectUrlParser.ParseId(_project.Url);
+                _projectId = _project.ResourceId;
                 _operationMessage = result.Action == ProjectSeedAction.Updated
                     ? $"Updated Black Bess Route Optimiser (project {_projectId}) from current Turpinverse canon."
                     : _projectId is null
@@ -214,7 +216,7 @@
             if (lastTouched is not null)
             {
                 _project = lastTouched;
-                _projectId = ProjectUrlParser.ParseId(_project.Url);
+                _projectId = _project.ResourceId;
 
                 if (_projectId is not null)
                 {
@@ -280,9 +282,9 @@
 
     private async Task CreateProbeProjectAsync()
     {
-        if (string.IsNullOrWhiteSpace(_contactUrl))
+        if (_contactId is null or < 1)
         {
-            _error = "Enter a billing contact URL before creating a probe project.";
+            _error = "Enter a billing contact ID before creating a probe project.";
             return;
         }
 
@@ -292,7 +294,7 @@
                 _project = await client.Projects.CreateProjectAsync(new Project
                 {
                     Name = $"SDK probe project {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}",
-                    Contact = _contactUrl.Trim(),
+                    BillingContact = client.Urls.Contact(_contactId.Value),
                     Status = ProjectStatus.Active,
                     Currency = CurrencyCode.GBP,
                     Budget = 0m,
@@ -305,7 +307,7 @@
                     IsIr35 = false
                 });
 
-                _projectId = ProjectUrlParser.ParseId(_project.Url);
+                _projectId = _project.ResourceId;
                 _operationMessage = _projectId is null
                     ? "Created probe project but could not parse ID from URL."
                     : $"Created probe project {_projectId.Value}.";

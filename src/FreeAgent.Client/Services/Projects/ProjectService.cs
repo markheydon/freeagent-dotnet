@@ -3,6 +3,7 @@ using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Projects;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Services.Projects;
 
@@ -29,7 +30,8 @@ public sealed class ProjectService
     /// <param name="perPage">Items per page (maximum 100)</param>
     /// <param name="view">Optional view filter (for example: <see cref="ProjectViews.Active"/>)</param>
     /// <param name="sort">Sort field (name, contact_name, contact_display_name, created_at, updated_at); prefix with <c>-</c> for descending</param>
-    /// <param name="contact">Filter by billing contact resource URL</param>
+    /// <param name="contact">Filter by billing contact resource reference</param>
+    /// <param name="contactId">Filter by billing contact identifier (equivalent to <c>client.Urls.Contact(contactId)</c>)</param>
     /// <param name="nested">When <see langword="true"/>, return full contact details nested in each project</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated projects response</returns>
@@ -38,7 +40,8 @@ public sealed class ProjectService
         int perPage = 25,
         string? view = null,
         string? sort = null,
-        string? contact = null,
+        ContactReference? contact = null,
+        long? contactId = null,
         bool? nested = null,
         CancellationToken cancellationToken = default)
     {
@@ -62,9 +65,10 @@ public sealed class ProjectService
             queryParameters.Add(new KeyValuePair<string, string>("sort", sort));
         }
 
-        if (!string.IsNullOrWhiteSpace(contact))
+        var contactFilter = ResolveContactFilter(contact, contactId);
+        if (contactFilter is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("contact", contact));
+            queryParameters.Add(new KeyValuePair<string, string>("contact", contactFilter));
         }
 
         if (nested is not null)
@@ -98,7 +102,8 @@ public sealed class ProjectService
     /// <param name="perPage">Items per page (maximum 100)</param>
     /// <param name="view">Optional view filter (for example: <see cref="ProjectViews.Active"/>)</param>
     /// <param name="sort">Sort field (name, contact_name, contact_display_name, created_at, updated_at); prefix with <c>-</c> for descending</param>
-    /// <param name="contact">Filter by billing contact resource URL</param>
+    /// <param name="contact">Filter by billing contact resource reference</param>
+    /// <param name="contactId">Filter by billing contact identifier (equivalent to <c>client.Urls.Contact(contactId)</c>)</param>
     /// <param name="nested">When <see langword="true"/>, return full contact details nested in each project</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Async stream of projects</returns>
@@ -106,7 +111,8 @@ public sealed class ProjectService
         int perPage = 25,
         string? view = null,
         string? sort = null,
-        string? contact = null,
+        ContactReference? contact = null,
+        long? contactId = null,
         bool? nested = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
@@ -114,7 +120,7 @@ public sealed class ProjectService
 
         while (true)
         {
-            var projectsPage = await GetProjectsPageAsync(page, perPage, view, sort, contact, nested, cancellationToken);
+            var projectsPage = await GetProjectsPageAsync(page, perPage, view, sort, contact, contactId, nested, cancellationToken);
 
             foreach (var project in projectsPage.Items)
             {
@@ -137,7 +143,20 @@ public sealed class ProjectService
     /// <param name="projectId">Project identifier from the resource URL</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Project details</returns>
-    public async Task<Project> GetProjectAsync(long projectId, CancellationToken cancellationToken = default)
+    public Task<Project> GetProjectAsync(long projectId, CancellationToken cancellationToken = default) =>
+        GetProjectAsync(projectId, options: null, cancellationToken);
+
+    /// <summary>
+    /// Gets a single project by identifier with optional linked-resource hydration.
+    /// </summary>
+    /// <param name="projectId">Project identifier from the resource URL</param>
+    /// <param name="options">Optional hydration settings</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Project details</returns>
+    public async Task<Project> GetProjectAsync(
+        long projectId,
+        ProjectGetOptions? options,
+        CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(projectId);
 
@@ -147,6 +166,12 @@ public sealed class ProjectService
         {
             throw new FreeAgentApiException("Project data missing from API response");
         }
+
+        await LinkedResourceHydration.HydrateBillingContactAsync(
+            response.Project,
+            _requestClient,
+            options?.IncludeBillingContact == true,
+            cancellationToken);
 
         return response.Project;
     }
@@ -205,5 +230,21 @@ public sealed class ProjectService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(projectId);
 
         return _requestClient.DeleteAsync($"projects/{projectId}", cancellationToken);
+    }
+
+    private string? ResolveContactFilter(ContactReference? contact, long? contactId)
+    {
+        if (contact is not null)
+        {
+            return contact.Value.Uri;
+        }
+
+        if (contactId is null)
+        {
+            return null;
+        }
+
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(contactId.Value);
+        return ContactReference.ForEnvironment(_requestClient.Environment, contactId.Value).Uri;
     }
 }

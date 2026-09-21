@@ -56,7 +56,8 @@ Apply to all new and retrofitted models:
 7. When docs are ambiguous for constrained values, do not silently guess; mark unresolved mapping and add a follow-up issue.
 8. Response payloads must use explicit wrapper/envelope models.
 9. Missing required payload branches must throw `FreeAgentApiException`.
-10. **Per-variant allowed values:** when allowed wire keys differ by operation variant, use a distinct enum on that request only. When they also differ by a documented discriminator (for example company type), use discriminator-specific enums and factory methods — do not flatten into one enum, do not leave `string` plus "see the API docs", and do not add a runtime validator that fetches Company or account settings. See [adr-0010-documented-operations-to-sdk-methods.md](../../adr/adr-0010-documented-operations-to-sdk-methods.md).
+10. **Linked resource fields:** expose flat read properties (`[Resource]?`, `[Resource]Id`, denormalised display names); use `[Resource]Reference` on write payloads and list filters; keep internal `ExpandableField<T>` for JSON only; add `*GetOptions` with `Include*` flags on single GET when consumers commonly need linked data. Do not use bare `string` for documented URI links. Build URIs with `client.Urls`. See [adr-0011-linked-resource-identity-and-expandable-references.md](../../adr/adr-0011-linked-resource-identity-and-expandable-references.md) and [docs/explanation/linked-resources.md](../../docs/explanation/linked-resources.md).
+11. **Per-variant allowed values:** when allowed wire keys differ by operation variant, use a distinct enum on that request only. When they also differ by a documented discriminator (for example company type), use discriminator-specific enums and factory methods — do not flatten into one enum, do not leave `string` plus "see the API docs", and do not add a runtime validator that fetches Company or account settings. See [adr-0010-documented-operations-to-sdk-methods.md](../../adr/adr-0010-documented-operations-to-sdk-methods.md).
 
 Common retrofit violations:
 
@@ -126,6 +127,7 @@ Highlight any breaking changes applied during retrofit (DateTime → DateOnly, s
 ## References
 
 - `adr/adr-0010-documented-operations-to-sdk-methods.md`
+- `adr/adr-0011-linked-resource-identity-and-expandable-references.md`
 - `docs/contributing/sample-probe-pages.md`
 - `plan/IMPLEMENTING_ENDPOINTS.md`
 - `plan/API_TYPE_MAPPING_POLICY.md`

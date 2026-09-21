@@ -20,6 +20,18 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP comp
 
 ## Recent breaking changes (alpha)
 
+### Linked resource fields on Projects
+
+`Project.Contact` is now `Contact?` (read) for nested or hydrated billing contact data. Assign `BillingContact` (a `ContactReference`) when creating or updating — for example `client.Urls.Contact(contactId)` — rather than a raw URI string.
+
+Use `GetProjectAsync(id, new ProjectGetOptions { IncludeBillingContact = true })` when you need full contact fields such as `OrganisationName`. Use `ContactName` when a display label from a single HTTP call is enough.
+
+`ProjectService.GetProjectsPageAsync` and `GetAllProjectsAsync` accept `ContactReference? contact` and `long? contactId` instead of `string? contact`.
+
+Top-level resources implement `IFreeAgentResource` with a computed `ResourceId` property. Use `project.ResourceId` instead of parsing `project.Url` manually.
+
+`ExpandableField<T>` is no longer part of the public API.
+
 ### Contacts list returns full `Contact` models
 
 `ContactService.GetContactsPageAsync` and `GetAllContactsAsync` now return `Contact` instead of the removed `ContactSummary` type. Update any code that depended on the slimmer list shape.

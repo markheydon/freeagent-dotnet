@@ -41,6 +41,32 @@ Console.WriteLine($"{company.Name} ({company.Currency})");
 
 The SDK provides protocol-level OAuth utilities only, your application owns callback endpoints and browser flows.
 
+## Linked resources
+
+FreeAgent links resources with URI strings. The SDK types those links so you do not parse URLs or hard-code API hosts:
+
+```csharp
+// Create a project for a known contact ID (no manual URI construction)
+await client.Projects.CreateProjectAsync(new Project
+{
+    Name = "Website redesign",
+    BillingContact = client.Urls.Contact(42),
+    Status = ProjectStatus.Active
+});
+
+// Read full billing contact fields when you need them
+var project = await client.Projects.GetProjectAsync(
+    123,
+    new ProjectGetOptions { IncludeBillingContact = true });
+var organisation = project.Contact!.OrganisationName;
+
+// Display name only — one HTTP call
+var summary = await client.Projects.GetProjectAsync(123);
+var label = summary.ContactName;
+```
+
+See [linked resources](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/explanation/linked-resources.md) for the full pattern.
+
 ## Documentation
 
 Full consumer documentation lives in the repository:

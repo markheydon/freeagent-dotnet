@@ -47,6 +47,16 @@ public sealed class FreeAgentClient : IDisposable
     public ProjectService Projects { get; }
 
     /// <summary>
+    /// Target API environment for this client.
+    /// </summary>
+    public FreeAgentEnvironment Environment => _httpClient.Environment;
+
+    /// <summary>
+    /// Environment-correct resource URI builders.
+    /// </summary>
+    public FreeAgentResourceUrls Urls { get; }
+
+    /// <summary>
     /// Initializes a new instance with an access token.
     /// </summary>
     /// <param name="accessToken">OAuth access token</param>
@@ -92,6 +102,7 @@ public sealed class FreeAgentClient : IDisposable
         ArgumentNullException.ThrowIfNull(httpClient);
 
         _httpClient = httpClient;
+        Urls = new FreeAgentResourceUrls(_httpClient.Environment);
         Company = new CompanyService(_httpClient);
         Contacts = new ContactService(_httpClient);
         Categories = new CategoryService(_httpClient);

@@ -81,8 +81,31 @@ public class ProjectServiceTests
 
         await service.GetProjectsPageAsync(
             sort: "-updated_at",
-            contact: "https://api.freeagent.com/v2/contacts/2",
+            contactId: 2,
             nested: true);
+    }
+
+    [Fact]
+    public async Task GetProjectsPageAsync_ContactReferenceFilter_UsesUri()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Contains(
+                "contact=https%3A%2F%2Fapi.freeagent.com%2Fv2%2Fcontacts%2F9",
+                request.RequestUri!.Query,
+                StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{ "projects": [] }""")
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ProjectService(client);
+
+        await service.GetProjectsPageAsync(
+            contact: ContactReference.Parse("https://api.freeagent.com/v2/contacts/9"));
     }
 
     [Fact]
@@ -115,6 +138,99 @@ public class ProjectServiceTests
         Assert.Equal("Probe Project", project.Name);
         Assert.Equal(ProjectStatus.Active, project.Status);
         Assert.True(project.IsDeletable);
+    }
+
+    [Fact]
+    public async Task GetProjectAsync_WithIncludeBillingContact_FetchesContact()
+    {
+        var requestCount = 0;
+        HttpResponseMessage RouteRequest(HttpRequestMessage request)
+        {
+            requestCount++;
+            if (request.RequestUri!.AbsolutePath.EndsWith("/projects/42", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "project": {
+                        "url": "https://api.freeagent.com/v2/projects/42",
+                        "contact": "https://api.freeagent.com/v2/contacts/7",
+                        "contact_name": "Acme Trading",
+                        "name": "Probe Project"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            if (request.RequestUri!.AbsolutePath.EndsWith("/contacts/7", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "contact": {
+                        "url": "https://api.freeagent.com/v2/contacts/7",
+                        "organisation_name": "Acme Trading Ltd"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            throw new InvalidOperationException($"Unexpected request: {request.RequestUri}");
+        }
+
+        var handler = new QueueHttpMessageHandler(RouteRequest, RouteRequest);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ProjectService(client);
+
+        var project = await service.GetProjectAsync(
+            42,
+            new ProjectGetOptions { IncludeBillingContact = true });
+
+        Assert.Equal(2, requestCount);
+        Assert.Equal("Acme Trading Ltd", project.Contact!.OrganisationName);
+        Assert.Equal("Acme Trading", project.ContactName);
+    }
+
+    [Fact]
+    public async Task GetProjectAsync_WithIncludeBillingContact_SkipsFetchWhenAlreadyNested()
+    {
+        var requestCount = 0;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            requestCount++;
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "project": {
+                    "url": "https://api.freeagent.com/v2/projects/42",
+                    "contact": {
+                      "url": "https://api.freeagent.com/v2/contacts/7",
+                      "organisation_name": "Already Nested"
+                    },
+                    "name": "Probe Project"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ProjectService(client);
+
+        var project = await service.GetProjectAsync(
+            42,
+            new ProjectGetOptions { IncludeBillingContact = true });
+
+        Assert.Equal(1, requestCount);
+        Assert.Equal("Already Nested", project.Contact!.OrganisationName);
     }
 
     [Fact]
@@ -151,7 +267,7 @@ public class ProjectServiceTests
         var created = await service.CreateProjectAsync(new Project
         {
             Name = "New Project",
-            Contact = "https://api.freeagent.com/v2/contacts/1",
+            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/1"),
             Status = ProjectStatus.Active,
             Currency = CurrencyCode.GBP,
             BudgetUnits = ProjectBudgetUnits.Hours

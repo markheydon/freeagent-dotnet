@@ -1,5 +1,7 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
+using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Projects;
@@ -7,7 +9,7 @@ namespace FreeAgent.Client.Models.Projects;
 /// <summary>
 /// Represents a FreeAgent project.
 /// </summary>
-public class Project
+public class Project : IFreeAgentResource
 {
     /// <summary>
     /// Project resource URL.
@@ -15,18 +17,50 @@ public class Project
     [JsonPropertyName("url")]
     public string Url { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Contact to bill for the project.
-    /// </summary>
-    [JsonPropertyName("contact")]
-    [JsonConverter(typeof(ContactUriJsonConverter))]
-    public string? Contact { get; set; }
+    /// <inheritdoc />
+    [JsonIgnore]
+    public long ResourceId => FreeAgentResourceId.TryParse(Url, out var id) ? id : 0;
 
     /// <summary>
-    /// Contact display name when the list response is not nested.
+    /// Wire representation of the billing contact link.
+    /// </summary>
+    [JsonPropertyName("contact")]
+    [JsonInclude]
+    internal ExpandableField<Contact>? ContactLink { get; set; }
+
+    /// <summary>
+    /// Billing contact when returned nested on the wire or hydrated via <see cref="ProjectGetOptions.IncludeBillingContact"/>.
+    /// </summary>
+    [JsonIgnore]
+    public Contact? Contact => ContactLink?.Value;
+
+    /// <summary>
+    /// Billing contact identifier parsed from the project response.
+    /// </summary>
+    [JsonIgnore]
+    public long? ContactId => ContactLink?.Id;
+
+    /// <summary>
+    /// Billing contact to assign on create or update requests.
+    /// </summary>
+    [JsonIgnore]
+    public ContactReference? BillingContact { get; set; }
+
+    /// <summary>
+    /// Contact display name when the full contact is not included in the response.
     /// </summary>
     [JsonPropertyName("contact_name")]
     public string? ContactName { get; set; }
+
+    /// <summary>
+    /// Attaches a hydrated billing contact to this project.
+    /// </summary>
+    /// <param name="contact">Billing contact details.</param>
+    internal void AttachContact(Contact contact)
+    {
+        ArgumentNullException.ThrowIfNull(contact);
+        ContactLink = new ExpandableField<Contact>(contact.Url, contact);
+    }
 
     /// <summary>
     /// Free-text project name.

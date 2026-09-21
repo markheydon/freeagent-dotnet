@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Company;
@@ -6,7 +7,7 @@ namespace FreeAgent.Client.Models.Company;
 /// <summary>
 /// Represents a company in FreeAgent.
 /// </summary>
-public class Company
+public class Company : IFreeAgentResource
 {
     /// <summary>
     /// Company URL identifier.
@@ -19,6 +20,10 @@ public class Company
     /// </summary>
     [JsonPropertyName("id")]
     public int Id { get; set; }
+
+    /// <inheritdoc />
+    [JsonIgnore]
+    public long ResourceId => Id;
 
     /// <summary>
     /// Company name.

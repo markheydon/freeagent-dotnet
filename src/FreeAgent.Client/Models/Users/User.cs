@@ -1,17 +1,23 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client;
+using FreeAgent.Client.Infrastructure.Serialization;
 
 namespace FreeAgent.Client.Models.Users;
 
 /// <summary>
 /// Represents a FreeAgent user.
 /// </summary>
-public class User
+public class User : IFreeAgentResource
 {
     /// <summary>
     /// User resource URL.
     /// </summary>
     [JsonPropertyName("url")]
     public string Url { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    [JsonIgnore]
+    public long ResourceId => FreeAgentResourceId.TryParse(Url, out var id) ? id : 0;
 
     /// <summary>
     /// Login email address.

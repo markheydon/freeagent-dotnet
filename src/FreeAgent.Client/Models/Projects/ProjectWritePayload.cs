@@ -9,7 +9,7 @@ namespace FreeAgent.Client.Models.Projects;
 internal sealed class ProjectWritePayload
 {
     [JsonPropertyName("contact")]
-    public string? Contact { get; set; }
+    public ContactReference? Contact { get; set; }
 
     [JsonPropertyName("name")]
     public string? Name { get; set; }
@@ -59,7 +59,8 @@ internal sealed class ProjectWritePayload
 
         return new ProjectWritePayload
         {
-            Contact = project.Contact,
+            Contact = project.BillingContact
+                ?? (project.ContactLink?.Uri is string uri ? ContactReference.Parse(uri) : null),
             Name = project.Name,
             Status = project.Status,
             ContractPoReference = project.ContractPoReference,

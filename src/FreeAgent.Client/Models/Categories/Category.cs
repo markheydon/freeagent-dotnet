@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 
 namespace FreeAgent.Client.Models.Categories;
@@ -6,13 +7,17 @@ namespace FreeAgent.Client.Models.Categories;
 /// <summary>
 /// Represents a FreeAgent chart-of-accounts category.
 /// </summary>
-public class Category
+public class Category : IFreeAgentResource
 {
     /// <summary>
     /// Category resource URL.
     /// </summary>
     [JsonPropertyName("url")]
     public string Url { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    [JsonIgnore]
+    public long ResourceId => FreeAgentResourceId.TryParse(Url, out var id) ? id : 0;
 
     /// <summary>
     /// Category name.

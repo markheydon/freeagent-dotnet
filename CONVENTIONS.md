@@ -83,6 +83,7 @@ tests/
 - **Composition over framework layering** - avoid app-style architecture layers not needed by an SDK package.
 - **Documented operation variants** - when the API docs describe multiple create or update shapes for the same HTTP route, each variant gets its own public request type and service method. Public requests expose only attributes allowed for that variant; fixed wire values (for example `category_group`) are set inside the SDK. See [adr-0010-documented-operations-to-sdk-methods.md](adr/adr-0010-documented-operations-to-sdk-methods.md).
 - **Documented operation-contract validation** - when the official FreeAgent docs state a local, account-independent constraint, validate it client-side (for example `per_page` ≤ 100). Categories nominal-code ranges are one documented case, not a template to invent similar checks on resources that do not document them. Account-state checks (for example uniqueness) and accounting policy remain out of scope per [SCOPE.md](SCOPE.md).
+- **Linked resource identity** - documented URI links use flat read properties (`Contact?`, `ContactId`, denormalised display names), `*Reference` types on write payloads and list filters, and optional `*GetOptions` hydration on single-resource GET. `ExpandableField<T>` is internal wire plumbing only. Build URIs with `client.Urls`. See [adr-0011-linked-resource-identity-and-expandable-references.md](adr/adr-0011-linked-resource-identity-and-expandable-references.md) and [docs/explanation/linked-resources.md](docs/explanation/linked-resources.md).
 
 ---
 
@@ -99,6 +100,10 @@ tests/
 | Discriminator enum | `[Discriminator][Variant][Field]` | `UkLimitedCompanyCostOfSalesTaxReportingName` |
 | Response wrapper | `[Resource]Response` | `CompanyResponse` |
 | Resource model | `[Resource]` | `Company` |
+| Resource identity interface | `IFreeAgentResource` | `Contact`, `Project` |
+| Linked resource (read) | `[Resource]?`, `long? [Resource]Id`, denormalised display field | `Project.Contact`, `Project.ContactId`, `Project.ContactName` |
+| Linked resource (write/filter) | `[Resource]Reference` | `ContactReference`, `ProjectReference` |
+| Single GET hydration | `[Resource]GetOptions` with `Include*` flags | `ProjectGetOptions.IncludeBillingContact` |
 | Exception | `[Product][Context]Exception` | `FreeAgentApiException` |
 | Test class | `[ClassName]Tests` | `FreeAgentOAuthClientTests` |
 | Test method | `Method_State_Expected` | `GetAuthorizationUrl_WithState_IncludesStateParameter` |
@@ -117,6 +122,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
+| 21 September 2026 | Add linked resource identity conventions (`ExpandableField<T>`, `*Reference`, `client.Urls`) | ADR-0011 |
 | 4 September 2026 | Limit contract validation to official local docs constraints | G2: fail-fast without invented checks |
 | 4 September 2026 | Add operation-variant request/method naming and discriminator factories | ADR-0010 |
 | 2 September 2026 | Align folder notes with current SDK (no ServiceBase; public PaginatedResponse) | Docs were describing a layout the code no longer uses |
