@@ -24,11 +24,11 @@ Task<Company> GetCompanyAsync(CancellationToken cancellationToken = default)
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/company`
 
-**Returns:** `Company` — company profile for the authenticated account.
+**Returns:** `Company` - company profile for the authenticated account.
 
 **Sample:**
 
@@ -47,7 +47,7 @@ Task<IReadOnlyList<string>> ListBusinessCategoriesAsync(CancellationToken cancel
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/company/business_categories`
 
@@ -69,13 +69,13 @@ Task<IReadOnlyList<TaxTimelineItem>> ListTaxTimelineAsync(CancellationToken canc
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/company/tax_timeline`
 
 **Returns:** Upcoming tax timeline events.
 
-**Access:** Minimum FreeAgent access level — Tax, Accounting and Users.
+**Access:** Minimum FreeAgent access level - Tax, Accounting and Users.
 
 **Sample:**
 
@@ -109,7 +109,7 @@ See IntelliSense or the source model for the full property list.
 |------|---------|
 | `TaxTimelineItem` | Single tax timeline entry |
 | `CompanyType` | Company type wire enum |
-| `CurrencyCode` | ISO 4217 currency codes — see [Currency code](currency-code.md) |
+| `CurrencyCode` | ISO 4217 currency codes - see [Currency code](currency-code.md) |
 
 ## Errors
 

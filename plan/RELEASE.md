@@ -51,7 +51,7 @@ Inspect `./nupkg/*.nupkg` without publishing.
 
 | Symptom | Action |
 |---------|--------|
-| Tag/csproj version mismatch | Workflow fails validation — align `<Version>` and tag |
+| Tag/csproj version mismatch | Workflow fails validation - align `<Version>` and tag |
 | `403` on NuGet push | Check Trusted Publishing policy (repo, workflow file, package glob) and `NUGET_USER` secret |
 | Package already exists | Expected on re-run; workflow uses `--skip-duplicate` |
 | Missing `net8.0` build on CI | Ensure setup-dotnet installs `8.0.x` and `10.0.x` |

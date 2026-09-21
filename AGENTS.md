@@ -35,7 +35,7 @@ All documentation, comments, and user-facing text in this repository **must use 
 
 ## Sample App Sync
 
-The Blazor sample (`samples/FreeAgent.Client.BlazorSample`) must reflect the **current, implemented** state of the SDK — not planned or aspirational endpoints.
+The Blazor sample (`samples/FreeAgent.Client.BlazorSample`) must reflect the **current, implemented** state of the SDK - not planned or aspirational endpoints.
 
 Framework targeting note:
 
@@ -55,7 +55,7 @@ Probe-page standard (mandatory for new and retrofitted endpoints):
 
 - Follow [`docs/contributing/sample-probe-pages.md`](docs/contributing/sample-probe-pages.md).
 - Use **Company** (`/company`), **Contacts** (`/contacts`, `/contacts/detail`), and **Categories** (`/categories`, `/categories/detail` for multi-variant writes) as reference implementations.
-- Reuse `EndpointProbeHeader`, `ModelWireDiagnostics`, `ModelProbeResults`, and `ApiErrorDiagnostics` — do not build one-off mapping UIs.
+- Reuse `EndpointProbeHeader`, `ModelWireDiagnostics`, `ModelProbeResults`, and `ApiErrorDiagnostics` - do not build one-off mapping UIs.
 - List pages must support per-row wire-to-model inspection; CRUD pages must support deep links, post-mutation wire fetch, and a visible loading progress bar.
 
 ## Skills
@@ -64,7 +64,7 @@ Project skills live in `.agents/skills/`. Read the matching `SKILL.md` when the 
 
 | Skill | Use when |
 |---|---|
-| `implement-endpoint` | Adding or retrofitting a FreeAgent API resource end-to-end. Map **every documented operation heading** on the API docs page to a typed SDK method — not just each HTTP route. When multiple create/update shapes share a route, use a separate request type and method per variant. |
+| `implement-endpoint` | Adding or retrofitting a FreeAgent API resource end-to-end. Map **every documented operation heading** on the API docs page to a typed SDK method - not just each HTTP route. When multiple create/update shapes share a route, use a separate request type and method per variant. |
 | `create-architectural-decision-record` | Creating or major-updating an ADR |
 | `documentation-writer` | Diátaxis-aligned documentation structure |
 | `project-documentation` | Project-aware docs placement and terminology |

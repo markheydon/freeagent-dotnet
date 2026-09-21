@@ -44,7 +44,7 @@ flowchart LR
   Ledger --> Reports
 ```
 
-Operational resources (invoices, bills, expenses, bank explanations, journal sets) post to categories. Reports read aggregated category balances — there is no `GET /profit_and_loss?invoice=` style URI graph in the public API.
+Operational resources (invoices, bills, expenses, bank explanations, journal sets) post to categories. Reports read aggregated category balances - there is no `GET /profit_and_loss?invoice=` style URI graph in the public API.
 
 ## Access levels
 
@@ -52,12 +52,12 @@ Most report endpoints require **Tax, Accounting & Users** (level 7) or **Full** 
 
 ## SDK sequencing note
 
-Reports belong in **layer 7** — implement after the operational clusters that feed the ledger. [Company](foundations.md) tax timeline may complement VAT and corporation tax work but does not replace these report endpoints.
+Reports belong in **layer 7** - implement after the operational clusters that feed the ledger. [Company](foundations.md) tax timeline may complement VAT and corporation tax work but does not replace these report endpoints.
 
 ## Related operational resources
 
 If you need URI-linked data rather than aggregates, prefer:
 
-- [Categories](foundations.md) — chart of accounts
-- [Journal sets](assets-and-journals.md) — manual adjustments
-- [Bank transaction explanations](banking.md) — cash movements with category and project links
+- [Categories](foundations.md) - chart of accounts
+- [Journal sets](assets-and-journals.md) - manual adjustments
+- [Bank transaction explanations](banking.md) - cash movements with category and project links

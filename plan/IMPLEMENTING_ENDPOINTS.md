@@ -11,7 +11,7 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 
 ## 2. Plan First, Then Implement
 
-- Consult the [API entity map](../docs/explanation/api-entity-map.md) before choosing the next resource — it shows documented URI dependencies and suggested implementation layers.
+- Consult the [API entity map](../docs/explanation/api-entity-map.md) before choosing the next resource - it shows documented URI dependencies and suggested implementation layers.
 - Start with a concise implementation plan before editing code.
 - Include an explicit contract check against `plan/API_TYPE_MAPPING_POLICY.md`.
 - Include a drift check against `plan/API_TO_SDK_ALIGNMENT.md`.
@@ -19,7 +19,7 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
   - **Operation heading inventory** and a table mapping **heading → HTTP route → SDK method → request type → allowed fields**.
   - New endpoint implementation tasks.
   - Retrofit tasks for existing same-entity files.
-  - **Documented use-case variants** — when one HTTP route has multiple create/update shapes in the API docs, plan a typed request and service method per variant rather than a single generic payload.
+  - **Documented use-case variants** - when one HTTP route has multiple create/update shapes in the API docs, plan a typed request and service method per variant rather than a single generic payload.
   - Breaking API-surface changes (allowed pre-GA, but must be called out clearly).
   - Test updates.
   - Sample app updates.
@@ -36,7 +36,7 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 - Use `JsonStringEnumMemberName` on each API-facing enum member to make wire values explicit.
 - Prefer strongly typed fields; use `JsonExtensionData` only when API shape is intentionally open-ended.
 - Add XML docs to all public types and members.
-- When allowed wire keys on write operations differ by operation variant, use a distinct enum on that request. When they also differ by a documented discriminator (for example company type), use discriminator-specific enums and factory methods — see [adr-0010-documented-operations-to-sdk-methods.md](../adr/adr-0010-documented-operations-to-sdk-methods.md).
+- When allowed wire keys on write operations differ by operation variant, use a distinct enum on that request. When they also differ by a documented discriminator (for example company type), use discriminator-specific enums and factory methods - see [adr-0010-documented-operations-to-sdk-methods.md](../adr/adr-0010-documented-operations-to-sdk-methods.md).
 
 ## 4. Add or Retrofit Service Methods
 
@@ -83,14 +83,14 @@ Follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-p
 - Update sample navigation in `samples/FreeAgent.Client.BlazorSample/Components/Layout/MainLayout.razor` in the same change.
 - Do not add sample UI for endpoints not implemented in the SDK.
 - Reuse shared probe components:
-  - `EndpointProbeHeader` — page context and call under test
-  - `ModelWireDiagnostics` + `ModelProbeResults` — wire-to-model mapping with filter chips and raw JSON
-  - `ApiErrorDiagnostics` — failed API responses
+  - `EndpointProbeHeader` - page context and call under test
+  - `ModelWireDiagnostics` + `ModelProbeResults` - wire-to-model mapping with filter chips and raw JSON
+  - `ApiErrorDiagnostics` - failed API responses
 - **List endpoints:** load a page via the SDK, fetch matching wire JSON, and offer per-row mapping inspection (`Contacts.razor`).
 - **CRUD endpoints:** support `?id=` deep links, fetch wire JSON after create/update, and show a progress bar during long operations (`ContactDetail.razor`).
 - **Multiple write variants:** when the SDK exposes more than one create or update method for a resource, the sample must be able to invoke each (variant selector on one page is sufficient).
 - **Seed data (when useful):** provide narrative demo data and/or a full-field probe fixture; upsert by a stable key so re-running updates existing sandbox records.
-- Model only fields documented in the official FreeAgent API — do not invent wire properties.
+- Model only fields documented in the official FreeAgent API - do not invent wire properties.
 - Update [`samples/README.md`](../samples/README.md) and [`docs/reference/api-coverage.md`](../docs/reference/api-coverage.md).
 - If the official docs expose URI links not yet shown on the relevant [entity map cluster](../docs/explanation/api-entity-map.md), update that cluster page in the same change.
 

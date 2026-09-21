@@ -37,7 +37,7 @@ Task<PaginatedResponse<Contact>> ListAsync(
 | `view` | `string` | No | `ContactViews.Active` | `view` |
 | `sort` | `string?` | No | `null` | `sort` |
 | `updatedSince` | `DateTimeOffset?` | No | `null` | `updated_since` (ISO 8601) |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/contacts`
 
@@ -70,7 +70,7 @@ IAsyncEnumerable<Contact> ListAutoPagingAsync(
     CancellationToken cancellationToken = default)
 ```
 
-Same query parameters as `ListAsync` except `page` — the SDK advances pages automatically.
+Same query parameters as `ListAsync` except `page` - the SDK advances pages automatically.
 
 **Sample:**
 
@@ -92,8 +92,8 @@ Task<Contact> GetContactAsync(ContactReference contact, CancellationToken cancel
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `contactId` / `contact` | `long` / `ContactReference` | Yes | — | path `:id` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `contactId` / `contact` | `long` / `ContactReference` | Yes | - | path `:id` |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/contacts/:id`
 
@@ -113,8 +113,8 @@ Task<Contact> CreateContactAsync(Contact contact, CancellationToken cancellation
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `contact` | `Contact` | Yes | — | `contact` envelope |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `contact` | `Contact` | Yes | - | `contact` envelope |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `POST /v2/contacts`
 
@@ -139,9 +139,9 @@ Task<Contact> UpdateContactAsync(long contactId, Contact contact, CancellationTo
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `contactId` | `long` | Yes | — | path `:id` |
-| `contact` | `Contact` | Yes | — | `contact` envelope |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `contactId` | `long` | Yes | - | path `:id` |
+| `contact` | `Contact` | Yes | - | `contact` envelope |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `PUT /v2/contacts/:id`
 
@@ -155,8 +155,8 @@ Task DeleteContactAsync(long contactId, CancellationToken cancellationToken = de
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `contactId` | `long` | Yes | — | path `:id` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `contactId` | `long` | Yes | - | path `:id` |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `DELETE /v2/contacts/:id`
 
@@ -178,7 +178,7 @@ Task DeleteContactAsync(long contactId, CancellationToken cancellationToken = de
 
 ### sort
 
-`name`, `created_at`, `updated_at` — prefix with `-` for descending.
+`name`, `created_at`, `updated_at` - prefix with `-` for descending.
 
 ## Contact model
 

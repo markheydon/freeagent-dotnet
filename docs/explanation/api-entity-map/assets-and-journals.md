@@ -69,7 +69,7 @@ Capital asset history events may link to an expense, bill, or bank transaction e
 
 Mostly self-contained. History entries (`include_history=true`) expose a `link` URI to the purchase or disposal source (expense, bill, or bank explanation).
 
-Created indirectly via expenses or bank explanations with capital categories — not typically a standalone POST on the capital assets endpoint.
+Created indirectly via expenses or bank explanations with capital categories - not typically a standalone POST on the capital assets endpoint.
 
 ### Journal set / journal entry
 
@@ -91,7 +91,7 @@ Only for companies of type `UkUnincorporatedLandlord`. Referenced optionally on 
 
 ### User payroll profile
 
-`current_payroll_profile` on user GET is a nested object when payroll is configured — see [Users](https://dev.freeagent.com/docs/users) and [Payroll profiles](https://dev.freeagent.com/docs/payroll_profiles).
+`current_payroll_profile` on user GET is a nested object when payroll is configured - see [Users](https://dev.freeagent.com/docs/users) and [Payroll profiles](https://dev.freeagent.com/docs/payroll_profiles).
 
 ## Cross-cluster links
 

@@ -6,7 +6,7 @@
 @inject ApiDiagnosticsService ApiDiagnostics
 @inject NavigationManager NavigationManager
 
-<PageTitle>Contacts — FreeAgent SDK Sample</PageTitle>
+<PageTitle>Contacts - FreeAgent SDK Sample</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Contacts endpoint"
@@ -237,7 +237,7 @@
             index,
             contact.ResourceId,
             contact.DisplayName,
-            contact.Status?.ToString() ?? "—",
+            contact.Status?.ToString() ?? "-",
             contact.Email))
         .ToList() ?? [];
 
@@ -356,7 +356,7 @@
         }
     }
 
-    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
 
     private static string GetCrudHref(long id) => $"/contacts/detail?id={id}";
 

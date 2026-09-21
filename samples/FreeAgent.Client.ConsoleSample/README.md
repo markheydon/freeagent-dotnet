@@ -28,9 +28,9 @@ Note the `http` scheme, `127.0.0.1` host, port `8765`, and `/callback` path.
 
 ## 2. Configure credentials
 
-### Option A — user secrets (recommended, shared with the Blazor sample)
+### Option A - user secrets (recommended, shared with the Blazor sample)
 
-This project uses the same user-secrets ID as `FreeAgent.Client.BlazorSample`. If you already configured the Blazor sample, **you only need to share client ID and secret** — the console app ignores the Blazor `RedirectUri` from user-secrets and keeps its own default (`http://127.0.0.1:8765/callback`).
+This project uses the same user-secrets ID as `FreeAgent.Client.BlazorSample`. If you already configured the Blazor sample, **you only need to share client ID and secret** - the console app ignores the Blazor `RedirectUri` from user-secrets and keeps its own default (`http://127.0.0.1:8765/callback`).
 
 Otherwise, from this directory:
 
@@ -43,7 +43,7 @@ dotnet user-secrets set "FreeAgent:ClientSecret" "<your-client-secret>"
 
 Register `http://127.0.0.1:8765/callback` in your FreeAgent OAuth app (see step 1). You only need to set `FreeAgent:RedirectUri` in user-secrets if you use a non-default console redirect URI.
 
-### Option B — local settings file
+### Option B - local settings file
 
 ```bash
 cp appsettings.local.json.example appsettings.local.json
@@ -53,7 +53,7 @@ Edit `appsettings.local.json` with your sandbox credentials. Never commit this f
 
 If you create or change this file after building, run `dotnet build` again so it is copied to the output directory.
 
-### Option C — environment variables
+### Option C - environment variables
 
 ```bash
 export FREEAGENT_CLIENT_ID="your-client-id"
@@ -81,12 +81,12 @@ dotnet run
 
 1. The app prints a FreeAgent authorisation URL.
 2. Log in to your sandbox account (if prompted) and approve access.
-3. FreeAgent redirects to `http://127.0.0.1:8765/callback` — the app captures the code automatically when the browser can reach the local listener.
+3. FreeAgent redirects to `http://127.0.0.1:8765/callback` - the app captures the code automatically when the browser can reach the local listener.
 4. The app exchanges the code for tokens and prints each contact's `DisplayName`.
 
 ### WSL2 and manual paste
 
-On **WSL2**, the browser usually runs on Windows while the sample listens inside Linux. A redirect to `http://127.0.0.1:8765/callback` therefore hits Windows loopback, not the WSL listener — **automatic callback capture will usually fail**. Copy the authorisation URL manually, approve access, then paste the **full redirect URL** from the browser address bar into the console when prompted.
+On **WSL2**, the browser usually runs on Windows while the sample listens inside Linux. A redirect to `http://127.0.0.1:8765/callback` therefore hits Windows loopback, not the WSL listener - **automatic callback capture will usually fail**. Copy the authorisation URL manually, approve access, then paste the **full redirect URL** from the browser address bar into the console when prompted.
 
 On any platform, if the local listener cannot start (port in use, permissions, remote machine), use the same manual paste flow.
 
@@ -130,4 +130,4 @@ dotnet add package FreeAgent.Client --version 0.1.0-alpha.3
 
 - [Getting started](../../docs/tutorial/getting-started.md)
 - [Prerelease and OAuth scope](../../docs/explanation/prerelease-and-oauth.md)
-- [Blazor sample](../FreeAgent.Client.BlazorSample/) — fuller interactive SDK workbench
+- [Blazor sample](../FreeAgent.Client.BlazorSample/) - fuller interactive SDK workbench

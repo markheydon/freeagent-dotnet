@@ -39,14 +39,14 @@ Adopt Stripe.NET-aligned list naming on resource services:
 
 ### Positive
 
-- **POS-001**: Improves discoverability — `ListAsync` and `ListAutoPagingAsync` appear together and match Stripe.NET mental models.
+- **POS-001**: Improves discoverability - `ListAsync` and `ListAutoPagingAsync` appear together and match Stripe.NET mental models.
 - **POS-002**: Clarifies the read verb split: `Get*` = one resource, `List*` = collection.
 - **POS-003**: Reduces naming ceremony (`GetContactsPageAsync` → `ListAsync` on `ContactService`).
 
 ### Negative
 
 - **NEG-001**: Breaking change for existing alpha consumers (acceptable pre-1.0).
-- **NEG-002**: `ListAsync` overload resolution depends on service type (`client.Contacts.ListAsync` vs `client.Projects.ListAsync`) — same as Stripe.
+- **NEG-002**: `ListAsync` overload resolution depends on service type (`client.Contacts.ListAsync` vs `client.Projects.ListAsync`) - same as Stripe.
 
 ## Alternatives Considered
 
@@ -68,6 +68,6 @@ Adopt Stripe.NET-aligned list naming on resource services:
 
 ## References
 
-- [GOALS.md](../GOALS.md) — G2, G3
-- [CONVENTIONS.md](../CONVENTIONS.md) — list method naming
+- [GOALS.md](../GOALS.md) - G2, G3
+- [CONVENTIONS.md](../CONVENTIONS.md) - list method naming
 - [Stripe.NET CustomerService.List / ListAutoPaging](https://github.com/stripe/stripe-dotnet/blob/master/src/Stripe.net/Services/Customers/CustomerService.cs)

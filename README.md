@@ -8,7 +8,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 
 > **Prerelease software.** This package is currently in alpha. Public APIs may change between releases. See [VERSIONING.md](VERSIONING.md).
 
-**Documentation:** [markheydon.me.uk/freeagent-dotnet](https://markheydon.me.uk/freeagent-dotnet/) — tutorials, how-to guides, and SDK reference ([source](docs/)).
+**Documentation:** [markheydon.me.uk/freeagent-dotnet](https://markheydon.me.uk/freeagent-dotnet/) - tutorials, how-to guides, and SDK reference ([source](docs/)).
 
 ## Features
 
@@ -31,7 +31,7 @@ dotnet add package FreeAgent.Client
 ```csharp
 using FreeAgent.Client;
 
-var environment = FreeAgentEnvironment.Sandbox; // or Production — pass the same value to both constructors
+var environment = FreeAgentEnvironment.Sandbox; // or Production - pass the same value to both constructors
 var oauthClient = new FreeAgentOAuthClient(clientId, clientSecret, redirectUri, environment);
 var authUrl = oauthClient.GetAuthorizationUrl(state: "optional-state");
 // Redirect user to authUrl, then exchange the callback code:
@@ -63,18 +63,18 @@ See [CONTRIBUTING.md](CONTRIBUTING.md). By participating, you agree to [CODE_OF_
 
 ## Support and security
 
-- [SUPPORT.md](SUPPORT.md) — questions and issue routing
-- [SECURITY.md](SECURITY.md) — private vulnerability reporting
+- [SUPPORT.md](SUPPORT.md) - questions and issue routing
+- [SECURITY.md](SECURITY.md) - private vulnerability reporting
 
 ## Licence
 
-MIT — see [LICENSE](LICENSE).
+MIT - see [LICENSE](LICENSE).
 
 ## Versioning
 
-[VERSIONING.md](VERSIONING.md) — prerelease policy and path to stable `1.0.0`.
+[VERSIONING.md](VERSIONING.md) - prerelease policy and path to stable `1.0.0`.
 
 ## Resources
 
 - [FreeAgent API documentation](https://dev.freeagent.com/docs)
-- [Sample app](samples/README.md) — interactive SDK workbench (contributors)
+- [Sample app](samples/README.md) - interactive SDK workbench (contributors)

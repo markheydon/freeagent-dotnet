@@ -37,7 +37,7 @@ var label = project.ContactName;
 
 ## Write properties
 
-Assign typed references — never raw URI strings:
+Assign typed references - never raw URI strings:
 
 ```csharp
 await client.Projects.CreateProjectAsync(new Project
@@ -56,14 +56,14 @@ When updating a project retrieved from the API, the SDK round-trips the existing
 
 `IFreeAgentResource.ResourceId` returns `0` when parsing fails. Use `TryGetResourceId()` or `GetResourceId()` when you need a valid identifier for service calls.
 
-Categories are keyed by nominal code on the wire — use `Category.NominalCode` for API calls, not `ResourceId`.
+Categories are keyed by nominal code on the wire - use `Category.NominalCode` for API calls, not `ResourceId`.
 
 ## Optional hydration (`*GetOptions`)
 
 Single-resource GET methods may accept options such as `ProjectGetOptions.IncludeBillingContact`. When `true`, the SDK performs an additional GET to the linked resource **only if** the first response did not already include a nested object.
 
 - Default is `false` (one HTTP call).
-- Hydration is explicit and discoverable in IntelliSense — not lazy-loading on property access.
+- Hydration is explicit and discoverable in IntelliSense - not lazy-loading on property access.
 - List methods do **not** auto-hydrate linked resources (that would cause N+1 requests).
 
 ## List endpoints and `nested`

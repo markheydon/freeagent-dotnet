@@ -12,7 +12,7 @@ internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
 {
     private const string RateLimitTestHeaderName = "X-RateLimit-Test";
 
-    // Shared singletons — one per environment — used when the caller does not supply an HttpClient.
+    // Shared singletons - one per environment - used when the caller does not supply an HttpClient.
     // A single long-lived HttpClient per process avoids socket exhaustion (the well-known footgun).
     // This mirrors the strategy used by the official Stripe.NET SDK.
     private static readonly Lazy<HttpClient> LazyDefaultProductionHttpClient
@@ -50,8 +50,8 @@ internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
     /// </summary>
     /// <remarks>
     /// This constructor uses a shared, process-wide <see cref="HttpClient"/> singleton (one per
-    /// environment) to avoid socket exhaustion. To supply your own <see cref="HttpClient"/> — for
-    /// example, one obtained from <c>IHttpClientFactory</c> — use the overload that accepts an
+    /// environment) to avoid socket exhaustion. To supply your own <see cref="HttpClient"/> - for
+    /// example, one obtained from <c>IHttpClientFactory</c> - use the overload that accepts an
     /// <see cref="HttpClient"/> parameter.
     /// </remarks>
     /// <param name="accessToken">OAuth access token</param>
@@ -74,8 +74,8 @@ internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
     /// </summary>
     /// <remarks>
     /// This constructor uses a shared, process-wide <see cref="HttpClient"/> singleton (one per
-    /// environment) to avoid socket exhaustion. To supply your own <see cref="HttpClient"/> — for
-    /// example, one obtained from <c>IHttpClientFactory</c> — use the overload that accepts an
+    /// environment) to avoid socket exhaustion. To supply your own <see cref="HttpClient"/> - for
+    /// example, one obtained from <c>IHttpClientFactory</c> - use the overload that accepts an
     /// <see cref="HttpClient"/> parameter.
     /// </remarks>
     /// <param name="oauthClient">OAuth client for token refresh</param>

@@ -30,7 +30,7 @@ See [VERSIONING.md](../../VERSIONING.md) for stage progression (alpha → beta �
 - Persisting tokens or managing user sessions
 - App-level OAuth state machines
 
-Your application integrates the protocol helpers into its own auth stack. The [sample app](../../samples/README.md) demonstrates one possible Blazor Server integration for development — it is not part of the NuGet package.
+Your application integrates the protocol helpers into its own auth stack. The [sample app](../../samples/README.md) demonstrates one possible Blazor Server integration for development - it is not part of the NuGet package.
 
 `FreeAgentOAuthClient` and `FreeAgentClient` both default to `FreeAgentEnvironment.Production`. When targeting the FreeAgent sandbox, pass `FreeAgentEnvironment.Sandbox` to **both** constructors so the authorisation URL and API base address stay aligned. See [Getting started](../tutorial/getting-started.md).
 

@@ -11,7 +11,7 @@ namespace FreeAgent.Client.ConsoleSample;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The FreeAgent.Client SDK does <strong>not</strong> include this class — it is specific to
+/// The FreeAgent.Client SDK does <strong>not</strong> include this class - it is specific to
 /// console/CLI apps. Web apps typically add a callback route (see the Blazor sample's
 /// <c>/oauth/callback</c> endpoint). Mobile apps often use a custom URL scheme.
 /// </para>
@@ -49,12 +49,12 @@ internal static class ConsoleOAuthHelper
         var authorizationUrl = oauthClient.GetAuthorizationUrl(state);
 
         Console.WriteLine();
-        Console.WriteLine("Step 1 — open this URL in your browser and approve access:");
+        Console.WriteLine("Step 1 - open this URL in your browser and approve access:");
         Console.WriteLine();
         Console.WriteLine(authorizationUrl);
         Console.WriteLine();
         Console.WriteLine(
-            "Tip: on WSL, copy-paste this URL manually and paste the full redirect URL back — " +
+            "Tip: on WSL, copy-paste this URL manually and paste the full redirect URL back - " +
             "auto-capture usually does not work across the WSL/Windows network boundary.");
 
         // Start the listener before opening the browser so a fast redirect is not missed.
@@ -62,7 +62,7 @@ internal static class ConsoleOAuthHelper
         {
             try
             {
-                Console.WriteLine($"Step 2 — waiting for FreeAgent to redirect to {redirectUri}");
+                Console.WriteLine($"Step 2 - waiting for FreeAgent to redirect to {redirectUri}");
                 Console.WriteLine("(A local page will confirm when authorisation completes.)");
                 Console.WriteLine();
 
@@ -247,7 +247,7 @@ internal static class ConsoleOAuthHelper
         }
         catch (HttpListenerException)
         {
-            // Port in use, permission issue, or invalid prefix — fall back to manual paste.
+            // Port in use, permission issue, or invalid prefix - fall back to manual paste.
             listener.Close();
             listener = null!;
             return false;

@@ -24,13 +24,13 @@ Task<IReadOnlyList<string>> ListAsync(CancellationToken cancellationToken = defa
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/email_addresses`
 
 **Returns:** Verified sender addresses formatted as `Name <email@example.com>`.
 
-**Access:** Minimum FreeAgent access level — Time.
+**Access:** Minimum FreeAgent access level - Time.
 
 **Sample:**
 

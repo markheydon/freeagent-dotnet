@@ -23,9 +23,9 @@ flowchart TB
   Category --> Company
 ```
 
-`Company` is the root context for the authenticated account. `Contact` and `User` belong to the company but do not carry a `company` URI on their attributes — the relationship is implicit via the API token. `Categories` are company-scoped chart-of-accounts entries.
+`Company` is the root context for the authenticated account. `Contact` and `User` belong to the company but do not carry a `company` URI on their attributes - the relationship is implicit via the API token. `Categories` are company-scoped chart-of-accounts entries.
 
-`Currencies` appear as ISO code strings (for example `GBP`, `EUR`) on projects, invoices, and bank accounts — not as URI references.
+`Currencies` appear as ISO code strings (for example `GBP`, `EUR`) on projects, invoices, and bank accounts - not as URI references.
 
 ## Resource catalogue
 

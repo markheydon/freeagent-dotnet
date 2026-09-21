@@ -94,7 +94,7 @@ List requires: `?bank_account=`
 
 ### Invoice remittance
 
-Invoices may reference `bank_account` for remittance advice — see [Sales](sales.md).
+Invoices may reference `bank_account` for remittance advice - see [Sales](sales.md).
 
 ## API version note
 

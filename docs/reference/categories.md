@@ -6,7 +6,7 @@ nav_order: 3
 
 # Categories
 
-List, create, update, and delete chart-of-accounts categories. Create and update operations use **typed request factories** per documented variant — each variant exposes only the attributes allowed for that category group.
+List, create, update, and delete chart-of-accounts categories. Create and update operations use **typed request factories** per documented variant - each variant exposes only the attributes allowed for that category group.
 
 | | |
 |---|---|
@@ -32,11 +32,11 @@ Task<CategorySets> ListAsync(
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
 | `includeSubAccounts` | `bool` | No | `false` | `sub_accounts=true` when `true` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/categories`
 
-**Returns:** `CategorySets` — all category groups for the company (not paginated).
+**Returns:** `CategorySets` - all category groups for the company (not paginated).
 
 **Sample:**
 
@@ -54,12 +54,12 @@ Task<Category> GetCategoryAsync(string nominalCode, CancellationToken cancellati
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `nominalCode` | `string` | Yes | — | path `:nominal_code` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `nominalCode` | `string` | Yes | - | path `:nominal_code` |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/categories/:nominal_code`
 
-Use `category.NominalCode` for API calls — not `ResourceId` when the code is non-numeric.
+Use `category.NominalCode` for API calls - not `ResourceId` when the code is non-numeric.
 
 ---
 
@@ -71,14 +71,14 @@ Task DeleteCategoryAsync(string nominalCode, CancellationToken cancellationToken
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `nominalCode` | `string` | Yes | — | path `:nominal_code` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `nominalCode` | `string` | Yes | - | path `:nominal_code` |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `DELETE /v2/categories/:nominal_code`
 
 ## Create methods
 
-Each create method maps to `POST /v2/categories` with a variant-specific payload. The SDK sets `category_group` — callers do not supply it.
+Each create method maps to `POST /v2/categories` with a variant-specific payload. The SDK sets `category_group` - callers do not supply it.
 
 | Method | Request type | Nominal code range |
 |--------|--------------|-------------------|
@@ -126,16 +126,16 @@ var category = await client.Categories.CreateCostOfSalesCategoryAsync(request);
 
 ### Tax reporting name enums
 
-Pick the enum that matches your company type. Members map to exact wire values via `EnumWireValue` — browse IntelliSense for the full list.
+Pick the enum that matches your company type. Members map to exact wire values via `EnumWireValue` - browse IntelliSense for the full list.
 
 | Company context | Cost of sales enum | Admin expenses enum | Liabilities enum |
 |-----------------|-------------------|---------------------|------------------|
 | UK limited company | `UkLimitedCompanyCostOfSalesTaxReportingName` | `UkLimitedCompanyAdminExpensesTaxReportingName` | `UkLimitedCompanyLiabilitiesTaxReportingName` |
-| UK sole trader | `UkSoleTraderCostOfSalesTaxReportingName` | `UkSoleTraderAdminExpensesTaxReportingName` | — |
-| UK partnership | `UkPartnershipCostOfSalesTaxReportingName` | `UkPartnershipAdminExpensesTaxReportingName` | — |
-| Universal / US | `UniversalAndUsCostOfSalesTaxReportingName` | `UniversalAndUsAdminExpensesTaxReportingName` | — |
-| Other company types | — | — | `OtherCompanyLiabilitiesTaxReportingName` |
-| All (current asset) | — | — | `CurrentAssetTaxReportingName` |
+| UK sole trader | `UkSoleTraderCostOfSalesTaxReportingName` | `UkSoleTraderAdminExpensesTaxReportingName` | - |
+| UK partnership | `UkPartnershipCostOfSalesTaxReportingName` | `UkPartnershipAdminExpensesTaxReportingName` | - |
+| Universal / US | `UniversalAndUsCostOfSalesTaxReportingName` | `UniversalAndUsAdminExpensesTaxReportingName` | - |
+| Other company types | - | - | `OtherCompanyLiabilitiesTaxReportingName` |
+| All (current asset) | - | - | `CurrentAssetTaxReportingName` |
 
 ## Update methods
 

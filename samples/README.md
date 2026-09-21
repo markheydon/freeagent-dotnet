@@ -4,7 +4,7 @@ Samples for trying the `FreeAgent.Client` SDK against the FreeAgent API.
 
 | Sample | Purpose | SDK source |
 |--------|---------|------------|
-| [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Minimal console app — OAuth in the browser, list contact display names | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
+| [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Minimal console app - OAuth in the browser, list contact display names | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
 | [FreeAgent.Client.BlazorSample](FreeAgent.Client.BlazorSample/) | Blazor Server workbench for exercising SDK endpoints interactively | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
 
 ---
@@ -41,7 +41,7 @@ See [FreeAgent.Client.BlazorSample/README.md](FreeAgent.Client.BlazorSample/READ
    https://localhost:5001/oauth/callback
    ```
 
-   > **Important:** The redirect URI must match exactly — including the scheme (`https`), host (`localhost`), port (`:5001`), and path (`/oauth/callback`). A mismatch will cause the authorization flow to fail.
+   > **Important:** The redirect URI must match exactly - including the scheme (`https`), host (`localhost`), port (`:5001`), and path (`/oauth/callback`). A mismatch will cause the authorization flow to fail.
 
 4. Note your **OAuth identifier** and **OAuth secret**.
 
@@ -81,7 +81,7 @@ The app starts at `https://localhost:5001`. Your browser may show a certificate 
 
 1. Navigate to <https://localhost:5001>.
 2. Click **Connect to FreeAgent**.
-3. You are redirected to FreeAgent's authorization page — approve the app.
+3. You are redirected to FreeAgent's authorization page - approve the app.
 4. FreeAgent redirects back to `https://localhost:5001/oauth/callback`.
 5. The app exchanges the code for a token and shows **Connected** in the header.
 
@@ -135,7 +135,7 @@ See the page in the running app for full details and usage instructions.
 - **Probe pages:** When adding SDK endpoints, follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md). Copy patterns from Company, Contacts, and Categories.
 - **Token lifetime:** The OAuth session is restored from a short-lived browser cookie (~1 hour). Reconnect after expiry if needed.
 - **OAuth CSRF state:** Pending authorisation state is also stored in a short-lived cookie (~15 minutes) so callbacks still validate after an app restart during local development.
-- **Session security:** Tokens and pending OAuth state are stored as plaintext JSON in `HttpOnly` cookies. This is intentional for local development only — do not deploy the sample's cookie persistence pattern to production.
+- **Session security:** Tokens and pending OAuth state are stored as plaintext JSON in `HttpOnly` cookies. This is intentional for local development only - do not deploy the sample's cookie persistence pattern to production.
 - **Sandbox vs production:** Choose the target environment from the Connect panel before starting OAuth. After connecting, disconnect to switch environments.
 - **Port:** The sample uses port `5001` (HTTPS). If you change it in `Properties/launchSettings.json`, update the redirect URI in both your FreeAgent app registration and your user secrets.
 - **Do not commit credentials.** `appsettings.json` contains only empty placeholders. User secrets are stored outside the repository in your OS user profile.

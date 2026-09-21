@@ -22,7 +22,7 @@ src/
 	├── FreeAgentResourceUrls.cs         # Environment-correct resource URI builders
 	├── PaginatedResponse.cs             # Public pagination result type
 	├── ProjectGetOptions.cs             # Single-GET hydration options (Projects)
-	├── Infrastructure/                  # Internal plumbing — not part of the public API surface
+	├── Infrastructure/                  # Internal plumbing - not part of the public API surface
 	│   ├── Authentication/              # OAuth token exchange/refresh client and models
 	│   ├── Configuration/               # Environment enum and URL mapping
 	│   ├── Http/                        # HTTP transport, rate limiting, API exceptions, pagination helpers
@@ -74,12 +74,12 @@ tests/
 ```
 
 **Namespace layout:**
-- `FreeAgent.Client` — top-level consumer namespace (`FreeAgentClient`, `PaginatedResponse<T>`, `ProjectGetOptions`)
-- `FreeAgent.Client.Infrastructure.Authentication` — OAuth types
-- `FreeAgent.Client.Infrastructure.Configuration` — FreeAgentEnvironment, FreeAgentEnvironmentEndpoints
-- `FreeAgent.Client.Infrastructure.Http` — HTTP client, exceptions, pagination helpers
-- `FreeAgent.Client.Models.[Resource]` — resource models (Categories, Company, Contacts, EmailAddresses, Projects, Shared, Users)
-- `FreeAgent.Client.Services.[Resource]` — resource services (Categories, Company, Contacts, EmailAddresses, Projects, Users)
+- `FreeAgent.Client` - top-level consumer namespace (`FreeAgentClient`, `PaginatedResponse<T>`, `ProjectGetOptions`)
+- `FreeAgent.Client.Infrastructure.Authentication` - OAuth types
+- `FreeAgent.Client.Infrastructure.Configuration` - FreeAgentEnvironment, FreeAgentEnvironmentEndpoints
+- `FreeAgent.Client.Infrastructure.Http` - HTTP client, exceptions, pagination helpers
+- `FreeAgent.Client.Models.[Resource]` - resource models (Categories, Company, Contacts, EmailAddresses, Projects, Shared, Users)
+- `FreeAgent.Client.Services.[Resource]` - resource services (Categories, Company, Contacts, EmailAddresses, Projects, Users)
 
 **Key naming rules (unchanged):**
 - Service: [Resource]Service (CompanyService, ContactService)

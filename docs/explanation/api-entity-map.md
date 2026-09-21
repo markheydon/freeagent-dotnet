@@ -7,11 +7,11 @@ has_children: true
 
 # FreeAgent API entity map
 
-This is an **unofficial reconstruction** of how FreeAgent API resources link to each other. FreeAgent does not publish an entity-relationship diagram; the graphs here are inferred from [official API documentation](https://dev.freeagent.com/docs) — attribute tables where kind is **URI**, nested child resources, and list filters that take a resource URI (`?contact=`, `?project=`, and so on).
+This is an **unofficial reconstruction** of how FreeAgent API resources link to each other. FreeAgent does not publish an entity-relationship diagram; the graphs here are inferred from [official API documentation](https://dev.freeagent.com/docs) - attribute tables where kind is **URI**, nested child resources, and list filters that take a resource URI (`?contact=`, `?project=`, and so on).
 
 Use this map to understand object relationships when integrating with FreeAgent, and to choose a sensible order when adding resources to the SDK. For what the SDK implements today, see [API coverage](../reference/api-coverage.md).
 
-When implementing SDK models, map documented URI links using the [linked resources](linked-resources.md) pattern — see [ADR-0011](../../adr/adr-0011-linked-resource-identity-and-expandable-references.md).
+When implementing SDK models, map documented URI links using the [linked resources](linked-resources.md) pattern - see [ADR-0011](../../adr/adr-0011-linked-resource-identity-and-expandable-references.md).
 
 ## How to read the diagrams
 
@@ -61,7 +61,7 @@ flowchart LR
 | Purchases | [Purchases](api-entity-map/purchases.md) | Bills, expenses, hire purchases, attachments |
 | Banking | [Banking](api-entity-map/banking.md) | Bank accounts, transactions, explanations, feeds |
 | Assets and journals | [Assets and journals](api-entity-map/assets-and-journals.md) | Capital assets, journal sets, properties, payroll |
-| Reports | [Reports](api-entity-map/reports.md) | P&amp;L, balance sheet, trial balance, tax returns — weak URI graphs |
+| Reports | [Reports](api-entity-map/reports.md) | P&amp;L, balance sheet, trial balance, tax returns - weak URI graphs |
 
 ## Using this map to sequence SDK work
 
@@ -69,14 +69,14 @@ Layers describe **dependency pressure**, not a mandatory backlog. A resource in 
 
 | Layer | Resources | Rationale |
 |-------|-----------|-----------|
-| **0 — Done** | Company, Contacts, Categories, OAuth helpers | Company context, contacts, and chart-of-accounts categories are referenced almost everywhere |
-| **1 — Cheap hubs** | Users | Few remaining foundation dependencies; users are required for expenses and timeslips |
-| **2 — Project spine** | Projects, Tasks | Projects require `contact` (done); tasks require `project`; timeslips require `task`, `project`, and `user` |
-| **3 — Sales documents** | Invoices, Estimates, Recurring invoices, Credit notes | Invoices require only `contact` on create; `project`, `bank_account`, and item `category` URIs are optional |
-| **4 — Purchases** | Bills, Expenses | Bills require `contact`; expenses require `user` and `category` |
-| **5 — Banking** | Bank accounts, Bank transactions, Bank transaction explanations | Explanations link back to invoices, bills, contacts, projects, users, and stock |
-| **6 — Assets and books** | Capital assets, Journal sets, Properties, Payroll | Heavier accounting surface; properties are landlord-only |
-| **7 — Reports** | P&amp;L, Balance sheet, Trial balance, VAT returns, and similar | Mostly date-bounded reads with few URI dependencies |
+| **0 - Done** | Company, Contacts, Categories, OAuth helpers | Company context, contacts, and chart-of-accounts categories are referenced almost everywhere |
+| **1 - Cheap hubs** | Users | Few remaining foundation dependencies; users are required for expenses and timeslips |
+| **2 - Project spine** | Projects, Tasks | Projects require `contact` (done); tasks require `project`; timeslips require `task`, `project`, and `user` |
+| **3 - Sales documents** | Invoices, Estimates, Recurring invoices, Credit notes | Invoices require only `contact` on create; `project`, `bank_account`, and item `category` URIs are optional |
+| **4 - Purchases** | Bills, Expenses | Bills require `contact`; expenses require `user` and `category` |
+| **5 - Banking** | Bank accounts, Bank transactions, Bank transaction explanations | Explanations link back to invoices, bills, contacts, projects, users, and stock |
+| **6 - Assets and books** | Capital assets, Journal sets, Properties, Payroll | Heavier accounting surface; properties are landlord-only |
+| **7 - Reports** | P&amp;L, Balance sheet, Trial balance, VAT returns, and similar | Mostly date-bounded reads with few URI dependencies |
 
 ### Is Invoices blocked?
 
@@ -97,6 +97,6 @@ When you add or retrofit an SDK endpoint, check the relevant cluster page and up
 
 ## Related documentation
 
-- [API coverage](../reference/api-coverage.md) — implemented SDK resources
-- [Implementing endpoints](../../plan/IMPLEMENTING_ENDPOINTS.md) — contributor checklist
-- [FreeAgent API documentation](https://dev.freeagent.com/docs) — authoritative contract
+- [API coverage](../reference/api-coverage.md) - implemented SDK resources
+- [Implementing endpoints](../../plan/IMPLEMENTING_ENDPOINTS.md) - contributor checklist
+- [FreeAgent API documentation](https://dev.freeagent.com/docs) - authoritative contract

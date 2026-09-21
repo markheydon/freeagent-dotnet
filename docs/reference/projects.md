@@ -41,7 +41,7 @@ Task<PaginatedResponse<Project>> ListAsync(
 | `contact` | `ContactReference?` | No | `null` | `contact` (URI) |
 | `contactId` | `long?` | No | `null` | `contact` (URI from `client.Urls.Contact(id)`) |
 | `nested` | `bool?` | No | `null` | `nested` (`true` / `false`) |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/projects`
 
@@ -90,9 +90,9 @@ Task<Project> GetProjectAsync(
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `projectId` | `long` | Yes | — | path `:id` |
-| `options` | `ProjectGetOptions?` | No | `null` | — |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `projectId` | `long` | Yes | - | path `:id` |
+| `options` | `ProjectGetOptions?` | No | `null` | - |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/projects/:id`
 
@@ -116,8 +116,8 @@ Task<Project> CreateProjectAsync(Project project, CancellationToken cancellation
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `project` | `Project` | Yes | — | `project` envelope |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `project` | `Project` | Yes | - | `project` envelope |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `POST /v2/projects`
 
@@ -133,9 +133,9 @@ Task<Project> UpdateProjectAsync(long projectId, Project project, CancellationTo
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `projectId` | `long` | Yes | — | path `:id` |
-| `project` | `Project` | Yes | — | `project` envelope |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `projectId` | `long` | Yes | - | path `:id` |
+| `project` | `Project` | Yes | - | `project` envelope |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `PUT /v2/projects/:id`
 
@@ -151,8 +151,8 @@ Task DeleteProjectAsync(long projectId, CancellationToken cancellationToken = de
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `projectId` | `long` | Yes | — | path `:id` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `projectId` | `long` | Yes | - | path `:id` |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `DELETE /v2/projects/:id`
 
@@ -169,7 +169,7 @@ Task DeleteProjectAsync(long projectId, CancellationToken cancellationToken = de
 
 ### sort
 
-`name`, `contact_name`, `contact_display_name`, `created_at`, `updated_at` — prefix with `-` for descending.
+`name`, `contact_name`, `contact_display_name`, `created_at`, `updated_at` - prefix with `-` for descending.
 
 ## ProjectGetOptions
 
@@ -189,7 +189,7 @@ Key properties:
 | `Budget` | `decimal?` | `budget` | |
 | `BudgetUnits` | `ProjectBudgetUnits?` | `budget_units` | |
 | `BillingPeriod` | `ProjectBillingPeriod?` | `billing_period` | |
-| `ContactId` | `long?` | — | Parsed from `contact` URI |
+| `ContactId` | `long?` | - | Parsed from `contact` URI |
 | `ContactName` | `string?` | `contact_name` | Denormalised display name |
 | `Contact` | `Contact?` | `contact` | Nested or hydrated contact |
 | `BillingContact` | `ContactReference?` | `contact` | Write payload |

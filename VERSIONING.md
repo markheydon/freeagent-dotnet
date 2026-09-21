@@ -41,7 +41,7 @@ Minor and patch bumps within a prerelease stage (e.g. `0.1.0-alpha.1` → `0.1.0
 
 The package will be promoted to stable `1.0.0` when all of the following are true:
 
-1. All items in the [In Scope — v1.0](SCOPE.md) section of `SCOPE.md` are implemented and covered by tests.
+1. All items in the [In Scope - v1.0](SCOPE.md) section of `SCOPE.md` are implemented and covered by tests.
 2. All goals listed in [Goals for v1.0](GOALS.md) (`G1`–`G5`) are met.
 3. The SDK is integrated into at least one production application owned by the author (see *Success Looks Like* in `GOALS.md`).
 4. No known breaking changes are planned for the immediate future.
@@ -68,7 +68,7 @@ The release workflow will:
 
 - **Alpha releases**: Expect breaking changes. Treat each alpha as potentially incompatible with the previous one.
 - **Beta releases**: Breaking changes are avoided where possible and will be called out explicitly in release notes.
-- **Stable releases**: Follow standard Semantic Versioning guarantees — breaking changes only in major versions.
+- **Stable releases**: Follow standard Semantic Versioning guarantees - breaking changes only in major versions.
 
 If you depend on a prerelease version of this package, pin to an exact version in your project file:
 

@@ -6,7 +6,7 @@
 @inject ApiDiagnosticsService ApiDiagnostics
 @inject NavigationManager NavigationManager
 
-<PageTitle>Categories — FreeAgent SDK Sample</PageTitle>
+<PageTitle>Categories - FreeAgent SDK Sample</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Categories endpoint"
@@ -293,8 +293,8 @@
                 setLabel,
                 arrayPropertyName,
                 index,
-                category.NominalCode ?? "—",
-                category.Description ?? "—",
+                category.NominalCode ?? "-",
+                category.Description ?? "-",
                 category.AutoSalesTaxRate?.ToString(),
                 category));
         }
@@ -346,7 +346,7 @@
         return string.Compare(left, right, StringComparison.Ordinal);
     }
 
-    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
 
     private static string GetCrudHref(string nominalCode) => $"/categories/detail?nominal_code={Uri.EscapeDataString(nominalCode)}";
 

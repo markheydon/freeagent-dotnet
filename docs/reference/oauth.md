@@ -6,7 +6,7 @@ nav_order: 7
 
 # OAuth protocol helpers
 
-Protocol-level OAuth 2.0 utilities for authorisation URL construction, code exchange, and token refresh. The SDK does **not** host callback endpoints or orchestrate browser flows — your application owns that.
+Protocol-level OAuth 2.0 utilities for authorisation URL construction, code exchange, and token refresh. The SDK does **not** host callback endpoints or orchestrate browser flows - your application owns that.
 
 | | |
 |---|---|
@@ -66,8 +66,8 @@ Task<OAuthTokenResponse> ExchangeCodeForTokenAsync(
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `code` | `string` | Yes | — | `code` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `code` | `string` | Yes | - | `code` |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **Returns:** Access and refresh tokens.
 
@@ -92,8 +92,8 @@ Task<OAuthTokenResponse> RefreshTokenAsync(
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `refreshToken` | `string` | Yes | — | `refresh_token` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `refreshToken` | `string` | Yes | - | `refresh_token` |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **Returns:** New access token (and typically a new refresh token).
 
@@ -108,9 +108,9 @@ Task<OAuthTokenResponse> RefreshTokenAsync(
 | `RefreshToken` | `string?` | `refresh_token` | For obtaining new access tokens |
 | `ExpiresIn` | `int` | `expires_in` | Lifetime in seconds |
 | `ExpiresAtUtc` | `DateTimeOffset?` | `expires_at_utc` | Persisted absolute expiry |
-| `IsExpired` | `bool` | — | Computed |
-| `IsExpiringSoon` | `bool` | — | True within five minutes of expiry |
-| `TimeUntilExpiry` | `TimeSpan` | — | Remaining lifetime |
+| `IsExpired` | `bool` | - | Computed |
+| `IsExpiringSoon` | `bool` | - | True within five minutes of expiry |
+| `TimeUntilExpiry` | `TimeSpan` | - | Remaining lifetime |
 
 Call `InitialiseExpiryUtc()` after deserialising a stored token if `ExpiresAtUtc` is not set.
 

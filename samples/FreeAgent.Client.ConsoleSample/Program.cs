@@ -6,7 +6,7 @@
 //   3. Exchange that code for access + refresh tokens (ExchangeCodeForTokenAsync).
 //   4. Call the API with FreeAgentClient using those tokens.
 //
-// The SDK provides step 1, 3, and 4 helpers only. YOUR app must own step 2 —
+// The SDK provides step 1, 3, and 4 helpers only. YOUR app must own step 2,
 // i.e. receiving the redirect. Web apps use a callback route; this console app
 // uses a temporary local HTTP listener (see ConsoleOAuthHelper).
 
@@ -39,7 +39,7 @@ Console.WriteLine();
 // --- OAuth step 1 & 2: get an authorisation code from the user ---
 // ConsoleOAuthHelper opens the browser (when possible), listens on the redirect URI,
 // and returns the ?code=... query parameter FreeAgent sends back.
-// On WSL, copy-paste the printed URL manually and paste the full redirect URL back —
+// On WSL, copy-paste the printed URL manually and paste the full redirect URL back;
 // auto-capture usually does not work across the WSL/Windows network boundary.
 var authorizationCode = await ConsoleOAuthHelper.GetAuthorizationCodeAsync(
     oauthClient,

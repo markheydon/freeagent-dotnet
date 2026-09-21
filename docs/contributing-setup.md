@@ -29,7 +29,7 @@ You should see 8.x and 10.x entries. [global.json](../global.json) pins SDK `10.
 
 ### WSL / Ubuntu
 
-Install from [Microsoft’s .NET install instructions](https://learn.microsoft.com/en-us/dotnet/core/install/linux) or use `dotnet-install.sh`. Avoid relying on the distro `dotnet` metapackage alone — it may not include the versions this repository targets.
+Install from [Microsoft’s .NET install instructions](https://learn.microsoft.com/en-us/dotnet/core/install/linux) or use `dotnet-install.sh`. Avoid relying on the distro `dotnet` metapackage alone - it may not include the versions this repository targets.
 
 ### Common build failure
 

@@ -6,8 +6,8 @@
 
     <!--
       SDK source toggle (see README):
-        true  (default) — ProjectReference to src/FreeAgent.Client (repo development)
-        false           — PackageReference to FreeAgent.Client on NuGet (consumer smoke test)
+        true  (default) - ProjectReference to src/FreeAgent.Client (repo development)
+        false           - PackageReference to FreeAgent.Client on NuGet (consumer smoke test)
 
       dotnet run -p:UseLocalFreeAgentClient=false
     -->

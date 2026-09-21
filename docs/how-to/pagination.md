@@ -36,7 +36,7 @@ await foreach (var contact in client.Contacts.ListAutoPagingAsync(perPage: 50))
 }
 ```
 
-Cancellation is honoured during pagination loops — pass a `CancellationToken` to stop early.
+Cancellation is honoured during pagination loops - pass a `CancellationToken` to stop early.
 
 ## List filters (Contacts)
 

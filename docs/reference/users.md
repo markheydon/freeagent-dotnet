@@ -27,7 +27,7 @@ Task<IReadOnlyList<User>> ListAsync(
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
 | `view` | `string` | No | `UserViews.All` | `view` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/users`
 
@@ -51,8 +51,8 @@ Task<User> GetUserAsync(long userId, CancellationToken cancellationToken = defau
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `userId` | `long` | Yes | — | path `:id` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `userId` | `long` | Yes | - | path `:id` |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/users/:id`
 
@@ -66,11 +66,11 @@ Task<User> GetCurrentUserAsync(CancellationToken cancellationToken = default)
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/users/me`
 
-**Access:** Minimum FreeAgent access level — Time.
+**Access:** Minimum FreeAgent access level - Time.
 
 **Sample:**
 
@@ -88,8 +88,8 @@ Task<User> CreateUserAsync(User user, CancellationToken cancellationToken = defa
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `user` | `User` | Yes | — | `user` envelope |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `user` | `User` | Yes | - | `user` envelope |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `POST /v2/users`
 
@@ -103,9 +103,9 @@ Task<User> UpdateUserAsync(long userId, User user, CancellationToken cancellatio
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `userId` | `long` | Yes | — | path `:id` |
-| `user` | `User` | Yes | — | `user` envelope |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `userId` | `long` | Yes | - | path `:id` |
+| `user` | `User` | Yes | - | `user` envelope |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `PUT /v2/users/:id`
 
@@ -119,12 +119,12 @@ Task<User> UpdateCurrentUserAsync(User user, CancellationToken cancellationToken
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `user` | `User` | Yes | — | `user` envelope |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `user` | `User` | Yes | - | `user` envelope |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `PUT /v2/users/me`
 
-**Access:** Minimum FreeAgent access level — Time.
+**Access:** Minimum FreeAgent access level - Time.
 
 ---
 
@@ -136,8 +136,8 @@ Task DeleteUserAsync(long userId, CancellationToken cancellationToken = default)
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `userId` | `long` | Yes | — | path `:id` |
-| `cancellationToken` | `CancellationToken` | No | `default` | — |
+| `userId` | `long` | Yes | - | path `:id` |
+| `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `DELETE /v2/users/:id`
 

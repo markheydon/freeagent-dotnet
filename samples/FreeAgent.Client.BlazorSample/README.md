@@ -44,4 +44,4 @@ dotnet add package FreeAgent.Client --version 0.1.0-alpha.3
 
 - [Samples overview](../README.md)
 - [Sample probe pages](../../docs/contributing/sample-probe-pages.md)
-- [Console sample](../FreeAgent.Client.ConsoleSample/) — minimal OAuth + contacts listing
+- [Console sample](../FreeAgent.Client.ConsoleSample/) - minimal OAuth + contacts listing

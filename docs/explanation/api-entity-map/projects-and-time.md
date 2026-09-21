@@ -88,7 +88,7 @@ List requires parent: `?contact=` or `?project=`
 | Project | `contact` | [Foundations](foundations.md) | Billing contact |
 | Timeslip | `user` | [Foundations](foundations.md) | Who logged time |
 
-Projects also receive optional links from invoices, estimates, bills, expenses, and bank explanations — see [Sales](sales.md) and [Purchases](purchases.md).
+Projects also receive optional links from invoices, estimates, bills, expenses, and bank explanations - see [Sales](sales.md) and [Purchases](purchases.md).
 
 ## SDK sequencing note
 

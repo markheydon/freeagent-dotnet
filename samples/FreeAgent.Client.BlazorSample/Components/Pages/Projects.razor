@@ -5,7 +5,7 @@
 @inject ApiDiagnosticsService ApiDiagnostics
 @inject NavigationManager NavigationManager
 
-<PageTitle>Projects — FreeAgent SDK Sample</PageTitle>
+<PageTitle>Projects - FreeAgent SDK Sample</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Projects endpoint"
@@ -273,7 +273,7 @@
             index,
             project.ResourceId,
             project.Name,
-            project.Status?.ToString() ?? "—",
+            project.Status?.ToString() ?? "-",
             project.ContactName))
         .ToList() ?? [];
 
@@ -434,7 +434,7 @@
         return $"projects?{string.Join('&', query)}";
     }
 
-    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
 
     private static string GetCrudHref(long id) => $"/projects/detail?id={id}";
 

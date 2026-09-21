@@ -26,4 +26,4 @@ For how resources relate to each other and a suggested implementation order, see
 
 ## Not yet implemented
 
-Invoices and other MVP resources listed in [SCOPE.md](../../SCOPE.md) — tracked via GitHub Issues.
+Invoices and other MVP resources listed in [SCOPE.md](../../SCOPE.md) - tracked via GitHub Issues.

@@ -19,7 +19,7 @@ try
 }
 catch (FreeAgentRateLimitException ex)
 {
-    // 429 Too Many Requests — honour Retry-After when scheduling a retry
+    // 429 Too Many Requests - honour Retry-After when scheduling a retry
     Console.WriteLine($"Rate limited after {ex.AttemptCount} attempts. Retry after {ex.RetryAfter}.");
 }
 catch (FreeAgentOAuthException ex)

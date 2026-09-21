@@ -60,7 +60,7 @@ var project = await client.Projects.GetProjectAsync(
     new ProjectGetOptions { IncludeBillingContact = true });
 var organisation = project.Contact!.OrganisationName;
 
-// Display name only — one HTTP call
+// Display name only - one HTTP call
 var summary = await client.Projects.GetProjectAsync(123);
 var label = summary.ContactName;
 ```
@@ -74,8 +74,8 @@ Published documentation: [markheydon.me.uk/freeagent-dotnet](https://markheydon.
 - [Getting started](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started)
 - [Pagination](https://markheydon.me.uk/freeagent-dotnet/how-to/pagination)
 - [Error handling](https://markheydon.me.uk/freeagent-dotnet/how-to/error-handling)
-- [API coverage](https://markheydon.me.uk/freeagent-dotnet/reference) — SDK reference for every implemented resource
+- [API coverage](https://markheydon.me.uk/freeagent-dotnet/reference) - SDK reference for every implemented resource
 
 ## Licence
 
-MIT — see [LICENSE](https://github.com/markheydon/freeagent-dotnet/blob/main/LICENSE).
+MIT - see [LICENSE](https://github.com/markheydon/freeagent-dotnet/blob/main/LICENSE).

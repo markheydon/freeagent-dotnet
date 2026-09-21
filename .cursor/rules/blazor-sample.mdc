@@ -13,9 +13,9 @@ The sample app is the living reference for implemented SDK capability (see ADR-0
 - Follow the probe-page standard in [`docs/contributing/sample-probe-pages.md`](../../docs/contributing/sample-probe-pages.md).
 - Reference implementations: `Company.razor` (single GET), `Contacts.razor` (paginated list + per-row mapping), `ContactDetail.razor` (CRUD + seed data), `Categories.razor` / `CategoryDetail.razor` (non-paginated list + multi-variant writes).
 - Reuse shared probe components:
-  - `EndpointProbeHeader` — call under test, API docs link (`DocsUrl`), environment, endpoint path
-  - `ModelWireDiagnostics` + `ModelProbeResults` — wire-to-model mapping, filter chips, raw JSON
-  - `ApiErrorDiagnostics` — API error payloads
+  - `EndpointProbeHeader` - call under test, API docs link (`DocsUrl`), environment, endpoint path
+  - `ModelWireDiagnostics` + `ModelProbeResults` - wire-to-model mapping, filter chips, raw JSON
+  - `ApiErrorDiagnostics` - API error payloads
 - List pages: inspect mapping per wire array item. CRUD pages: `?id=` deep links, fetch wire JSON after create/update, `MudProgressLinear` while loading.
 - Only model wire fields from the official FreeAgent API docs.
 - When editing MudBlazor UI, use the `mudblazor` skill in `.agents/skills/mudblazor/`.

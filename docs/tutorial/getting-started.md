@@ -23,9 +23,9 @@ dotnet add package FreeAgent.Client
 
 ## OAuth protocol helpers
 
-The SDK provides protocol-level OAuth utilities (`FreeAgentOAuthClient`): authorisation URL construction, code exchange, and token refresh. It does **not** host callback endpoints or orchestrate browser flows — your application owns that.
+The SDK provides protocol-level OAuth utilities (`FreeAgentOAuthClient`): authorisation URL construction, code exchange, and token refresh. It does **not** host callback endpoints or orchestrate browser flows - your application owns that.
 
-Both `FreeAgentOAuthClient` and `FreeAgentClient` default to **production**. Pass `FreeAgentEnvironment.Sandbox` on **both** when you are using a sandbox application — otherwise authorisation and API calls go to production.
+Both `FreeAgentOAuthClient` and `FreeAgentClient` default to **production**. Pass `FreeAgentEnvironment.Sandbox` on **both** when you are using a sandbox application - otherwise authorisation and API calls go to production.
 
 ```csharp
 using FreeAgent.Client;
@@ -65,8 +65,8 @@ Always dispose the client when finished (`using` recommended).
 
 ## Next steps
 
-- [Pagination](../how-to/pagination.md) — list contacts and other paginated resources
-- [Error handling](../how-to/error-handling.md) — catch typed exceptions
-- [API coverage](../reference/api-coverage.md) — browse the SDK reference for every implemented resource
-- [Contacts](../reference/contacts.md) — list filters, CRUD methods, and the `Contact` model
-- [Sample app](../../samples/README.md) — interactive Blazor workbench (contributors)
+- [Pagination](../how-to/pagination.md) - list contacts and other paginated resources
+- [Error handling](../how-to/error-handling.md) - catch typed exceptions
+- [API coverage](../reference/api-coverage.md) - browse the SDK reference for every implemented resource
+- [Contacts](../reference/contacts.md) - list filters, CRUD methods, and the `Contact` model
+- [Sample app](../../samples/README.md) - interactive Blazor workbench (contributors)

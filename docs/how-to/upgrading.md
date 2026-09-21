@@ -21,7 +21,7 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP comp
 
 1. Read the [GitHub Release notes](https://github.com/markheydon/freeagent-dotnet/releases) for breaking changes.
 2. Update the package reference and restore.
-3. Run your test suite — model mapping changes (for example `string` to enum, `DateTime` to `DateOnly`) are the most common breaks during alpha.
+3. Run your test suite - model mapping changes (for example `string` to enum, `DateTime` to `DateOnly`) are the most common breaks during alpha.
 4. Check [API coverage](../reference/api-coverage.md) for newly implemented endpoints.
 
 ## Recent breaking changes (alpha)
@@ -46,13 +46,13 @@ Single-resource reads (`GetContactAsync`, `GetProjectAsync`, etc.) are unchanged
 
 ### Linked resource fields on Projects
 
-`Project.Contact` is now `Contact?` (read) for nested or hydrated billing contact data. Assign `BillingContact` (a `ContactReference`) when creating or updating — for example `client.Urls.Contact(contactId)` — rather than a raw URI string.
+`Project.Contact` is now `Contact?` (read) for nested or hydrated billing contact data. Assign `BillingContact` (a `ContactReference`) when creating or updating - for example `client.Urls.Contact(contactId)` - rather than a raw URI string.
 
 Use `GetProjectAsync(id, new ProjectGetOptions { IncludeBillingContact = true })` when you need full contact fields such as `OrganisationName`. Use `ContactName` when a display label from a single HTTP call is enough.
 
 On update, the SDK round-trips the existing billing contact from the read model when `BillingContact` is not set. Set `OmitBillingContactFromWrite = true` on `Project` to exclude contact from the write payload.
 
-Project list methods accept `ContactReference? contact` and `long? contactId` instead of `string? contact`. Supply only one contact filter parameter — specifying both throws `ArgumentException`.
+Project list methods accept `ContactReference? contact` and `long? contactId` instead of `string? contact`. Supply only one contact filter parameter - specifying both throws `ArgumentException`.
 
 Use `TryGetResourceId()` or `GetResourceId()` when a parsed identifier is required. `ResourceId` returns `0` when parsing fails.
 

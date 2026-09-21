@@ -52,7 +52,7 @@ app.Use(async (context, next) =>
 
 app.MapStaticAssets();
 
-// OAuth start — sets CSRF cookie and redirects to FreeAgent (must be a full HTTP request, not Blazor interactive).
+// OAuth start - sets CSRF cookie and redirects to FreeAgent (must be a full HTTP request, not Blazor interactive).
 app.MapGet("/oauth/start", (
     string? environment,
     TokenStore tokenStore,
@@ -72,7 +72,7 @@ app.MapGet("/oauth/start", (
     return Results.Redirect(authorizationUrl);
 });
 
-// OAuth authorization callback — FreeAgent redirects here after the user approves or denies the app.
+// OAuth authorization callback - FreeAgent redirects here after the user approves or denies the app.
 app.MapGet("/oauth/callback", async (
     string? code,
     string? state,

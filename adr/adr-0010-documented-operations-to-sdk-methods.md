@@ -20,7 +20,7 @@ The FreeAgent API docs describe operations by **heading** (for example, "Create 
 
 This conflicts with:
 
-- **G2** in [GOALS.md](../GOALS.md): Stripe.NET-quality developer experience — discoverable, consistent, pleasant to use.
+- **G2** in [GOALS.md](../GOALS.md): Stripe.NET-quality developer experience - discoverable, consistent, pleasant to use.
 - **G1**: strongly typed SDK for the FreeAgent REST API.
 - [SCOPE.md](../SCOPE.md): strongly typed request and response models.
 - [ADR-0003](adr-0003-endpoint-implementation-workflow.md): plan-first workflow with model guardrails.
@@ -35,7 +35,7 @@ Adopt **documented operation heading** as the unit of public SDK surface design,
 
 - **DEC-001**: Before implementation, inventory every operation heading (`##` / `###`) on the official FreeAgent docs page for the entity.
 - **DEC-002**: Each documented operation heading maps to a public service method (or is explicitly marked out of scope with rationale in the plan).
-- **DEC-003**: When the same HTTP route has multiple create or update shapes, expose a **separate public request type and service method per variant**. Each request type includes only the attributes documented for that variant. Fixed wire values (for example `category_group`) are set by the SDK — callers must not supply them.
+- **DEC-003**: When the same HTTP route has multiple create or update shapes, expose a **separate public request type and service method per variant**. Each request type includes only the attributes documented for that variant. Fixed wire values (for example `category_group`) are set by the SDK - callers must not supply them.
 - **DEC-004**: Do not ship a generic create/update method that unions all variant attributes and forces consumers to the API docs.
 - **DEC-005**: Documented allowed-value tables on write operations are constrained strings and must be typed. When the allowed set differs by operation variant, use a **distinct enum on that request only**. When the set also differs by a documented discriminator (for example company type), use **discriminator-specific enums and factory methods** (for example `CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(..., UkLimitedCompanyCostOfSalesTaxReportingName.Purchases)`). Do not flatten into one enum and do not add a runtime validator that fetches Company or account settings.
 - **DEC-006**: Feature-flagged values (for example CIS-only tax reporting names) remain on the relevant enum with XML remarks. FreeAgent remains the authority for live account state.
@@ -78,7 +78,7 @@ Adopt **documented operation heading** as the unit of public SDK surface design,
 - **IMP-002**: See [plan/API_TYPE_MAPPING_POLICY.md](../plan/API_TYPE_MAPPING_POLICY.md) for constrained write value rules.
 - **IMP-003**: See [CONVENTIONS.md](../CONVENTIONS.md) for request/method naming when variants exist.
 - **IMP-004**: Categories typed methods and per-discriminator `tax_reporting_name` enums with factory methods are the reference implementation for ADR-0010.
-- **IMP-005**: Response fields that use a different shape from write keys stay as `string` unless the docs give a closed response set. Categories `tax_reporting_name` is a display label on GET (for example `Purchases`) and a snake_case write key on POST/PUT (for example `purchases`) — do not map the response field onto the write enums. Unknown or unstable response values follow [adr-0005-unknown-constrained-value-handling.md](adr-0005-unknown-constrained-value-handling.md).
+- **IMP-005**: Response fields that use a different shape from write keys stay as `string` unless the docs give a closed response set. Categories `tax_reporting_name` is a display label on GET (for example `Purchases`) and a snake_case write key on POST/PUT (for example `purchases`) - do not map the response field onto the write enums. Unknown or unstable response values follow [adr-0005-unknown-constrained-value-handling.md](adr-0005-unknown-constrained-value-handling.md).
 - **IMP-006**: Company and Contacts have a single create/update shape and do not need variant-method retrofit. Apply DEC-003 when a resource's docs list multiple write headings. Client-side nominal-code range checks on Categories are a documented-contract example for that resource, not a requirement to invent similar checks elsewhere.
 
 ## References

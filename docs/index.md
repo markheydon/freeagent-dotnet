@@ -7,7 +7,7 @@ permalink: /
 
 # FreeAgent.NET documentation
 
-Documentation in this folder is for **developers using the `FreeAgent.Client` NuGet package** — not for internal project planning.
+Documentation in this folder is for **developers using the `FreeAgent.Client` NuGet package** - not for internal project planning.
 
 Published site: [markheydon.me.uk/freeagent-dotnet](https://markheydon.me.uk/freeagent-dotnet/)
 
@@ -67,7 +67,7 @@ The first run downloads the `jekyll/jekyll` image and installs gems into `docs/v
 
 ## Related links
 
-- [README](../README.md) — repository overview and quick start
-- [VERSIONING.md](../VERSIONING.md) — prerelease policy
-- [SUPPORT.md](../SUPPORT.md) — help and issue routing
+- [README](../README.md) - repository overview and quick start
+- [VERSIONING.md](../VERSIONING.md) - prerelease policy
+- [SUPPORT.md](../SUPPORT.md) - help and issue routing
 - [FreeAgent API documentation](https://dev.freeagent.com/docs)

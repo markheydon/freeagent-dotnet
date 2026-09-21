@@ -26,7 +26,7 @@ Per endpoint:
 1. Inventory every operation heading on the official FreeAgent docs page.
 2. Confirm endpoint and payload shape against FreeAgent docs.
 3. Compare model field types and wrappers with [plan/API_TYPE_MAPPING_POLICY.md](API_TYPE_MAPPING_POLICY.md).
-4. Compare service behaviour, pagination, and payload guards — including whether each documented create/update variant has a typed SDK method.
+4. Compare service behaviour, pagination, and payload guards - including whether each documented create/update variant has a typed SDK method.
 5. Confirm tests cover mapping, envelope handling, errors, pagination, and at least one test per write variant.
 6. Confirm sample probe pages and navigation reflect current implementation (see [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md)).
 7. Record and classify drift before implementing changes.

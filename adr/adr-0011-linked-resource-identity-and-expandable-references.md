@@ -24,7 +24,7 @@ As Invoices, Tasks, Timeslips, and Bills are implemented, each will carry multip
 
 ## Decision
 
-Adopt **typed resource references**, **flat public read properties**, and **optional explicit hydration** on single-resource GET. This is protocol-level convenience only — no lazy-loading properties, no ORM, and no fetches of other resources to validate payloads.
+Adopt **typed resource references**, **flat public read properties**, and **optional explicit hydration** on single-resource GET. This is protocol-level convenience only - no lazy-loading properties, no ORM, and no fetches of other resources to validate payloads.
 
 - **DEC-001**: Top-level resource models implement `IFreeAgentResource` (`Url` plus computed `ResourceId` from the URL, except `Company` which uses its documented `id` field).
 - **DEC-002**: **Write payloads** and **list filter parameters** use resource-specific reference types (`ContactReference`, `ProjectReference`, …) that serialise as URI strings.
@@ -83,7 +83,7 @@ Adopt **typed resource references**, **flat public read properties**, and **opti
 
 ## References
 
-- **REF-001**: [GOALS.md](../GOALS.md) — G2 developer experience
+- **REF-001**: [GOALS.md](../GOALS.md) - G2 developer experience
 - **REF-002**: [adr-0004-api-type-mapping-contracts.md](adr-0004-api-type-mapping-contracts.md)
 - **REF-003**: [adr-0009-public-sdk-surface-and-error-model.md](adr-0009-public-sdk-surface-and-error-model.md)
 - **REF-004**: [docs/explanation/api-entity-map.md](../docs/explanation/api-entity-map.md)

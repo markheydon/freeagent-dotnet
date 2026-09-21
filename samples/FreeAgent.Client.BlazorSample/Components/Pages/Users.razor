@@ -6,7 +6,7 @@
 @inject ApiDiagnosticsService ApiDiagnostics
 @inject NavigationManager NavigationManager
 
-<PageTitle>Users — FreeAgent SDK Sample</PageTitle>
+<PageTitle>Users - FreeAgent SDK Sample</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Users endpoint"
@@ -188,7 +188,7 @@
             index,
             user.ResourceId,
             user.DisplayName,
-            user.Role?.ToString() ?? "—",
+            user.Role?.ToString() ?? "-",
             user.Email))
         .ToList() ?? [];
 
@@ -263,7 +263,7 @@
         _inspectedProbe = ModelWireDiagnostics.Build(_inspectedUser, _wireApiResponse, envelopeProperty: "users");
     }
 
-    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
 
     private static string GetCrudHref(long id) => $"/users/detail?id={id}";
 

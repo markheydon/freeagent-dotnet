@@ -87,9 +87,9 @@ When the SDK exposes **multiple write variants** for the same resource (for exam
 
 Optional seed helpers (when useful for testing):
 
-- **Narrative demo data** — Turpinverse canon is loaded on demand from the upstream [Turpinverse](https://github.com/markheydon/turpinverse) repository (`canon/` on GitHub; configure via `Turpinverse:Repository` and `Turpinverse:CanonRef` in the sample app). Each seed operation refreshes canon from GitHub before upserting contacts. No Turpinverse canon is bundled in this repository; sample seed buttons require network access to GitHub at runtime. Seed helpers live in `samples/FreeAgent.Client.BlazorSample/Services/Turpinverse/`. FreeAgent contacts are B2B company records: seed one contact per Turpinverse organisation, with the organisation `tradingName` and the primary contact persona's name, email, and phone. Contact address fields are billing-oriented (they appear on invoices), so Turpinverse maps each organisation's `registeredOffice` — not persona home addresses. If you previously seeded persona-based demo contacts, re-run organisation sync to update overlapping records by email; leftover persona-only contacts are not removed automatically. Load additional canon files (for example `invoices.json`) as SDK endpoints are implemented.
-- **Full-field probe fixture** — one contact with every writable attribute populated (`SampleContactFixtures`, `SampleContactSeeder`).
-- **Upsert by stable key** — match existing records by email (contacts) or an equivalent natural key; update when canon changes (`ContactSeederSupport`).
+- **Narrative demo data** - Turpinverse canon is loaded on demand from the upstream [Turpinverse](https://github.com/markheydon/turpinverse) repository (`canon/` on GitHub; configure via `Turpinverse:Repository` and `Turpinverse:CanonRef` in the sample app). Each seed operation refreshes canon from GitHub before upserting contacts. No Turpinverse canon is bundled in this repository; sample seed buttons require network access to GitHub at runtime. Seed helpers live in `samples/FreeAgent.Client.BlazorSample/Services/Turpinverse/`. FreeAgent contacts are B2B company records: seed one contact per Turpinverse organisation, with the organisation `tradingName` and the primary contact persona's name, email, and phone. Contact address fields are billing-oriented (they appear on invoices), so Turpinverse maps each organisation's `registeredOffice` - not persona home addresses. If you previously seeded persona-based demo contacts, re-run organisation sync to update overlapping records by email; leftover persona-only contacts are not removed automatically. Load additional canon files (for example `invoices.json`) as SDK endpoints are implemented.
+- **Full-field probe fixture** - one contact with every writable attribute populated (`SampleContactFixtures`, `SampleContactSeeder`).
+- **Upsert by stable key** - match existing records by email (contacts) or an equivalent natural key; update when canon changes (`ContactSeederSupport`).
 
 ## Navigation and honesty
 
@@ -111,8 +111,8 @@ Optional seed helpers (when useful for testing):
 
 ## Related documents
 
-- [`plan/IMPLEMENTING_ENDPOINTS.md`](../../plan/IMPLEMENTING_ENDPOINTS.md) — full endpoint checklist
-- [`.agents/skills/implement-endpoint/SKILL.md`](../../.agents/skills/implement-endpoint/SKILL.md) — agent workflow
-- [`adr/adr-0010-documented-operations-to-sdk-methods.md`](../../adr/adr-0010-documented-operations-to-sdk-methods.md) — operation heading → typed SDK method
-- [`AGENTS.md`](../../AGENTS.md) — sample sync policy
+- [`plan/IMPLEMENTING_ENDPOINTS.md`](../../plan/IMPLEMENTING_ENDPOINTS.md) - full endpoint checklist
+- [`.agents/skills/implement-endpoint/SKILL.md`](../../.agents/skills/implement-endpoint/SKILL.md) - agent workflow
+- [`adr/adr-0010-documented-operations-to-sdk-methods.md`](../../adr/adr-0010-documented-operations-to-sdk-methods.md) - operation heading → typed SDK method
+- [`AGENTS.md`](../../AGENTS.md) - sample sync policy
 - [`adr/adr-0006-sample-app-living-reference.md`](../../adr/adr-0006-sample-app-living-reference.md)

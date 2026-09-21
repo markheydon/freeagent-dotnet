@@ -14,7 +14,7 @@ internal sealed class AppSettings
     /// <summary>Default redirect URI for this console sample's local HTTP listener.</summary>
     public const string DefaultRedirectUri = "http://127.0.0.1:8765/callback";
 
-    /// <summary>Redirect URI used by the Blazor sample — ignored when loading shared user-secrets.</summary>
+    /// <summary>Redirect URI used by the Blazor sample - ignored when loading shared user-secrets.</summary>
     public const string BlazorSampleRedirectUri = "https://localhost:5001/oauth/callback";
 
     /// <summary>OAuth client identifier from the FreeAgent developer dashboard.</summary>
@@ -44,7 +44,7 @@ internal sealed class AppSettings
             settings = settings.Merge(local);
         }
 
-        // Same user-secrets ID as the Blazor sample — client ID/secret are shared.
+        // Same user-secrets ID as the Blazor sample - client ID/secret are shared.
         // Blazor's HTTPS redirect URI is ignored so the console listener default still applies.
         var userSecrets = UserSecretsConfiguration.Load();
         if (userSecrets is not null)
