@@ -69,9 +69,9 @@
                                    OnClick="CreateAllTurpinverseOrganisationContactsAsync">Create all Turpinverse organisations</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading"
                                    OnClick="CreateFullDetailProbeContactAsync">Create full-detail probe contact</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _contactId is null"
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _contactId is null or < 1"
                                    OnClick="UpdateContactAsync">Update organisation name</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _contactId is null"
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _contactId is null or < 1"
                                    OnClick="DeleteContactAsync">Delete contact</MudButton>
                     </MudStack>
                 </MudStack>
@@ -84,7 +84,7 @@
                         <SummaryContent>
                             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
                                 <MudText Typo="Typo.h5">Result summary</MudText>
-                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @ContactUrlParser.ParseId(_contact.Url)</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_contact.ResourceId</MudChip>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_contact.Status?.ToString())</MudChip>
                             </MudStack>
                         </SummaryContent>
@@ -175,13 +175,18 @@
             {
                 var result = await TurpinverseContactSeeder.CreateTurpinEnterprisesAsync(client);
                 _contact = result.Contact;
-                _contactId = ContactUrlParser.ParseId(_contact.Url);
-                _operationMessage = result.Action == ContactSeedAction.Updated
-                    ? $"Updated Turpin Enterprises (contact {_contactId}) from current Turpinverse canon."
-                    : _contactId is null
-                        ? "Created Turpin Enterprises but could not parse ID from URL."
-                        : $"Created Turpin Enterprises as contact {_contactId.Value}.";
-                return _contactId is null ? null : $"contacts/{_contactId}";
+                if (_contact.TryGetResourceId(out var assignedId))
+                {
+                    _contactId = assignedId;
+                    _operationMessage = result.Action == ContactSeedAction.Updated
+                        ? $"Updated Turpin Enterprises (contact {assignedId}) from current Turpinverse canon."
+                        : $"Created Turpin Enterprises as contact {assignedId}.";
+                    return $"contacts/{assignedId}";
+                }
+
+                _contactId = null;
+                _operationMessage = "Created Turpin Enterprises but could not parse ID from URL.";
+                return null;
             },
             envelopeProperty: "contact");
     }
@@ -193,13 +198,18 @@
             {
                 var result = await SampleContactSeeder.CreateFullDetailProbeAsync(client);
                 _contact = result.Contact;
-                _contactId = ContactUrlParser.ParseId(_contact.Url);
-                _operationMessage = result.Action == ContactSeedAction.Updated
-                    ? $"Updated full-detail probe contact {_contactId} from current fixture."
-                    : _contactId is null
-                        ? "Created full-detail probe contact but could not parse ID from URL."
-                        : $"Created full-detail probe contact {_contactId.Value}.";
-                return _contactId is null ? null : $"contacts/{_contactId}";
+                if (_contact.TryGetResourceId(out var assignedId))
+                {
+                    _contactId = assignedId;
+                    _operationMessage = result.Action == ContactSeedAction.Updated
+                        ? $"Updated full-detail probe contact {assignedId} from current fixture."
+                        : $"Created full-detail probe contact {assignedId}.";
+                    return $"contacts/{assignedId}";
+                }
+
+                _contactId = null;
+                _operationMessage = "Created full-detail probe contact but could not parse ID from URL.";
+                return null;
             },
             envelopeProperty: "contact");
     }
@@ -231,16 +241,21 @@
             if (lastTouched is not null)
             {
                 _contact = lastTouched;
-                _contactId = ContactUrlParser.ParseId(_contact.Url);
 
-                if (_contactId is not null)
+                if (_contact.TryGetResourceId(out var assignedId))
                 {
+                    _contactId = assignedId;
+
                     _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                         token.AccessToken,
                         TokenStore.ConnectedEnvironment,
-                        $"contacts/{_contactId}");
+                        $"contacts/{assignedId}");
 
                     _probe = ModelWireDiagnostics.Build(_contact, _wireApiResponse, "contact");
+                }
+                else
+                {
+                    _contactId = null;
                 }
             }
             else
@@ -297,7 +312,7 @@
 
     private async Task UpdateContactAsync()
     {
-        if (_contactId is null)
+        if (_contactId is null or < 1)
         {
             return;
         }
@@ -316,7 +331,7 @@
 
     private async Task DeleteContactAsync()
     {
-        if (_contactId is null)
+        if (_contactId is null or < 1)
         {
             return;
         }

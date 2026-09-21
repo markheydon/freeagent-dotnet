@@ -3,6 +3,7 @@ using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Services.Contacts;
 
@@ -118,6 +119,15 @@ public sealed class ContactService
             page = contactsPage.NextPage!.Value;
         }
     }
+
+    /// <summary>
+    /// Gets a single contact by resource reference.
+    /// </summary>
+    /// <param name="contact">Contact resource reference</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Contact details</returns>
+    public Task<Contact> GetContactAsync(ContactReference contact, CancellationToken cancellationToken = default) =>
+        GetContactAsync(contact.Id, cancellationToken);
 
     /// <summary>
     /// Gets a single contact by identifier.

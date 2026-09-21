@@ -157,7 +157,7 @@
                             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
                                 <MudText Typo="Typo.h5">Inspected contact</MudText>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
-                                    ID: @ContactUrlParser.ParseId(_inspectedContact.Url)
+                                    ID: @_inspectedContact.ResourceId
                                 </MudChip>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">
                                     Row @(_inspectedIndex + 1) on page @_pageResult?.Page
@@ -235,7 +235,7 @@
     private IReadOnlyList<ContactRow> _contactRows => _pageResult?.Items
         .Select(static (contact, index) => new ContactRow(
             index,
-            ContactUrlParser.ParseId(contact.Url) ?? 0,
+            contact.ResourceId,
             contact.DisplayName,
             contact.Status?.ToString() ?? "—",
             contact.Email))

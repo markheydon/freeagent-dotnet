@@ -1,0 +1,429 @@
+@page "/projects/detail"
+@using FreeAgent.Client.Models.Projects
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services.Turpinverse
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject TurpinverseProjectSeeder TurpinverseProjectSeeder
+@inject NavigationManager NavigationManager
+
+<PageTitle>Project detail — FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Projects endpoint"
+                         Title="Get, create, update, and delete projects"
+                         CallUnderTest="ProjectService.GetProjectAsync / CreateProjectAsync / UpdateProjectAsync / DeleteProjectAsync"
+                         Description="Exercises single-project CRUD operations and shows wire-to-model diagnostics."
+                         EndpointPath="/v2/projects/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/projects" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a project ID from the <MudLink Href="/projects">projects list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Seed Turpinverse canon projects — each upsert matches on
+                        <code>contract_po_reference</code> values prefixed with <code>turpinverse:</code>.
+                        Seed organisation contacts first from <MudLink Href="/contacts/detail">Contact CRUD</MudLink>.
+                    </MudText>
+                    <MudNumericField @bind-Value="_projectId" Label="Project ID" Min="1" />
+                    <MudNumericField @bind-Value="_contactId"
+                                     Label="Billing contact ID (create only)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetProjectAsync">Get project</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateBlackBessRouteOptimiserAsync">Create Black Bess Route Optimiser</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateAllTurpinverseProjectsAsync">Create all Turpinverse projects</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _contactId is null or < 1"
+                                   OnClick="CreateProbeProjectAsync">Create probe project</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _projectId is null or < 1"
+                                   OnClick="UpdateProjectAsync">Update project name</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _projectId is null or < 1"
+                                   OnClick="DeleteProjectAsync">Delete project</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _project is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Project model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_project.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_project.Status?.ToString())</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Name</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_project.Name)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Contact</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_project.Contact?.OrganisationName ?? _project.ContactName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Contract / PO reference</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_project.ContractPoReference)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Resource URL</MudText>
+                                        <MudText Typo="Typo.body2">@_project.Url</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load project diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? ProjectIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private Project? _project;
+    private ModelProbeSnapshot? _probe;
+    private long? _projectId;
+    private long? _contactId;
+
+    protected override void OnParametersSet()
+    {
+        if (ProjectIdFromQuery is > 0 && _projectId != ProjectIdFromQuery)
+        {
+            _projectId = ProjectIdFromQuery;
+            _operationMessage = $"Project ID {_projectId} loaded from URL. Press Get project to fetch diagnostics.";
+        }
+    }
+
+    private async Task GetProjectAsync()
+    {
+        if (_projectId is null or < 1)
+        {
+            _error = "Enter a project ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _project = await client.Projects.GetProjectAsync(
+                    _projectId.Value,
+                    new ProjectGetOptions { IncludeBillingContact = true });
+                _operationMessage = $"Loaded project {_projectId.Value}: {_project.Name}";
+                return $"projects/{_projectId}";
+            },
+            envelopeProperty: "project");
+    }
+
+    private async Task CreateBlackBessRouteOptimiserAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await TurpinverseProjectSeeder.CreateBlackBessRouteOptimiserAsync(client);
+                _project = result.Project;
+                if (_project.TryGetResourceId(out var assignedId))
+                {
+                    _projectId = assignedId;
+                    _operationMessage = result.Action == ProjectSeedAction.Updated
+                        ? $"Updated Black Bess Route Optimiser (project {assignedId}) from current Turpinverse canon."
+                        : $"Created Black Bess Route Optimiser as project {assignedId}.";
+                    return $"projects/{assignedId}";
+                }
+
+                _projectId = null;
+                _operationMessage = "Created Black Bess Route Optimiser but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "project");
+    }
+
+    private async Task CreateAllTurpinverseProjectsAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var result = await TurpinverseProjectSeeder.CreateAllProjectsAsync(client);
+            var lastTouched = result.Updated.Count > 0
+                ? result.Updated[^1]
+                : result.Created.Count > 0
+                    ? result.Created[^1]
+                    : null;
+
+            if (lastTouched is not null)
+            {
+                _project = lastTouched;
+
+                if (_project.TryGetResourceId(out var assignedId))
+                {
+                    _projectId = assignedId;
+
+                    _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                        token.AccessToken,
+                        TokenStore.ConnectedEnvironment,
+                        $"projects/{assignedId}");
+
+                    _probe = ModelWireDiagnostics.Build(_project, _wireApiResponse, "project");
+                }
+                else
+                {
+                    _projectId = null;
+                }
+            }
+            else
+            {
+                _project = null;
+                _projectId = null;
+            }
+
+            var summaryParts = new List<string>();
+            if (result.Created.Count > 0)
+            {
+                summaryParts.Add($"created {result.Created.Count}");
+            }
+
+            if (result.Updated.Count > 0)
+            {
+                summaryParts.Add($"updated {result.Updated.Count}");
+            }
+
+            if (result.Failures.Count > 0)
+            {
+                summaryParts.Add($"failed {result.Failures.Count}");
+            }
+
+            _operationMessage = summaryParts.Count == 0
+                ? "No Turpinverse projects were created or updated."
+                : $"Turpinverse project sync complete: {string.Join(", ", summaryParts)}.";
+
+            if (result.Failures.Count > 0)
+            {
+                var failureSummary = string.Join(
+                    "; ",
+                    result.Failures.Select(static failure => $"{failure.Title}: {failure.Message}"));
+                _error = $"Some projects could not be seeded: {failureSummary}";
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CreateProbeProjectAsync()
+    {
+        if (_contactId is null or < 1)
+        {
+            _error = "Enter a billing contact ID before creating a probe project.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _project = await client.Projects.CreateProjectAsync(new Project
+                {
+                    Name = $"SDK probe project {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}",
+                    BillingContact = client.Urls.Contact(_contactId.Value),
+                    Status = ProjectStatus.Active,
+                    Currency = CurrencyCode.GBP,
+                    Budget = 0m,
+                    BudgetUnits = ProjectBudgetUnits.Hours,
+                    HoursPerDay = 8m,
+                    NormalBillingRate = 0m,
+                    BillingPeriod = ProjectBillingPeriod.Hour,
+                    UsesProjectInvoiceSequence = false,
+                    IncludeUnbilledTimeInProfitability = true,
+                    IsIr35 = false
+                });
+
+                if (_project.TryGetResourceId(out var assignedId))
+                {
+                    _projectId = assignedId;
+                    _operationMessage = $"Created probe project {assignedId}.";
+                    return $"projects/{assignedId}";
+                }
+
+                _projectId = null;
+                _operationMessage = "Created probe project but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "project");
+    }
+
+    private async Task UpdateProjectAsync()
+    {
+        if (_projectId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _project ?? await client.Projects.GetProjectAsync(_projectId.Value);
+                existing.Name = $"{existing.Name} (updated)";
+                _project = await client.Projects.UpdateProjectAsync(_projectId.Value, existing);
+                _operationMessage = $"Updated project {_projectId.Value}.";
+                return $"projects/{_projectId}";
+            },
+            envelopeProperty: "project");
+    }
+
+    private async Task DeleteProjectAsync()
+    {
+        if (_projectId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _projectId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Projects.DeleteProjectAsync(deletedId);
+                _project = null;
+                _probe = null;
+                _operationMessage = $"Deleted project {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgentClient, Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _project is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_project, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

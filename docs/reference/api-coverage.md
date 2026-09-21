@@ -105,6 +105,7 @@ FreeAgent documents supported ISO 4217 currency codes but does **not** expose a 
 |-------|----------|
 | `Company` | `Currency` |
 | `DirectDebitMandate` | `Currency` |
+| `Project` | `Currency` |
 
 There is no `CurrenciesService`. Additional resources will use `CurrencyCode` for currency fields as they are implemented.
 
@@ -116,6 +117,27 @@ Sample: `/email-addresses`
 | Method | SDK API |
 |--------|---------|
 | `GET /v2/email_addresses` | `client.EmailAddresses.GetEmailAddressesAsync()` |
+
+## Projects
+
+Docs: https://dev.freeagent.com/docs/projects  
+Sample: `/projects` (list + per-row mapping), `/projects/detail` (CRUD + Turpinverse seed data)
+
+| Method | SDK API |
+|--------|---------|
+| `GET /v2/projects` | `client.Projects.GetProjectsPageAsync(...)` |
+| Auto-pagination | `client.Projects.GetAllProjectsAsync(...)` |
+| `GET /v2/projects/:id` | `client.Projects.GetProjectAsync(id)` or `GetProjectAsync(id, new ProjectGetOptions { IncludeBillingContact = true })` |
+| `POST /v2/projects` | `client.Projects.CreateProjectAsync(project)` |
+| `PUT /v2/projects/:id` | `client.Projects.UpdateProjectAsync(id, project)` |
+| `DELETE /v2/projects/:id` | `client.Projects.DeleteProjectAsync(id)` |
+
+### List query parameters
+
+- `view` — use constants on `ProjectViews` (for example `ProjectViews.Active`, `ProjectViews.Completed`)
+- `sort` — `name`, `contact_name`, `contact_display_name`, `created_at`, `updated_at`; prefix with `-` for descending
+- `contact` / `contactId` — filter by `ContactReference` or numeric contact identifier (`client.Urls.Contact(id)`)
+- `nested` — when `true`, return full contact details nested in each project
 
 ## Not yet implemented
 

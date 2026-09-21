@@ -150,6 +150,9 @@ internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
         _currentToken = token;
     }
 
+    /// <inheritdoc />
+    public FreeAgentEnvironment Environment => _environment;
+
     private static InitializationContext CreateInitializationContext(
         HttpClient? httpClient,
         FreeAgentEnvironment environment,

@@ -69,8 +69,7 @@ internal static class ContactSeederSupport
             return (created, ContactSeedAction.Created);
         }
 
-        var contactId = ContactUrlParser.ParseId(existingMatch.Url)
-            ?? throw new InvalidOperationException($"Could not parse contact ID from URL '{existingMatch.Url}'.");
+        var contactId = existingMatch.GetResourceId();
 
         var current = await client.Contacts.GetContactAsync(contactId, cancellationToken);
         MergeWritableFields(current, desired);
@@ -128,8 +127,6 @@ internal static class ContactSeederSupport
 
     private static int CompareContactIds(Contact left, Contact right)
     {
-        var leftId = ContactUrlParser.ParseId(left.Url) ?? 0;
-        var rightId = ContactUrlParser.ParseId(right.Url) ?? 0;
-        return leftId.CompareTo(rightId);
+        return left.ResourceId.CompareTo(right.ResourceId);
     }
 }

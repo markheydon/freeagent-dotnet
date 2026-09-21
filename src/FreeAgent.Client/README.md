@@ -10,7 +10,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - Rate limiting and bounded retries for transient failures.
 - Typed exception model (`FreeAgentApiException`, `FreeAgentRateLimitException`, …).
 - Pagination (single-page and auto-pagination).
-- Company, Contacts, Categories, Users, and Email addresses API support.
+- Company, Contacts, Categories, Users, Projects, and Email addresses API support.
 - `CurrencyCode` enum for documented ISO 4217 codes (reference type; not a REST resource).
 - Targets .NET 8.0 and .NET 10.0.
 - Fully async/await with XML documentation.
@@ -40,6 +40,32 @@ Console.WriteLine($"{company.Name} ({company.Currency})");
 ```
 
 The SDK provides protocol-level OAuth utilities only, your application owns callback endpoints and browser flows.
+
+## Linked resources
+
+FreeAgent links resources with URI strings. The SDK types those links so you do not parse URLs or hard-code API hosts:
+
+```csharp
+// Create a project for a known contact ID (no manual URI construction)
+await client.Projects.CreateProjectAsync(new Project
+{
+    Name = "Website redesign",
+    BillingContact = client.Urls.Contact(42),
+    Status = ProjectStatus.Active
+});
+
+// Read full billing contact fields when you need them
+var project = await client.Projects.GetProjectAsync(
+    123,
+    new ProjectGetOptions { IncludeBillingContact = true });
+var organisation = project.Contact!.OrganisationName;
+
+// Display name only — one HTTP call
+var summary = await client.Projects.GetProjectAsync(123);
+var label = summary.ContactName;
+```
+
+See [linked resources](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/explanation/linked-resources.md) for the full pattern.
 
 ## Documentation
 

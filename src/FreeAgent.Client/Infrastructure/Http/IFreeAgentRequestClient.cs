@@ -6,6 +6,11 @@ namespace FreeAgent.Client.Infrastructure.Http;
 internal interface IFreeAgentRequestClient
 {
     /// <summary>
+    /// Target API environment for this client.
+    /// </summary>
+    FreeAgentEnvironment Environment { get; }
+
+    /// <summary>
     /// Sends a GET request and deserializes the response body.
     /// </summary>
     Task<T> GetAsync<T>(string endpoint, CancellationToken cancellationToken = default);

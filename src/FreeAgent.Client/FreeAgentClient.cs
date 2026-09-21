@@ -3,6 +3,7 @@ using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
 using FreeAgent.Client.Services.EmailAddresses;
+using FreeAgent.Client.Services.Projects;
 using FreeAgent.Client.Services.Users;
 
 namespace FreeAgent.Client;
@@ -39,6 +40,21 @@ public sealed class FreeAgentClient : IDisposable
     /// Email addresses API service.
     /// </summary>
     public EmailAddressesService EmailAddresses { get; }
+
+    /// <summary>
+    /// Projects API service.
+    /// </summary>
+    public ProjectService Projects { get; }
+
+    /// <summary>
+    /// Target API environment for this client.
+    /// </summary>
+    public FreeAgentEnvironment Environment => _httpClient.Environment;
+
+    /// <summary>
+    /// Environment-correct resource URI builders.
+    /// </summary>
+    public FreeAgentResourceUrls Urls { get; }
 
     /// <summary>
     /// Initializes a new instance with an access token.
@@ -86,11 +102,13 @@ public sealed class FreeAgentClient : IDisposable
         ArgumentNullException.ThrowIfNull(httpClient);
 
         _httpClient = httpClient;
+        Urls = new FreeAgentResourceUrls(_httpClient.Environment);
         Company = new CompanyService(_httpClient);
         Contacts = new ContactService(_httpClient);
         Categories = new CategoryService(_httpClient);
         Users = new UserService(_httpClient);
         EmailAddresses = new EmailAddressesService(_httpClient);
+        Projects = new ProjectService(_httpClient);
     }
 
     /// <summary>
