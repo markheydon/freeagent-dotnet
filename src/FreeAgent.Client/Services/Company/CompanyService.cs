@@ -56,7 +56,7 @@ public sealed class CompanyService
     }
 
     /// <summary>
-    /// Gets upcoming tax timeline events for the authenticated company.
+    /// Lists upcoming tax timeline events for the authenticated company.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Tax timeline items</returns>

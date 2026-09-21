@@ -8,7 +8,7 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP comp
 - Pin an exact version in your project file:
 
 ```xml
-<PackageReference Include="FreeAgent.Client" Version="0.1.0-alpha.1" />
+<PackageReference Include="FreeAgent.Client" Version="0.1.0-alpha.3" />
 ```
 
 ## Upgrade checklist
