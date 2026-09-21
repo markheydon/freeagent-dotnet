@@ -43,8 +43,18 @@ public class Project : IFreeAgentResource
     /// <summary>
     /// Billing contact to assign on create or update requests.
     /// </summary>
+    /// <remarks>
+    /// When omitted on update, the SDK round-trips the existing contact link from the read model.
+    /// Set <see cref="OmitBillingContactFromWrite"/> to <see langword="true"/> to exclude contact from the write payload.
+    /// </remarks>
     [JsonIgnore]
     public ContactReference? BillingContact { get; set; }
+
+    /// <summary>
+    /// When <see langword="true"/>, create and update payloads exclude the billing contact even when a contact link exists on the model.
+    /// </summary>
+    [JsonIgnore]
+    public bool OmitBillingContactFromWrite { get; set; }
 
     /// <summary>
     /// Contact display name when the full contact is not included in the response.

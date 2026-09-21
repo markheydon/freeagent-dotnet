@@ -98,7 +98,7 @@ public sealed class TurpinverseProjectSeeder
             return new TurpinverseProjectSeedResult(created, ProjectSeedAction.Created);
         }
 
-        var projectId = existingMatch.ResourceId;
+        var projectId = existingMatch.GetResourceId();
 
         var current = await client.Projects.GetProjectAsync(projectId, cancellationToken);
         MergeWritableFields(current, desired);

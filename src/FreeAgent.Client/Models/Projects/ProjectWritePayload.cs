@@ -57,10 +57,20 @@ internal sealed class ProjectWritePayload
     {
         ArgumentNullException.ThrowIfNull(project);
 
+        ContactReference? contact = null;
+        if (!project.OmitBillingContactFromWrite)
+        {
+            contact = project.BillingContact
+                ?? (project.ContactLink?.Uri is string uri ? ContactReference.Parse(uri) : null);
+        }
+        else
+        {
+            contact = project.BillingContact;
+        }
+
         return new ProjectWritePayload
         {
-            Contact = project.BillingContact
-                ?? (project.ContactLink?.Uri is string uri ? ContactReference.Parse(uri) : null),
+            Contact = contact,
             Name = project.Name,
             Status = project.Status,
             ContractPoReference = project.ContractPoReference,

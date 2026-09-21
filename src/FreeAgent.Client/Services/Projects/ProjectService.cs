@@ -35,6 +35,7 @@ public sealed class ProjectService
     /// <param name="nested">When <see langword="true"/>, return full contact details nested in each project</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated projects response</returns>
+    /// <exception cref="ArgumentException"><paramref name="contact"/> and <paramref name="contactId"/> are both supplied.</exception>
     public async Task<PaginatedResponse<Project>> GetProjectsPageAsync(
         int page = 1,
         int perPage = 25,
@@ -234,6 +235,13 @@ public sealed class ProjectService
 
     private string? ResolveContactFilter(ContactReference? contact, long? contactId)
     {
+        if (contact is not null && contactId is not null)
+        {
+            throw new ArgumentException(
+                "Specify either contact or contactId, not both.",
+                nameof(contact));
+        }
+
         if (contact is not null)
         {
             return contact.Value.Uri;

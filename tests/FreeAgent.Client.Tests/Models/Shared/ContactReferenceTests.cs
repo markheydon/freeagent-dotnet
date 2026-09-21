@@ -37,4 +37,13 @@ public class ContactReferenceTests
     {
         Assert.Throws<ArgumentException>(() => ContactReference.Parse("https://api.freeagent.com/v2/contacts/"));
     }
+
+    [Fact]
+    public void Parse_WrongResourceType_Throws()
+    {
+        var exception = Assert.Throws<ArgumentException>(() =>
+            ContactReference.Parse("https://api.freeagent.com/v2/projects/99"));
+
+        Assert.Contains("contacts", exception.Message, StringComparison.Ordinal);
+    }
 }

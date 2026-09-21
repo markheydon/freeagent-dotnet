@@ -37,6 +37,7 @@ public readonly record struct ProjectReference : IResourceReference
     public static ProjectReference Parse(string uri)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(uri);
+        FreeAgentResourceId.ValidateResourceSegment(uri, "projects");
 
         var id = FreeAgentResourceId.Parse(uri);
         return new ProjectReference(uri, id);

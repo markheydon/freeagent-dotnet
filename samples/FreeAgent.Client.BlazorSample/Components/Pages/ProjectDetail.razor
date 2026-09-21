@@ -69,9 +69,9 @@
                                    OnClick="CreateAllTurpinverseProjectsAsync">Create all Turpinverse projects</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _contactId is null or < 1"
                                    OnClick="CreateProbeProjectAsync">Create probe project</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _projectId is null"
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _projectId is null or < 1"
                                    OnClick="UpdateProjectAsync">Update project name</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _projectId is null"
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _projectId is null or < 1"
                                    OnClick="DeleteProjectAsync">Delete project</MudButton>
                     </MudStack>
                 </MudStack>
@@ -178,13 +178,18 @@
             {
                 var result = await TurpinverseProjectSeeder.CreateBlackBessRouteOptimiserAsync(client);
                 _project = result.Project;
-                _projectId = _project.ResourceId;
-                _operationMessage = result.Action == ProjectSeedAction.Updated
-                    ? $"Updated Black Bess Route Optimiser (project {_projectId}) from current Turpinverse canon."
-                    : _projectId is null
-                        ? "Created Black Bess Route Optimiser but could not parse ID from URL."
-                        : $"Created Black Bess Route Optimiser as project {_projectId.Value}.";
-                return _projectId is null ? null : $"projects/{_projectId}";
+                if (_project.TryGetResourceId(out var assignedId))
+                {
+                    _projectId = assignedId;
+                    _operationMessage = result.Action == ProjectSeedAction.Updated
+                        ? $"Updated Black Bess Route Optimiser (project {assignedId}) from current Turpinverse canon."
+                        : $"Created Black Bess Route Optimiser as project {assignedId}.";
+                    return $"projects/{assignedId}";
+                }
+
+                _projectId = null;
+                _operationMessage = "Created Black Bess Route Optimiser but could not parse ID from URL.";
+                return null;
             },
             envelopeProperty: "project");
     }
@@ -216,16 +221,21 @@
             if (lastTouched is not null)
             {
                 _project = lastTouched;
-                _projectId = _project.ResourceId;
 
-                if (_projectId is not null)
+                if (_project.TryGetResourceId(out var assignedId))
                 {
+                    _projectId = assignedId;
+
                     _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                         token.AccessToken,
                         TokenStore.ConnectedEnvironment,
-                        $"projects/{_projectId}");
+                        $"projects/{assignedId}");
 
                     _probe = ModelWireDiagnostics.Build(_project, _wireApiResponse, "project");
+                }
+                else
+                {
+                    _projectId = null;
                 }
             }
             else
@@ -307,18 +317,23 @@
                     IsIr35 = false
                 });
 
-                _projectId = _project.ResourceId;
-                _operationMessage = _projectId is null
-                    ? "Created probe project but could not parse ID from URL."
-                    : $"Created probe project {_projectId.Value}.";
-                return _projectId is null ? null : $"projects/{_projectId}";
+                if (_project.TryGetResourceId(out var assignedId))
+                {
+                    _projectId = assignedId;
+                    _operationMessage = $"Created probe project {assignedId}.";
+                    return $"projects/{assignedId}";
+                }
+
+                _projectId = null;
+                _operationMessage = "Created probe project but could not parse ID from URL.";
+                return null;
             },
             envelopeProperty: "project");
     }
 
     private async Task UpdateProjectAsync()
     {
-        if (_projectId is null)
+        if (_projectId is null or < 1)
         {
             return;
         }
@@ -337,7 +352,7 @@
 
     private async Task DeleteProjectAsync()
     {
-        if (_projectId is null)
+        if (_projectId is null or < 1)
         {
             return;
         }

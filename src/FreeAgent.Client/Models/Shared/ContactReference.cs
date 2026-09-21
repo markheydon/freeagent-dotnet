@@ -37,6 +37,7 @@ public readonly record struct ContactReference : IResourceReference
     public static ContactReference Parse(string uri)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(uri);
+        FreeAgentResourceId.ValidateResourceSegment(uri, "contacts");
 
         var id = FreeAgentResourceId.Parse(uri);
         return new ContactReference(uri, id);

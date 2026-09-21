@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
@@ -16,8 +17,24 @@ public class Category : IFreeAgentResource
     public string Url { get; set; } = string.Empty;
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Parses <see cref="NominalCode"/> when numeric. Categories are keyed by nominal code on the wire;
+    /// use <see cref="NominalCode"/> for API calls such as <c>GetCategoryAsync</c>, not <see cref="ResourceId"/>.
+    /// </remarks>
     [JsonIgnore]
-    public long ResourceId => FreeAgentResourceId.TryParse(Url, out var id) ? id : 0;
+    public long ResourceId
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(NominalCode)
+                && long.TryParse(NominalCode, NumberStyles.None, CultureInfo.InvariantCulture, out var fromNominalCode))
+            {
+                return fromNominalCode;
+            }
+
+            return FreeAgentResourceId.TryParse(Url, out var id) ? id : 0;
+        }
+    }
 
     /// <summary>
     /// Category name.

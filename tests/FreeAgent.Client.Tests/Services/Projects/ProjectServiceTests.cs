@@ -342,6 +342,63 @@ public class ProjectServiceTests
     }
 
     [Fact]
+    public async Task GetProjectsPageAsync_ContactAndContactId_Throws()
+    {
+        using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ProjectService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.GetProjectsPageAsync(
+            contact: ContactReference.Parse("https://api.freeagent.com/v2/contacts/1"),
+            contactId: 2));
+    }
+
+    [Fact]
+    public async Task GetProjectAsync_MissingProjectBranch_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ProjectService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetProjectAsync(42));
+    }
+
+    [Fact]
+    public async Task CreateProjectAsync_MissingProjectBranch_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Created)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ProjectService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateProjectAsync(new Project { Name = "Example" }));
+    }
+
+    [Fact]
+    public async Task UpdateProjectAsync_MissingProjectBranch_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ProjectService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.UpdateProjectAsync(42, new Project { Name = "Example" }));
+    }
+
+    [Fact]
     public async Task GetAllProjectsAsync_IteratesPagesUntilComplete()
     {
         var page = 0;

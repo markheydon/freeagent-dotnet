@@ -44,6 +44,14 @@ await client.Projects.CreateProjectAsync(new Project
 
 Use `client.Urls` so sandbox and production hosts stay correct.
 
+When updating a project retrieved from the API, the SDK round-trips the existing billing contact link unless you set `OmitBillingContactFromWrite = true`. Assign `BillingContact` explicitly when changing the billing contact.
+
+## Resource identifiers
+
+`IFreeAgentResource.ResourceId` returns `0` when parsing fails. Use `TryGetResourceId()` or `GetResourceId()` when you need a valid identifier for service calls.
+
+Categories are keyed by nominal code on the wire — use `Category.NominalCode` for API calls, not `ResourceId`.
+
 ## Optional hydration (`*GetOptions`)
 
 Single-resource GET methods may accept options such as `ProjectGetOptions.IncludeBillingContact`. When `true`, the SDK performs an additional GET to the linked resource **only if** the first response did not already include a nested object.

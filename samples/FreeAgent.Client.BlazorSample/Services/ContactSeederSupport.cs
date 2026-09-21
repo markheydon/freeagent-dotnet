@@ -69,7 +69,7 @@ internal static class ContactSeederSupport
             return (created, ContactSeedAction.Created);
         }
 
-        var contactId = existingMatch.ResourceId;
+        var contactId = existingMatch.GetResourceId();
 
         var current = await client.Contacts.GetContactAsync(contactId, cancellationToken);
         MergeWritableFields(current, desired);

@@ -109,4 +109,45 @@ public class ProjectModelSerializationTests
 
         Assert.Equal("https://api.freeagent.com/v2/contacts/3", payload.Contact!.Value.Uri);
     }
+
+    [Fact]
+    public void WritePayload_FallsBackToContactLinkWhenBillingContactMissing()
+    {
+        var project = JsonSerializer.Deserialize<Project>("""
+            {
+              "url": "https://api.freeagent.com/v2/projects/1",
+              "contact": "https://api.freeagent.com/v2/contacts/8",
+              "name": "Example"
+            }
+            """)!;
+
+        var payload = ProjectWritePayload.FromProject(project);
+
+        Assert.Equal("https://api.freeagent.com/v2/contacts/8", payload.Contact!.Value.Uri);
+    }
+
+    [Fact]
+    public void WritePayload_OmitBillingContactFromWrite_ExcludesRoundTrippedContact()
+    {
+        var project = JsonSerializer.Deserialize<Project>("""
+            {
+              "url": "https://api.freeagent.com/v2/projects/1",
+              "contact": "https://api.freeagent.com/v2/contacts/8",
+              "name": "Example"
+            }
+            """)!;
+        project.OmitBillingContactFromWrite = true;
+
+        var payload = ProjectWritePayload.FromProject(project);
+
+        Assert.Null(payload.Contact);
+    }
+
+    [Fact]
+    public void Deserialize_WritePayload_AllowsNullContact()
+    {
+        var payload = JsonSerializer.Deserialize<ProjectWritePayload>("""{ "name": "Example", "contact": null }""");
+
+        Assert.Null(payload!.Contact);
+    }
 }

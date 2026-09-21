@@ -62,9 +62,9 @@
                                    OnClick="CreateTestUserAsync">Create test user</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
                                    OnClick="UpdateCurrentUserAsync">Update personal profile</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _userId is null"
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _userId is null or < 1"
                                    OnClick="UpdateUserAsync">Update user</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _userId is null"
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _userId is null or < 1"
                                    OnClick="DeleteUserAsync">Delete user</MudButton>
                     </MudStack>
                 </MudStack>
@@ -188,8 +188,17 @@
             async client =>
             {
                 _user = await client.Users.GetCurrentUserAsync();
-                _userId = _user.ResourceId;
-                _loadedUserId = _userId;
+                if (_user.TryGetResourceId(out var assignedId))
+                {
+                    _userId = assignedId;
+                    _loadedUserId = assignedId;
+                }
+                else
+                {
+                    _userId = null;
+                    _loadedUserId = null;
+                }
+
                 _operationMessage = $"Loaded personal profile for {_user.DisplayName}.";
                 return "users/me";
             },
@@ -214,12 +223,19 @@
                     SendInvitation = false,
                     PermissionLevel = UserPermissionLevel.Time
                 });
-                _userId = _user.ResourceId;
-                _loadedUserId = _userId;
-                _operationMessage = _userId is null
-                    ? "Created test user but could not parse ID from URL."
-                    : $"Created test user {_userId.Value}: {_user.DisplayName}.";
-                return _userId is null ? null : $"users/{_userId}";
+
+                if (_user.TryGetResourceId(out var assignedId))
+                {
+                    _userId = assignedId;
+                    _loadedUserId = assignedId;
+                    _operationMessage = $"Created test user {assignedId}: {_user.DisplayName}.";
+                    return $"users/{assignedId}";
+                }
+
+                _userId = null;
+                _loadedUserId = null;
+                _operationMessage = "Created test user but could not parse ID from URL.";
+                return null;
             },
             envelopeProperty: "user");
     }
@@ -232,8 +248,12 @@
                 var existing = _user ?? await client.Users.GetCurrentUserAsync();
                 existing.OpeningMileage = (existing.OpeningMileage ?? 0) + 1;
                 _user = await client.Users.UpdateCurrentUserAsync(existing);
-                _userId = _user.ResourceId;
-                _loadedUserId = _userId;
+                if (_user.TryGetResourceId(out var assignedId))
+                {
+                    _userId = assignedId;
+                    _loadedUserId = assignedId;
+                }
+
                 _operationMessage = "Updated personal profile opening mileage (+1).";
                 return "users/me";
             },
@@ -243,7 +263,7 @@
 
     private async Task UpdateUserAsync()
     {
-        if (_userId is null)
+        if (_userId is null or < 1)
         {
             return;
         }
@@ -264,7 +284,7 @@
 
     private async Task DeleteUserAsync()
     {
-        if (_userId is null)
+        if (_userId is null or < 1)
         {
             return;
         }
