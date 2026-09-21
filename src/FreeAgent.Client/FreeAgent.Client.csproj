@@ -9,7 +9,7 @@
     <Version>0.1.0-alpha.3</Version>
     <Authors>Mark Heydon</Authors>
     <Description>A .NET client library for the FreeAgent API with OAuth 2.0 support</Description>
-    <PackageProjectUrl>https://github.com/markheydon/freeagent-dotnet</PackageProjectUrl>
+    <PackageProjectUrl>https://markheydon.me.uk/freeagent-dotnet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/markheydon/freeagent-dotnet</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
