@@ -1,3 +1,9 @@
+---
+title: Sales
+parent: API entity map
+nav_order: 2
+---
+
 # Sales
 
 Customer-facing documents: invoices, estimates, recurring invoices, credit notes, and stock referenced on invoice lines.

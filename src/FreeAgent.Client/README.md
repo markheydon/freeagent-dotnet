@@ -69,12 +69,12 @@ See [linked resources](https://github.com/markheydon/freeagent-dotnet/blob/main/
 
 ## Documentation
 
-Full consumer documentation lives in the repository:
+Published documentation: [markheydon.me.uk/freeagent-dotnet](https://markheydon.me.uk/freeagent-dotnet/)
 
-- [Getting started](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/tutorial/getting-started.md)
-- [Pagination](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/how-to/pagination.md)
-- [Error handling](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/how-to/error-handling.md)
-- [API coverage](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/reference/api-coverage.md)
+- [Getting started](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started)
+- [Pagination](https://markheydon.me.uk/freeagent-dotnet/how-to/pagination)
+- [Error handling](https://markheydon.me.uk/freeagent-dotnet/how-to/error-handling)
+- [API coverage](https://markheydon.me.uk/freeagent-dotnet/reference) — SDK reference for every implemented resource
 
 ## Licence
 

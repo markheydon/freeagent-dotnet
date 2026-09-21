@@ -430,3 +430,10 @@ FodyWeavers.xsd
 
 # Local sample app credentials
 samples/**/appsettings.local.json
+
+# Jekyll documentation site (local builds)
+docs/_site/
+docs/.jekyll-cache/
+docs/.sass-cache/
+docs/vendor/
+docs/.bundle/

@@ -107,11 +107,11 @@ Follow the probe-page standard documented in [`docs/contributing/sample-probe-pa
 8. Add seed fixtures when demo data helps field coverage (narrative canon and/or a full-detail probe contact); upsert by a stable natural key when re-running should refresh existing records.
 9. Only model wire fields that appear in the official FreeAgent API docs.
 
-Update [`samples/README.md`](../../samples/README.md) and [`docs/reference/api-coverage.md`](../../docs/reference/api-coverage.md) in the same change.
+Update [`samples/README.md`](../../samples/README.md), [`docs/reference/api-coverage.md`](../../docs/reference/api-coverage.md), and the resource reference page at [`docs/reference/<resource>.md`](../../docs/reference/) in the same change.
 
 ## Step 7 — Documentation
 
-Update the root `README.md`, [`src/FreeAgent.Client/README.md`](../../src/FreeAgent.Client/README.md) (API coverage, usage examples), [`docs/reference/api-coverage.md`](../../docs/reference/api-coverage.md), and any affected plan or entity-map sequencing docs.
+Update the root `README.md`, [`src/FreeAgent.Client/README.md`](../../src/FreeAgent.Client/README.md) (API coverage, usage examples), [`docs/reference/api-coverage.md`](../../docs/reference/api-coverage.md), the matching [`docs/reference/<resource>.md`](../../docs/reference/) page (methods, parameters, models, and samples — follow existing reference pages as templates), and any affected plan or entity-map sequencing docs. The coverage index alone is not sufficient; each implemented resource needs a reference page.
 
 ## Step 8 — Validation
 

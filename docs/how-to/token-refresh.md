@@ -1,3 +1,9 @@
+---
+title: Token refresh
+parent: How-to
+nav_order: 3
+---
+
 # Token refresh
 
 Access tokens expire. The SDK supports manual refresh and automatic refresh when constructed with an OAuth client and token.

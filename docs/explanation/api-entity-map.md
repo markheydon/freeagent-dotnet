@@ -1,3 +1,10 @@
+---
+title: API entity map
+parent: Explanation
+nav_order: 1
+has_children: true
+---
+
 # FreeAgent API entity map
 
 This is an **unofficial reconstruction** of how FreeAgent API resources link to each other. FreeAgent does not publish an entity-relationship diagram; the graphs here are inferred from [official API documentation](https://dev.freeagent.com/docs) — attribute tables where kind is **URI**, nested child resources, and list filters that take a resource URI (`?contact=`, `?project=`, and so on).

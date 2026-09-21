@@ -1,3 +1,9 @@
+---
+title: Pagination
+parent: How-to
+nav_order: 1
+---
+
 # Pagination
 
 FreeAgent list endpoints return one page at a time. The SDK follows the Stripe.NET pattern: **`ListAsync`** for one page and **`ListAutoPagingAsync`** to iterate every page without manual `page` management.
@@ -34,7 +40,7 @@ Cancellation is honoured during pagination loops — pass a `CancellationToken` 
 
 ## List filters (Contacts)
 
-The Contacts list supports `view`, `sort`, and `updated_since` query parameters. See [API coverage](../reference/api-coverage.md) for supported values.
+The Contacts list supports `view`, `sort`, and `updated_since` query parameters. See the [Contacts reference](../reference/contacts.md) for supported values.
 
 ```csharp
 using FreeAgent.Client;

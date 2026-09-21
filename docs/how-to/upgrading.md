@@ -1,3 +1,9 @@
+---
+title: Upgrading
+parent: How-to
+nav_order: 4
+---
+
 # Upgrading
 
 FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP completion, all releases are **prerelease** (`0.x.y-alpha.n`).

@@ -1,0 +1,28 @@
+title: FreeAgent.NET
+description: A .NET client library for the FreeAgent API
+remote_theme: just-the-docs/just-the-docs
+
+url: https://markheydon.me.uk
+baseurl: /freeagent-dotnet
+
+permalink: pretty
+
+exclude:
+  - README.md
+  - vendor
+  - Gemfile
+  - Gemfile.lock
+
+search_enabled: true
+heading_anchors: true
+
+aux_links:
+  GitHub:
+    - "https://github.com/markheydon/freeagent-dotnet"
+  NuGet:
+    - "https://www.nuget.org/packages/FreeAgent.Client/"
+
+footer_content: "Copyright &copy; Mark Heydon. Distributed under the <a href=\"https://github.com/markheydon/freeagent-dotnet/blob/main/LICENSE\">MIT licence</a>."
+
+plugins:
+  - jekyll-remote-theme

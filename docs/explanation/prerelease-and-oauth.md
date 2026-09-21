@@ -1,3 +1,9 @@
+---
+title: Prerelease and OAuth scope
+parent: Explanation
+nav_order: 3
+---
+
 # Prerelease policy and OAuth scope
 
 ## Prerelease policy

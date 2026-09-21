@@ -1,3 +1,9 @@
+---
+title: Error handling
+parent: How-to
+nav_order: 2
+---
+
 # Error handling
 
 The SDK surfaces failures through a small typed exception hierarchy. Catch the most specific type first.

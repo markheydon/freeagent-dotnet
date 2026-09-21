@@ -1,3 +1,9 @@
+---
+title: Linked resources
+parent: Explanation
+nav_order: 2
+---
+
 # Linked resources in the SDK
 
 FreeAgent links resources with URI strings on the wire. The SDK hides that shape behind typed references, flat read properties, and optional hydration on single-resource GET.

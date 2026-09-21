@@ -1,3 +1,9 @@
+---
+title: Assets and journals
+parent: API entity map
+nav_order: 6
+---
+
 # Assets and journals
 
 Fixed assets, manual journal corrections, landlord properties, and payroll profiles linked to users.
