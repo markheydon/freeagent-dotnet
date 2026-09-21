@@ -9,7 +9,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Company endpoint"
                          Title="Business categories"
-                         CallUnderTest="CompanyService.GetBusinessCategoriesAsync()"
+                         CallUnderTest="CompanyService.ListBusinessCategoriesAsync()"
                          Description="Renders all categories returned by FreeAgent."
                          EndpointPath="/v2/company/business_categories"
                          DocsUrl="https://dev.freeagent.com/docs/company" />
@@ -99,7 +99,7 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            var categories = await client.Company.GetBusinessCategoriesAsync();
+            var categories = await client.Company.ListBusinessCategoriesAsync();
             _categories = categories.OrderBy(static x => x).ToList();
         }
         catch (FreeAgentApiException ex)

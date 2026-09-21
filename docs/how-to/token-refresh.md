@@ -19,7 +19,7 @@ When you construct `FreeAgentClient` with `FreeAgentOAuthClient` and `OAuthToken
 
 ```csharp
 using var client = new FreeAgentClient(oauthClient, token);
-var contacts = await client.Contacts.GetContactsPageAsync();
+var contacts = await client.Contacts.ListAsync();
 ```
 
 The refreshed token is held in the client instance. Persist tokens in your application if sessions survive beyond a single client lifetime.

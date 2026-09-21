@@ -11,7 +11,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Users endpoint"
                          Title="Users list"
-                         CallUnderTest="UserService.GetUsersAsync(...)"
+                         CallUnderTest="UserService.ListAsync(...)"
                          Description="Load users, inspect wire-to-model mapping for any row, then jump into User CRUD to test get, create, update, and delete."
                          EndpointPath="/v2/users?view={view}"
                          DocsUrl="https://dev.freeagent.com/docs/users" />
@@ -215,7 +215,7 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _users = await client.Users.GetUsersAsync(view: _view);
+            _users = await client.Users.ListAsync(view: _view);
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,

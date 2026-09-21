@@ -24,7 +24,7 @@ public sealed class ContactService
     }
 
     /// <summary>
-    /// Gets one page of contacts.
+    /// Lists one page of contacts.
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
@@ -33,7 +33,7 @@ public sealed class ContactService
     /// <param name="updatedSince">Return contacts updated since this timestamp (ISO 8601)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated contacts response</returns>
-    public async Task<PaginatedResponse<Contact>> GetContactsPageAsync(
+    public async Task<PaginatedResponse<Contact>> ListAsync(
         int page = 1,
         int perPage = 25,
         string view = ContactViews.Active,
@@ -84,7 +84,7 @@ public sealed class ContactService
     }
 
     /// <summary>
-    /// Iterates all contacts across all pages.
+    /// Lists all contacts across all pages.
     /// </summary>
     /// <param name="perPage">Items per page (maximum 100)</param>
     /// <param name="view">Contacts view filter (for example: <see cref="ContactViews.Active"/>)</param>
@@ -92,7 +92,7 @@ public sealed class ContactService
     /// <param name="updatedSince">Return contacts updated since this timestamp (ISO 8601)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Async stream of contacts</returns>
-    public async IAsyncEnumerable<Contact> GetAllContactsAsync(
+    public async IAsyncEnumerable<Contact> ListAutoPagingAsync(
         int perPage = 25,
         string view = ContactViews.Active,
         string? sort = null,
@@ -103,7 +103,7 @@ public sealed class ContactService
 
         while (true)
         {
-            var contactsPage = await GetContactsPageAsync(page, perPage, view, sort, updatedSince, cancellationToken);
+            var contactsPage = await ListAsync(page, perPage, view, sort, updatedSince, cancellationToken);
 
             foreach (var contact in contactsPage.Items)
             {

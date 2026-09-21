@@ -42,7 +42,7 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 
 - Add/extend service classes under `src/FreeAgent.Client/Services/`.
 - Keep methods async and accept `CancellationToken`.
-- Use clear naming that distinguishes single-page access from auto-pagination where relevant.
+- Use `ListAsync` and `ListAutoPagingAsync` on resource services for paginated list endpoints (Stripe.NET parity). Use `ListAsync` for non-paginated collections.
 - When the API docs describe multiple create or update variants for the same route, add a separate public request type and service method per variant. Each request type exposes only the attributes documented for that variant; fixed wire values are set inside the SDK.
 - Do not expose a generic create/update that unions all variant attributes.
 - Fail fast only on official, local contract constraints stated in the API docs. Do not invent extra validation or fetch other resources to accept or reject a payload.
@@ -51,8 +51,8 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 ## 5. Handle Pagination Explicitly
 
 - When the API paginates list results, provide both:
-  - Single-page method for deterministic page control.
-  - Auto-pagination method for consumer convenience.
+  - `ListAsync` for deterministic single-page control.
+  - `ListAutoPagingAsync` for consumer convenience.
 - Do not invent pagination for endpoints that return a complete collection (for example Categories).
 - Where the API accepts `per_page`, follow FreeAgent pagination limits (`per_page` max 100) and fail fast if the caller exceeds it.
 - Preserve cancellation support during pagination loops.

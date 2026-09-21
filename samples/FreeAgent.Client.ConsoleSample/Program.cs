@@ -60,8 +60,8 @@ using var client = new FreeAgentClient(oauthClient, token, environment);
 Console.WriteLine();
 Console.WriteLine("Fetching contacts...");
 
-// GetContactsPageAsync returns one page. Use GetAllContactsAsync for automatic pagination.
-var contactsPage = await client.Contacts.GetContactsPageAsync(perPage: 100);
+// ListAsync returns one page. Use ListAutoPagingAsync for automatic pagination.
+var contactsPage = await client.Contacts.ListAsync(perPage: 100);
 
 if (contactsPage.Items.Count == 0)
 {

@@ -14,8 +14,8 @@ Sample: `/company`, `/company/business-categories`, `/company/tax-timeline`
 | Method | SDK API |
 |--------|---------|
 | `GET /v2/company` | `client.Company.GetCompanyAsync()` |
-| `GET /v2/company/business_categories` | `client.Company.GetBusinessCategoriesAsync()` |
-| `GET /v2/company/tax_timeline` | `client.Company.GetTaxTimelineAsync()` |
+| `GET /v2/company/business_categories` | `client.Company.ListBusinessCategoriesAsync()` |
+| `GET /v2/company/tax_timeline` | `client.Company.ListTaxTimelineAsync()` |
 
 ## Contacts
 
@@ -24,8 +24,8 @@ Sample: `/contacts` (list + per-row mapping), `/contacts/detail` (CRUD + seed da
 
 | Method | SDK API |
 |--------|---------|
-| `GET /v2/contacts` | `client.Contacts.GetContactsPageAsync(...)` |
-| Auto-pagination | `client.Contacts.GetAllContactsAsync(...)` |
+| `GET /v2/contacts` | `client.Contacts.ListAsync(...)` |
+| Auto-pagination | `client.Contacts.ListAutoPagingAsync(...)` |
 | `GET /v2/contacts/:id` | `client.Contacts.GetContactAsync(id)` |
 | `POST /v2/contacts` | `client.Contacts.CreateContactAsync(contact)` |
 | `PUT /v2/contacts/:id` | `client.Contacts.UpdateContactAsync(id, contact)` |
@@ -44,7 +44,7 @@ Sample: `/categories` (list + per-row mapping), `/categories/detail` (CRUD)
 
 | Method | SDK API |
 |--------|---------|
-| `GET /v2/categories` | `client.Categories.GetCategoriesAsync(...)` |
+| `GET /v2/categories` | `client.Categories.ListAsync(...)` |
 | `GET /v2/categories/:nominal_code` | `client.Categories.GetCategoryAsync(nominalCode)` |
 | `POST /v2/categories` (income) | `client.Categories.CreateIncomeCategoryAsync(request)` |
 | `POST /v2/categories` (cost of sales) | `client.Categories.CreateCostOfSalesCategoryAsync(request)` |
@@ -75,7 +75,7 @@ Sample: `/users` (list + per-row mapping), `/users/detail` (CRUD + personal prof
 
 | Method | SDK API |
 |--------|---------|
-| `GET /v2/users` | `client.Users.GetUsersAsync(...)` |
+| `GET /v2/users` | `client.Users.ListAsync(...)` |
 | `GET /v2/users/:id` | `client.Users.GetUserAsync(id)` |
 | `GET /v2/users/me` | `client.Users.GetCurrentUserAsync()` |
 | `POST /v2/users` | `client.Users.CreateUserAsync(user)` |
@@ -116,7 +116,7 @@ Sample: `/email-addresses`
 
 | Method | SDK API |
 |--------|---------|
-| `GET /v2/email_addresses` | `client.EmailAddresses.GetEmailAddressesAsync()` |
+| `GET /v2/email_addresses` | `client.EmailAddresses.ListAsync()` |
 
 ## Projects
 
@@ -125,8 +125,8 @@ Sample: `/projects` (list + per-row mapping), `/projects/detail` (CRUD + Turpinv
 
 | Method | SDK API |
 |--------|---------|
-| `GET /v2/projects` | `client.Projects.GetProjectsPageAsync(...)` |
-| Auto-pagination | `client.Projects.GetAllProjectsAsync(...)` |
+| `GET /v2/projects` | `client.Projects.ListAsync(...)` |
+| Auto-pagination | `client.Projects.ListAutoPagingAsync(...)` |
 | `GET /v2/projects/:id` | `client.Projects.GetProjectAsync(id)` or `GetProjectAsync(id, new ProjectGetOptions { IncludeBillingContact = true })` |
 | `POST /v2/projects` | `client.Projects.CreateProjectAsync(project)` |
 | `PUT /v2/projects/:id` | `client.Projects.UpdateProjectAsync(id, project)` |

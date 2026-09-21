@@ -9,7 +9,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Company endpoint"
                          Title="Verified sender email addresses"
-                         CallUnderTest="EmailAddressesService.GetEmailAddressesAsync()"
+                         CallUnderTest="EmailAddressesService.ListAsync()"
                          Description="Lists verified sender addresses used when emailing invoices and estimates from FreeAgent."
                          EndpointPath="/v2/email_addresses"
                          DocsUrl="https://dev.freeagent.com/docs/email_addresses" />
@@ -99,7 +99,7 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            var emailAddresses = await client.EmailAddresses.GetEmailAddressesAsync();
+            var emailAddresses = await client.EmailAddresses.ListAsync();
             _emailAddresses = emailAddresses.OrderBy(static x => x, StringComparer.OrdinalIgnoreCase).ToList();
         }
         catch (FreeAgentApiException ex)

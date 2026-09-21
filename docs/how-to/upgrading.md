@@ -20,6 +20,24 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP comp
 
 ## Recent breaking changes (alpha)
 
+### List API naming (Stripe.NET parity)
+
+Collection reads now use Stripe.NET-aligned names on resource services:
+
+| Before | After |
+|---|---|
+| `GetContactsPageAsync` | `client.Contacts.ListAsync` |
+| `GetAllContactsAsync` | `client.Contacts.ListAutoPagingAsync` |
+| `GetProjectsPageAsync` | `client.Projects.ListAsync` |
+| `GetAllProjectsAsync` | `client.Projects.ListAutoPagingAsync` |
+| `GetUsersAsync` | `client.Users.ListAsync` |
+| `GetCategoriesAsync` | `client.Categories.ListAsync` |
+| `GetEmailAddressesAsync` | `client.EmailAddresses.ListAsync` |
+| `GetBusinessCategoriesAsync` | `client.Company.ListBusinessCategoriesAsync` |
+| `GetTaxTimelineAsync` | `client.Company.ListTaxTimelineAsync` |
+
+Single-resource reads (`GetContactAsync`, `GetProjectAsync`, etc.) are unchanged.
+
 ### Linked resource fields on Projects
 
 `Project.Contact` is now `Contact?` (read) for nested or hydrated billing contact data. Assign `BillingContact` (a `ContactReference`) when creating or updating — for example `client.Urls.Contact(contactId)` — rather than a raw URI string.
@@ -28,7 +46,7 @@ Use `GetProjectAsync(id, new ProjectGetOptions { IncludeBillingContact = true })
 
 On update, the SDK round-trips the existing billing contact from the read model when `BillingContact` is not set. Set `OmitBillingContactFromWrite = true` on `Project` to exclude contact from the write payload.
 
-`ProjectService.GetProjectsPageAsync` and `GetAllProjectsAsync` accept `ContactReference? contact` and `long? contactId` instead of `string? contact`. Supply only one contact filter parameter — specifying both throws `ArgumentException`.
+Project list methods accept `ContactReference? contact` and `long? contactId` instead of `string? contact`. Supply only one contact filter parameter — specifying both throws `ArgumentException`.
 
 Use `TryGetResourceId()` or `GetResourceId()` when a parsed identifier is required. `ResourceId` returns `0` when parsing fails.
 
@@ -38,7 +56,7 @@ Top-level resources implement `IFreeAgentResource` with a computed `ResourceId` 
 
 ### Contacts list returns full `Contact` models
 
-`ContactService.GetContactsPageAsync` and `GetAllContactsAsync` now return `Contact` instead of the removed `ContactSummary` type. Update any code that depended on the slimmer list shape.
+Contact list methods now return `Contact` instead of the removed `ContactSummary` type. Update any code that depended on the slimmer list shape.
 
 When creating or updating contacts, read-only API fields (`url`, balances, mandate state, timestamps) are ignored during serialisation. You can still round-trip a `Contact` retrieved from the API without sending those fields back.
 

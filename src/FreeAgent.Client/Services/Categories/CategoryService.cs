@@ -38,7 +38,7 @@ public sealed class CategoryService
     /// <param name="includeSubAccounts">When <see langword="true"/>, includes sub accounts instead of top-level accounts where they exist.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>All category sets returned by FreeAgent</returns>
-    public async Task<CategorySets> GetCategoriesAsync(
+    public async Task<CategorySets> ListAsync(
         bool includeSubAccounts = false,
         CancellationToken cancellationToken = default)
     {

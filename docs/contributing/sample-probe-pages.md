@@ -17,8 +17,8 @@ The sample app is a **developer workbench**, not a product UI. Each probe page s
 | Pattern | Sample routes | SDK surface |
 |---------|---------------|-------------|
 | Single-resource GET | `/company` | `CompanyService.GetCompanyAsync()` |
-| List + per-row mapping (paginated) | `/contacts` | `ContactService.GetContactsPageAsync(...)` |
-| List + per-row mapping (full collection) | `/categories` | `CategoryService.GetCategoriesAsync(...)` |
+| List + per-row mapping (paginated) | `/contacts` | `ContactService.ListAsync(...)` |
+| List + per-row mapping (full collection) | `/categories` | `CategoryService.ListAsync(...)` |
 | CRUD + seed data | `/contacts/detail` | `ContactService` create/get/update/delete |
 | CRUD + write-variant selector | `/categories/detail` | `CategoryService` documented create/update variants |
 
@@ -62,7 +62,7 @@ Follow `Components/Pages/Company.razor`:
 
 Follow `Components/Pages/Contacts.razor` when the API paginates, or `Components/Pages/Categories.razor` when it returns a complete collection:
 
-1. Load through the SDK (`Get*PageAsync` or a non-paginated list method such as `GetCategoriesAsync`).
+1. Load through the SDK (`ListAsync` for paginated or full-collection lists; `ListAutoPagingAsync` when probing auto-pagination).
 2. Fetch the list wire payload for the same query.
 3. For each row, offer **Inspect mapping** using `ModelWireDiagnostics.TryGetArrayItem` (or the matching wire array for grouped collections) to pass the array item element into `ModelProbeResults`.
 4. Expose filters the SDK supports (view, sort, `updated_since`, `sub_accounts`, and so on).

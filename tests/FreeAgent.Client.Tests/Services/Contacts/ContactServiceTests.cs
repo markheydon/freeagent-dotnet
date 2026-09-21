@@ -12,7 +12,7 @@ namespace FreeAgent.Client.Tests.Services.Contacts;
 public class ContactServiceTests
 {
     [Fact]
-    public async Task GetContactsPageAsync_ReturnsPaginatedResponse()
+    public async Task ListAsync_ReturnsPaginatedResponse()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -44,7 +44,7 @@ public class ContactServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
         var service = new ContactService(client);
 
-        var page = await service.GetContactsPageAsync(page: 1, perPage: 2, view: ContactViews.All);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: ContactViews.All);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);
@@ -55,7 +55,7 @@ public class ContactServiceTests
     }
 
     [Fact]
-    public async Task GetContactsPageAsync_DefaultView_IsActive()
+    public async Task ListAsync_DefaultView_IsActive()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -70,11 +70,11 @@ public class ContactServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ContactService(client);
 
-        await service.GetContactsPageAsync();
+        await service.ListAsync();
     }
 
     [Fact]
-    public async Task GetContactsPageAsync_IncludesSortAndUpdatedSince()
+    public async Task ListAsync_IncludesSortAndUpdatedSince()
     {
         var updatedSince = new DateTimeOffset(2025, 3, 15, 9, 0, 0, TimeSpan.Zero);
 
@@ -92,7 +92,7 @@ public class ContactServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ContactService(client);
 
-        await service.GetContactsPageAsync(sort: "-updated_at", updatedSince: updatedSince);
+        await service.ListAsync(sort: "-updated_at", updatedSince: updatedSince);
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public class ContactServiceTests
     }
 
     [Fact]
-    public async Task GetContactsPageAsync_WhenViewContainsSpaces_EscapesViewQueryParameter()
+    public async Task ListAsync_WhenViewContainsSpaces_EscapesViewQueryParameter()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -237,14 +237,14 @@ public class ContactServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
         var service = new ContactService(client);
 
-        var page = await service.GetContactsPageAsync(page: 1, perPage: 25, view: "clients only");
+        var page = await service.ListAsync(page: 1, perPage: 25, view: "clients only");
 
         Assert.Equal(1, page.Total);
         Assert.False(page.HasNextPage);
     }
 
     [Fact]
-    public async Task GetContactsPageAsync_WhenTotalHeaderIsInvalid_FallsBackToEstimatedTotal()
+    public async Task ListAsync_WhenTotalHeaderIsInvalid_FallsBackToEstimatedTotal()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -275,14 +275,14 @@ public class ContactServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
         var service = new ContactService(client);
 
-        var page = await service.GetContactsPageAsync(page: 1, perPage: 2, view: ContactViews.All);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: ContactViews.All);
 
         Assert.Equal(3, page.Total);
         Assert.True(page.HasNextPage);
     }
 
     [Fact]
-    public async Task GetAllContactsAsync_IteratesAcrossPages()
+    public async Task ListAutoPagingAsync_IteratesAcrossPages()
     {
         var handler = new QueueHttpMessageHandler(
             request =>
@@ -329,7 +329,7 @@ public class ContactServiceTests
         var service = new ContactService(client);
 
         var contacts = new List<string>();
-        await foreach (var contact in service.GetAllContactsAsync(perPage: 2, view: ContactViews.All))
+        await foreach (var contact in service.ListAutoPagingAsync(perPage: 2, view: ContactViews.All))
         {
             contacts.Add(contact.DisplayName);
         }
@@ -380,7 +380,7 @@ public class ContactServiceTests
     }
 
     [Fact]
-    public async Task GetContactsPageAsync_WhenContactsMissing_ThrowsFreeAgentApiException()
+    public async Task ListAsync_WhenContactsMissing_ThrowsFreeAgentApiException()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -391,7 +391,7 @@ public class ContactServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ContactService(client);
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetContactsPageAsync());
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListAsync());
     }
 
     [Fact]

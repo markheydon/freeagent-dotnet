@@ -240,7 +240,7 @@ public class CompanyServiceTests
     }
 
     [Fact]
-    public async Task GetBusinessCategoriesAsync_ReturnsCategories()
+    public async Task ListBusinessCategoriesAsync_ReturnsCategories()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -258,14 +258,14 @@ public class CompanyServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token");
         var service = new CompanyService(client);
 
-        var categories = await service.GetBusinessCategoriesAsync();
+        var categories = await service.ListBusinessCategoriesAsync();
 
         Assert.Equal(3, categories.Count);
         Assert.Contains("Software Development", categories);
     }
 
     [Fact]
-    public async Task GetTaxTimelineAsync_ReturnsTimelineItems()
+    public async Task ListTaxTimelineAsync_ReturnsTimelineItems()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -297,7 +297,7 @@ public class CompanyServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token");
         var service = new CompanyService(client);
 
-        var timeline = await service.GetTaxTimelineAsync();
+        var timeline = await service.ListTaxTimelineAsync();
 
         Assert.Equal(2, timeline.Count);
         Assert.Equal("VAT Return 09 11", timeline[0].Description);

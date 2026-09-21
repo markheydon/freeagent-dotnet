@@ -4,7 +4,7 @@
 
 
 **Project:** FreeAgent.NET
-**Last updated:** 4 September 2026
+**Last updated:** 21 September 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.
@@ -96,6 +96,10 @@ tests/
 | Request model (single shape) | `[Resource][Action]Request` | `ContactCreateRequest` |
 | Request model (operation variant) | `[Action][Variant][Resource]Request` | `CreateIncomeCategoryRequest` |
 | Service method (operation variant) | `[Action][Variant][Resource]Async` | `CreateIncomeCategoryAsync` |
+| Collection read (single page or full response) | `ListAsync` on the resource service | `ContactService.ListAsync` |
+| Collection read (auto-pagination) | `ListAutoPagingAsync` on the resource service | `ContactService.ListAutoPagingAsync` |
+| Collection read (secondary endpoint on same service) | `List[Descriptor]Async` | `CompanyService.ListTaxTimelineAsync` |
+| Single resource read | `Get[Resource]Async` | `GetContactAsync` |
 | Discriminator factory | `For[Discriminator]` on request type | `CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(...)` |
 | Discriminator enum | `[Discriminator][Variant][Field]` | `UkLimitedCompanyCostOfSalesTaxReportingName` |
 | Response wrapper | `[Resource]Response` | `CompanyResponse` |
@@ -122,6 +126,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
+| 21 September 2026 | Adopt Stripe.NET-aligned `ListAsync` / `ListAutoPagingAsync` naming for collection reads | ADR-0012 |
 | 21 September 2026 | Add linked resource identity conventions (`ExpandableField<T>`, `*Reference`, `client.Urls`) | ADR-0011 |
 | 4 September 2026 | Limit contract validation to official local docs constraints | G2: fail-fast without invented checks |
 | 4 September 2026 | Add operation-variant request/method naming and discriminator factories | ADR-0010 |
