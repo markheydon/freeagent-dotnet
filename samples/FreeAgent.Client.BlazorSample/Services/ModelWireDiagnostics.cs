@@ -105,6 +105,65 @@ public static class ModelWireDiagnostics
     }
 
     /// <summary>
+    /// Builds diagnostics for a primitive string item from a named wire array.
+    /// </summary>
+    public static ModelProbeSnapshot BuildStringArrayItem(string value, JsonElement wireElement)
+    {
+        if (wireElement.ValueKind == JsonValueKind.Undefined)
+        {
+            return new ModelProbeSnapshot(
+                JsonSerializer.Serialize(value, PrettyJsonOptions),
+                [new ModelFieldRow("Value", "(array item)", "String", value)],
+                [new ModelMappingRow(
+                    "Value",
+                    "(array item)",
+                    "String",
+                    value,
+                    "Not returned",
+                    "Not returned",
+                    MappingCheckStatus.NotReturned)]);
+        }
+
+        var hasWireString = wireElement.ValueKind == JsonValueKind.String;
+        var wireText = hasWireString
+            ? wireElement.GetString() ?? string.Empty
+            : FormatJsonValue(wireElement);
+
+        var status = hasWireString && string.Equals(wireElement.GetString(), value, StringComparison.Ordinal)
+            ? MappingCheckStatus.Match
+            : MappingCheckStatus.Mismatch;
+
+        return new ModelProbeSnapshot(
+            JsonSerializer.Serialize(value, PrettyJsonOptions),
+            [new ModelFieldRow("Value", "(array item)", "String", value)],
+            [new ModelMappingRow(
+                "Value",
+                "(array item)",
+                "String",
+                value,
+                wireText,
+                wireElement.ValueKind.ToString(),
+                status)]);
+    }
+
+    /// <summary>
+    /// Builds string-array-item diagnostics from a raw list payload and row index.
+    /// </summary>
+    public static ModelProbeSnapshot BuildStringArrayItemFromWirePayload(
+        string value,
+        string wirePayload,
+        string arrayPropertyName,
+        int index)
+    {
+        if (TryGetArrayItem(wirePayload, arrayPropertyName, index, out var wireItem))
+        {
+            return BuildStringArrayItem(value, wireItem);
+        }
+
+        return BuildStringArrayItem(value, default);
+    }
+
+    /// <summary>
     /// Attempts to read one item from a named array property in a raw API payload.
     /// </summary>
     public static bool TryGetArrayItem(string rawPayload, string arrayPropertyName, int index, out JsonElement item)

@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FreeAgent.Client.BlazorSample.Services;
 using FreeAgent.Client.Models.Contacts;
 
@@ -71,5 +72,81 @@ public class ModelWireDiagnosticsTests
 
         Assert.True(found);
         Assert.Equal("Second", item.GetProperty("organisation_name").GetString());
+    }
+
+    [Fact]
+    public void BuildStringArrayItem_MarksMatchingWireAndModelValues()
+    {
+        using var document = JsonDocument.Parse("\"Software Development\"");
+
+        var snapshot = ModelWireDiagnostics.BuildStringArrayItem("Software Development", document.RootElement);
+
+        Assert.Equal(1, snapshot.MatchCount);
+        Assert.Equal(0, snapshot.MismatchCount);
+    }
+
+    [Fact]
+    public void BuildStringArrayItem_FlagsMismatch()
+    {
+        using var document = JsonDocument.Parse("\"Software Development\"");
+
+        var snapshot = ModelWireDiagnostics.BuildStringArrayItem("Design", document.RootElement);
+
+        Assert.Equal(0, snapshot.MatchCount);
+        Assert.Equal(1, snapshot.MismatchCount);
+    }
+
+    [Fact]
+    public void BuildStringArrayItem_WhenWireMissing_MarksNotReturned()
+    {
+        var snapshot = ModelWireDiagnostics.BuildStringArrayItem("Software Development", default);
+
+        Assert.Equal(0, snapshot.MatchCount);
+        Assert.Equal(0, snapshot.MismatchCount);
+        Assert.Equal(1, snapshot.NotReturnedCount);
+    }
+
+    [Fact]
+    public void BuildStringArrayItem_WhenWireElementIsObject_FlagsMismatch()
+    {
+        using var document = JsonDocument.Parse("{\"name\":\"Software Development\"}");
+
+        var snapshot = ModelWireDiagnostics.BuildStringArrayItem("Software Development", document.RootElement);
+
+        Assert.Equal(0, snapshot.MatchCount);
+        Assert.Equal(1, snapshot.MismatchCount);
+    }
+
+    [Fact]
+    public void BuildStringArrayItemFromWirePayload_UsesRequestedArrayItem()
+    {
+        const string rawPayload = """
+        {
+          "business_categories": ["Software Development", "Design"]
+        }
+        """;
+
+        var snapshot = ModelWireDiagnostics.BuildStringArrayItemFromWirePayload(
+            "Design",
+            rawPayload,
+            "business_categories",
+            1);
+
+        Assert.Equal(1, snapshot.MatchCount);
+        Assert.Equal(0, snapshot.MismatchCount);
+    }
+
+    [Fact]
+    public void BuildStringArrayItemFromWirePayload_DegradesWhenWirePayloadUnavailable()
+    {
+        var snapshot = ModelWireDiagnostics.BuildStringArrayItemFromWirePayload(
+            "Design",
+            "Failed to capture raw payload: timeout",
+            "business_categories",
+            0);
+
+        Assert.Equal(0, snapshot.MatchCount);
+        Assert.Equal(0, snapshot.MismatchCount);
+        Assert.Equal(1, snapshot.NotReturnedCount);
     }
 }

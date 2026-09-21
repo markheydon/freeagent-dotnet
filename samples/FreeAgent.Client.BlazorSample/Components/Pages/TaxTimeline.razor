@@ -10,7 +10,7 @@
     <EndpointProbeHeader SectionKicker="Company endpoint"
                          Title="Upcoming tax events"
                          CallUnderTest="CompanyService.ListTaxTimelineAsync()"
-                         Description="Requires FreeAgent access level Tax, Accounting and Users."
+                         Description="Requires FreeAgent access level Tax, Accounting and Users. Load events, then use Inspect mapping on any timeline card."
                          EndpointPath="/v2/company/tax_timeline"
                          DocsUrl="https://dev.freeagent.com/docs/company" />
 
@@ -25,60 +25,114 @@
     {
         <MudPaper Class="workbench-panel" Elevation="0">
             <MudStack Spacing="3">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.Event"
-                           Disabled="_loading"
-                           OnClick="FetchAsync">
-                    @if (_loading)
-                    {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                        <span>Loading…</span>
-                    }
-                    else
-                    {
-                        <span>Load tax timeline</span>
-                    }
-                </MudButton>
-
                 @if (_error is not null)
                 {
                     <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
                               CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
-
-                    <ApiErrorDiagnostics RawPayload="@_rawApiResponse" />
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
                 }
 
-                @if (_items is null && !_loading)
-                {
-                    <MudText Typo="Typo.body2" Class="hero-copy">Press the button above to load the tax timeline from FreeAgent.</MudText>
-                }
-                else if (_items is not null && _items.Count == 0 && !_loading)
-                {
-                    <MudText Typo="Typo.body2" Class="hero-copy">No tax timeline events returned.</MudText>
-                }
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load upcoming tax events, then use <strong>Inspect mapping</strong> on any timeline card to see wire-to-model diagnostics.
+                    </MudText>
 
-                @if (_items is not null && _items.Count > 0)
-                {
-                    <MudTimeline>
-                        @foreach (var item in _items)
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Event"
+                               Disabled="_loading"
+                               OnClick="LoadTaxTimelineAsync">
+                        @if (_loading)
                         {
-                            <MudTimelineItem Color="Color.Primary">
-                                <ChildContent>
-                                    <MudPaper Class="probe-card" Elevation="0">
-                                        <MudStack Spacing="1">
-                                            <MudText Typo="Typo.subtitle2">@item.Description</MudText>
-                                            <MudText Typo="Typo.body2">@item.Nature</MudText>
-                                            <MudText Typo="Typo.caption">Date: @item.DatedOn.ToString("yyyy-MM-dd")</MudText>
-                                            @if (item.AmountDue.HasValue)
-                                            {
-                                                <MudText Typo="Typo.caption">Amount due: @item.AmountDue.Value</MudText>
-                                            }
-                                        </MudStack>
-                                    </MudPaper>
-                                </ChildContent>
-                            </MudTimelineItem>
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Loading…</span>
                         }
-                    </MudTimeline>
+                        else
+                        {
+                            <span>Load tax timeline</span>
+                        }
+                    </MudButton>
+                </MudStack>
+
+                @if (_timelineRows is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load tax timeline</strong> to fetch events from FreeAgent.</MudText>
+                }
+
+                @if (_timelineRows is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_timelineRows.Count event@(_timelineRows.Count == 1 ? string.Empty : "s") loaded
+                        </MudChip>
+                    </MudStack>
+
+                    @if (_timelineRows.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Class="hero-copy">No tax timeline events returned.</MudText>
+                    }
+                    else
+                    {
+                        <MudTimeline>
+                            @foreach (var row in _timelineRows)
+                            {
+                                <MudTimelineItem Color="Color.Primary">
+                                    <ChildContent>
+                                        <MudPaper Class="probe-card" Elevation="0">
+                                            <MudStack Spacing="1">
+                                                <MudText Typo="Typo.subtitle2">@row.Item.Description</MudText>
+                                                <MudText Typo="Typo.body2">@row.Item.Nature</MudText>
+                                                <MudText Typo="Typo.caption">Date: @row.Item.DatedOn.ToString("yyyy-MM-dd")</MudText>
+                                                @if (row.Item.AmountDue.HasValue)
+                                                {
+                                                    <MudText Typo="Typo.caption">Amount due: @row.Item.AmountDue.Value</MudText>
+                                                }
+                                                <MudButton Variant="Variant.Filled"
+                                                           Color="@(row.WireIndex == _inspectedWireIndex ? Color.Primary : Color.Default)"
+                                                           Size="Size.Small"
+                                                           Class="mt-2"
+                                                           OnClick="@(() => InspectTimelineItemAsync(row.WireIndex))">
+                                                    Inspect mapping
+                                                </MudButton>
+                                            </MudStack>
+                                        </MudPaper>
+                                    </ChildContent>
+                                </MudTimelineItem>
+                            }
+                        </MudTimeline>
+                    }
+                }
+
+                @if (_inspectedItem is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All TaxTimelineItem model fields (selected event)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected tax event</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    @(_inspectedItem.DatedOn.ToString("yyyy-MM-dd"))
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Description</MudText>
+                                        <MudText Typo="Typo.subtitle1">@_inspectedItem.Description</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Nature</MudText>
+                                        <MudText Typo="Typo.subtitle1">@_inspectedItem.Nature</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
                 }
             </MudStack>
         </MudPaper>
@@ -88,11 +142,19 @@
 @code {
     private bool _loading;
     private string? _error;
-    private string? _rawApiResponse;
-    private List<TaxTimelineItem>? _items;
+    private string _wireApiResponse = string.Empty;
+    private IReadOnlyList<TimelineRow>? _timelineRows;
+    private TaxTimelineItem? _inspectedItem;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedWireIndex;
 
-    private async Task FetchAsync()
+    private async Task LoadTaxTimelineAsync()
     {
+        _timelineRows = null;
+        _inspectedItem = null;
+        _inspectedProbe = null;
+        _inspectedWireIndex = null;
+
         var token = TokenStore.GetToken();
         if (token is null)
         {
@@ -102,35 +164,67 @@
 
         _loading = true;
         _error = null;
-        _rawApiResponse = null;
-        _items = null;
+        _wireApiResponse = string.Empty;
+
+        const string diagnosticsEndpoint = "company/tax_timeline";
 
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
             var items = await client.Company.ListTaxTimelineAsync();
-            _items = items.OrderBy(static i => i.DatedOn).ToList();
+
+            _timelineRows = items
+                .Select(static (item, index) => new TimelineRow(index, item))
+                .OrderBy(static row => row.Item.DatedOn)
+                .ToList();
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
         }
         catch (FreeAgentApiException ex)
         {
             _error = $"API error: {ex.Message}";
-            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
-                "company/tax_timeline");
+                diagnosticsEndpoint);
         }
         catch (Exception ex)
         {
             _error = $"Unexpected error: {ex.Message}";
-            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
-                "company/tax_timeline");
+                diagnosticsEndpoint);
         }
         finally
         {
             _loading = false;
-            _items ??= new List<TaxTimelineItem>();
         }
     }
+
+    private void InspectTimelineItemAsync(int wireIndex)
+    {
+        if (_timelineRows is null)
+        {
+            return;
+        }
+
+        var row = _timelineRows.FirstOrDefault(r => r.WireIndex == wireIndex);
+        if (row is null)
+        {
+            return;
+        }
+
+        _inspectedWireIndex = wireIndex;
+        _inspectedItem = row.Item;
+
+        _inspectedProbe = ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "timeline_items", wireIndex, out var wireItem)
+            ? ModelWireDiagnostics.Build(_inspectedItem, wireItem)
+            : ModelWireDiagnostics.Build(_inspectedItem, default);
+    }
+
+    private sealed record TimelineRow(int WireIndex, TaxTimelineItem Item);
 }

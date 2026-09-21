@@ -26,4 +26,4 @@ For how resources relate to each other and a suggested implementation order, see
 
 ## Not yet implemented
 
-Invoices and other MVP resources listed in [SCOPE.md](../../SCOPE.md) - tracked via GitHub Issues.
+Resources described in the [API entity map](../explanation/api-entity-map.md) but not yet implemented in the SDK are tracked via [GitHub Issues](https://github.com/markheydon/freeagent-dotnet/issues).
