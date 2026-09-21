@@ -95,4 +95,58 @@ public class ModelWireDiagnosticsTests
         Assert.Equal(0, snapshot.MatchCount);
         Assert.Equal(1, snapshot.MismatchCount);
     }
+
+    [Fact]
+    public void BuildStringArrayItem_WhenWireMissing_MarksNotReturned()
+    {
+        var snapshot = ModelWireDiagnostics.BuildStringArrayItem("Software Development", default);
+
+        Assert.Equal(0, snapshot.MatchCount);
+        Assert.Equal(0, snapshot.MismatchCount);
+        Assert.Equal(1, snapshot.NotReturnedCount);
+    }
+
+    [Fact]
+    public void BuildStringArrayItem_WhenWireElementIsObject_FlagsMismatch()
+    {
+        using var document = JsonDocument.Parse("{\"name\":\"Software Development\"}");
+
+        var snapshot = ModelWireDiagnostics.BuildStringArrayItem("Software Development", document.RootElement);
+
+        Assert.Equal(0, snapshot.MatchCount);
+        Assert.Equal(1, snapshot.MismatchCount);
+    }
+
+    [Fact]
+    public void BuildStringArrayItemFromWirePayload_UsesRequestedArrayItem()
+    {
+        const string rawPayload = """
+        {
+          "business_categories": ["Software Development", "Design"]
+        }
+        """;
+
+        var snapshot = ModelWireDiagnostics.BuildStringArrayItemFromWirePayload(
+            "Design",
+            rawPayload,
+            "business_categories",
+            1);
+
+        Assert.Equal(1, snapshot.MatchCount);
+        Assert.Equal(0, snapshot.MismatchCount);
+    }
+
+    [Fact]
+    public void BuildStringArrayItemFromWirePayload_DegradesWhenWirePayloadUnavailable()
+    {
+        var snapshot = ModelWireDiagnostics.BuildStringArrayItemFromWirePayload(
+            "Design",
+            "Failed to capture raw payload: timeout",
+            "business_categories",
+            0);
+
+        Assert.Equal(0, snapshot.MatchCount);
+        Assert.Equal(0, snapshot.MismatchCount);
+        Assert.Equal(1, snapshot.NotReturnedCount);
+    }
 }

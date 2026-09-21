@@ -132,9 +132,8 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
 
-    private IReadOnlyList<StringRow> _emailRows => _emailAddresses?
-        .Select(static (value, index) => new StringRow(index, value))
-        .ToList() ?? [];
+    private IReadOnlyList<StringListProbeSupport.Row> _emailRows =>
+        StringListProbeSupport.BuildRows(_emailAddresses);
 
     private async Task LoadEmailAddressesAsync()
     {
@@ -197,12 +196,10 @@
 
         _inspectedIndex = index;
         _inspectedEmailAddress = _emailAddresses[index];
-
-        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "email_addresses", index, out var wireItem))
-        {
-            _inspectedProbe = ModelWireDiagnostics.BuildStringArrayItem(_inspectedEmailAddress, wireItem);
-        }
+        _inspectedProbe = StringListProbeSupport.BuildProbeSnapshot(
+            _inspectedEmailAddress,
+            _wireApiResponse,
+            "email_addresses",
+            index);
     }
-
-    private sealed record StringRow(int Index, string Value);
 }

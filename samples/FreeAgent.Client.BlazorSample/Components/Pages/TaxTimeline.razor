@@ -221,13 +221,9 @@
         _inspectedWireIndex = wireIndex;
         _inspectedItem = row.Item;
 
-        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "timeline_items", wireIndex, out var wireItem))
-        {
-            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, wireItem);
-            return;
-        }
-
-        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, _wireApiResponse, envelopeProperty: "timeline_items");
+        _inspectedProbe = ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "timeline_items", wireIndex, out var wireItem)
+            ? ModelWireDiagnostics.Build(_inspectedItem, wireItem)
+            : ModelWireDiagnostics.Build(_inspectedItem, default);
     }
 
     private sealed record TimelineRow(int WireIndex, TaxTimelineItem Item);
