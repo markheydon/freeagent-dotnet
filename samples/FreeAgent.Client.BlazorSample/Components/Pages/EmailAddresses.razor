@@ -10,7 +10,7 @@
     <EndpointProbeHeader SectionKicker="Company endpoint"
                          Title="Verified sender email addresses"
                          CallUnderTest="EmailAddressesService.ListAsync()"
-                         Description="Lists verified sender addresses used when emailing invoices and estimates from FreeAgent."
+                         Description="Load verified sender addresses, then use Inspect mapping on any row to see wire-to-model diagnostics."
                          EndpointPath="/v2/email_addresses"
                          DocsUrl="https://dev.freeagent.com/docs/email_addresses" />
 
@@ -25,51 +25,98 @@
     {
         <MudPaper Class="workbench-panel" Elevation="0">
             <MudStack Spacing="3">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.Email"
-                           Disabled="_loading"
-                           OnClick="FetchAsync">
-                    @if (_loading)
-                    {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                        <span>Loading…</span>
-                    }
-                    else
-                    {
-                        <span>Load email addresses</span>
-                    }
-                </MudButton>
-
                 @if (_error is not null)
                 {
                     <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
                               CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
-
-                    <ApiErrorDiagnostics RawPayload="@_rawApiResponse" />
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
                 }
 
-                @if (_emailAddresses is null && !_loading)
-                {
-                    <MudText Typo="Typo.body2" Class="hero-copy">Press the button above to load verified sender email addresses from FreeAgent.</MudText>
-                }
-                else if (_emailAddresses is not null && _emailAddresses.Count == 0 && !_loading)
-                {
-                    <MudText Typo="Typo.body2" Class="hero-copy">No verified sender email addresses returned.</MudText>
-                }
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load verified sender email addresses, then use <strong>Inspect mapping</strong> on any row to compare the wire string with the SDK value.
+                    </MudText>
 
-                @if (_emailAddresses is not null && _emailAddresses.Count > 0)
-                {
-                    <MudText Typo="Typo.subtitle1">@_emailAddresses.Count address@(_emailAddresses.Count == 1 ? string.Empty : "es") returned</MudText>
-                    <MudGrid Spacing="2">
-                        @foreach (var emailAddress in _emailAddresses)
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Email"
+                               Disabled="_loading"
+                               OnClick="LoadEmailAddressesAsync">
+                        @if (_loading)
                         {
-                            <MudItem xs="12" sm="6" md="4">
-                                <MudPaper Class="probe-card" Elevation="0">
-                                    <MudText Typo="Typo.body2">@emailAddress</MudText>
-                                </MudPaper>
-                            </MudItem>
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Loading…</span>
                         }
-                    </MudGrid>
+                        else
+                        {
+                            <span>Load email addresses</span>
+                        }
+                    </MudButton>
+                </MudStack>
+
+                @if (_emailAddresses is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load email addresses</strong> to fetch addresses from FreeAgent.</MudText>
+                }
+
+                @if (_emailAddresses is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_emailAddresses.Count address@(_emailAddresses.Count == 1 ? string.Empty : "es") loaded
+                        </MudChip>
+                    </MudStack>
+
+                    @if (_emailAddresses.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Class="hero-copy">No verified sender email addresses returned.</MudText>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_emailRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>#</MudTh>
+                                    <MudTh>Address</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="#"><code>@context.Index</code></MudTd>
+                                    <MudTd DataLabel="Address">@context.Value</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => InspectEmailAddressAsync(context.Index))">
+                                            Inspect mapping
+                                        </MudButton>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedEmailAddress is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="String value (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected email address</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    Index: @_inspectedIndex
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudPaper Class="probe-card" Elevation="0">
+                                <MudText Typo="Typo.caption">Address</MudText>
+                                <MudText Typo="Typo.subtitle1">@_inspectedEmailAddress</MudText>
+                            </MudPaper>
+                        </HighlightContent>
+                    </ModelProbeResults>
                 }
             </MudStack>
         </MudPaper>
@@ -79,11 +126,23 @@
 @code {
     private bool _loading;
     private string? _error;
-    private string? _rawApiResponse;
-    private List<string>? _emailAddresses;
+    private string _wireApiResponse = string.Empty;
+    private IReadOnlyList<string>? _emailAddresses;
+    private string? _inspectedEmailAddress;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
 
-    private async Task FetchAsync()
+    private IReadOnlyList<StringRow> _emailRows => _emailAddresses?
+        .Select(static (value, index) => new StringRow(index, value))
+        .ToList() ?? [];
+
+    private async Task LoadEmailAddressesAsync()
     {
+        _emailAddresses = null;
+        _inspectedEmailAddress = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+
         var token = TokenStore.GetToken();
         if (token is null)
         {
@@ -93,35 +152,57 @@
 
         _loading = true;
         _error = null;
-        _rawApiResponse = null;
-        _emailAddresses = null;
+        _wireApiResponse = string.Empty;
+
+        const string diagnosticsEndpoint = "email_addresses";
 
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            var emailAddresses = await client.EmailAddresses.ListAsync();
-            _emailAddresses = emailAddresses.OrderBy(static x => x, StringComparer.OrdinalIgnoreCase).ToList();
+            _emailAddresses = await client.EmailAddresses.ListAsync();
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
         }
         catch (FreeAgentApiException ex)
         {
             _error = $"API error: {ex.Message}";
-            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
-                "email_addresses");
+                diagnosticsEndpoint);
         }
         catch (Exception ex)
         {
             _error = $"Unexpected error: {ex.Message}";
-            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
-                "email_addresses");
+                diagnosticsEndpoint);
         }
         finally
         {
             _loading = false;
-            _emailAddresses ??= new List<string>();
         }
     }
+
+    private void InspectEmailAddressAsync(int index)
+    {
+        if (_emailAddresses is null || index < 0 || index >= _emailAddresses.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedEmailAddress = _emailAddresses[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "email_addresses", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.BuildStringArrayItem(_inspectedEmailAddress, wireItem);
+        }
+    }
+
+    private sealed record StringRow(int Index, string Value);
 }

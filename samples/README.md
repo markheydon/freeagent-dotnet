@@ -94,8 +94,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | Page | SDK call tested | Probe features |
 |------|-----------------|----------------|
 | [/company](https://localhost:5001/company) | `CompanyService.GetCompanyAsync()` | Wire-to-model mapping, raw JSON |
-| [/company/business-categories](https://localhost:5001/company/business-categories) | `CompanyService.ListBusinessCategoriesAsync()` | List output |
-| [/company/tax-timeline](https://localhost:5001/company/tax-timeline) | `CompanyService.ListTaxTimelineAsync()` | List output |
+| [/company/business-categories](https://localhost:5001/company/business-categories) | `CompanyService.ListBusinessCategoriesAsync()` | Per-row mapping inspection, list output |
+| [/company/tax-timeline](https://localhost:5001/company/tax-timeline) | `CompanyService.ListTaxTimelineAsync()` | Per-row mapping inspection, timeline list |
 | [/contacts](https://localhost:5001/contacts) | `ContactService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, list filters |
 | [/contacts/detail](https://localhost:5001/contacts/detail) | `GetContactAsync()`, `CreateContactAsync()`, `UpdateContactAsync()`, `DeleteContactAsync()` | CRUD probes, Turpinverse seed data, full-detail fixture, progress bar |
 | [/categories](https://localhost:5001/categories) | `CategoryService.ListAsync()` | Per-row mapping inspection, sub accounts toggle |
@@ -104,7 +104,7 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/projects/detail](https://localhost:5001/projects/detail) | `GetProjectAsync()`, `CreateProjectAsync()`, `UpdateProjectAsync()`, `DeleteProjectAsync()` | CRUD probes, Turpinverse seed data, progress bar |
 | [/users](https://localhost:5001/users) | `UserService.ListAsync()` | Per-row mapping inspection, view filters |
 | [/users/detail](https://localhost:5001/users/detail) | `GetUserAsync()`, `GetCurrentUserAsync()`, `CreateUserAsync()`, `UpdateUserAsync()`, `UpdateCurrentUserAsync()`, `DeleteUserAsync()` | CRUD probes, personal profile endpoints, progress bar |
-| [/email-addresses](https://localhost:5001/email-addresses) | `EmailAddressesService.ListAsync()` | List output |
+| [/email-addresses](https://localhost:5001/email-addresses) | `EmailAddressesService.ListAsync()` | Per-row mapping inspection, list output |
 
 Contributors adding endpoints should follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md).
 

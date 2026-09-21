@@ -105,6 +105,33 @@ public static class ModelWireDiagnostics
     }
 
     /// <summary>
+    /// Builds diagnostics for a primitive string item from a named wire array.
+    /// </summary>
+    public static ModelProbeSnapshot BuildStringArrayItem(string value, JsonElement wireElement)
+    {
+        var hasWireString = wireElement.ValueKind == JsonValueKind.String;
+        var wireText = hasWireString
+            ? wireElement.GetString() ?? string.Empty
+            : FormatJsonValue(wireElement);
+
+        var status = hasWireString && string.Equals(wireElement.GetString(), value, StringComparison.Ordinal)
+            ? MappingCheckStatus.Match
+            : MappingCheckStatus.Mismatch;
+
+        return new ModelProbeSnapshot(
+            JsonSerializer.Serialize(value, PrettyJsonOptions),
+            [new ModelFieldRow("Value", "(array item)", "String", value)],
+            [new ModelMappingRow(
+                "Value",
+                "(array item)",
+                "String",
+                value,
+                wireText,
+                wireElement.ValueKind.ToString(),
+                status)]);
+    }
+
+    /// <summary>
     /// Attempts to read one item from a named array property in a raw API payload.
     /// </summary>
     public static bool TryGetArrayItem(string rawPayload, string arrayPropertyName, int index, out JsonElement item)

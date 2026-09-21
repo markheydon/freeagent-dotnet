@@ -10,7 +10,7 @@
     <EndpointProbeHeader SectionKicker="Company endpoint"
                          Title="Business categories"
                          CallUnderTest="CompanyService.ListBusinessCategoriesAsync()"
-                         Description="Renders all categories returned by FreeAgent."
+                         Description="Load business categories, then use Inspect mapping on any row to see wire-to-model diagnostics."
                          EndpointPath="/v2/company/business_categories"
                          DocsUrl="https://dev.freeagent.com/docs/company" />
 
@@ -25,51 +25,98 @@
     {
         <MudPaper Class="workbench-panel" Elevation="0">
             <MudStack Spacing="3">
-                <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.List"
-                           Disabled="_loading"
-                           OnClick="FetchAsync">
-                    @if (_loading)
-                    {
-                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                        <span>Loading…</span>
-                    }
-                    else
-                    {
-                        <span>Load business categories</span>
-                    }
-                </MudButton>
-
                 @if (_error is not null)
                 {
                     <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
                               CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
-
-                    <ApiErrorDiagnostics RawPayload="@_rawApiResponse" />
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
                 }
 
-                @if (_categories is null && !_loading)
-                {
-                    <MudText Typo="Typo.body2" Class="hero-copy">Press the button above to load business categories from FreeAgent.</MudText>
-                }
-                else if (_categories is not null && _categories.Count == 0 && !_loading)
-                {
-                    <MudText Typo="Typo.body2" Class="hero-copy">No business categories returned.</MudText>
-                }
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load all business categories, then use <strong>Inspect mapping</strong> on any row to compare the wire string with the SDK value.
+                    </MudText>
 
-                @if (_categories is not null && _categories.Count > 0)
-                {
-                    <MudText Typo="Typo.subtitle1">@_categories.Count categories returned</MudText>
-                    <MudGrid Spacing="2">
-                        @foreach (var category in _categories)
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.List"
+                               Disabled="_loading"
+                               OnClick="LoadBusinessCategoriesAsync">
+                        @if (_loading)
                         {
-                            <MudItem xs="12" sm="6" md="4">
-                                <MudPaper Class="probe-card" Elevation="0">
-                                    <MudText Typo="Typo.body2">@category</MudText>
-                                </MudPaper>
-                            </MudItem>
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Loading…</span>
                         }
-                    </MudGrid>
+                        else
+                        {
+                            <span>Load business categories</span>
+                        }
+                    </MudButton>
+                </MudStack>
+
+                @if (_categories is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load business categories</strong> to fetch categories from FreeAgent.</MudText>
+                }
+
+                @if (_categories is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_categories.Count categor@(_categories.Count == 1 ? "y" : "ies") loaded
+                        </MudChip>
+                    </MudStack>
+
+                    @if (_categories.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Class="hero-copy">No business categories returned.</MudText>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_categoryRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>#</MudTh>
+                                    <MudTh>Category</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="#"><code>@context.Index</code></MudTd>
+                                    <MudTd DataLabel="Category">@context.Value</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => InspectCategoryAsync(context.Index))">
+                                            Inspect mapping
+                                        </MudButton>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedCategory is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="String value (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected category</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    Index: @_inspectedIndex
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudPaper Class="probe-card" Elevation="0">
+                                <MudText Typo="Typo.caption">Category</MudText>
+                                <MudText Typo="Typo.subtitle1">@_inspectedCategory</MudText>
+                            </MudPaper>
+                        </HighlightContent>
+                    </ModelProbeResults>
                 }
             </MudStack>
         </MudPaper>
@@ -79,11 +126,23 @@
 @code {
     private bool _loading;
     private string? _error;
-    private string? _rawApiResponse;
-    private List<string>? _categories;
+    private string _wireApiResponse = string.Empty;
+    private IReadOnlyList<string>? _categories;
+    private string? _inspectedCategory;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
 
-    private async Task FetchAsync()
+    private IReadOnlyList<StringRow> _categoryRows => _categories?
+        .Select(static (value, index) => new StringRow(index, value))
+        .ToList() ?? [];
+
+    private async Task LoadBusinessCategoriesAsync()
     {
+        _categories = null;
+        _inspectedCategory = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+
         var token = TokenStore.GetToken();
         if (token is null)
         {
@@ -93,35 +152,57 @@
 
         _loading = true;
         _error = null;
-        _rawApiResponse = null;
-        _categories = null;
+        _wireApiResponse = string.Empty;
+
+        const string diagnosticsEndpoint = "company/business_categories";
 
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            var categories = await client.Company.ListBusinessCategoriesAsync();
-            _categories = categories.OrderBy(static x => x).ToList();
+            _categories = await client.Company.ListBusinessCategoriesAsync();
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
         }
         catch (FreeAgentApiException ex)
         {
             _error = $"API error: {ex.Message}";
-            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
-                "company/business_categories");
+                diagnosticsEndpoint);
         }
         catch (Exception ex)
         {
             _error = $"Unexpected error: {ex.Message}";
-            _rawApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
-                "company/business_categories");
+                diagnosticsEndpoint);
         }
         finally
         {
             _loading = false;
-            _categories ??= new List<string>();
         }
     }
+
+    private void InspectCategoryAsync(int index)
+    {
+        if (_categories is null || index < 0 || index >= _categories.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedCategory = _categories[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "business_categories", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.BuildStringArrayItem(_inspectedCategory, wireItem);
+        }
+    }
+
+    private sealed record StringRow(int Index, string Value);
 }
