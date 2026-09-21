@@ -70,6 +70,7 @@ Project skills live in `.agents/skills/`. Read the matching `SKILL.md` when the 
 | `project-documentation` | Project-aware docs placement and terminology |
 | `mudblazor` | Sample app Blazor UI with MudBlazor |
 | `pr-address-review` | Addressing open PR review comment threads |
+| `goals-review` | Auditing the repo or a PR diff against GOALS.md, SCOPE.md, CONVENTIONS.md, and sample-sync rules |
 
 ## Task Routing
 
