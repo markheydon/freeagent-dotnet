@@ -200,6 +200,15 @@
                     </MudPaper>
                     <MudPaper Class="probe-card" Elevation="0">
                         <MudStack Spacing="1">
+                            <MudText Typo="Typo.subtitle1">Projects</MudText>
+                            <MudText Typo="Typo.body2">Calls <code>ProjectService.ListAsync()</code> and <code>ListAutoPagingAsync()</code>, plus project CRUD probes.</MudText>
+                            <MudButton Variant="Variant.Text" Color="Color.Primary"
+                                       Href="/projects"
+                                       StartIcon="@Icons.Material.Filled.Work">Open probe</MudButton>
+                        </MudStack>
+                    </MudPaper>
+                    <MudPaper Class="probe-card" Elevation="0">
+                        <MudStack Spacing="1">
                             <MudText Typo="Typo.subtitle1">Users</MudText>
                             <MudText Typo="Typo.body2">Calls <code>UserService.ListAsync()</code>, personal profile endpoints, and user CRUD probes.</MudText>
                             <MudButton Variant="Variant.Text" Color="Color.Primary"

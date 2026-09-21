@@ -19,20 +19,34 @@ create an ADR if it's a significant architectural change.
 src/
 └── FreeAgent.Client/
 	├── FreeAgentClient.cs               # Main consumer entry point
+	├── FreeAgentResourceUrls.cs         # Environment-correct resource URI builders
 	├── PaginatedResponse.cs             # Public pagination result type
+	├── ProjectGetOptions.cs             # Single-GET hydration options (Projects)
 	├── Infrastructure/                  # Internal plumbing — not part of the public API surface
 	│   ├── Authentication/              # OAuth token exchange/refresh client and models
 	│   ├── Configuration/               # Environment enum and URL mapping
 	│   ├── Http/                        # HTTP transport, rate limiting, API exceptions, pagination helpers
 	│   └── Serialization/               # JSON converters and TFM compatibility
 	├── Models/                          # Resource-grouped strongly typed models
-	│   ├── Company/                     # Company resource models (Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers)
-	│   └── Contacts/                    # Contacts resource models (Contact, response wrappers)
+	│   ├── Categories/                  # Category models, operation-variant requests, nominal-code validation
+	│   ├── Company/                     # Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers
+	│   ├── Contacts/                    # Contact models and response wrappers
+	│   ├── EmailAddresses/              # Email addresses response wrapper
+	│   ├── Projects/                    # Project models, views, sort options, response wrappers
+	│   ├── Shared/                      # Cross-resource primitives (ContactReference, ProjectReference, CurrencyCode)
+	│   └── Users/                       # User models and response wrappers
 	└── Services/                        # Resource-oriented service classes
+		├── Categories/                  # CategoryService and category write/response mappers
 		├── Company/
 		│   └── CompanyService.cs
-		└── Contacts/
-		    └── ContactService.cs
+		├── Contacts/
+		│   └── ContactService.cs
+		├── EmailAddresses/
+		│   └── EmailAddressesService.cs
+		├── Projects/
+		│   └── ProjectService.cs
+		└── Users/
+		    └── UserService.cs
 
 tests/
 └── FreeAgent.Client.Tests/
@@ -40,22 +54,32 @@ tests/
 	├── Infrastructure/
 	│   ├── Authentication/
 	│   ├── Configuration/
-	│   └── Http/
+	│   ├── Http/
+	│   └── Serialization/
+	├── Models/
+	│   ├── Categories/
+	│   ├── Contacts/
+	│   ├── Projects/
+	│   ├── Shared/
+	│   └── Users/
+	├── Sample/                          # Sample-app helper tests (Turpinverse, wire diagnostics)
 	├── Services/
+	│   ├── Categories/
 	│   ├── Company/
-	│   └── Contacts/
+	│   ├── Contacts/
+	│   ├── EmailAddresses/
+	│   ├── Projects/
+	│   └── Users/
 	└── TestSupport/
 ```
 
 **Namespace layout:**
-- `FreeAgent.Client` — top-level consumer namespace (`FreeAgentClient`, `PaginatedResponse<T>`)
+- `FreeAgent.Client` — top-level consumer namespace (`FreeAgentClient`, `PaginatedResponse<T>`, `ProjectGetOptions`)
 - `FreeAgent.Client.Infrastructure.Authentication` — OAuth types
 - `FreeAgent.Client.Infrastructure.Configuration` — FreeAgentEnvironment, FreeAgentEnvironmentEndpoints
 - `FreeAgent.Client.Infrastructure.Http` — HTTP client, exceptions, pagination helpers
-- `FreeAgent.Client.Models.Company` — Company resource models
-- `FreeAgent.Client.Models.Contacts` — Contacts resource models
-- `FreeAgent.Client.Services.Company.CompanyService` — Company resource service
-- `FreeAgent.Client.Services.Contacts.ContactService` — Contacts resource service
+- `FreeAgent.Client.Models.[Resource]` — resource models (Categories, Company, Contacts, EmailAddresses, Projects, Shared, Users)
+- `FreeAgent.Client.Services.[Resource]` — resource services (Categories, Company, Contacts, EmailAddresses, Projects, Users)
 
 **Key naming rules (unchanged):**
 - Service: [Resource]Service (CompanyService, ContactService)
@@ -126,6 +150,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
+| 21 September 2026 | Refresh project-structure tree for all implemented resources and tests layout | Goals review sample-sync and docs drift |
 | 21 September 2026 | Adopt Stripe.NET-aligned `ListAsync` / `ListAutoPagingAsync` naming for collection reads | ADR-0012 |
 | 21 September 2026 | Add linked resource identity conventions (`ExpandableField<T>`, `*Reference`, `client.Urls`) | ADR-0011 |
 | 4 September 2026 | Limit contract validation to official local docs constraints | G2: fail-fast without invented checks |
