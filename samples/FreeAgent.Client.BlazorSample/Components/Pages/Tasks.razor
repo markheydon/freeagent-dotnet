@@ -1,4 +1,5 @@
 @page "/tasks"
+@using FreeAgent.Client.Models.Shared
 @using FreeAgent.Client.Models.Tasks
 @using TaskModel = FreeAgent.Client.Models.Tasks.Task
 @inject TokenStore TokenStore
@@ -434,7 +435,7 @@
 
         if (_projectIdFilter is > 0)
         {
-            query.Add($"project={Uri.EscapeDataString($"https://api.freeagent.com/v2/projects/{_projectIdFilter}")}");
+            query.Add($"project={Uri.EscapeDataString(ProjectReference.ForEnvironment(TokenStore.ConnectedEnvironment, _projectIdFilter.Value).Uri)}");
         }
 
         return $"tasks?{string.Join('&', query)}";

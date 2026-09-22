@@ -41,16 +41,6 @@ public class Task : IFreeAgentResource
     public long? ProjectId => ProjectLink?.Id;
 
     /// <summary>
-    /// Parent project to assign on create or update requests.
-    /// </summary>
-    /// <remarks>
-    /// Create operations scope the parent via the <c>project</c> query parameter; this property is not serialised on create.
-    /// When omitted on update, the SDK round-trips the existing project link from the read model.
-    /// </remarks>
-    [JsonIgnore]
-    public ProjectReference? ParentProject { get; set; }
-
-    /// <summary>
     /// Attaches a hydrated parent project to this task.
     /// </summary>
     /// <param name="project">Parent project details.</param>

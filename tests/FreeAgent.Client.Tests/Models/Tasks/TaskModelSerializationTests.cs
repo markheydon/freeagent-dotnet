@@ -62,6 +62,24 @@ public class TaskModelSerializationTests
     }
 
     [Fact]
+    public void Deserialize_ProjectFromNestedObject()
+    {
+        const string json = """
+        {
+          "project": {
+            "url": "https://api.freeagent.com/v2/projects/9",
+            "name": "Nested Project"
+          }
+        }
+        """;
+
+        var task = JsonSerializer.Deserialize<FreeAgent.Client.Models.Tasks.Task>(json);
+
+        Assert.Equal(9, task!.ProjectId);
+        Assert.Equal("Nested Project", task.Project!.Name);
+    }
+
+    [Fact]
     public void Serialize_WritePayload_ExcludesReadOnlyFields()
     {
         var task = new FreeAgent.Client.Models.Tasks.Task

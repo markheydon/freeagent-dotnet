@@ -35,6 +35,21 @@ var project = await client.Projects.GetProjectAsync(123);
 var label = project.ContactName;
 ```
 
+Tasks follow the same pattern for the parent project link:
+
+| Property | When it is set |
+|----------|----------------|
+| `ProjectId` | Always when the API returns a project URI |
+| `Project` | When the API returns a nested project object **or** when you request hydration on single GET |
+
+```csharp
+var task = await client.Tasks.GetTaskAsync(
+    456,
+    new TaskGetOptions { IncludeProject = true });
+
+var projectName = task.Project!.Name;
+```
+
 ## Write properties
 
 Assign typed references - never raw URI strings:
@@ -51,6 +66,8 @@ await client.Projects.CreateProjectAsync(new Project
 Use `client.Urls` so sandbox and production hosts stay correct.
 
 When updating a project retrieved from the API, the SDK round-trips the existing billing contact link unless you set `OmitBillingContactFromWrite = true`. Assign `BillingContact` explicitly when changing the billing contact.
+
+Task create operations scope the parent project via the `project` query parameter (`CreateTaskAsync`), not the request body. Task updates do not accept a parent project on the wire.
 
 ## Resource identifiers
 

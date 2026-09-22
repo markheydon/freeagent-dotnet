@@ -198,6 +198,97 @@ public class TaskServiceTests
     }
 
     [Fact]
+    public async System.Threading.Tasks.Task ListAsync_EmptyTasksArray_ReturnsEmptyPage()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""{ "tasks": [] }""")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TaskService(client);
+
+        var page = await service.ListAsync();
+
+        Assert.Empty(page.Items);
+        Assert.False(page.HasNextPage);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task GetTaskAsync_WithIncludeProject_SkipsFetchWhenProjectAlreadyExpanded()
+    {
+        var requestCount = 0;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            requestCount++;
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "task": {
+                    "url": "https://api.freeagent.com/v2/tasks/42",
+                    "project": {
+                      "url": "https://api.freeagent.com/v2/projects/7",
+                      "name": "Already Nested"
+                    },
+                    "name": "Probe Task"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TaskService(client);
+
+        var task = await service.GetTaskAsync(
+            42,
+            new TaskGetOptions { IncludeProject = true });
+
+        Assert.Equal(1, requestCount);
+        Assert.Equal("Already Nested", task.Project!.Name);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateTaskAsync_ProjectReference_PostsTaskEnvelopeWithProjectQuery()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Contains(
+                "project=https%3A%2F%2Fapi.sandbox.freeagent.com%2Fv2%2Fprojects%2F3",
+                request.RequestUri!.Query,
+                StringComparison.Ordinal);
+
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "task": {
+                    "url": "https://api.sandbox.freeagent.com/v2/tasks/5",
+                    "name": "Sandbox Task"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler)
+        {
+            BaseAddress = new Uri("https://api.sandbox.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TaskService(client);
+
+        var created = await service.CreateTaskAsync(
+            ProjectReference.Parse("https://api.sandbox.freeagent.com/v2/projects/3"),
+            new TaskModel { Name = "Sandbox Task" });
+
+        Assert.Equal("Sandbox Task", created.Name);
+    }
+
+    [Fact]
     public async System.Threading.Tasks.Task CreateTaskAsync_PostsTaskEnvelopeWithProjectQuery()
     {
         var handler = new QueueHttpMessageHandler(request =>

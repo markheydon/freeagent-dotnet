@@ -1,5 +1,6 @@
 @page "/projects"
 @using FreeAgent.Client.Models.Projects
+@using FreeAgent.Client.Models.Shared
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
 @inject ApiDiagnosticsService ApiDiagnostics
@@ -423,7 +424,7 @@
 
         if (_contactIdFilter is > 0)
         {
-            query.Add($"contact={Uri.EscapeDataString($"https://api.freeagent.com/v2/contacts/{_contactIdFilter}")}");
+            query.Add($"contact={Uri.EscapeDataString(ContactReference.ForEnvironment(TokenStore.ConnectedEnvironment, _contactIdFilter.Value).Uri)}");
         }
 
         if (_nested)
