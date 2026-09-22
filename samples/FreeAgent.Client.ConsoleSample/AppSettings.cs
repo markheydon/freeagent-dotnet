@@ -30,6 +30,16 @@ internal sealed class AppSettings
     public string RedirectUri { get; init; } = DefaultRedirectUri;
 
     /// <summary>
+    /// Optional refresh token for non-interactive runs (<c>--run-all</c>).
+    /// </summary>
+    public string? RefreshToken { get; init; }
+
+    /// <summary>
+    /// Optional access token for short-lived non-interactive runs.
+    /// </summary>
+    public string? AccessToken { get; init; }
+
+    /// <summary>
     /// Loads settings with later sources overriding earlier ones:
     /// appsettings.json → appsettings.local.json → user-secrets → environment variables.
     /// </summary>
@@ -91,6 +101,8 @@ internal sealed class AppSettings
             ClientId = section.GetPropertyOrDefault(nameof(ClientId)),
             ClientSecret = section.GetPropertyOrDefault(nameof(ClientSecret)),
             RedirectUri = section.GetPropertyOrDefault(nameof(RedirectUri), DefaultRedirectUri),
+            RefreshToken = section.GetPropertyOrDefault(nameof(RefreshToken)),
+            AccessToken = section.GetPropertyOrDefault(nameof(AccessToken)),
         };
     }
 
@@ -100,6 +112,8 @@ internal sealed class AppSettings
             ClientId = Prefer(other.ClientId, ClientId),
             ClientSecret = Prefer(other.ClientSecret, ClientSecret),
             RedirectUri = Prefer(other.RedirectUri, RedirectUri),
+            RefreshToken = PreferNullable(other.RefreshToken, RefreshToken),
+            AccessToken = PreferNullable(other.AccessToken, AccessToken),
         };
 
     private AppSettings WithEnvironmentOverrides() =>
@@ -108,6 +122,8 @@ internal sealed class AppSettings
             ClientId = Prefer(Environment.GetEnvironmentVariable("FREEAGENT_CLIENT_ID"), ClientId),
             ClientSecret = Prefer(Environment.GetEnvironmentVariable("FREEAGENT_CLIENT_SECRET"), ClientSecret),
             RedirectUri = Prefer(Environment.GetEnvironmentVariable("FREEAGENT_REDIRECT_URI"), RedirectUri),
+            RefreshToken = PreferNullable(Environment.GetEnvironmentVariable("FREEAGENT_REFRESH_TOKEN"), RefreshToken),
+            AccessToken = PreferNullable(Environment.GetEnvironmentVariable("FREEAGENT_ACCESS_TOKEN"), AccessToken),
         };
 
     private void Validate()
@@ -129,6 +145,9 @@ internal sealed class AppSettings
     }
 
     private static string Prefer(string? preferred, string fallback) =>
+        string.IsNullOrWhiteSpace(preferred) ? fallback : preferred.Trim();
+
+    private static string? PreferNullable(string? preferred, string? fallback) =>
         string.IsNullOrWhiteSpace(preferred) ? fallback : preferred.Trim();
 
     private static bool IsBlazorSampleRedirectUri(string redirectUri) =>
