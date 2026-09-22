@@ -39,7 +39,7 @@ Solid arrows are required URIs on create. Dashed arrows are optional or set afte
 | Resource | Official docs | SDK |
 |----------|---------------|-----|
 | Projects | [Projects](https://dev.freeagent.com/docs/projects) | `ProjectService` |
-| Tasks | [Tasks](https://dev.freeagent.com/docs/tasks) | Not yet |
+| Tasks | [Tasks](https://dev.freeagent.com/docs/tasks) | `TaskService` |
 | Timeslips | [Timeslips](https://dev.freeagent.com/docs/timeslips) | Not yet |
 | Notes | [Notes](https://dev.freeagent.com/docs/notes) | Not yet |
 

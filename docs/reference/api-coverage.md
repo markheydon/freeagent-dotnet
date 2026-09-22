@@ -20,6 +20,7 @@ For how resources relate to each other and a suggested implementation order, see
 | [Categories](categories.md) | `client.Categories` | [Categories](https://dev.freeagent.com/docs/categories) |
 | [Users](users.md) | `client.Users` | [Users](https://dev.freeagent.com/docs/users) |
 | [Projects](projects.md) | `client.Projects` | [Projects](https://dev.freeagent.com/docs/projects) |
+| [Tasks](tasks.md) | `client.Tasks` | [Tasks](https://dev.freeagent.com/docs/tasks) |
 | [Email addresses](email-addresses.md) | `client.EmailAddresses` | [Email addresses](https://dev.freeagent.com/docs/email_addresses) |
 | [OAuth](oauth.md) | `FreeAgentOAuthClient` | [OAuth](https://dev.freeagent.com/docs/oauth) |
 | [Currency code](currency-code.md) | `CurrencyCode` enum | [Currencies](https://dev.freeagent.com/docs/currencies) |

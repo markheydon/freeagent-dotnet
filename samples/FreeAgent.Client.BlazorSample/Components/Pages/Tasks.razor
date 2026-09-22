@@ -1,20 +1,21 @@
-@page "/projects"
-@using FreeAgent.Client.Models.Projects
+@page "/tasks"
 @using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.Models.Tasks
+@using TaskModel = FreeAgent.Client.Models.Tasks.Task
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
 @inject ApiDiagnosticsService ApiDiagnostics
 @inject NavigationManager NavigationManager
 
-<PageTitle>Projects - FreeAgent SDK Sample</PageTitle>
+<PageTitle>Tasks - FreeAgent SDK Sample</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
-    <EndpointProbeHeader SectionKicker="Projects endpoint"
-                         Title="Projects list"
-                         CallUnderTest="ProjectService.ListAsync(...)"
-                         Description="Load projects, inspect wire-to-model mapping for any row, then jump into Project CRUD to test get, update, and delete."
-                         EndpointPath="/v2/projects?page={page}&per_page={perPage}&view={view}"
-                         DocsUrl="https://dev.freeagent.com/docs/projects" />
+    <EndpointProbeHeader SectionKicker="Tasks endpoint"
+                         Title="Tasks list"
+                         CallUnderTest="TaskService.ListAsync(...)"
+                         Description="Load tasks, inspect wire-to-model mapping for any row, then jump into Task CRUD to test get, update, and delete."
+                         EndpointPath="/v2/tasks?page={page}&amp;per_page={perPage}&amp;view={view}"
+                         DocsUrl="https://dev.freeagent.com/docs/tasks" />
 
     @if (!TokenStore.IsConnected)
     {
@@ -37,7 +38,7 @@
                 <MudStack Spacing="2">
                     <MudText Typo="Typo.body2" Class="hero-copy">
                         Load page 1, then use <strong>Inspect mapping</strong> on any row to see wire-to-model diagnostics.
-                        Use <strong>Open in CRUD</strong> to test single-project operations.
+                        Use <strong>Open in CRUD</strong> to test single-task operations.
                     </MudText>
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
@@ -49,10 +50,10 @@
                                        Margin="Margin.Dense"
                                        Clearable="true"
                                        FullWidth="true">
-                                <MudSelectItem Value="@ProjectViews.Active">active</MudSelectItem>
-                                <MudSelectItem Value="@ProjectViews.Completed">completed</MudSelectItem>
-                                <MudSelectItem Value="@ProjectViews.Cancelled">cancelled</MudSelectItem>
-                                <MudSelectItem Value="@ProjectViews.Hidden">hidden</MudSelectItem>
+                                <MudSelectItem Value="@TaskViews.Active">active</MudSelectItem>
+                                <MudSelectItem Value="@TaskViews.Completed">completed</MudSelectItem>
+                                <MudSelectItem Value="@TaskViews.Hidden">hidden</MudSelectItem>
+                                <MudSelectItem Value="@TaskViews.All">all</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
@@ -63,21 +64,29 @@
                                        Margin="Margin.Dense"
                                        Clearable="true"
                                        FullWidth="true">
-                                <MudSelectItem Value="@ProjectSortOptions.Name">name</MudSelectItem>
-                                <MudSelectItem Value="@ProjectSortOptions.ContactName">contact_name</MudSelectItem>
-                                <MudSelectItem Value="@ProjectSortOptions.ContactDisplayName">contact_display_name</MudSelectItem>
-                                <MudSelectItem Value="@ProjectSortOptions.CreatedAt">created_at</MudSelectItem>
+                                <MudSelectItem Value="@TaskSortOptions.Name">name</MudSelectItem>
+                                <MudSelectItem Value="@TaskSortOptions.Project">project</MudSelectItem>
+                                <MudSelectItem Value="@TaskSortOptions.BillingRate">billing_rate</MudSelectItem>
+                                <MudSelectItem Value="@TaskSortOptions.CreatedAt">created_at</MudSelectItem>
                                 <MudSelectItem Value="@DescUpdatedAtSort">-updated_at</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudNumericField @bind-Value="_contactIdFilter"
-                                             Label="Contact ID filter"
+                            <MudNumericField @bind-Value="_projectIdFilter"
+                                             Label="Project ID filter"
                                              Min="1"
                                              Variant="Variant.Outlined"
                                              Margin="Margin.Dense"
                                              HideSpinButtons="true"
                                              FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudDatePicker @bind-Date="_updatedSince"
+                                           Label="Updated since"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Clearable="true"
+                                           Class="w-100" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="3" lg="2">
                             <MudNumericField @bind-Value="_perPage"
@@ -89,16 +98,13 @@
                                              HideSpinButtons="true"
                                              FullWidth="true" />
                         </MudItem>
-                        <MudItem xs="12" sm="6" md="3" lg="2">
-                            <MudSwitch @bind-Value="_nested" Color="Color.Primary" Label="nested=true" />
-                        </MudItem>
                         <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
                             <MudButton Variant="Variant.Filled"
                                        Color="Color.Primary"
                                        StartIcon="@Icons.Material.Filled.CloudDownload"
                                        Disabled="_loading"
                                        Class="contacts-load-button"
-                                       OnClick="LoadProjectsAsync">
+                                       OnClick="LoadTasksAsync">
                                 @if (_loading)
                                 {
                                     <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
@@ -115,14 +121,14 @@
 
                 @if (_pageResult is null && !_loading && _error is null)
                 {
-                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load page 1</strong> to fetch projects from FreeAgent.</MudText>
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load page 1</strong> to fetch tasks from FreeAgent.</MudText>
                 }
 
                 @if (_pageResult is not null)
                 {
                     <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
                         <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
-                            @_pageResult.Items.Count project@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
+                            @_pageResult.Items.Count task@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
                         </MudChip>
                         @if (!string.IsNullOrWhiteSpace(_view))
                         {
@@ -137,32 +143,32 @@
                     @if (_pageResult.Items.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                            No projects returned for the current filters. Try clearing the view filter, or create a test project from
-                            <MudLink Href="/projects/detail">Project CRUD</MudLink>.
+                            No tasks returned for the current filters. Try clearing the view filter, or create a test task from
+                            <MudLink Href="/tasks/detail">Task CRUD</MudLink>.
                         </MudAlert>
                     }
                     else
                     {
                         <div class="diagnostics-table-shell">
-                            <MudTable Items="@_projectRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                            <MudTable Items="@_taskRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
                                 <HeaderContent>
                                     <MudTh>ID</MudTh>
                                     <MudTh>Name</MudTh>
                                     <MudTh>Status</MudTh>
-                                    <MudTh>Contact</MudTh>
+                                    <MudTh>Project ID</MudTh>
                                     <MudTh>Actions</MudTh>
                                 </HeaderContent>
                                 <RowTemplate>
                                     <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
                                     <MudTd DataLabel="Name">@ValueOrDash(context.Name)</MudTd>
                                     <MudTd DataLabel="Status">@context.Status</MudTd>
-                                    <MudTd DataLabel="Contact">@ValueOrDash(context.ContactName)</MudTd>
+                                    <MudTd DataLabel="Project ID">@ValueOrDash(context.ProjectId)</MudTd>
                                     <MudTd DataLabel="Actions">
                                         <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
                                             <MudButton Variant="Variant.Filled"
                                                        Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
                                                        Size="Size.Small"
-                                                       OnClick="@(() => InspectProjectAsync(context.Index))">
+                                                       OnClick="@(() => InspectTaskAsync(context.Index))">
                                                 Inspect mapping
                                             </MudButton>
                                             <MudButton Variant="Variant.Outlined"
@@ -179,17 +185,17 @@
                     }
                 }
 
-                @if (_inspectedProject is not null && _inspectedProbe is not null)
+                @if (_inspectedTask is not null && _inspectedProbe is not null)
                 {
                     <MudDivider />
                     <ModelProbeResults Snapshot="_inspectedProbe"
                                      WirePayload="@_wireApiResponse"
-                                     ModelFieldsHeading="All Project model fields (selected row)">
+                                     ModelFieldsHeading="All Task model fields (selected row)">
                         <SummaryContent>
                             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
-                                <MudText Typo="Typo.h5">Inspected project</MudText>
+                                <MudText Typo="Typo.h5">Inspected task</MudText>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
-                                    ID: @_inspectedProject.ResourceId
+                                    ID: @_inspectedTask.ResourceId
                                 </MudChip>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">
                                     Row @(_inspectedIndex + 1) on page @_pageResult?.Page
@@ -201,13 +207,13 @@
                                 <MudItem xs="12" sm="6">
                                     <MudPaper Class="probe-card" Elevation="0">
                                         <MudText Typo="Typo.caption">Name</MudText>
-                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedProject.Name)</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedTask.Name)</MudText>
                                     </MudPaper>
                                 </MudItem>
                                 <MudItem xs="12" sm="6">
                                     <MudPaper Class="probe-card" Elevation="0">
-                                        <MudText Typo="Typo.caption">Contact</MudText>
-                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedProject.Contact?.OrganisationName ?? _inspectedProject.ContactName)</MudText>
+                                        <MudText Typo="Typo.caption">Project ID</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_inspectedTask.ProjectId?.ToString() ?? "-")</MudText>
                                     </MudPaper>
                                 </MudItem>
                             </MudGrid>
@@ -233,14 +239,14 @@
                                 }
                                 else
                                 {
-                                    <span>Count all projects</span>
+                                    <span>Count all tasks</span>
                                 }
                             </MudButton>
 
-                            @if (_allProjectsCount is not null)
+                            @if (_allTasksCount is not null)
                             {
                                 <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
-                                    <code>ListAutoPagingAsync</code> yielded @_allProjectsCount.Value project@(_allProjectsCount.Value == 1 ? string.Empty : "s").
+                                    <code>ListAutoPagingAsync</code> yielded @_allTasksCount.Value task@(_allTasksCount.Value == 1 ? string.Empty : "s").
                                 </MudAlert>
                             }
                         </MudStack>
@@ -258,33 +264,33 @@
     private bool _loadingAll;
     private string? _error;
     private string _wireApiResponse = string.Empty;
-    private PaginatedResponse<Project>? _pageResult;
-    private Project? _inspectedProject;
+    private PaginatedResponse<TaskModel>? _pageResult;
+    private TaskModel? _inspectedTask;
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
-    private int? _allProjectsCount;
-    private string? _view = ProjectViews.Active;
+    private int? _allTasksCount;
+    private string? _view = TaskViews.Active;
     private string? _sort;
-    private long? _contactIdFilter;
-    private bool _nested;
+    private long? _projectIdFilter;
+    private DateTime? _updatedSince;
     private int _perPage = 25;
 
-    private IReadOnlyList<ProjectRow> _projectRows => _pageResult?.Items
-        .Select(static (project, index) => new ProjectRow(
+    private IReadOnlyList<TaskRow> _taskRows => _pageResult?.Items
+        .Select(static (task, index) => new TaskRow(
             index,
-            project.ResourceId,
-            project.Name,
-            project.Status?.ToString() ?? "-",
-            project.ContactName))
+            task.ResourceId,
+            task.Name,
+            task.Status?.ToString() ?? "-",
+            task.ProjectId?.ToString()))
         .ToList() ?? [];
 
-    private async Task LoadProjectsAsync()
+    private async System.Threading.Tasks.Task LoadTasksAsync()
     {
         _pageResult = null;
-        _inspectedProject = null;
+        _inspectedTask = null;
         _inspectedProbe = null;
         _inspectedIndex = null;
-        _allProjectsCount = null;
+        _allTasksCount = null;
 
         var token = TokenStore.GetToken();
         if (token is null)
@@ -302,13 +308,13 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _pageResult = await client.Projects.ListAsync(
+            _pageResult = await client.Tasks.ListAsync(
                 page: 1,
                 perPage: _perPage,
                 view: _view,
                 sort: _sort,
-                contactId: _contactIdFilter,
-                nested: _nested ? true : null);
+                updatedSince: _updatedSince is null ? null : DateOnly.FromDateTime(_updatedSince.Value),
+                projectId: _projectIdFilter);
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
@@ -337,7 +343,7 @@
         }
     }
 
-    private void InspectProjectAsync(int index)
+    private void InspectTaskAsync(int index)
     {
         if (_pageResult is null || index < 0 || index >= _pageResult.Items.Count)
         {
@@ -345,20 +351,20 @@
         }
 
         _inspectedIndex = index;
-        _inspectedProject = _pageResult.Items[index];
+        _inspectedTask = _pageResult.Items[index];
 
-        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "projects", index, out var wireProject))
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "tasks", index, out var wireTask))
         {
-            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedProject, wireProject);
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedTask, wireTask);
             return;
         }
 
-        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedProject, _wireApiResponse, envelopeProperty: "projects");
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedTask, _wireApiResponse, envelopeProperty: "tasks");
     }
 
-    private async Task LoadAllAsync()
+    private async System.Threading.Tasks.Task LoadAllAsync()
     {
-        _allProjectsCount = null;
+        _allTasksCount = null;
 
         var token = TokenStore.GetToken();
         if (token is null)
@@ -374,17 +380,17 @@
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
             var count = 0;
-            await foreach (var _ in client.Projects.ListAutoPagingAsync(
+            await foreach (var _ in client.Tasks.ListAutoPagingAsync(
                                perPage: _perPage,
                                view: _view,
                                sort: _sort,
-                               contactId: _contactIdFilter,
-                               nested: _nested ? true : null))
+                               updatedSince: _updatedSince is null ? null : DateOnly.FromDateTime(_updatedSince.Value),
+                               projectId: _projectIdFilter))
             {
                 count++;
             }
 
-            _allProjectsCount = count;
+            _allTasksCount = count;
         }
         catch (FreeAgentApiException ex)
         {
@@ -422,22 +428,22 @@
             query.Add($"sort={Uri.EscapeDataString(_sort)}");
         }
 
-        if (_contactIdFilter is > 0)
+        if (_updatedSince is not null)
         {
-            query.Add($"contact={Uri.EscapeDataString(ContactReference.ForEnvironment(TokenStore.ConnectedEnvironment, _contactIdFilter.Value).Uri)}");
+            query.Add($"updated_since={_updatedSince.Value:yyyy-MM-dd}");
         }
 
-        if (_nested)
+        if (_projectIdFilter is > 0)
         {
-            query.Add("nested=true");
+            query.Add($"project={Uri.EscapeDataString(ProjectReference.ForEnvironment(TokenStore.ConnectedEnvironment, _projectIdFilter.Value).Uri)}");
         }
 
-        return $"projects?{string.Join('&', query)}";
+        return $"tasks?{string.Join('&', query)}";
     }
 
     private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
 
-    private static string GetCrudHref(long id) => $"/projects/detail?id={id}";
+    private static string GetCrudHref(long id) => $"/tasks/detail?id={id}";
 
-    private sealed record ProjectRow(int Index, long Id, string? Name, string Status, string? ContactName);
+    private sealed record TaskRow(int Index, long Id, string? Name, string Status, string? ProjectId);
 }

@@ -14,7 +14,7 @@ List, create, update, and delete projects.
 | **FreeAgent docs** | [dev.freeagent.com/docs/projects](https://dev.freeagent.com/docs/projects) |
 | **Sample app** | `/projects` (list), `/projects/detail` (CRUD) |
 
-Pagination patterns: see [Pagination](../how-to/pagination.md). Billing contact links and hydration: see [Linked resources](../explanation/linked-resources.md).
+Pagination patterns: see [Pagination](../how-to/pagination.md). Billing contact links and hydration: see [Linked resources](../explanation/linked-resources.md). Child tasks: see [Tasks](tasks.md).
 
 ## Methods
 

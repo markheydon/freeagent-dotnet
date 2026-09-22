@@ -118,12 +118,18 @@
                 </MudNavLink>
             </MudNavGroup>
 
-            <MudNavGroup Title="Projects" Icon="@Icons.Material.Filled.Work" Expanded="@IsProjectsRoute">
+            <MudNavGroup Title="Projects and time" Icon="@Icons.Material.Filled.Work" Expanded="@IsProjectsRoute">
                 <MudNavLink Href="/projects" Icon="@Icons.Material.Filled.AllInclusive">
                     Projects list
                 </MudNavLink>
                 <MudNavLink Href="/projects/detail" Icon="@Icons.Material.Filled.Assignment">
                     Project CRUD
+                </MudNavLink>
+                <MudNavLink Href="/tasks" Icon="@Icons.Material.Filled.AllInclusive">
+                    Tasks list
+                </MudNavLink>
+                <MudNavLink Href="/tasks/detail" Icon="@Icons.Material.Filled.Task">
+                    Task CRUD
                 </MudNavLink>
             </MudNavGroup>
 
@@ -224,7 +230,9 @@
 
     private bool IsProjectsRoute =>
         CurrentPath.Equals("projects", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.StartsWith("projects/", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.StartsWith("projects/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("tasks", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("tasks/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsUsersRoute =>
         CurrentPath.Equals("users", StringComparison.OrdinalIgnoreCase)
