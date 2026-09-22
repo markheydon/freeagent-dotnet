@@ -40,7 +40,6 @@ catch (Exception ex)
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddSingleton(oauthClient);
 builder.Services.AddSingleton(token);
 builder.Services.AddSingleton(_ => new FreeAgentClient(
     oauthClient,
@@ -59,5 +58,5 @@ if (runOptions.RunAll)
     return await runner.RunAllAsync(runOptions);
 }
 
-await runner.RunInteractiveAsync();
+_ = await runner.RunInteractiveAsync();
 return 0;

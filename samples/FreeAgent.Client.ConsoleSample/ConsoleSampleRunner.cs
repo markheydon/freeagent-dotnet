@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using FreeAgent.Client.ConsoleSample.Samples;
@@ -31,7 +30,8 @@ internal sealed class ConsoleSampleRunner
     /// Runs the interactive menu loop.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
-    public async Task RunInteractiveAsync(CancellationToken cancellationToken = default)
+    /// <returns><see langword="true"/> when the user chose to quit.</returns>
+    public async Task<bool> RunInteractiveAsync(CancellationToken cancellationToken = default)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -57,7 +57,7 @@ internal sealed class ConsoleSampleRunner
             if (input is "0" or "q" or "Q")
             {
                 Console.WriteLine("Goodbye.");
-                return;
+                return true;
             }
 
             if (!int.TryParse(input, out var categoryChoice) || categoryChoice < 1 || categoryChoice > categories.Count)
@@ -67,8 +67,13 @@ internal sealed class ConsoleSampleRunner
             }
 
             var selectedCategory = categories[categoryChoice - 1];
-            await RunCategoryMenuAsync(selectedCategory, cancellationToken);
+            if (await RunCategoryMenuAsync(selectedCategory, cancellationToken))
+            {
+                return true;
+            }
         }
+
+        return false;
     }
 
     /// <summary>
@@ -80,7 +85,9 @@ internal sealed class ConsoleSampleRunner
     public async Task<int> RunAllAsync(ConsoleRunOptions options, CancellationToken cancellationToken = default)
     {
         var reporter = new SampleRunReporter();
-        var entries = FilterEntries(options.CategoryFilter).ToList();
+        var entries = FilterEntries(options.CategoryFilter)
+            .Where(e => e.IncludeInRunAll)
+            .ToList();
 
         if (entries.Count == 0)
         {
@@ -104,7 +111,7 @@ internal sealed class ConsoleSampleRunner
         return reporter.WriteSummaryAndGetExitCode();
     }
 
-    private async Task RunCategoryMenuAsync(string category, CancellationToken cancellationToken)
+    private async Task<bool> RunCategoryMenuAsync(string category, CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -130,13 +137,13 @@ internal sealed class ConsoleSampleRunner
 
             if (input is "0")
             {
-                return;
+                return false;
             }
 
             if (input is "q" or "Q")
             {
                 Console.WriteLine("Goodbye.");
-                Environment.Exit(0);
+                return true;
             }
 
             if (!int.TryParse(input, out var choice) || choice < 1 || choice > items.Count)
@@ -168,6 +175,8 @@ internal sealed class ConsoleSampleRunner
             Console.WriteLine("Press any key to return to the category menu...");
             Console.ReadKey(intercept: true);
         }
+
+        return false;
     }
 
     private IEnumerable<ConsoleSampleEntry> FilterEntries(string? categoryFilter)
@@ -207,12 +216,14 @@ internal sealed class ConsoleSampleRunner
 
                 if (!registeredNames.Add(name))
                 {
-                    continue;
+                    throw new InvalidOperationException(
+                        $"Duplicate console sample name '{name}' in {providerType.Name}.{method.Name}.");
                 }
 
                 _entries.Add(new ConsoleSampleEntry(
                     category,
                     name,
+                    !methodAttribute.ExcludeFromRunAll,
                     CreateAction(provider, method)));
             }
         }
@@ -269,5 +280,6 @@ internal sealed class ConsoleSampleRunner
     private sealed record ConsoleSampleEntry(
         string Category,
         string Name,
+        bool IncludeInRunAll,
         Func<IServiceProvider, CancellationToken, Task> Action);
 }

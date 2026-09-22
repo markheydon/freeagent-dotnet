@@ -27,6 +27,11 @@ internal sealed class ConsoleSampleAttribute : Attribute
     /// Category override. When empty, the class-level <see cref="ConsoleSamplesAttribute.Category"/> is used.
     /// </summary>
     public string Category { get; set; } = string.Empty;
+
+    /// <summary>
+    /// When <see langword="true"/>, the example is omitted from <c>--run-all</c> smoke runs.
+    /// </summary>
+    public bool ExcludeFromRunAll { get; set; }
 }
 
 /// <summary>

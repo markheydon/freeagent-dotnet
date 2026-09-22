@@ -42,6 +42,11 @@ internal sealed class ConsoleRunOptions
             }
         }
 
+        if (!string.IsNullOrWhiteSpace(categoryFilter) && !runAll)
+        {
+            throw new InvalidOperationException("--category requires --run-all.");
+        }
+
         return new ConsoleRunOptions
         {
             RunAll = runAll,

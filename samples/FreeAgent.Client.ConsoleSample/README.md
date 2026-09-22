@@ -124,25 +124,33 @@ dotnet run --project samples/FreeAgent.Client.ConsoleSample -- --run-all --categ
 
 ### Non-interactive authentication
 
-`--run-all` requires a token without browser interaction. Set one of:
+`--run-all` requires a token without browser interaction. Use a **refresh token** for CI and any multi-example run:
 
 ```bash
-export FREEAGENT_REFRESH_TOKEN="your-refresh-token"   # preferred for CI
-# or
-export FREEAGENT_ACCESS_TOKEN="your-access-token"     # short-lived manual runs
+export FREEAGENT_REFRESH_TOKEN="your-refresh-token"
+```
+
+An access token is supported for quick one-off runs only; it cannot refresh, so a long `--run-all` batch may fail once the token expires:
+
+```bash
+export FREEAGENT_ACCESS_TOKEN="your-access-token"
 ```
 
 Client ID and secret are still required (user secrets or environment variables).
 
+`--category` requires `--run-all` (for example `--run-all --category Contacts`).
+
+Examples marked `ExcludeFromRunAll` (such as **Stream all contacts**) appear in the interactive menu only.
+
 ### CI integration
 
-The repository CI workflow includes an optional smoke job that runs `--run-all` when these GitHub secrets are configured:
+The repository CI workflow includes a smoke step that runs `--run-all` when `FREEAGENT_REFRESH_TOKEN` is configured. Configure these GitHub secrets to enable live API smoke coverage:
 
 - `FREEAGENT_CLIENT_ID`
 - `FREEAGENT_CLIENT_SECRET`
 - `FREEAGENT_REFRESH_TOKEN`
 
-When the secrets are absent, the job is skipped so PRs are not blocked.
+When the refresh token secret is absent, the step exits successfully without running examples so PRs are not blocked. The smoke run fails if no examples pass.
 
 ---
 

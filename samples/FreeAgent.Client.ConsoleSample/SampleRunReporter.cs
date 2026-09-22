@@ -91,7 +91,7 @@ internal sealed class SampleRunReporter
     /// <summary>
     /// Prints the final summary and returns the process exit code.
     /// </summary>
-    /// <returns><c>0</c> when no failures occurred; otherwise <c>1</c>.</returns>
+    /// <returns><c>0</c> when at least one example passed and none failed; otherwise <c>1</c>.</returns>
     public int WriteSummaryAndGetExitCode()
     {
         _totalStopwatch.Stop();
@@ -110,7 +110,7 @@ internal sealed class SampleRunReporter
         Console.WriteLine($" Total time: {_totalStopwatch.Elapsed.TotalSeconds:F4} Seconds");
         Console.WriteLine();
 
-        if (failed > 0)
+        if (failed > 0 || passed == 0)
         {
             WriteColoured($"Failed!  - Failed: {failed}, Passed: {passed}, Skipped: {skipped}, Total: {total}", ConsoleColor.Red);
         }
@@ -120,7 +120,7 @@ internal sealed class SampleRunReporter
         }
 
         Console.WriteLine();
-        return failed > 0 ? 1 : 0;
+        return failed > 0 || passed == 0 ? 1 : 0;
     }
 
     private void WriteLine(SampleRunResult result)

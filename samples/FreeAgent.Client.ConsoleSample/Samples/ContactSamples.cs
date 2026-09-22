@@ -28,7 +28,7 @@ internal sealed class ContactSamples(SampleContext context) : IConsoleSampleProv
         }
     }
 
-    [ConsoleSample(Name = "Stream all contacts")]
+    [ConsoleSample(Name = "Stream all contacts", ExcludeFromRunAll = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task StreamAllContactsAsync(CancellationToken cancellationToken)
     {
