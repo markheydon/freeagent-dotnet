@@ -1,0 +1,448 @@
+@page "/tasks"
+@using FreeAgent.Client.Models.Tasks
+@using TaskModel = FreeAgent.Client.Models.Tasks.Task
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Tasks - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Tasks endpoint"
+                         Title="Tasks list"
+                         CallUnderTest="TaskService.ListAsync(...)"
+                         Description="Load tasks, inspect wire-to-model mapping for any row, then jump into Task CRUD to test get, update, and delete."
+                         EndpointPath="/v2/tasks?page={page}&amp;per_page={perPage}&amp;view={view}"
+                         DocsUrl="https://dev.freeagent.com/docs/tasks" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load page 1, then use <strong>Inspect mapping</strong> on any row to see wire-to-model diagnostics.
+                        Use <strong>Open in CRUD</strong> to test single-task operations.
+                    </MudText>
+
+                    <MudGrid Spacing="2" Class="contacts-filter-grid">
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudSelect T="string"
+                                       @bind-Value="_view"
+                                       Label="View"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Clearable="true"
+                                       FullWidth="true">
+                                <MudSelectItem Value="@TaskViews.Active">active</MudSelectItem>
+                                <MudSelectItem Value="@TaskViews.Completed">completed</MudSelectItem>
+                                <MudSelectItem Value="@TaskViews.Hidden">hidden</MudSelectItem>
+                                <MudSelectItem Value="@TaskViews.All">all</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudSelect T="string"
+                                       @bind-Value="_sort"
+                                       Label="Sort"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Clearable="true"
+                                       FullWidth="true">
+                                <MudSelectItem Value="@TaskSortOptions.Name">name</MudSelectItem>
+                                <MudSelectItem Value="@TaskSortOptions.Project">project</MudSelectItem>
+                                <MudSelectItem Value="@TaskSortOptions.BillingRate">billing_rate</MudSelectItem>
+                                <MudSelectItem Value="@TaskSortOptions.CreatedAt">created_at</MudSelectItem>
+                                <MudSelectItem Value="@DescUpdatedAtSort">-updated_at</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudNumericField @bind-Value="_projectIdFilter"
+                                             Label="Project ID filter"
+                                             Min="1"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudDatePicker @bind-Date="_updatedSince"
+                                           Label="Updated since"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Clearable="true"
+                                           Class="w-100" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3" lg="2">
+                            <MudNumericField @bind-Value="_perPage"
+                                             Label="Per page"
+                                             Min="1"
+                                             Max="100"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                                       Disabled="_loading"
+                                       Class="contacts-load-button"
+                                       OnClick="LoadTasksAsync">
+                                @if (_loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Loading…</span>
+                                }
+                                else
+                                {
+                                    <span>Load page 1</span>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+
+                @if (_pageResult is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load page 1</strong> to fetch tasks from FreeAgent.</MudText>
+                }
+
+                @if (_pageResult is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_pageResult.Items.Count task@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
+                        </MudChip>
+                        @if (!string.IsNullOrWhiteSpace(_view))
+                        {
+                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                        }
+                        @if (_pageResult.Total > 0)
+                        {
+                            <MudChip T="string" Variant="Variant.Outlined">Total: @_pageResult.Total</MudChip>
+                        }
+                    </MudStack>
+
+                    @if (_pageResult.Items.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No tasks returned for the current filters. Try clearing the view filter, or create a test task from
+                            <MudLink Href="/tasks/detail">Task CRUD</MudLink>.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_taskRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Name</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Project ID</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Name">@ValueOrDash(context.Name)</MudTd>
+                                    <MudTd DataLabel="Status">@context.Status</MudTd>
+                                    <MudTd DataLabel="Project ID">@ValueOrDash(context.ProjectId)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectTaskAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetCrudHref(context.Id)">
+                                                Open in CRUD
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedTask is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Task model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected task</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    ID: @_inspectedTask.ResourceId
+                                </MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">
+                                    Row @(_inspectedIndex + 1) on page @_pageResult?.Page
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Name</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedTask.Name)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Project ID</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_inspectedTask.ProjectId?.ToString() ?? "-")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+
+                <MudExpansionPanels>
+                    <MudExpansionPanel Text="Developer probe: auto-pagination (ListAutoPagingAsync)">
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.body2" Class="hero-copy">
+                                Optional check that the async enumerator walks every page.
+                            </MudText>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.AllInclusive"
+                                       Disabled="_loadingAll"
+                                       OnClick="LoadAllAsync">
+                                @if (_loadingAll)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Enumerating…</span>
+                                }
+                                else
+                                {
+                                    <span>Count all tasks</span>
+                                }
+                            </MudButton>
+
+                            @if (_allTasksCount is not null)
+                            {
+                                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+                                    <code>ListAutoPagingAsync</code> yielded @_allTasksCount.Value task@(_allTasksCount.Value == 1 ? string.Empty : "s").
+                                </MudAlert>
+                            }
+                        </MudStack>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private const string DescUpdatedAtSort = "-updated_at";
+
+    private bool _loading;
+    private bool _loadingAll;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private PaginatedResponse<TaskModel>? _pageResult;
+    private TaskModel? _inspectedTask;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+    private int? _allTasksCount;
+    private string? _view = TaskViews.Active;
+    private string? _sort;
+    private long? _projectIdFilter;
+    private DateTime? _updatedSince;
+    private int _perPage = 25;
+
+    private IReadOnlyList<TaskRow> _taskRows => _pageResult?.Items
+        .Select(static (task, index) => new TaskRow(
+            index,
+            task.ResourceId,
+            task.Name,
+            task.Status?.ToString() ?? "-",
+            task.ProjectId?.ToString()))
+        .ToList() ?? [];
+
+    private async System.Threading.Tasks.Task LoadTasksAsync()
+    {
+        _pageResult = null;
+        _inspectedTask = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+        _allTasksCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var diagnosticsEndpoint = BuildDiagnosticsEndpoint();
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _pageResult = await client.Tasks.ListAsync(
+                page: 1,
+                perPage: _perPage,
+                view: _view,
+                sort: _sort,
+                updatedSince: _updatedSince is null ? null : DateOnly.FromDateTime(_updatedSince.Value),
+                projectId: _projectIdFilter);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectTaskAsync(int index)
+    {
+        if (_pageResult is null || index < 0 || index >= _pageResult.Items.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedTask = _pageResult.Items[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "tasks", index, out var wireTask))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedTask, wireTask);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedTask, _wireApiResponse, envelopeProperty: "tasks");
+    }
+
+    private async System.Threading.Tasks.Task LoadAllAsync()
+    {
+        _allTasksCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loadingAll = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var count = 0;
+            await foreach (var _ in client.Tasks.ListAutoPagingAsync(
+                               perPage: _perPage,
+                               view: _view,
+                               sort: _sort,
+                               updatedSince: _updatedSince is null ? null : DateOnly.FromDateTime(_updatedSince.Value),
+                               projectId: _projectIdFilter))
+            {
+                count++;
+            }
+
+            _allTasksCount = count;
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                BuildDiagnosticsEndpoint());
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loadingAll = false;
+        }
+    }
+
+    private string BuildDiagnosticsEndpoint()
+    {
+        var query = new List<string>
+        {
+            "page=1",
+            $"per_page={_perPage}"
+        };
+
+        if (!string.IsNullOrWhiteSpace(_view))
+        {
+            query.Add($"view={_view}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(_sort))
+        {
+            query.Add($"sort={Uri.EscapeDataString(_sort)}");
+        }
+
+        if (_updatedSince is not null)
+        {
+            query.Add($"updated_since={_updatedSince.Value:yyyy-MM-dd}");
+        }
+
+        if (_projectIdFilter is > 0)
+        {
+            query.Add($"project={Uri.EscapeDataString($"https://api.freeagent.com/v2/projects/{_projectIdFilter}")}");
+        }
+
+        return $"tasks?{string.Join('&', query)}";
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string GetCrudHref(long id) => $"/tasks/detail?id={id}";
+
+    private sealed record TaskRow(int Index, long Id, string? Name, string Status, string? ProjectId);
+}

@@ -1,0 +1,423 @@
+@page "/tasks/detail"
+@using FreeAgent.Client.Models.Tasks
+@using TaskModel = FreeAgent.Client.Models.Tasks.Task
+@using FreeAgent.Client.BlazorSample.Services.Turpinverse
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject TurpinverseTaskSeeder TurpinverseTaskSeeder
+@inject NavigationManager NavigationManager
+
+<PageTitle>Task detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Tasks endpoint"
+                         Title="Get, create, update, and delete tasks"
+                         CallUnderTest="TaskService.GetTaskAsync / CreateTaskAsync / UpdateTaskAsync / DeleteTaskAsync"
+                         Description="Exercises single-task CRUD operations and shows wire-to-model diagnostics."
+                         EndpointPath="/v2/tasks/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/tasks" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a task ID from the <MudLink Href="/tasks">tasks list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Create requires a parent project ID (query param on the API).
+                        Seed Turpinverse tasks after seeding projects from <MudLink Href="/projects/detail">Project CRUD</MudLink>.
+                    </MudText>
+                    <MudNumericField @bind-Value="_taskId" Label="Task ID" Min="1" />
+                    <MudNumericField @bind-Value="_projectId"
+                                     Label="Parent project ID (create only)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetTaskAsync">Get task</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateBlackBessGeneralTaskAsync">Create Black Bess general task</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateAllTurpinverseTasksAsync">Create all Turpinverse tasks</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _projectId is null or < 1"
+                                   OnClick="CreateProbeTaskAsync">Create probe task</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _taskId is null or < 1"
+                                   OnClick="UpdateTaskAsync">Update task name</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _taskId is null or < 1"
+                                   OnClick="DeleteTaskAsync">Delete task</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _task is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Task model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_task.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_task.Status?.ToString())</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Name</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_task.Name)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Project ID</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_task.ProjectId?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Billable</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_task.IsBillable?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Resource URL</MudText>
+                                        <MudText Typo="Typo.body2">@_task.Url</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load task diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? TaskIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private TaskModel? _task;
+    private ModelProbeSnapshot? _probe;
+    private long? _taskId;
+    private long? _projectId;
+
+    protected override void OnParametersSet()
+    {
+        if (TaskIdFromQuery is > 0 && _taskId != TaskIdFromQuery)
+        {
+            _taskId = TaskIdFromQuery;
+            _operationMessage = $"Task ID {_taskId} loaded from URL. Press Get task to fetch diagnostics.";
+        }
+    }
+
+    private async System.Threading.Tasks.Task GetTaskAsync()
+    {
+        if (_taskId is null or < 1)
+        {
+            _error = "Enter a task ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _task = await client.Tasks.GetTaskAsync(
+                    _taskId.Value,
+                    new TaskGetOptions { IncludeProject = true });
+                _operationMessage = $"Loaded task {_taskId.Value}: {_task.Name}";
+                return $"tasks/{_taskId}";
+            },
+            envelopeProperty: "task");
+    }
+
+    private async System.Threading.Tasks.Task CreateBlackBessGeneralTaskAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await TurpinverseTaskSeeder.CreateBlackBessGeneralTaskAsync(client);
+                _task = result.Task;
+                if (_task.TryGetResourceId(out var assignedId))
+                {
+                    _taskId = assignedId;
+                    _projectId = _task.ProjectId;
+                    _operationMessage = result.Action == TaskSeedAction.Updated
+                        ? $"Updated Black Bess general task (task {assignedId}) from current Turpinverse canon."
+                        : $"Created Black Bess general task as task {assignedId}.";
+                    return $"tasks/{assignedId}";
+                }
+
+                _taskId = null;
+                _operationMessage = "Created Black Bess general task but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "task");
+    }
+
+    private async System.Threading.Tasks.Task CreateAllTurpinverseTasksAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var result = await TurpinverseTaskSeeder.CreateAllTurpinverseTasksAsync(client);
+            var lastTouched = result.Updated.Count > 0
+                ? result.Updated[^1]
+                : result.Created.Count > 0
+                    ? result.Created[^1]
+                    : null;
+
+            if (lastTouched is not null)
+            {
+                _task = lastTouched;
+
+                if (_task.TryGetResourceId(out var assignedId))
+                {
+                    _taskId = assignedId;
+                    _projectId = _task.ProjectId;
+
+                    _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                        token.AccessToken,
+                        TokenStore.ConnectedEnvironment,
+                        $"tasks/{assignedId}");
+
+                    _probe = ModelWireDiagnostics.Build(_task, _wireApiResponse, "task");
+                }
+                else
+                {
+                    _taskId = null;
+                }
+            }
+            else
+            {
+                _task = null;
+                _taskId = null;
+            }
+
+            var summaryParts = new List<string>();
+            if (result.Created.Count > 0)
+            {
+                summaryParts.Add($"created {result.Created.Count}");
+            }
+
+            if (result.Updated.Count > 0)
+            {
+                summaryParts.Add($"updated {result.Updated.Count}");
+            }
+
+            if (result.Failures.Count > 0)
+            {
+                summaryParts.Add($"failed {result.Failures.Count}");
+            }
+
+            _operationMessage = summaryParts.Count == 0
+                ? "No Turpinverse tasks were created or updated."
+                : $"Turpinverse task sync complete: {string.Join(", ", summaryParts)}.";
+
+            if (result.Failures.Count > 0)
+            {
+                var failureSummary = string.Join(
+                    "; ",
+                    result.Failures.Select(static failure => $"{failure.Title}: {failure.Message}"));
+                _error = $"Some tasks could not be seeded: {failureSummary}";
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async System.Threading.Tasks.Task CreateProbeTaskAsync()
+    {
+        if (_projectId is null or < 1)
+        {
+            _error = "Enter a parent project ID before creating a probe task.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _task = await client.Tasks.CreateTaskAsync(_projectId.Value, new TaskModel
+                {
+                    Name = $"SDK probe task {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}",
+                    IsBillable = true,
+                    Status = Models.Tasks.TaskStatus.Active,
+                    BillingRate = 0m,
+                    BillingPeriod = TaskBillingPeriod.Hour
+                });
+
+                if (_task.TryGetResourceId(out var assignedId))
+                {
+                    _taskId = assignedId;
+                    _operationMessage = $"Created probe task {assignedId}.";
+                    return $"tasks/{assignedId}";
+                }
+
+                _taskId = null;
+                _operationMessage = "Created probe task but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "task");
+    }
+
+    private async System.Threading.Tasks.Task UpdateTaskAsync()
+    {
+        if (_taskId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _task ?? await client.Tasks.GetTaskAsync(_taskId.Value);
+                existing.Name = $"{existing.Name} (updated)";
+                _task = await client.Tasks.UpdateTaskAsync(_taskId.Value, existing);
+                _operationMessage = $"Updated task {_taskId.Value}.";
+                return $"tasks/{_taskId}";
+            },
+            envelopeProperty: "task");
+    }
+
+    private async System.Threading.Tasks.Task DeleteTaskAsync()
+    {
+        if (_taskId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _taskId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Tasks.DeleteTaskAsync(deletedId);
+                _task = null;
+                _probe = null;
+                _operationMessage = $"Deleted task {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async System.Threading.Tasks.Task RunOperationAsync(
+        Func<FreeAgentClient, System.Threading.Tasks.Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _task is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_task, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

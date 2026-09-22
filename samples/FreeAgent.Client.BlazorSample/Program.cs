@@ -30,6 +30,7 @@ builder.Services.AddSingleton<TurpinverseContactCatalog>();
 builder.Services.AddSingleton<TurpinverseContactSeeder>();
 builder.Services.AddSingleton<TurpinverseProjectCatalog>();
 builder.Services.AddSingleton<TurpinverseProjectSeeder>();
+builder.Services.AddSingleton<TurpinverseTaskSeeder>();
 builder.Services.AddSingleton<SampleContactSeeder>();
 builder.Services.AddHttpClient<ApiDiagnosticsService>();
 

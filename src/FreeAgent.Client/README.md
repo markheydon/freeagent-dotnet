@@ -10,7 +10,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - Rate limiting and bounded retries for transient failures.
 - Typed exception model (`FreeAgentApiException`, `FreeAgentRateLimitException`, …).
 - Pagination (single-page and auto-pagination).
-- Company, Contacts, Categories, Users, Projects, and Email addresses API support.
+- Company, Contacts, Categories, Users, Projects, Tasks, and Email addresses API support.
 - `CurrencyCode` enum for documented ISO 4217 codes (reference type; not a REST resource).
 - Targets .NET 8.0 and .NET 10.0.
 - Fully async/await with XML documentation.
@@ -25,6 +25,8 @@ dotnet add package FreeAgent.Client
 
 ```csharp
 using FreeAgent.Client;
+using FreeAgent.Client.Models.Projects;
+using FreeAgent.Client.Models.Tasks;
 
 // Sandbox or Production - use the same value for OAuth and API calls.
 var environment = FreeAgentEnvironment.Sandbox;
@@ -63,6 +65,14 @@ var organisation = project.Contact!.OrganisationName;
 // Display name only - one HTTP call
 var summary = await client.Projects.GetProjectAsync(123);
 var label = summary.ContactName;
+
+// Create a task under a project (parent scoped via query param)
+await client.Tasks.CreateTaskAsync(123, new Task
+{
+    Name = "Planning",
+    IsBillable = true,
+    Status = TaskStatus.Active
+});
 ```
 
 See [linked resources](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/explanation/linked-resources.md) for the full pattern.

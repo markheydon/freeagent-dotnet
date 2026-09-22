@@ -10,6 +10,9 @@ namespace FreeAgent.Client.Services.Projects;
 /// <summary>
 /// Service for interacting with FreeAgent projects.
 /// </summary>
+/// <remarks>
+/// Tasks belong to projects. Use <see cref="Tasks.TaskService"/> for task list and CRUD operations scoped by <c>project</c>.
+/// </remarks>
 public sealed class ProjectService
 {
     private readonly IFreeAgentRequestClient _requestClient;

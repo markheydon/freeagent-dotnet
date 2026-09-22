@@ -102,6 +102,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/categories/detail](https://localhost:5001/categories/detail) | `GetCategoryAsync()`, all `Create*CategoryAsync` / `Update*CategoryAsync`, `DeleteCategoryAsync` via write-variant selector | CRUD probes, all documented write variants, progress bar |
 | [/projects](https://localhost:5001/projects) | `ProjectService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/sort/contact/nested filters |
 | [/projects/detail](https://localhost:5001/projects/detail) | `GetProjectAsync()`, `CreateProjectAsync()`, `UpdateProjectAsync()`, `DeleteProjectAsync()` | CRUD probes, Turpinverse seed data, progress bar |
+| [/tasks](https://localhost:5001/tasks) | `TaskService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/sort/project/updated_since filters |
+| [/tasks/detail](https://localhost:5001/tasks/detail) | `GetTaskAsync()`, `CreateTaskAsync()`, `UpdateTaskAsync()`, `DeleteTaskAsync()` | CRUD probes, Turpinverse seed data, progress bar |
 | [/users](https://localhost:5001/users) | `UserService.ListAsync()` | Per-row mapping inspection, view filters |
 | [/users/detail](https://localhost:5001/users/detail) | `GetUserAsync()`, `GetCurrentUserAsync()`, `CreateUserAsync()`, `UpdateUserAsync()`, `UpdateCurrentUserAsync()`, `DeleteUserAsync()` | CRUD probes, personal profile endpoints, progress bar |
 | [/email-addresses](https://localhost:5001/email-addresses) | `EmailAddressesService.ListAsync()` | Per-row mapping inspection, list output |
