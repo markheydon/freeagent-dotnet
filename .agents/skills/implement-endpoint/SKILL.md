@@ -1,11 +1,11 @@
 ---
 name: implement-endpoint
-description: Implement or retrofit one FreeAgent endpoint end-to-end with strict model guardrails, sample app sync, and plan-first workflow. Use when adding or updating SDK resource services, models, tests, or sample pages for a FreeAgent API entity.
+description: Implement or retrofit one FreeAgent endpoint end-to-end with strict model guardrails, sample app sync, plan-first workflow, and a draft PR for review. Use when adding or updating SDK resource services, models, tests, or sample pages for a FreeAgent API entity.
 ---
 
 # Implement Endpoint
 
-Implement one FreeAgent endpoint page end-to-end for this repository, including SDK models and wrappers, service methods, tests, sample app page and navigation sync, and README/API coverage updates.
+Implement one FreeAgent endpoint page end-to-end for this repository, including SDK models and wrappers, service methods, tests, sample app page and navigation sync, README/API coverage updates, validation, and a draft pull request for human review.
 
 If the entity already exists, retrofit it to current guardrails in the same run.
 
@@ -40,6 +40,7 @@ If the entity already exists, retrofit it to current guardrails in the same run.
    - New files vs retrofit files (with specific violations listed)
    - Breaking API-surface changes expected
    - Test, sample app, and documentation changes
+   - **Pull request** — branch name, title, labels, linked issue(s), and checklist items from Step 9
 
 Proceed to implementation only after the plan is complete.
 
@@ -115,14 +116,41 @@ Update the root `README.md`, [`src/FreeAgent.Client/README.md`](../../src/FreeAg
 
 ## Step 8 - Validation
 
-Run from repository root:
+Run from repository root (same checks as [CONTRIBUTING.md](../../CONTRIBUTING.md) and CI):
 
 ```bash
-dotnet build
-dotnet test
+dotnet format FreeAgent.slnx --verify-no-changes
+dotnet clean
+dotnet restore FreeAgent.slnx
+dotnet build FreeAgent.slnx -warnaserror --configuration Release
+dotnet test FreeAgent.slnx --no-build --configuration Release
 ```
 
+If `dotnet format --verify-no-changes` fails, run `dotnet format FreeAgent.slnx` and include the result in the same PR.
+
 Highlight any breaking changes applied during retrofit (DateTime → DateOnly, string → enum).
+
+## Step 9 - Pull request (final step)
+
+Open a **draft** PR for human review when implementation and validation are complete. Do not merge — [AGENTS.md](../../AGENTS.md) requires human review.
+
+Follow [CONTRIBUTING.md](../../CONTRIBUTING.md), [`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md), and [plan/LABEL_STRATEGY.md](../../plan/LABEL_STRATEGY.md).
+
+1. **Branch** — feature branch from `main` (for example `feature/<resource>-resource`).
+2. **Commit** — only when the user has asked you to commit, or as part of an explicit end-to-end implement-endpoint run that includes PR creation. Keep commits focused on the endpoint work.
+3. **Push** — `git push -u origin HEAD`.
+4. **Title** — `[Story] Implement <Resource> resource (#issue)` when a tracking issue exists; otherwise `[Story] Implement <Resource> resource`. Use the issue's `type/*` label prefix when it differs (for example `[Chore]`).
+5. **Labels** — match the tracking issue where possible: `type/story`, `status/in-review`, and the issue's `priority/*` label.
+6. **Body** — use the PR template:
+   - Summary: what changed and why (SDK + tests + sample sync + docs)
+   - Type of change: SDK feature / story (not documentation-only unless docs-only)
+   - Checklist: tick all items after Step 8 passes
+   - Goals impact: note G1/G2 relevance when applicable
+   - Breaking changes: call out any retrofit breaking API changes
+   - Related issues: `Closes #NNN` for the implementation issue; link parent/epic issues when useful
+7. **Create** — `gh pr create --draft` with the title, labels, and body above.
+
+Return the PR URL when done.
 
 ## References
 
