@@ -1,6 +1,8 @@
 # FreeAgent.Client console sample
 
-A minimal console app that shows the full OAuth flow and lists contact display names. Use it to smoke-test the SDK or as a starting point for your own integration.
+A real-world console reference for the FreeAgent .NET SDK. It demonstrates typical integration patterns — OAuth, dependency injection, and read-only API calls — through an interactive menu of examples grouped by resource area.
+
+Use the [Blazor sample](../FreeAgent.Client.BlazorSample/) when you need wire-to-model probe pages. Use this console sample when you want to see **how the SDK feels in a normal .NET app**.
 
 The OAuth step uses a **local browser redirect**: the app prints an authorisation URL, opens your browser (when possible), listens on `http://127.0.0.1:8765/callback`, and exchanges the returned code for an access token. If the local listener cannot start (or you are on WSL2), paste the **full redirect URL** manually instead.
 
@@ -63,7 +65,7 @@ export FREEAGENT_REDIRECT_URI="http://127.0.0.1:8765/callback"
 
 ---
 
-## 3. Run the sample
+## 3. Run the interactive menu
 
 From the repository root:
 
@@ -79,16 +81,68 @@ dotnet run
 
 ### What happens
 
-1. The app prints a FreeAgent authorisation URL.
-2. Log in to your sandbox account (if prompted) and approve access.
-3. FreeAgent redirects to `http://127.0.0.1:8765/callback` - the app captures the code automatically when the browser can reach the local listener.
-4. The app exchanges the code for tokens and prints each contact's `DisplayName`.
+1. The app completes OAuth (browser flow or token from environment variables).
+2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Users, Email addresses).
+3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
+4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
+
+### Example catalogue
+
+| Category | Examples |
+|----------|----------|
+| Company | Get company profile; list business categories; list tax timeline |
+| Contacts | List active contacts; stream all contacts; get contact detail |
+| Categories | List category sets; get category by nominal code |
+| Projects | List projects; list active projects; get project detail; list projects for contact |
+| Tasks | List tasks; list tasks for project; get task detail |
+| Users | List users; get current user; get user by ID |
+| Email addresses | List email addresses |
+
+New SDK resource areas should add a matching `*Samples.cs` provider class under `Samples/`.
 
 ### WSL2 and manual paste
 
 On **WSL2**, the browser usually runs on Windows while the sample listens inside Linux. A redirect to `http://127.0.0.1:8765/callback` therefore hits Windows loopback, not the WSL listener - **automatic callback capture will usually fail**. Copy the authorisation URL manually, approve access, then paste the **full redirect URL** from the browser address bar into the console when prompted.
 
 On any platform, if the local listener cannot start (port in use, permissions, remote machine), use the same manual paste flow.
+
+---
+
+## 4. Run all examples (smoke test)
+
+Use `--run-all` to execute every registered example without the interactive menu. Output follows a `dotnet test`-style report with pass, fail, and skip counts.
+
+```bash
+dotnet run --project samples/FreeAgent.Client.ConsoleSample -- --run-all
+```
+
+Filter to one category:
+
+```bash
+dotnet run --project samples/FreeAgent.Client.ConsoleSample -- --run-all --category Contacts
+```
+
+### Non-interactive authentication
+
+`--run-all` requires a token without browser interaction. Set one of:
+
+```bash
+export FREEAGENT_REFRESH_TOKEN="your-refresh-token"   # preferred for CI
+# or
+export FREEAGENT_ACCESS_TOKEN="your-access-token"     # short-lived manual runs
+```
+
+Client ID and secret are still required (user secrets or environment variables).
+
+### CI integration
+
+The repository CI workflow includes an optional smoke job that runs `--run-all` when these GitHub secrets are configured:
+
+- `FREEAGENT_CLIENT_ID`
+- `FREEAGENT_CLIENT_SECRET`
+- `FREEAGENT_REFRESH_TOKEN`
+
+When the secrets are absent, the job is skipped so PRs are not blocked.
 
 ---
 
@@ -130,4 +184,4 @@ dotnet add package FreeAgent.Client --version 0.1.0-alpha.3
 
 - [Getting started](../../docs/tutorial/getting-started.md)
 - [Prerelease and OAuth scope](../../docs/explanation/prerelease-and-oauth.md)
-- [Blazor sample](../FreeAgent.Client.BlazorSample/) - fuller interactive SDK workbench
+- [Blazor sample](../FreeAgent.Client.BlazorSample/) - interactive SDK probe workbench

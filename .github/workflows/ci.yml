@@ -68,3 +68,26 @@ jobs:
         with:
           name: test-results
           path: TestResults/*.trx
+
+  console-smoke:
+    name: Console Sample Smoke
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: secrets.FREEAGENT_REFRESH_TOKEN != ''
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Run console sample examples
+        run: dotnet run --project samples/FreeAgent.Client.ConsoleSample --configuration Release -- --run-all
+        env:
+          FREEAGENT_CLIENT_ID: ${{ secrets.FREEAGENT_CLIENT_ID }}
+          FREEAGENT_CLIENT_SECRET: ${{ secrets.FREEAGENT_CLIENT_SECRET }}
+          FREEAGENT_REFRESH_TOKEN: ${{ secrets.FREEAGENT_REFRESH_TOKEN }}
