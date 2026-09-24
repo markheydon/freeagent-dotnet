@@ -38,10 +38,10 @@ Solid arrows are required URIs on create. Dashed arrows are optional or set afte
 
 | Resource | Official docs | SDK |
 |----------|---------------|-----|
-| Projects | [Projects](https://dev.freeagent.com/docs/projects) | `ProjectService` |
-| Tasks | [Tasks](https://dev.freeagent.com/docs/tasks) | `TaskService` |
-| Timeslips | [Timeslips](https://dev.freeagent.com/docs/timeslips) | `TimeslipService` |
-| Notes | [Notes](https://dev.freeagent.com/docs/notes) | `NoteService` |
+| Projects | [Projects](https://dev.freeagent.com/docs/projects) | [Implemented](../../reference/api-coverage.md#projects) |
+| Tasks | [Tasks](https://dev.freeagent.com/docs/tasks) | [Implemented](../../reference/api-coverage.md#tasks) |
+| Timeslips | [Timeslips](https://dev.freeagent.com/docs/timeslips) | [Implemented](../../reference/api-coverage.md#timeslips) |
+| Notes | [Notes](https://dev.freeagent.com/docs/notes) | [Implemented](../../reference/api-coverage.md#notes) |
 
 ## Key URI fields
 
@@ -90,6 +90,8 @@ List requires parent: `?contact=` or `?project=`
 
 Projects also receive optional links from invoices, estimates, bills, expenses, and bank explanations - see [Sales](sales.md) and [Purchases](purchases.md).
 
-## SDK sequencing note
+## Implemented in SDK
 
-Implement **Projects** before **Tasks** and **Timeslips**. **Users** ([Foundations](foundations.md)) should precede timeslips and expenses. **Invoices** are not required to create a timeslip, but `billed_on_invoice` only appears once billing happens.
+All four resources in this cluster are implemented. See [API coverage](../../reference/api-coverage.md) for service entry points, method lists, and sample app routes.
+
+When extending downstream clusters (for example optional `project` on invoices), **Projects** remain the spine: tasks require a project URI; timeslips require `task`, `project`, and `user`. **Invoices** are not required to create a timeslip, but `billed_on_invoice` only appears once billing happens.
