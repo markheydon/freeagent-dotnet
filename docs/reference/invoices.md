@@ -175,6 +175,8 @@ Task<Invoice> MarkInvoiceAsCancelledAsync(long invoiceId, CancellationToken canc
 
 **HTTP:** `PUT /v2/invoices/:id/transitions/{action}`
 
+**Behaviour:** The SDK sends `PUT .../transitions/{action}` with an empty JSON body (`{}`), then fetches the updated invoice with `GET .../invoices/:id` because FreeAgent transition endpoints return no response body. If the transition succeeds but the follow-up GET fails, the invoice state has already changed on the server; retry the GET to obtain the updated resource.
+
 ---
 
 ### TakeDirectDebitPaymentAsync

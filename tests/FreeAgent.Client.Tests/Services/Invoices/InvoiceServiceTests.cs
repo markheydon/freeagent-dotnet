@@ -84,6 +84,34 @@ public class InvoiceServiceTests
             nestedInvoiceItems: true);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(101)]
+    public async Task ListAsync_InvalidPerPage_Throws(int perPage)
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.ListAsync(perPage: perPage));
+    }
+
+    [Fact]
+    public async Task ListAsync_PageBelowOne_Throws()
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.ListAsync(page: 0));
+    }
+
     [Fact]
     public async Task GetInvoiceAsync_ReturnsInvoice()
     {

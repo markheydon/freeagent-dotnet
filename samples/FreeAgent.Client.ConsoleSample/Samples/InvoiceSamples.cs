@@ -19,6 +19,30 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
 
         SampleOutput.WriteHeader($"Invoices (showing {page.Items.Count} of {page.Total})");
         SampleOutput.WriteRows(page.Items, FormatInvoiceRow);
+
+        if (page.HasNextPage)
+        {
+            Console.WriteLine();
+            Console.WriteLine("  (First page only. Use ListAutoPagingAsync to stream all pages.)");
+        }
+    }
+
+    [ConsoleSample(Name = "Stream all invoices", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task StreamAllInvoicesAsync(CancellationToken cancellationToken)
+    {
+        var count = 0;
+        await foreach (var invoice in context.Client.Invoices.ListAutoPagingAsync(cancellationToken: cancellationToken))
+        {
+            count++;
+            if (count <= 5)
+            {
+                Console.WriteLine($"  {FormatInvoiceRow(invoice)}");
+            }
+        }
+
+        SampleOutput.WriteHeader("Streamed invoices via ListAutoPagingAsync");
+        Console.WriteLine($"  Total invoices streamed: {count}");
     }
 
     [ConsoleSample(Name = "List invoices filtered by contact")]
