@@ -144,6 +144,10 @@ var invoice = await client.Invoices.CreateInvoiceAsync(new Invoice
 });
 ```
 
+When updating an invoice retrieved from the API, the SDK round-trips existing contact, project, and bank account links unless you set the corresponding omit flags. Set `OmitBillingContactFromWrite`, `OmitProjectFromWrite`, or `OmitBankAccountFromWrite` to `true` to exclude those links from the write payload. Set `OmitInvoiceItemsFromWrite = true` when updating scalar invoice fields without changing line items.
+
+Line item updates require `InvoiceItem.ItemId`. The SDK maps this from the wire `id` attribute or from a line-item `url` when present.
+
 ## Resource identifiers
 
 `IFreeAgentResource.ResourceId` returns `0` when parsing fails. Use `TryGetResourceId()` or `GetResourceId()` when you need a valid identifier for service calls.

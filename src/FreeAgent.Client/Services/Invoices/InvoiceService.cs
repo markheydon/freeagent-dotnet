@@ -80,7 +80,7 @@ public sealed class InvoiceService
         {
             queryParameters.Add(new KeyValuePair<string, string>(
                 "updated_since",
-                updatedSince.Value.ToString("yyyy-MM-ddTHH:mm:ss.fffK", CultureInfo.InvariantCulture)));
+                updatedSince.Value.ToString("o", CultureInfo.InvariantCulture)));
         }
 
         var contactFilter = ResolveContactFilter(contact, contactId);
@@ -232,7 +232,14 @@ public sealed class InvoiceService
             throw new FreeAgentApiException("PDF content missing from API response");
         }
 
-        return Convert.FromBase64String(encodedContent);
+        try
+        {
+            return Convert.FromBase64String(encodedContent);
+        }
+        catch (FormatException ex)
+        {
+            throw new FreeAgentApiException("PDF content is not valid base64.", ex);
+        }
     }
 
     /// <summary>

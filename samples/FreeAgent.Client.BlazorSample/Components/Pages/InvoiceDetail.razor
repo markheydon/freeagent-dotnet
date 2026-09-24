@@ -14,7 +14,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Invoices endpoint"
                          Title="Get, create, update, delete, and transition invoices"
-                         CallUnderTest="InvoiceService.GetInvoiceAsync / CreateInvoiceAsync / UpdateInvoiceAsync / DeleteInvoiceAsync / MarkInvoiceAsSentAsync / MarkInvoiceAsDraftAsync / MarkInvoiceAsCancelledAsync / DuplicateInvoiceAsync / SendInvoiceEmailAsync"
+                         CallUnderTest="InvoiceService.GetInvoiceAsync / CreateInvoiceAsync / UpdateInvoiceAsync / DeleteInvoiceAsync / GetInvoicePdfAsync / MarkInvoiceAsSentAsync / MarkInvoiceAsScheduledAsync / MarkInvoiceAsDraftAsync / MarkInvoiceAsCancelledAsync / DuplicateInvoiceAsync / SendInvoiceEmailAsync / TakeDirectDebitPaymentAsync / ConvertToCreditNoteAsync / GetDefaultAdditionalTextAsync / UpdateDefaultAdditionalTextAsync / DeleteDefaultAdditionalTextAsync"
                          Description="Exercises single-invoice CRUD, status transitions, duplication, and email sending. Shows wire-to-model diagnostics after each mutation."
                          EndpointPath="/v2/invoices/:id"
                          DocsUrl="https://dev.freeagent.com/docs/invoices" />
@@ -87,6 +87,23 @@
                                    OnClick="DuplicateInvoiceAsync">Duplicate invoice</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _invoiceId is null or < 1"
                                    OnClick="SendEmailWithTemplateAsync">Send email (template)</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="GetInvoicePdfAsync">Get PDF</MudButton>
+                    </MudStack>
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="MarkAsScheduledAsync">Mark as scheduled</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="TakeDirectDebitPaymentAsync">Take direct debit payment</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="ConvertToCreditNoteAsync">Convert to credit note</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading"
+                                   OnClick="GetDefaultAdditionalTextAsync">Get default additional text</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading"
+                                   OnClick="UpdateDefaultAdditionalTextAsync">Update default additional text</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading"
+                                   OnClick="DeleteDefaultAdditionalTextAsync">Delete default additional text</MudButton>
                     </MudStack>
                 </MudStack>
 
@@ -362,6 +379,7 @@
             {
                 var existing = _invoice ?? await client.Invoices.GetInvoiceAsync(_invoiceId.Value);
                 existing.Comments = $"{existing.Comments} (updated)".Trim();
+                existing.OmitInvoiceItemsFromWrite = true;
                 _invoice = await client.Invoices.UpdateInvoiceAsync(_invoiceId.Value, existing);
                 _operationMessage = $"Updated invoice {_invoiceId.Value}.";
                 return $"invoices/{_invoiceId}";
@@ -487,6 +505,112 @@
                 return $"invoices/{_invoiceId}";
             },
             envelopeProperty: "invoice");
+    }
+
+    private async Task GetInvoicePdfAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var pdfBytes = await client.Invoices.GetInvoicePdfAsync(_invoiceId.Value);
+                _operationMessage = $"Downloaded PDF for invoice {_invoiceId.Value} ({pdfBytes.Length} bytes).";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task MarkAsScheduledAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _invoice = await client.Invoices.MarkInvoiceAsScheduledAsync(_invoiceId.Value);
+                _operationMessage = $"Marked invoice {_invoiceId.Value} as scheduled.";
+                return $"invoices/{_invoiceId}";
+            },
+            envelopeProperty: "invoice");
+    }
+
+    private async Task TakeDirectDebitPaymentAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Invoices.TakeDirectDebitPaymentAsync(_invoiceId.Value);
+                _operationMessage = $"Requested direct debit payment for invoice {_invoiceId.Value}.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task ConvertToCreditNoteAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var creditNote = await client.Invoices.ConvertToCreditNoteAsync(_invoiceId.Value);
+                _operationMessage = $"Converted invoice {_invoiceId.Value} to credit note {creditNote.ResourceId}.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task GetDefaultAdditionalTextAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var text = await client.Invoices.GetDefaultAdditionalTextAsync();
+                _operationMessage = string.IsNullOrWhiteSpace(text)
+                    ? "Default additional text is not set."
+                    : $"Default additional text: {text}";
+                return "invoices/default_additional_text";
+            },
+            envelopeProperty: "default_additional_text");
+    }
+
+    private async Task UpdateDefaultAdditionalTextAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var text = await client.Invoices.UpdateDefaultAdditionalTextAsync("Pay within 14 days (probe update).");
+                _operationMessage = $"Updated default additional text to: {text}";
+                return "invoices/default_additional_text";
+            },
+            envelopeProperty: "default_additional_text");
+    }
+
+    private async Task DeleteDefaultAdditionalTextAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Invoices.DeleteDefaultAdditionalTextAsync();
+                _operationMessage = "Deleted default additional text.";
+                return null;
+            },
+            fetchWirePayload: false);
     }
 
     private async Task RunOperationAsync(

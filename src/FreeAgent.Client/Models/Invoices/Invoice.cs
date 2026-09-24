@@ -105,6 +105,18 @@ public sealed class Invoice : IFreeAgentResource
     public bool OmitProjectFromWrite { get; set; }
 
     /// <summary>
+    /// When <see langword="true"/>, create and update payloads exclude the bank account even when a bank account link exists on the model.
+    /// </summary>
+    [JsonIgnore]
+    public bool OmitBankAccountFromWrite { get; set; }
+
+    /// <summary>
+    /// When <see langword="true"/>, create and update payloads exclude invoice line items even when items exist on the model.
+    /// </summary>
+    [JsonIgnore]
+    public bool OmitInvoiceItemsFromWrite { get; set; }
+
+    /// <summary>
     /// Property URI for landlord companies.
     /// </summary>
     /// <remarks>

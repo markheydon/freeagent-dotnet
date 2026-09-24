@@ -232,6 +232,8 @@ public sealed class TurpinverseInvoiceSeeder
         current.LinkedProject = desired.LinkedProject;
         current.OmitBillingContactFromWrite = false;
         current.OmitProjectFromWrite = desired.LinkedProject is null;
+        current.OmitBankAccountFromWrite = false;
+        current.OmitInvoiceItemsFromWrite = false;
         current.Reference = desired.Reference;
         current.PoReference = desired.PoReference;
         current.DatedOn = desired.DatedOn;
@@ -243,7 +245,41 @@ public sealed class TurpinverseInvoiceSeeder
         current.SendNewInvoiceEmails = desired.SendNewInvoiceEmails;
         current.SendReminderEmails = desired.SendReminderEmails;
         current.SendThankYouEmails = desired.SendThankYouEmails;
-        current.InvoiceItems = desired.InvoiceItems;
+        if (desired.InvoiceItems is not null)
+        {
+            MergeInvoiceItems(current.InvoiceItems, desired.InvoiceItems);
+            current.InvoiceItems = desired.InvoiceItems;
+        }
+    }
+
+    private static void MergeInvoiceItems(List<InvoiceItem>? currentItems, List<InvoiceItem> desiredItems)
+    {
+        if (currentItems is null)
+        {
+            return;
+        }
+
+        var sharedCount = Math.Min(currentItems.Count, desiredItems.Count);
+        for (var index = 0; index < sharedCount; index++)
+        {
+            if (desiredItems[index].ItemId is null && currentItems[index].ItemId is long itemId)
+            {
+                desiredItems[index].ItemId = itemId;
+            }
+        }
+
+        if (currentItems.Count <= desiredItems.Count)
+        {
+            return;
+        }
+
+        for (var index = desiredItems.Count; index < currentItems.Count; index++)
+        {
+            if (currentItems[index].ItemId is long itemId)
+            {
+                desiredItems.Add(new InvoiceItem { ItemId = itemId, Destroy = 1 });
+            }
+        }
     }
 }
 

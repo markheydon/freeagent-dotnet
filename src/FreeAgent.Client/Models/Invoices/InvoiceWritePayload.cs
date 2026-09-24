@@ -121,14 +121,22 @@ internal sealed class InvoiceWritePayload
             project = invoice.LinkedProject;
         }
 
-        BankAccountReference? bankAccount = invoice.RemittanceBankAccount;
-        if (bankAccount is null && invoice.BankAccountLink?.Uri is string bankAccountUri)
+        BankAccountReference? bankAccount = null;
+        if (!invoice.OmitBankAccountFromWrite)
         {
-            bankAccount = BankAccountReference.Parse(bankAccountUri);
+            bankAccount = invoice.RemittanceBankAccount;
+            if (bankAccount is null && invoice.BankAccountLink?.Uri is string bankAccountUri)
+            {
+                bankAccount = BankAccountReference.Parse(bankAccountUri);
+            }
+        }
+        else
+        {
+            bankAccount = invoice.RemittanceBankAccount;
         }
 
         List<InvoiceItemWritePayload>? items = null;
-        if (invoice.InvoiceItems is not null)
+        if (!invoice.OmitInvoiceItemsFromWrite && invoice.InvoiceItems is not null)
         {
             items = invoice.InvoiceItems.ConvertAll(InvoiceItemWritePayload.FromInvoiceItem);
         }

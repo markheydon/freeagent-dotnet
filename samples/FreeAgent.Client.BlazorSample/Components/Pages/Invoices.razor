@@ -12,7 +12,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Invoices endpoint"
                          Title="Invoices list"
-                         CallUnderTest="InvoiceService.ListAsync(...)"
+                         CallUnderTest="InvoiceService.ListAsync(...) / ListAutoPagingAsync(...) / ListTimelineAsync(...)"
                          Description="Load invoices, inspect wire-to-model mapping for any row, then jump into Invoice CRUD to test get, update, transitions, and delete."
                          EndpointPath="/v2/invoices?page={page}&per_page={perPage}&view={view}"
                          DocsUrl="https://dev.freeagent.com/docs/invoices" />
@@ -106,9 +106,24 @@
                                     <span>Load page 1</span>
                                 }
                             </MudButton>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       Disabled="_loading"
+                                       StartIcon="@Icons.Material.Filled.Timeline"
+                                       Class="contacts-load-button"
+                                       OnClick="LoadTimelineAsync">
+                                Load timeline
+                            </MudButton>
                         </MudItem>
                     </MudGrid>
                 </MudStack>
+
+                @if (_timelineItemCount is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                        Loaded @_timelineItemCount timeline item@(_timelineItemCount == 1 ? string.Empty : "s") from <code>/v2/invoices/timeline</code>.
+                    </MudAlert>
+                }
 
                 @if (_pageResult is null && !_loading && _error is null)
                 {
@@ -257,6 +272,7 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allInvoicesCount;
+    private int? _timelineItemCount;
     private string _view = InvoiceViews.RecentOpenOrOverdue;
     private long? _contactIdFilter;
     private long? _projectIdFilter;
@@ -396,6 +412,49 @@
         finally
         {
             _loadingAll = false;
+        }
+    }
+
+    private async Task LoadTimelineAsync()
+    {
+        _timelineItemCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var items = await client.Invoices.ListTimelineAsync();
+            _timelineItemCount = items.Count;
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "invoices/timeline");
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "invoices/timeline");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
         }
     }
 

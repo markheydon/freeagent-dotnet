@@ -49,6 +49,94 @@ public class InvoiceModelSerializationTests
     }
 
     [Fact]
+    public void DeserializeInvoiceItem_MapsItemIdAndBlankItemType()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/invoice_items/42",
+              "id": 42,
+              "description": "Consulting",
+              "item_type": "",
+              "price": "100.0"
+            }
+            """;
+
+        var item = JsonSerializer.Deserialize<InvoiceItem>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(item);
+        Assert.Equal(42, item!.ItemId);
+        Assert.Null(item.ItemType);
+    }
+
+    [Fact]
+    public void WritePayload_OmitBillingContactFromWrite_ExcludesRoundTrippedContact()
+    {
+        var invoice = JsonSerializer.Deserialize<Invoice>("""
+            {
+              "url": "https://api.freeagent.com/v2/invoices/1",
+              "contact": "https://api.freeagent.com/v2/contacts/8",
+              "dated_on": "2024-03-18",
+              "payment_terms_in_days": 14
+            }
+            """)!;
+        invoice.OmitBillingContactFromWrite = true;
+
+        var payload = InvoiceWritePayload.FromInvoice(invoice);
+
+        Assert.Null(payload.Contact);
+    }
+
+    [Fact]
+    public void WritePayload_OmitInvoiceItemsFromWrite_ExcludesLineItems()
+    {
+        var invoice = new Invoice
+        {
+            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 14,
+            OmitInvoiceItemsFromWrite = true,
+            InvoiceItems =
+            [
+                new InvoiceItem
+                {
+                    ItemId = 42,
+                    Description = "Consulting"
+                }
+            ]
+        };
+
+        var payload = InvoiceWritePayload.FromInvoice(invoice);
+
+        Assert.Null(payload.InvoiceItems);
+    }
+
+    [Fact]
+    public void SerializeUpdatePayload_UsesItemIdNotUrl()
+    {
+        var invoice = new Invoice
+        {
+            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 14,
+            InvoiceItems =
+            [
+                new InvoiceItem
+                {
+                    Url = "https://api.freeagent.com/v2/invoice_items/42",
+                    ItemId = 42,
+                    Description = "Consulting"
+                }
+            ]
+        };
+
+        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"id\":42", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("invoice_items/42", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SerializeCreatePayload_IncludesRequiredFields()
     {
         var invoice = new Invoice

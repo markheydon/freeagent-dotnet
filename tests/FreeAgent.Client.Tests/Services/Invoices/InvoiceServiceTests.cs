@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Text;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Services.Invoices;
@@ -369,5 +368,268 @@ public class InvoiceServiceTests
         Assert.Contains("GET /v2/invoices/default_additional_text", calls);
         Assert.Contains("PUT /v2/invoices/default_additional_text", calls);
         Assert.Contains("DELETE /v2/invoices/default_additional_text", calls);
+    }
+
+    [Fact]
+    public async Task ListAsync_ContactAndContactId_Throws()
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.ListAsync(
+            contact: ContactReference.Parse("https://api.freeagent.com/v2/contacts/1"),
+            contactId: 2));
+    }
+
+    [Fact]
+    public async Task GetInvoiceAsync_WithHydration_FetchesLinkedResources()
+    {
+        var calls = new List<string>();
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
+        {
+            calls.Add(request.RequestUri!.AbsolutePath);
+            if (request.RequestUri.AbsolutePath.EndsWith("/invoices/42", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "invoice": {
+                        "url": "https://api.freeagent.com/v2/invoices/42",
+                        "contact": "https://api.freeagent.com/v2/contacts/2",
+                        "project": "https://api.freeagent.com/v2/projects/3"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            if (request.RequestUri.AbsolutePath.EndsWith("/contacts/2", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "contact": {
+                        "url": "https://api.freeagent.com/v2/contacts/2",
+                        "organisation_name": "Example Ltd"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "project": {
+                    "url": "https://api.freeagent.com/v2/projects/3",
+                    "name": "Example project"
+                  }
+                }
+                """)
+            };
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond, respond);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        var invoice = await service.GetInvoiceAsync(
+            42,
+            new InvoiceGetOptions { IncludeContact = true, IncludeProject = true });
+
+        Assert.Equal("Example Ltd", invoice.Contact?.OrganisationName);
+        Assert.Equal("Example project", invoice.Project?.Name);
+        Assert.Contains(calls, path => path.Contains("/contacts/2", StringComparison.Ordinal));
+        Assert.Contains(calls, path => path.Contains("/projects/3", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ListAutoPagingAsync_YieldsAllPages()
+    {
+        var page = 0;
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
+        {
+            page++;
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(page == 1
+                    ? """
+                      {
+                        "invoices": [
+                          { "url": "https://api.freeagent.com/v2/invoices/1", "reference": "001" },
+                          { "url": "https://api.freeagent.com/v2/invoices/2", "reference": "002" }
+                        ]
+                      }
+                      """
+                    : """
+                      {
+                        "invoices": [
+                          { "url": "https://api.freeagent.com/v2/invoices/3", "reference": "003" }
+                        ]
+                      }
+                      """)
+            };
+
+            if (page == 1)
+            {
+                response.Headers.TryAddWithoutValidation("X-Total-Count", "3");
+            }
+
+            return response;
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        var references = new List<string>();
+        await foreach (var invoice in service.ListAutoPagingAsync(perPage: 2))
+        {
+            references.Add(invoice.Reference!);
+        }
+
+        Assert.Equal(["001", "002", "003"], references);
+    }
+
+    [Fact]
+    public async Task DuplicateInvoiceAsync_PostsDuplicateEndpoint()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Equal(HttpMethod.Post, request.Method);
+            Assert.EndsWith("/invoices/5/duplicate", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/6",
+                    "status": "Draft"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        var invoice = await service.DuplicateInvoiceAsync(5);
+
+        Assert.Equal(6, invoice.ResourceId);
+    }
+
+    [Fact]
+    public async Task UpdateInvoiceAsync_PutsInvoicePayload()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Equal(HttpMethod.Put, request.Method);
+            Assert.EndsWith("/invoices/4", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/4",
+                    "comments": "Updated"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        var invoice = await service.UpdateInvoiceAsync(4, new Invoice
+        {
+            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 14,
+            OmitInvoiceItemsFromWrite = true,
+            Comments = "Updated"
+        });
+
+        Assert.Equal("Updated", invoice.Comments);
+    }
+
+    [Fact]
+    public async Task DeleteInvoiceAsync_DeletesEndpoint()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Equal(HttpMethod.Delete, request.Method);
+            Assert.EndsWith("/invoices/9", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await service.DeleteInvoiceAsync(9);
+    }
+
+    [Fact]
+    public async Task MarkInvoiceAsScheduledAsync_PutsTransitionEndpoint()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.EndsWith("/invoices/5/transitions/mark_as_scheduled", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/5",
+                    "status": "Scheduled To Email"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        var invoice = await service.MarkInvoiceAsScheduledAsync(5);
+
+        Assert.Equal(InvoiceStatus.ScheduledToEmail, invoice.Status);
+    }
+
+    [Fact]
+    public async Task GetInvoicePdfAsync_InvalidBase64_ThrowsFreeAgentApiException()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""
+            {
+              "pdf": {
+                "content": "not-valid-base64!!!"
+              }
+            }
+            """)
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetInvoicePdfAsync(1));
     }
 }

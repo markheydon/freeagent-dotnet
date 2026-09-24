@@ -29,6 +29,7 @@ public sealed class InvoiceItem
     /// Line item type.
     /// </summary>
     [JsonPropertyName("item_type")]
+    [JsonConverter(typeof(NullableInvoiceItemTypeJsonConverter))]
     public InvoiceItemType? ItemType { get; set; }
 
     /// <summary>
@@ -130,10 +131,23 @@ public sealed class InvoiceItem
     public ProjectReference? LinkedProject { get; set; }
 
     /// <summary>
+    /// Wire representation of the invoice item identifier returned on read responses.
+    /// </summary>
+    [JsonPropertyName("id")]
+    [JsonInclude]
+    internal long? WireItemId { get; set; }
+
+    private long? _explicitItemId;
+
+    /// <summary>
     /// Invoice item identifier used when updating or deleting an existing line item.
     /// </summary>
     [JsonIgnore]
-    public long? ItemId { get; set; }
+    public long? ItemId
+    {
+        get => _explicitItemId ?? WireItemId ?? TryParseItemIdFromUrl();
+        set => _explicitItemId = value;
+    }
 
     /// <summary>
     /// When set to <c>1</c>, deletes the line item on update.
@@ -149,4 +163,7 @@ public sealed class InvoiceItem
     /// </remarks>
     [JsonIgnore]
     public string? StockItem { get; set; }
+
+    private long? TryParseItemIdFromUrl() =>
+        !string.IsNullOrWhiteSpace(Url) && FreeAgentResourceId.TryParse(Url, out var id) ? id : null;
 }

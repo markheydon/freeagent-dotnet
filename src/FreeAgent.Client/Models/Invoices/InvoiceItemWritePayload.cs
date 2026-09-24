@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Invoices;
@@ -15,6 +16,7 @@ internal sealed class InvoiceItemWritePayload
     public decimal? Position { get; set; }
 
     [JsonPropertyName("item_type")]
+    [JsonConverter(typeof(NullableInvoiceItemTypeJsonConverter))]
     public InvoiceItemType? ItemType { get; set; }
 
     [JsonPropertyName("quantity")]
@@ -71,7 +73,7 @@ internal sealed class InvoiceItemWritePayload
 
         return new InvoiceItemWritePayload
         {
-            Url = item.Url,
+            Url = item.ItemId is null ? item.Url : null,
             Position = item.Position,
             ItemType = item.ItemType,
             Quantity = item.Quantity,

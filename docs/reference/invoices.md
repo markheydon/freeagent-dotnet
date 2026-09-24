@@ -260,6 +260,11 @@ Key properties:
 | `LinkedProject` | `ProjectReference?` | `project` | Write payload |
 | `RemittanceBankAccount` | `BankAccountReference?` | `bank_account` | Write payload |
 | `InvoiceItems` | `List<InvoiceItem>?` | `invoice_items` | Nested line items |
+| `ItemId` | `long?` | `id` (line items) | Required to update or delete existing line items |
+| `OmitBillingContactFromWrite` | `bool` | - | Exclude contact from update payload |
+| `OmitProjectFromWrite` | `bool` | - | Exclude project from update payload |
+| `OmitBankAccountFromWrite` | `bool` | - | Exclude bank account from update payload |
+| `OmitInvoiceItemsFromWrite` | `bool` | - | Exclude line items from update payload |
 | `Url` | `string` | `url` | |
 
 ## Errors
