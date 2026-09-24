@@ -134,6 +134,61 @@ public class NoteServiceTests
     }
 
     [Fact]
+    public async System.Threading.Tasks.Task GetNoteAsync_WithIncludeParentContact_FetchesContact()
+    {
+        var requestCount = 0;
+        HttpResponseMessage RouteRequest(HttpRequestMessage request)
+        {
+            requestCount++;
+            if (request.RequestUri!.AbsolutePath.EndsWith("/notes/42", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "note": {
+                        "url": "https://api.freeagent.com/v2/notes/42",
+                        "note": "Probe note",
+                        "parent_url": "https://api.freeagent.com/v2/contacts/5"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            if (request.RequestUri!.AbsolutePath.EndsWith("/contacts/5", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "contact": {
+                        "url": "https://api.freeagent.com/v2/contacts/5",
+                        "organisation_name": "Parent Contact"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            throw new InvalidOperationException($"Unexpected request: {request.RequestUri}");
+        }
+
+        var handler = new QueueHttpMessageHandler(RouteRequest, RouteRequest);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new NoteService(client);
+
+        var note = await service.GetNoteAsync(
+            42,
+            new NoteGetOptions { IncludeParentContact = true });
+
+        Assert.Equal(2, requestCount);
+        Assert.Equal("Parent Contact", note.Contact!.OrganisationName);
+    }
+
+    [Fact]
     public async System.Threading.Tasks.Task GetNoteAsync_WithIncludeParentProject_FetchesProject()
     {
         var requestCount = 0;
@@ -332,5 +387,61 @@ public class NoteServiceTests
         var service = new NoteService(client);
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListContactNotesAsync(contactId: 1));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task GetNoteAsync_MissingNoteBranch_ThrowsFreeAgentApiException()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new NoteService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetNoteAsync(42));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateContactNoteAsync_InvalidContactId_ThrowsArgumentOutOfRangeException()
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new NoteService(client);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            service.CreateContactNoteAsync(0, CreateContactNoteRequest.Create("Example")));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task UpdateNoteAsync_InvalidNoteId_ThrowsArgumentOutOfRangeException()
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new NoteService(client);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            service.UpdateNoteAsync(0, UpdateNoteRequest.Create("Example")));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task DeleteNoteAsync_InvalidNoteId_ThrowsArgumentOutOfRangeException()
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new NoteService(client);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.DeleteNoteAsync(0));
     }
 }

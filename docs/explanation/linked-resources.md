@@ -77,6 +77,23 @@ var taskName = hydrated.Task!.Name;
 
 `BilledOnInvoiceId` is read-only and is populated when time has been invoiced.
 
+Notes link to a parent contact or project via `parent_url`:
+
+| Property | When it is set |
+|----------|----------------|
+| `ContactId`, `ProjectId` | Always when the API returns a parent URI |
+| `Contact`, `Project` | When you request hydration on single GET |
+
+```csharp
+var note = await client.Notes.GetNoteAsync(
+    123,
+    new NoteGetOptions { IncludeParentContact = true });
+
+var organisation = note.Contact!.OrganisationName;
+```
+
+Note create operations scope the parent via `contact` or `project` query parameters, not the request body.
+
 ## Write properties
 
 Assign typed references - never raw URI strings:

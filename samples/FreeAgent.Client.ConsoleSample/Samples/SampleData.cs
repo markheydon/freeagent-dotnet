@@ -131,6 +131,7 @@ internal sealed class SampleData
         }
 
         SampleContext.Skip("no notes found in sandbox account");
+        return default!;
     }
 
     /// <summary>

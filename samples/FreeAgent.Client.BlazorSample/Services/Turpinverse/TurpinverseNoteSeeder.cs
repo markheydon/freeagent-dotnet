@@ -72,16 +72,39 @@ public sealed class TurpinverseNoteSeeder
         return match;
     }
 
-    private async Task<Project> ResolveProjectByContractReferenceAsync(
+    private static async Task<Project> ResolveProjectByContractReferenceAsync(
         FreeAgentClient client,
         string contractReference,
         CancellationToken cancellationToken)
     {
-        var page = await client.Projects.ListAsync(perPage: 100, cancellationToken: cancellationToken);
-        var match = page.Items.FirstOrDefault(project =>
-            string.Equals(project.ContractReference, contractReference, StringComparison.Ordinal)) ?? throw new InvalidOperationException(
-                $"Project with contract reference '{contractReference}' was not found. Seed projects first.");
-        return match;
+        var projects = await LoadTurpinverseProjectsAsync(client, cancellationToken);
+        if (!projects.TryGetValue(contractReference, out var project))
+        {
+            throw new InvalidOperationException(
+                $"No FreeAgent project exists for contract reference '{contractReference}'. Seed projects first.");
+        }
+
+        return project;
+    }
+
+    private static async Task<Dictionary<string, Project>> LoadTurpinverseProjectsAsync(
+        FreeAgentClient client,
+        CancellationToken cancellationToken)
+    {
+        var projectsByReference = new Dictionary<string, Project>(StringComparer.Ordinal);
+
+        await foreach (var project in client.Projects.ListAutoPagingAsync(cancellationToken: cancellationToken))
+        {
+            if (string.IsNullOrWhiteSpace(project.ContractPoReference)
+                || !project.ContractPoReference.StartsWith(TurpinverseProjectMapper.ContractReferencePrefix, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            projectsByReference[project.ContractPoReference] = project;
+        }
+
+        return projectsByReference;
     }
 
     private static async Task<TurpinverseNoteSeedResult> UpsertContactNoteAsync(
@@ -90,21 +113,22 @@ public sealed class TurpinverseNoteSeeder
         string content,
         CancellationToken cancellationToken)
     {
-        var existing = await client.Notes.ListContactNotesAsync(contactId: contact.ResourceId, cancellationToken: cancellationToken);
+        var contactId = contact.GetResourceId();
+        var existing = await client.Notes.ListContactNotesAsync(contactId: contactId, cancellationToken: cancellationToken);
         var match = existing.FirstOrDefault(note =>
             note.Content?.StartsWith(NoteContentPrefix, StringComparison.Ordinal) == true);
 
         if (match is not null)
         {
             var updated = await client.Notes.UpdateNoteAsync(
-                match.ResourceId,
+                match.GetResourceId(),
                 UpdateNoteRequest.Create(content),
                 cancellationToken);
             return new TurpinverseNoteSeedResult(updated, NoteSeedAction.Updated);
         }
 
         var created = await client.Notes.CreateContactNoteAsync(
-            contact.ResourceId,
+            contactId,
             CreateContactNoteRequest.Create(content),
             cancellationToken);
         return new TurpinverseNoteSeedResult(created, NoteSeedAction.Created);
@@ -116,21 +140,22 @@ public sealed class TurpinverseNoteSeeder
         string content,
         CancellationToken cancellationToken)
     {
-        var existing = await client.Notes.ListProjectNotesAsync(projectId: project.ResourceId, cancellationToken: cancellationToken);
+        var projectId = project.GetResourceId();
+        var existing = await client.Notes.ListProjectNotesAsync(projectId: projectId, cancellationToken: cancellationToken);
         var match = existing.FirstOrDefault(note =>
             note.Content?.StartsWith(NoteContentPrefix, StringComparison.Ordinal) == true);
 
         if (match is not null)
         {
             var updated = await client.Notes.UpdateNoteAsync(
-                match.ResourceId,
+                match.GetResourceId(),
                 UpdateNoteRequest.Create(content),
                 cancellationToken);
             return new TurpinverseNoteSeedResult(updated, NoteSeedAction.Updated);
         }
 
         var created = await client.Notes.CreateProjectNoteAsync(
-            project.ResourceId,
+            projectId,
             CreateProjectNoteRequest.Create(content),
             cancellationToken);
         return new TurpinverseNoteSeedResult(created, NoteSeedAction.Created);
