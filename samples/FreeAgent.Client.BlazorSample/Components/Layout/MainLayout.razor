@@ -118,6 +118,15 @@
                 </MudNavLink>
             </MudNavGroup>
 
+            <MudNavGroup Title="Invoices" Icon="@Icons.Material.Filled.ReceiptLong" Expanded="@IsInvoicesRoute">
+                <MudNavLink Href="/invoices" Icon="@Icons.Material.Filled.AllInclusive">
+                    Invoices list
+                </MudNavLink>
+                <MudNavLink Href="/invoices/detail" Icon="@Icons.Material.Filled.RequestQuote">
+                    Invoice CRUD
+                </MudNavLink>
+            </MudNavGroup>
+
             <MudNavGroup Title="Projects and time" Icon="@Icons.Material.Filled.Work" Expanded="@IsProjectsRoute">
                 <MudNavLink Href="/projects" Icon="@Icons.Material.Filled.AllInclusive">
                     Projects list
@@ -239,6 +248,10 @@
     private bool IsCategoriesRoute =>
         CurrentPath.Equals("categories", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("categories/", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsInvoicesRoute =>
+        CurrentPath.Equals("invoices", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("invoices/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsProjectsRoute =>
         CurrentPath.Equals("projects", StringComparison.OrdinalIgnoreCase)

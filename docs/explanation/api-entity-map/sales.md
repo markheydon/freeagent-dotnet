@@ -59,7 +59,7 @@ Invoice items and credit note items are nested on their parent resource pages (n
 
 | Resource | Official docs | SDK |
 |----------|---------------|-----|
-| Invoices | [Invoices](https://dev.freeagent.com/docs/invoices) | Not yet |
+| Invoices | [Invoices](https://dev.freeagent.com/docs/invoices) | `client.Invoices` |
 | Estimates | [Estimates](https://dev.freeagent.com/docs/estimates) | Not yet |
 | Recurring invoices | [Recurring invoices](https://dev.freeagent.com/docs/recurring_invoices) | Not yet |
 | Credit notes | [Credit notes](https://dev.freeagent.com/docs/credit_notes) | Not yet |
@@ -129,4 +129,17 @@ Resources in other clusters that point **to** invoices:
 
 ## SDK sequencing note
 
-**Invoices** need only [Contacts](foundations.md) on create. [Categories](foundations.md) is already implemented for line-item `category` URIs. Optionally add [Projects](projects-and-time.md) and [Bank accounts](banking.md) before or in parallel. Credit notes and reconciliations logically follow invoices.
+**Invoices** need only [Contacts](foundations.md) on create. [Categories](foundations.md) and [Projects](projects-and-time.md) are implemented for optional line-item `category` URIs and invoice `project` links. [Bank accounts](banking.md) remain optional until the Banking cluster is implemented (`BankAccountReference` supports remittance URIs on writes). Credit notes and reconciliations logically follow invoices.
+
+## Sales cluster SDK patterns
+
+Invoices establishes patterns that sibling Sales stories should reuse:
+
+| Pattern | SDK surface | Sibling resources |
+|---------|-------------|-------------------|
+| Status transitions | `Mark*Async` methods calling `PUT .../transitions/{action}` | Estimates, credit notes |
+| Nested line items | Add/update/delete via parent `Update*Async` payload (`id`, `_destroy`) | Estimates, credit notes |
+| PDF download | `Get*PdfAsync` decoding `{ pdf: { content } }` base64 wrapper | Estimates |
+| Email action | `Send*EmailAsync` with typed email request | Estimates |
+| Company default text | `Get/Update/DeleteDefaultAdditionalTextAsync` under resource path | Estimates (if documented) |
+| Linked references | `ContactReference`, `ProjectReference`, `CategoryReference`, `BankAccountReference` | All Sales documents |

@@ -20,6 +20,7 @@ For how resources relate to each other and a suggested implementation order, see
 | [Categories](categories.md) | `client.Categories` | [Categories](https://dev.freeagent.com/docs/categories) |
 | [Users](users.md) | `client.Users` | [Users](https://dev.freeagent.com/docs/users) |
 | [Projects](projects.md) | `client.Projects` | [Projects](https://dev.freeagent.com/docs/projects) |
+| [Invoices](invoices.md) | `client.Invoices` | [Invoices](https://dev.freeagent.com/docs/invoices) |
 | [Tasks](tasks.md) | `client.Tasks` | [Tasks](https://dev.freeagent.com/docs/tasks) |
 | [Timeslips](timeslips.md) | `client.Timeslips` | [Timeslips](https://dev.freeagent.com/docs/timeslips) |
 | [Notes](notes.md) | `client.Notes` | [Notes](https://dev.freeagent.com/docs/notes) |

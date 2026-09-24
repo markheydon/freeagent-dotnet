@@ -1,0 +1,553 @@
+@page "/invoices/detail"
+@using FreeAgent.Client.Models.Invoices
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services
+@using FreeAgent.Client.BlazorSample.Services.Turpinverse
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject TurpinverseInvoiceSeeder TurpinverseInvoiceSeeder
+@inject NavigationManager NavigationManager
+
+<PageTitle>Invoice detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Invoices endpoint"
+                         Title="Get, create, update, delete, and transition invoices"
+                         CallUnderTest="InvoiceService.GetInvoiceAsync / CreateInvoiceAsync / UpdateInvoiceAsync / DeleteInvoiceAsync / MarkInvoiceAsSentAsync / MarkInvoiceAsDraftAsync / MarkInvoiceAsCancelledAsync / DuplicateInvoiceAsync / SendInvoiceEmailAsync"
+                         Description="Exercises single-invoice CRUD, status transitions, duplication, and email sending. Shows wire-to-model diagnostics after each mutation."
+                         EndpointPath="/v2/invoices/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/invoices" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick an invoice ID from the <MudLink Href="/invoices">invoices list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Seed Turpinverse canon invoices after seeding contacts and projects.
+                        Each Turpinverse seed upserts on <code>reference</code> values prefixed with <code>turpinverse:</code>.
+                    </MudText>
+                    <MudNumericField @bind-Value="_invoiceId" Label="Invoice ID" Min="1" />
+                    <MudNumericField @bind-Value="_contactId"
+                                     Label="Billing contact ID (create only)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetInvoiceAsync">Get invoice</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateHighwayCommissionDraftAsync">Create Highway Commission draft</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateAllTurpinverseInvoicesAsync">Create all Turpinverse invoices</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _contactId is null or < 1"
+                                   OnClick="CreateProbeInvoiceAsync">Create probe invoice</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="UpdateInvoiceAsync">Update comments</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="DeleteInvoiceAsync">Delete invoice</MudButton>
+                    </MudStack>
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="MarkAsSentAsync">Mark as sent</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="MarkAsDraftAsync">Mark as draft</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="MarkAsCancelledAsync">Mark as cancelled</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="DuplicateInvoiceAsync">Duplicate invoice</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _invoiceId is null or < 1"
+                                   OnClick="SendEmailWithTemplateAsync">Send email (template)</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _invoice is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Invoice model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_invoice.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_invoice.Status?.ToString())</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Reference</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_invoice.Reference)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Contact</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_invoice.ContactName ?? _invoice.Contact?.OrganisationName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Dated on</MudText>
+                                        <MudText Typo="Typo.subtitle1">@FormatDate(_invoice.DatedOn)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Total value</MudText>
+                                        <MudText Typo="Typo.subtitle1">@FormatAmount(_invoice.TotalValue)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load invoice diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? InvoiceIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private Invoice? _invoice;
+    private ModelProbeSnapshot? _probe;
+    private long? _invoiceId;
+    private long? _contactId;
+
+    protected override void OnParametersSet()
+    {
+        if (InvoiceIdFromQuery is > 0 && _invoiceId != InvoiceIdFromQuery)
+        {
+            _invoiceId = InvoiceIdFromQuery;
+            _operationMessage = $"Invoice ID {_invoiceId} loaded from URL. Press Get invoice to fetch diagnostics.";
+        }
+    }
+
+    private async Task GetInvoiceAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            _error = "Enter an invoice ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _invoice = await client.Invoices.GetInvoiceAsync(
+                    _invoiceId.Value,
+                    new InvoiceGetOptions { IncludeContact = true, IncludeProject = true });
+                _operationMessage = $"Loaded invoice {_invoiceId.Value}: {ValueOrFallback(_invoice.Reference)}";
+                return $"invoices/{_invoiceId}";
+            },
+            envelopeProperty: "invoice");
+    }
+
+    private async Task CreateHighwayCommissionDraftAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await TurpinverseInvoiceSeeder.CreateHighwayCommissionDraftAsync(client);
+                _invoice = result.Invoice;
+                if (_invoice.TryGetResourceId(out var assignedId))
+                {
+                    _invoiceId = assignedId;
+                    _operationMessage = result.Action == InvoiceSeedAction.Updated
+                        ? $"Updated Highway Commission draft (invoice {assignedId}) from current Turpinverse canon."
+                        : $"Created Highway Commission draft as invoice {assignedId}.";
+                    return $"invoices/{assignedId}";
+                }
+
+                _invoiceId = null;
+                _operationMessage = "Created Highway Commission draft but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "invoice");
+    }
+
+    private async Task CreateAllTurpinverseInvoicesAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var result = await TurpinverseInvoiceSeeder.CreateAllInvoicesAsync(client);
+            var lastTouched = result.Updated.Count > 0
+                ? result.Updated[^1]
+                : result.Created.Count > 0
+                    ? result.Created[^1]
+                    : null;
+
+            if (lastTouched is not null)
+            {
+                _invoice = lastTouched;
+
+                if (_invoice.TryGetResourceId(out var assignedId))
+                {
+                    _invoiceId = assignedId;
+
+                    _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                        token.AccessToken,
+                        TokenStore.ConnectedEnvironment,
+                        $"invoices/{assignedId}");
+
+                    _probe = ModelWireDiagnostics.Build(_invoice, _wireApiResponse, "invoice");
+                }
+                else
+                {
+                    _invoiceId = null;
+                }
+            }
+            else
+            {
+                _invoice = null;
+                _invoiceId = null;
+            }
+
+            var summaryParts = new List<string>();
+            if (result.Created.Count > 0)
+            {
+                summaryParts.Add($"created {result.Created.Count}");
+            }
+
+            if (result.Updated.Count > 0)
+            {
+                summaryParts.Add($"updated {result.Updated.Count}");
+            }
+
+            if (result.Failures.Count > 0)
+            {
+                summaryParts.Add($"failed {result.Failures.Count}");
+            }
+
+            _operationMessage = summaryParts.Count == 0
+                ? "No Turpinverse invoices were created or updated."
+                : $"Turpinverse invoice sync complete: {string.Join(", ", summaryParts)}.";
+
+            if (result.Failures.Count > 0)
+            {
+                var failureSummary = string.Join(
+                    "; ",
+                    result.Failures.Select(static failure => $"{failure.InvoiceNumber}: {failure.Message}"));
+                _error = $"Some invoices could not be seeded: {failureSummary}";
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CreateProbeInvoiceAsync()
+    {
+        if (_contactId is null or < 1)
+        {
+            _error = "Enter a billing contact ID before creating a probe invoice.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _invoice = await client.Invoices.CreateInvoiceAsync(new Invoice
+                {
+                    BillingContact = client.Urls.Contact(_contactId.Value),
+                    DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+                    PaymentTermsInDays = 14,
+                    Currency = CurrencyCode.GBP,
+                    Reference = $"probe-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+                    InvoiceItems =
+                    [
+                        new InvoiceItem
+                        {
+                            Description = "SDK probe line item",
+                            ItemType = InvoiceItemType.Hours,
+                            Quantity = 1,
+                            Price = 100m,
+                            SalesTaxRate = 20m,
+                            SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+                        }
+                    ]
+                });
+
+                if (_invoice.TryGetResourceId(out var assignedId))
+                {
+                    _invoiceId = assignedId;
+                    _operationMessage = $"Created probe invoice {assignedId}.";
+                    return $"invoices/{assignedId}";
+                }
+
+                _invoiceId = null;
+                _operationMessage = "Created probe invoice but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "invoice");
+    }
+
+    private async Task UpdateInvoiceAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _invoice ?? await client.Invoices.GetInvoiceAsync(_invoiceId.Value);
+                existing.Comments = $"{existing.Comments} (updated)".Trim();
+                _invoice = await client.Invoices.UpdateInvoiceAsync(_invoiceId.Value, existing);
+                _operationMessage = $"Updated invoice {_invoiceId.Value}.";
+                return $"invoices/{_invoiceId}";
+            },
+            envelopeProperty: "invoice");
+    }
+
+    private async Task DeleteInvoiceAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _invoiceId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Invoices.DeleteInvoiceAsync(deletedId);
+                _invoice = null;
+                _probe = null;
+                _operationMessage = $"Deleted invoice {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task MarkAsSentAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _invoice = await client.Invoices.MarkInvoiceAsSentAsync(_invoiceId.Value);
+                _operationMessage = $"Marked invoice {_invoiceId.Value} as sent.";
+                return $"invoices/{_invoiceId}";
+            },
+            envelopeProperty: "invoice");
+    }
+
+    private async Task MarkAsDraftAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _invoice = await client.Invoices.MarkInvoiceAsDraftAsync(_invoiceId.Value);
+                _operationMessage = $"Marked invoice {_invoiceId.Value} as draft.";
+                return $"invoices/{_invoiceId}";
+            },
+            envelopeProperty: "invoice");
+    }
+
+    private async Task MarkAsCancelledAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _invoice = await client.Invoices.MarkInvoiceAsCancelledAsync(_invoiceId.Value);
+                _operationMessage = $"Marked invoice {_invoiceId.Value} as cancelled.";
+                return $"invoices/{_invoiceId}";
+            },
+            envelopeProperty: "invoice");
+    }
+
+    private async Task DuplicateInvoiceAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _invoice = await client.Invoices.DuplicateInvoiceAsync(_invoiceId.Value);
+                if (_invoice.TryGetResourceId(out var duplicatedId))
+                {
+                    _invoiceId = duplicatedId;
+                    _operationMessage = $"Duplicated invoice to new ID {duplicatedId}.";
+                    return $"invoices/{duplicatedId}";
+                }
+
+                _operationMessage = "Duplicated invoice but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "invoice");
+    }
+
+    private async Task SendEmailWithTemplateAsync()
+    {
+        if (_invoiceId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Invoices.SendInvoiceEmailAsync(
+                    _invoiceId.Value,
+                    new SendInvoiceEmailRequest
+                    {
+                        Email = new InvoiceEmailDetails { UseTemplate = true }
+                    });
+
+                _invoice = await client.Invoices.GetInvoiceAsync(_invoiceId.Value);
+                _operationMessage = $"Sent invoice {_invoiceId.Value} using the default email template.";
+                return $"invoices/{_invoiceId}";
+            },
+            envelopeProperty: "invoice");
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgentClient, Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _invoice is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_invoice, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+
+    private static string FormatDate(DateOnly? value) =>
+        value is null ? "Not returned" : value.Value.ToString("yyyy-MM-dd");
+
+    private static string FormatAmount(decimal? value) =>
+        value is null ? "Not returned" : value.Value.ToString("0.00");
+}

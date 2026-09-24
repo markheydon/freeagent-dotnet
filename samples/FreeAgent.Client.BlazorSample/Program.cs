@@ -30,6 +30,8 @@ builder.Services.AddSingleton<TurpinverseContactCatalog>();
 builder.Services.AddSingleton<TurpinverseContactSeeder>();
 builder.Services.AddSingleton<TurpinverseProjectCatalog>();
 builder.Services.AddSingleton<TurpinverseProjectSeeder>();
+builder.Services.AddSingleton<TurpinverseInvoiceCatalog>();
+builder.Services.AddSingleton<TurpinverseInvoiceSeeder>();
 builder.Services.AddSingleton<TurpinverseTaskSeeder>();
 builder.Services.AddSingleton<TurpinverseTimeslipSeeder>();
 builder.Services.AddSingleton<TurpinverseNoteSeeder>();
