@@ -27,6 +27,7 @@ public class FreeAgentClientTests
         Assert.NotNull(client.Categories);
         Assert.NotNull(client.Users);
         Assert.NotNull(client.EmailAddresses);
+        Assert.NotNull(client.Notes);
     }
 
     [Fact]
@@ -47,6 +48,7 @@ public class FreeAgentClientTests
         Assert.NotNull(client.Categories);
         Assert.NotNull(client.Users);
         Assert.NotNull(client.EmailAddresses);
+        Assert.NotNull(client.Notes);
     }
 
     [Fact]

@@ -1,0 +1,382 @@
+@page "/notes/detail"
+@using FreeAgent.Client.Models.Notes
+@using FreeAgent.Client.BlazorSample.Services.Turpinverse
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject TurpinverseNoteSeeder TurpinverseNoteSeeder
+@inject NavigationManager NavigationManager
+
+<PageTitle>Note detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Notes endpoint"
+                         Title="Get, create, update, and delete notes"
+                         CallUnderTest="NoteService.GetNoteAsync / CreateContactNoteAsync / CreateProjectNoteAsync / UpdateNoteAsync / DeleteNoteAsync"
+                         Description="Exercises single-note CRUD operations and shows wire-to-model diagnostics."
+                         EndpointPath="/v2/notes/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/notes" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a note ID from the <MudLink Href="/notes">notes list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Create requires a parent contact or project ID (query param on the API).
+                    </MudText>
+                    <MudNumericField @bind-Value="_noteId" Label="Note ID" Min="1" />
+                    <MudSelect T="string"
+                               @bind-Value="_createVariant"
+                               Label="Create variant"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               FullWidth="true">
+                        <MudSelectItem Value="@CreateVariantContact">Contact note</MudSelectItem>
+                        <MudSelectItem Value="@CreateVariantProject">Project note</MudSelectItem>
+                    </MudSelect>
+                    <MudNumericField @bind-Value="_parentId"
+                                     Label="Parent ID (create only)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+                    <MudTextField @bind-Value="_noteContent"
+                                  Label="Note content (create/update)"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  Lines="3"
+                                  FullWidth="true" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetNoteAsync">Get note</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="SeedTurpinEnterprisesContactNoteAsync">Seed Turpin Enterprises contact note</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="SeedBlackBessProjectNoteAsync">Seed Black Bess project note</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _parentId is null or < 1"
+                                   OnClick="CreateProbeNoteAsync">Create probe note</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _noteId is null or < 1"
+                                   OnClick="UpdateNoteAsync">Update note</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _noteId is null or < 1"
+                                   OnClick="DeleteNoteAsync">Delete note</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _note is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Note model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_note.ResourceId</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Content</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_note.Content)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Contact ID</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_note.ContactId?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Project ID</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_note.ProjectId?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Author</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_note.Author)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load note diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private const string CreateVariantContact = "contact";
+    private const string CreateVariantProject = "project";
+
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? NoteIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private Note? _note;
+    private ModelProbeSnapshot? _probe;
+    private long? _noteId;
+    private long? _parentId;
+    private string _createVariant = CreateVariantContact;
+    private string _noteContent = "SDK probe note";
+
+    protected override void OnParametersSet()
+    {
+        if (NoteIdFromQuery is > 0 && _noteId != NoteIdFromQuery)
+        {
+            _noteId = NoteIdFromQuery;
+            _operationMessage = $"Note ID {_noteId} loaded from URL. Press Get note to fetch diagnostics.";
+        }
+    }
+
+    private async System.Threading.Tasks.Task GetNoteAsync()
+    {
+        if (_noteId is null or < 1)
+        {
+            _error = "Enter a note ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _note = await client.Notes.GetNoteAsync(
+                    _noteId.Value,
+                    new NoteGetOptions
+                    {
+                        IncludeParentContact = true,
+                        IncludeParentProject = true
+                    });
+                _operationMessage = $"Loaded note {_noteId.Value}.";
+                return $"notes/{_noteId}";
+            },
+            envelopeProperty: "note");
+    }
+
+    private async System.Threading.Tasks.Task SeedTurpinEnterprisesContactNoteAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await TurpinverseNoteSeeder.UpsertTurpinEnterprisesContactNoteAsync(client);
+                _note = result.Note;
+                if (_note.TryGetResourceId(out var assignedId))
+                {
+                    _noteId = assignedId;
+                    _parentId = _note.ContactId;
+                    _operationMessage = result.Action == NoteSeedAction.Updated
+                        ? $"Updated Turpin Enterprises contact note (note {assignedId})."
+                        : $"Created Turpin Enterprises contact note as note {assignedId}.";
+                    return $"notes/{assignedId}";
+                }
+
+                _noteId = null;
+                _operationMessage = "Seeded contact note but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "note");
+    }
+
+    private async System.Threading.Tasks.Task SeedBlackBessProjectNoteAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await TurpinverseNoteSeeder.UpsertBlackBessProjectNoteAsync(client);
+                _note = result.Note;
+                if (_note.TryGetResourceId(out var assignedId))
+                {
+                    _noteId = assignedId;
+                    _parentId = _note.ProjectId;
+                    _operationMessage = result.Action == NoteSeedAction.Updated
+                        ? $"Updated Black Bess project note (note {assignedId})."
+                        : $"Created Black Bess project note as note {assignedId}.";
+                    return $"notes/{assignedId}";
+                }
+
+                _noteId = null;
+                _operationMessage = "Seeded project note but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "note");
+    }
+
+    private async System.Threading.Tasks.Task CreateProbeNoteAsync()
+    {
+        if (_parentId is null or < 1)
+        {
+            _error = "Enter a parent ID before creating a probe note.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_noteContent))
+        {
+            _error = "Enter note content.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _note = _createVariant == CreateVariantContact
+                    ? await client.Notes.CreateContactNoteAsync(
+                        _parentId.Value,
+                        CreateContactNoteRequest.Create(_noteContent))
+                    : await client.Notes.CreateProjectNoteAsync(
+                        _parentId.Value,
+                        CreateProjectNoteRequest.Create(_noteContent));
+
+                if (_note.TryGetResourceId(out var assignedId))
+                {
+                    _noteId = assignedId;
+                    _operationMessage = $"Created {_createVariant} note {assignedId}.";
+                    return $"notes/{assignedId}";
+                }
+
+                _noteId = null;
+                _operationMessage = "Created probe note but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "note");
+    }
+
+    private async System.Threading.Tasks.Task UpdateNoteAsync()
+    {
+        if (_noteId is null or < 1)
+        {
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(_noteContent))
+        {
+            _error = "Enter note content.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _note = await client.Notes.UpdateNoteAsync(
+                    _noteId.Value,
+                    UpdateNoteRequest.Create($"{_noteContent} (updated)"));
+                _operationMessage = $"Updated note {_noteId.Value}.";
+                return $"notes/{_noteId}";
+            },
+            envelopeProperty: "note");
+    }
+
+    private async System.Threading.Tasks.Task DeleteNoteAsync()
+    {
+        if (_noteId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _noteId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Notes.DeleteNoteAsync(deletedId);
+                _note = null;
+                _probe = null;
+                _operationMessage = $"Deleted note {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async System.Threading.Tasks.Task RunOperationAsync(
+        Func<FreeAgentClient, System.Threading.Tasks.Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _note is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_note, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

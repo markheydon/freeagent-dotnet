@@ -55,4 +55,11 @@ public sealed class FreeAgentResourceUrls
     /// <param name="invoiceId">Invoice identifier.</param>
     /// <returns>Invoice reference.</returns>
     public InvoiceReference Invoice(long invoiceId) => InvoiceReference.ForEnvironment(_environment, invoiceId);
+
+    /// <summary>
+    /// Creates a note resource reference.
+    /// </summary>
+    /// <param name="noteId">Note identifier.</param>
+    /// <returns>Note reference.</returns>
+    public NoteReference Note(long noteId) => NoteReference.ForEnvironment(_environment, noteId);
 }
