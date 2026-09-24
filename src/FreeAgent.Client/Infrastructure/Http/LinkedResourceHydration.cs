@@ -1,6 +1,8 @@
 using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Tasks;
+using FreeAgent.Client.Models.Timeslips;
+using FreeAgent.Client.Models.Users;
 using TaskModel = FreeAgent.Client.Models.Tasks.Task;
 
 namespace FreeAgent.Client.Infrastructure.Http;
@@ -56,5 +58,77 @@ internal static class LinkedResourceHydration
         }
 
         task.AttachProject(response.Project);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateTaskAsync(
+        Timeslip timeslip,
+        IFreeAgentRequestClient requestClient,
+        bool includeTask,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(timeslip);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeTask || timeslip.Task is not null || timeslip.TaskId is not long taskId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<TaskResponse>($"tasks/{taskId}", cancellationToken);
+
+        if (response.Task is null)
+        {
+            throw new FreeAgentApiException("Task data missing from API response");
+        }
+
+        timeslip.AttachTask(response.Task);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateProjectAsync(
+        Timeslip timeslip,
+        IFreeAgentRequestClient requestClient,
+        bool includeProject,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(timeslip);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeProject || timeslip.Project is not null || timeslip.ProjectId is not long projectId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<ProjectResponse>($"projects/{projectId}", cancellationToken);
+
+        if (response.Project is null)
+        {
+            throw new FreeAgentApiException("Project data missing from API response");
+        }
+
+        timeslip.AttachProject(response.Project);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateUserAsync(
+        Timeslip timeslip,
+        IFreeAgentRequestClient requestClient,
+        bool includeUser,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(timeslip);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeUser || timeslip.User is not null || timeslip.UserId is not long userId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<UserResponse>($"users/{userId}", cancellationToken);
+
+        if (response.User is null)
+        {
+            throw new FreeAgentApiException("User data missing from API response");
+        }
+
+        timeslip.AttachUser(response.User);
     }
 }

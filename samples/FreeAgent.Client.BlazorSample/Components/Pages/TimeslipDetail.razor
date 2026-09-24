@@ -1,0 +1,370 @@
+@page "/timeslips/detail"
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.Models.Timeslips
+@using FreeAgent.Client.BlazorSample.Services.Turpinverse
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject TurpinverseTimeslipSeeder TurpinverseTimeslipSeeder
+@inject NavigationManager NavigationManager
+
+<PageTitle>Timeslip detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Timeslips endpoint"
+                         Title="Get, create, update, delete, and timer timeslips"
+                         CallUnderTest="TimeslipService CRUD and timer methods"
+                         Description="Exercises single-timeslip operations and shows wire-to-model diagnostics."
+                         EndpointPath="/v2/timeslips/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/timeslips" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a timeslip ID from the <MudLink Href="/timeslips">timeslips list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Seed a Turpinverse probe timeslip after seeding tasks.
+                    </MudText>
+                    <MudNumericField @bind-Value="_timeslipId" Label="Timeslip ID" Min="1" />
+                    <MudSelect T="string"
+                               @bind-Value="_createVariant"
+                               Label="Create variant"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               FullWidth="true">
+                        <MudSelectItem Value="@CreateVariantSingle">CreateTimeslipAsync (single)</MudSelectItem>
+                        <MudSelectItem Value="@CreateVariantBatch">CreateTimeslipsAsync (batch)</MudSelectItem>
+                    </MudSelect>
+                    <MudNumericField @bind-Value="_taskId" Label="Task ID (create)" Min="1" />
+                    <MudNumericField @bind-Value="_projectId" Label="Project ID (create)" Min="1" />
+                    <MudNumericField @bind-Value="_userId" Label="User ID (create)" Min="1" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetTimeslipAsync">Get timeslip</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="SeedBlackBessProbeTimeslipAsync">Seed Black Bess probe timeslip</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading"
+                                   OnClick="CreateProbeTimeslipAsync">Create probe timeslip</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _timeslipId is null or < 1"
+                                   OnClick="UpdateTimeslipAsync">Update hours</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading || _timeslipId is null or < 1"
+                                   OnClick="StartTimerAsync">Start timer</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading || _timeslipId is null or < 1"
+                                   OnClick="StopTimerAsync">Stop timer</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _timeslipId is null or < 1"
+                                   OnClick="DeleteTimeslipAsync">Delete timeslip</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _timeslip is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Timeslip model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_timeslip.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_timeslip.DatedOn?.ToString("yyyy-MM-dd"))</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Hours</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_timeslip.Hours?.ToString())</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Task ID</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_timeslip.TaskId?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private const string CreateVariantSingle = "single";
+    private const string CreateVariantBatch = "batch";
+
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? TimeslipIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private Timeslip? _timeslip;
+    private ModelProbeSnapshot? _probe;
+    private long? _timeslipId;
+    private long? _taskId;
+    private long? _projectId;
+    private long? _userId;
+    private string _createVariant = CreateVariantSingle;
+
+    protected override void OnParametersSet()
+    {
+        if (TimeslipIdFromQuery is > 0 && _timeslipId != TimeslipIdFromQuery)
+        {
+            _timeslipId = TimeslipIdFromQuery;
+            _operationMessage = $"Timeslip ID {_timeslipId} loaded from URL. Press Get timeslip to fetch diagnostics.";
+        }
+    }
+
+    private async System.Threading.Tasks.Task GetTimeslipAsync()
+    {
+        if (_timeslipId is null or < 1)
+        {
+            _error = "Enter a timeslip ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _timeslip = await client.Timeslips.GetTimeslipAsync(
+                    _timeslipId.Value,
+                    new TimeslipGetOptions
+                    {
+                        IncludeTask = true,
+                        IncludeProject = true,
+                        IncludeUser = true
+                    });
+                _operationMessage = $"Loaded timeslip {_timeslipId.Value}.";
+                return $"timeslips/{_timeslipId}";
+            },
+            envelopeProperty: "timeslip");
+    }
+
+    private async System.Threading.Tasks.Task SeedBlackBessProbeTimeslipAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await TurpinverseTimeslipSeeder.CreateBlackBessProbeTimeslipAsync(client);
+                _timeslip = result.Timeslip;
+                if (_timeslip.TryGetResourceId(out var assignedId))
+                {
+                    _timeslipId = assignedId;
+                    _taskId = _timeslip.TaskId;
+                    _projectId = _timeslip.ProjectId;
+                    _userId = _timeslip.UserId;
+                    _operationMessage = result.Action == TimeslipSeedAction.Updated
+                        ? $"Updated Black Bess probe timeslip (timeslip {assignedId})."
+                        : $"Created Black Bess probe timeslip as timeslip {assignedId}.";
+                    return $"timeslips/{assignedId}";
+                }
+
+                return null;
+            },
+            envelopeProperty: "timeslip");
+    }
+
+    private async System.Threading.Tasks.Task CreateProbeTimeslipAsync()
+    {
+        if (_taskId is null or < 1 || _projectId is null or < 1 || _userId is null or < 1)
+        {
+            _error = "Enter task, project, and user IDs before creating a probe timeslip.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var probe = new Timeslip
+                {
+                    LinkedTask = client.Urls.Task(_taskId.Value),
+                    LinkedProject = client.Urls.Project(_projectId.Value),
+                    LinkedUser = client.Urls.User(_userId.Value),
+                    DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+                    Hours = 0.5m,
+                    Comment = $"SDK probe timeslip {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}"
+                };
+
+                if (_createVariant == CreateVariantBatch)
+                {
+                    var created = await client.Timeslips.CreateTimeslipsAsync([probe]);
+                    _timeslip = created[0];
+                    _operationMessage = $"Batch created {created.Count} timeslip(s).";
+                }
+                else
+                {
+                    _timeslip = await client.Timeslips.CreateTimeslipAsync(probe);
+                    _operationMessage = "Created probe timeslip.";
+                }
+
+                if (_timeslip.TryGetResourceId(out var assignedId))
+                {
+                    _timeslipId = assignedId;
+                    return $"timeslips/{assignedId}";
+                }
+
+                return null;
+            },
+            envelopeProperty: "timeslip");
+    }
+
+    private async System.Threading.Tasks.Task UpdateTimeslipAsync()
+    {
+        if (_timeslipId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _timeslip ?? await client.Timeslips.GetTimeslipAsync(_timeslipId.Value);
+                existing.Hours = (existing.Hours ?? 0m) + 0.25m;
+                _timeslip = await client.Timeslips.UpdateTimeslipAsync(_timeslipId.Value, existing);
+                _operationMessage = $"Updated timeslip {_timeslipId.Value} hours to {_timeslip.Hours}.";
+                return $"timeslips/{_timeslipId}";
+            },
+            envelopeProperty: "timeslip");
+    }
+
+    private async System.Threading.Tasks.Task StartTimerAsync()
+    {
+        if (_timeslipId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _timeslip = await client.Timeslips.StartTimerAsync(_timeslipId.Value);
+                _operationMessage = $"Started timer on timeslip {_timeslipId.Value}.";
+                return $"timeslips/{_timeslipId}";
+            },
+            envelopeProperty: "timeslip");
+    }
+
+    private async System.Threading.Tasks.Task StopTimerAsync()
+    {
+        if (_timeslipId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _timeslip = await client.Timeslips.StopTimerAsync(_timeslipId.Value);
+                _operationMessage = $"Stopped timer on timeslip {_timeslipId.Value}.";
+                return $"timeslips/{_timeslipId}";
+            },
+            envelopeProperty: "timeslip");
+    }
+
+    private async System.Threading.Tasks.Task DeleteTimeslipAsync()
+    {
+        if (_timeslipId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _timeslipId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Timeslips.DeleteTimeslipAsync(deletedId);
+                _timeslip = null;
+                _probe = null;
+                _operationMessage = $"Deleted timeslip {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async System.Threading.Tasks.Task RunOperationAsync(
+        Func<FreeAgentClient, System.Threading.Tasks.Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _timeslip is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_timeslip, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

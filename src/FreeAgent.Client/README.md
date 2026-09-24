@@ -10,7 +10,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - Rate limiting and bounded retries for transient failures.
 - Typed exception model (`FreeAgentApiException`, `FreeAgentRateLimitException`, …).
 - Pagination (single-page and auto-pagination).
-- Company, Contacts, Categories, Users, Projects, Tasks, and Email addresses API support.
+- Company, Contacts, Categories, Users, Projects, Tasks, Timeslips, and Email addresses API support.
 - `CurrencyCode` enum for documented ISO 4217 codes (reference type; not a REST resource).
 - Targets .NET 8.0 and .NET 10.0.
 - Fully async/await with XML documentation.
@@ -72,6 +72,18 @@ await client.Tasks.CreateTaskAsync(123, new Task
     Name = "Planning",
     IsBillable = true,
     Status = TaskStatus.Active
+});
+
+// Log time against a task
+using FreeAgent.Client.Models.Timeslips;
+
+await client.Timeslips.CreateTimeslipAsync(new Timeslip
+{
+    LinkedTask = client.Urls.Task(456),
+    LinkedProject = client.Urls.Project(123),
+    LinkedUser = client.Urls.User(1),
+    DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+    Hours = 1.5m
 });
 ```
 

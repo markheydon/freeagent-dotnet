@@ -34,4 +34,9 @@ internal interface IFreeAgentRequestClient
     /// Sends a DELETE request.
     /// </summary>
     Task DeleteAsync(string endpoint, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends a DELETE request and deserializes the response body.
+    /// </summary>
+    Task<T> DeleteAsync<T>(string endpoint, CancellationToken cancellationToken = default);
 }

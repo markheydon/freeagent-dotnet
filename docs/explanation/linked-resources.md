@@ -50,6 +50,33 @@ var task = await client.Tasks.GetTaskAsync(
 var projectName = task.Project!.Name;
 ```
 
+Timeslips link to task, project, and user resources:
+
+| Property | When it is set |
+|----------|----------------|
+| `TaskId`, `ProjectId`, `UserId` | Always when the API returns URI links |
+| `Task`, `Project`, `User` | When the API returns nested objects **or** when you request hydration on single GET |
+
+```csharp
+using FreeAgent.Client.Models.Timeslips;
+
+var timeslip = await client.Timeslips.CreateTimeslipAsync(new Timeslip
+{
+    LinkedTask = client.Urls.Task(1),
+    LinkedProject = client.Urls.Project(1),
+    LinkedUser = client.Urls.User(1),
+    DatedOn = new DateOnly(2024, 3, 18),
+    Hours = 2.0m
+});
+
+var hydrated = await client.Timeslips.GetTimeslipAsync(
+    timeslip.ResourceId,
+    new TimeslipGetOptions { IncludeTask = true });
+var taskName = hydrated.Task!.Name;
+```
+
+`BilledOnInvoiceId` is read-only and is populated when time has been invoiced.
+
 ## Write properties
 
 Assign typed references - never raw URI strings:

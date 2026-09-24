@@ -304,6 +304,23 @@ internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
             cancellationToken);
     }
 
+    /// <summary>
+    /// Sends a DELETE request to the API and deserializes the response body.
+    /// </summary>
+    /// <typeparam name="T">Response type</typeparam>
+    /// <param name="endpoint">API endpoint (relative to base URL)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Deserialized response</returns>
+    public async Task<T> DeleteAsync<T>(string endpoint, CancellationToken cancellationToken = default)
+    {
+        return await ExecuteWithRetryAsync(
+            HttpMethod.Delete,
+            endpoint,
+            createRequest: () => CreateRequestMessage(HttpMethod.Delete, endpoint, contentFactory: null),
+            deserialize: (response, ct) => HandleResponseAsync<T>(response, ct),
+            cancellationToken);
+    }
+
     private async Task<TResult> ExecuteWithRetryAsync<TResult>(
         HttpMethod method,
         string endpoint,
