@@ -69,9 +69,8 @@ Layers describe **dependency pressure**, not a mandatory backlog. A resource in 
 
 | Layer | Resources | Rationale |
 |-------|-----------|-----------|
-| **0 - Done** | Company, Contacts, Categories, OAuth helpers | Company context, contacts, and chart-of-accounts categories are referenced almost everywhere |
-| **1 - Cheap hubs** | Users | Few remaining foundation dependencies; users are required for expenses and timeslips |
-| **2 - Project spine** | Projects, Tasks | Projects require `contact` (done); tasks require `project`; timeslips require `task`, `project`, and `user` |
+| **0 - Done** | Company, Contacts, Categories, Users, Email addresses, OAuth helpers | Company context, contacts, chart-of-accounts categories, and users are referenced across many resources |
+| **2 - Done** | Projects, Tasks, Timeslips, Notes | Client work structure: projects require `contact`; tasks require `project`; timeslips require `task`, `project`, and `user`; notes hang off contacts or projects |
 | **3 - Sales documents** | Invoices, Estimates, Recurring invoices, Credit notes | Invoices require only `contact` on create; `project`, `bank_account`, and item `category` URIs are optional |
 | **4 - Purchases** | Bills, Expenses | Bills require `contact`; expenses require `user` and `category` |
 | **5 - Banking** | Bank accounts, Bank transactions, Bank transaction explanations | Explanations link back to invoices, bills, contacts, projects, users, and stock |
@@ -88,8 +87,8 @@ Resources that are **nice to have nearby** (before or shortly after invoices), d
 |----------|--------------------------|
 | **Categories** | Implemented. Invoice, estimate, and bill line items reference categories |
 | **Bank accounts** | Invoice remittance via `bank_account`; later needed for bank explanations with `paid_invoice` |
-| **Projects** | Optional on invoices; required for tasks and timeslips |
-| **Users** | Not needed for invoices; required for timeslips and expenses |
+| **Projects** | Implemented. Optional on invoices; required for tasks and timeslips |
+| **Users** | Implemented. Not needed for invoices; required for timeslips and expenses |
 
 Implement **after** invoices if you care about end-to-end flows: credit note reconciliations, estimate-to-invoice conversion, timeslip `billed_on_invoice`, expense or bill `rebilled_on_invoice`, and bank explanation `paid_invoice`.
 
