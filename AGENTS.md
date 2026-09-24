@@ -33,30 +33,44 @@ All documentation, comments, and user-facing text in this repository **must use 
 - No business-rule abstraction.
 - Protocol-level OAuth helpers only (authorisation URL, code exchange, token refresh). No UI/browser orchestration or app-level flow management.
 
-## Sample App Sync
+## Sample Sync
 
-The Blazor sample (`samples/FreeAgent.Client.BlazorSample`) must reflect the **current, implemented** state of the SDK - not planned or aspirational endpoints.
+Both sample apps must reflect the **current, implemented** state of the SDK - not planned or aspirational endpoints.
+
+| Sample | Path | Role |
+|--------|------|------|
+| Blazor workbench | `samples/FreeAgent.Client.BlazorSample` | Wire-to-model probe pages for every SDK operation |
+| Console reference | `samples/FreeAgent.Client.ConsoleSample` | Real-world integration patterns (DI, interactive menu, `--run-all` smoke test) |
 
 Framework targeting note:
 
 - The SDK package targets .NET 8.0 and .NET 10.0.
-- The Blazor sample app is intentionally .NET 10.0-only.
+- Both sample apps are intentionally .NET 10.0-only.
 - "Sample sync" means endpoint capability parity, not target framework parity.
 
-Rules:
+Shared rules:
 
-- Every API endpoint implemented in `src/FreeAgent.Client/Services/` must have a corresponding page or component in the sample app that exercises it.
-- When a new service or endpoint is added to the SDK, a matching UI page in the sample app must be added in the same PR.
-- When an endpoint is removed or renamed, the sample app must be updated in the same PR.
-- Do not add sample UI for endpoints that do not yet exist in the SDK.
-- The sample app is the living reference for "what this SDK can do today". Keep it honest.
+- Every API endpoint implemented in `src/FreeAgent.Client/Services/` must be exercised in **both** sample apps, using the pattern appropriate to each app.
+- When a new service or endpoint is added to the SDK, update both samples in the same PR.
+- When an endpoint is removed or renamed, update both samples in the same PR.
+- Do not add sample coverage for endpoints that do not yet exist in the SDK.
+- The samples are the living reference for "what this SDK can do today". Keep them honest.
 
-Probe-page standard (mandatory for new and retrofitted endpoints):
+### Blazor sample (probe pages)
 
+- Add or update page(s) under `samples/FreeAgent.Client.BlazorSample/Components/Pages/`.
+- Update navigation in `samples/FreeAgent.Client.BlazorSample/Components/Layout/MainLayout.razor`.
 - Follow [`docs/contributing/sample-probe-pages.md`](docs/contributing/sample-probe-pages.md).
 - Use **Company** (`/company`), **Contacts** (`/contacts`, `/contacts/detail`), and **Categories** (`/categories`, `/categories/detail` for multi-variant writes) as reference implementations.
 - Reuse `EndpointProbeHeader`, `ModelWireDiagnostics`, `ModelProbeResults`, and `ApiErrorDiagnostics` - do not build one-off mapping UIs.
 - List pages must support per-row wire-to-model inspection; CRUD pages must support deep links, post-mutation wire fetch, and a visible loading progress bar.
+
+### Console sample (example providers)
+
+- Add or update a matching `*Samples.cs` provider class under `samples/FreeAgent.Client.ConsoleSample/Samples/` for each SDK resource area (discovered via `ConsoleSamplesAttribute`).
+- Register read-only examples that exercise the main SDK calls for that resource (list, filtered list, and get detail as appropriate).
+- Update the example catalogue in [`samples/FreeAgent.Client.ConsoleSample/README.md`](samples/FreeAgent.Client.ConsoleSample/README.md).
+- Use existing providers such as `TaskSamples.cs` and `ProjectSamples.cs` as reference implementations.
 
 ## Skills
 

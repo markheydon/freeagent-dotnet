@@ -90,7 +90,11 @@ Add or update tests to cover:
 - Pagination behaviour and cancellation **when the API paginates**
 - **At least one test per documented write variant** - assert URL, envelope, and which fields are included or excluded in the serialised payload
 
-## Step 6 - Sample App Sync
+## Step 6 - Sample Sync
+
+Update **both** sample apps in the same change. See [AGENTS.md](../../AGENTS.md) for the full policy.
+
+### Blazor sample (probe pages)
 
 Follow the probe-page standard documented in [`docs/contributing/sample-probe-pages.md`](../../docs/contributing/sample-probe-pages.md). Use **Company** (single GET), **Contacts** (paginated list + CRUD), and **Categories** (non-paginated list + multi-variant writes) as reference implementations.
 
@@ -107,6 +111,12 @@ Follow the probe-page standard documented in [`docs/contributing/sample-probe-pa
 7. When the SDK exposes **multiple write variants** for the same resource, the sample must be able to invoke each public write method - a variant selector on one CRUD page is sufficient; exercising only one variant (for example income-only) is not.
 8. Add seed fixtures when demo data helps field coverage (narrative canon and/or a full-detail probe contact); upsert by a stable natural key when re-running should refresh existing records.
 9. Only model wire fields that appear in the official FreeAgent API docs.
+
+### Console sample (example providers)
+
+1. Add or update `Samples/<Resource>Samples.cs` with `[ConsoleSamples]` / `[ConsoleSample]` examples (see `TaskSamples.cs`).
+2. Add any required helpers to `Samples/SampleData.cs` when examples need sandbox entities.
+3. Update the example catalogue in [`samples/FreeAgent.Client.ConsoleSample/README.md`](../../samples/FreeAgent.Client.ConsoleSample/README.md).
 
 Update [`samples/README.md`](../../samples/README.md), [`docs/reference/api-coverage.md`](../../docs/reference/api-coverage.md), and the resource reference page at [`docs/reference/<resource>.md`](../../docs/reference/) in the same change.
 
