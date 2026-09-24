@@ -413,4 +413,331 @@ public class TimeslipServiceTests
 
         Assert.Equal([1, 2, 3], ids);
     }
+
+    [Fact]
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithNested_IncludesQueryParam()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Contains("nested=true", request.RequestUri!.Query, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "timeslip": {
+                    "url": "https://api.freeagent.com/v2/timeslips/25",
+                    "hours": "1.0"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await service.GetTimeslipAsync(25, nested: true);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_FetchesLinkedResources()
+    {
+        var requestCount = 0;
+        HttpResponseMessage RouteRequest(HttpRequestMessage request)
+        {
+            requestCount++;
+            if (request.RequestUri!.AbsolutePath.EndsWith("/timeslips/25", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "timeslip": {
+                        "url": "https://api.freeagent.com/v2/timeslips/25",
+                        "task": "https://api.freeagent.com/v2/tasks/3",
+                        "project": "https://api.freeagent.com/v2/projects/4",
+                        "user": "https://api.freeagent.com/v2/users/2"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            if (request.RequestUri.AbsolutePath.EndsWith("/tasks/3", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "task": {
+                        "url": "https://api.freeagent.com/v2/tasks/3",
+                        "name": "Linked Task"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            if (request.RequestUri.AbsolutePath.EndsWith("/projects/4", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "project": {
+                        "url": "https://api.freeagent.com/v2/projects/4",
+                        "name": "Linked Project"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            if (request.RequestUri.AbsolutePath.EndsWith("/users/2", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "user": {
+                        "url": "https://api.freeagent.com/v2/users/2",
+                        "first_name": "Ada",
+                        "last_name": "Lovelace"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            throw new InvalidOperationException($"Unexpected request: {request.RequestUri}");
+        }
+
+        var handler = new QueueHttpMessageHandler(
+            RouteRequest,
+            RouteRequest,
+            RouteRequest,
+            RouteRequest);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        var timeslip = await service.GetTimeslipAsync(
+            25,
+            new TimeslipGetOptions
+            {
+                IncludeTask = true,
+                IncludeProject = true,
+                IncludeUser = true
+            });
+
+        Assert.Equal(4, requestCount);
+        Assert.Equal("Linked Task", timeslip.Task!.Name);
+        Assert.Equal("Linked Project", timeslip.Project!.Name);
+        Assert.Equal("Ada", timeslip.User!.FirstName);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_SkipsFetchWhenLinksAlreadyExpanded()
+    {
+        var requestCount = 0;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            requestCount++;
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "timeslip": {
+                    "url": "https://api.freeagent.com/v2/timeslips/25",
+                    "task": {
+                      "url": "https://api.freeagent.com/v2/tasks/3",
+                      "name": "Already Nested Task"
+                    },
+                    "project": {
+                      "url": "https://api.freeagent.com/v2/projects/4",
+                      "name": "Already Nested Project"
+                    },
+                    "user": {
+                      "url": "https://api.freeagent.com/v2/users/2",
+                      "first_name": "Already",
+                      "last_name": "Nested"
+                    }
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        var timeslip = await service.GetTimeslipAsync(
+            25,
+            new TimeslipGetOptions
+            {
+                IncludeTask = true,
+                IncludeProject = true,
+                IncludeUser = true
+            });
+
+        Assert.Equal(1, requestCount);
+        Assert.Equal("Already Nested Task", timeslip.Task!.Name);
+        Assert.Equal("Already Nested Project", timeslip.Project!.Name);
+        Assert.Equal("Already", timeslip.User!.FirstName);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task ListAsync_UserAndUserId_Throws()
+    {
+        using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.ListAsync(
+            user: UserReference.Parse("https://api.freeagent.com/v2/users/1"),
+            userId: 2));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task ListAsync_TaskAndTaskId_Throws()
+    {
+        using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.ListAsync(
+            task: TaskReference.Parse("https://api.freeagent.com/v2/tasks/1"),
+            taskId: 2));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task ListAsync_ProjectAndProjectId_Throws()
+    {
+        using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.ListAsync(
+            project: ProjectReference.Parse("https://api.freeagent.com/v2/projects/1"),
+            projectId: 2));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task GetTimeslipAsync_MissingTimeslipBranch_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetTimeslipAsync(25));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateTimeslipAsync_MissingTimeslipBranch_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Created)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateTimeslipAsync(new Timeslip
+        {
+            LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+            LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+            LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+            DatedOn = new DateOnly(2011, 8, 15),
+            Hours = 1.5m
+        }));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateTimeslipsAsync_EmptyList_Throws()
+    {
+        using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.CreateTimeslipsAsync([]));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateTimeslipsAsync_MissingTimeslipsBranch_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Created)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateTimeslipsAsync([
+            new Timeslip
+            {
+                LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+                LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+                LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+                DatedOn = new DateOnly(2011, 8, 15),
+                Hours = 1.5m
+            }
+        ]));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task UpdateTimeslipAsync_MissingTimeslipBranch_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.UpdateTimeslipAsync(25, new Timeslip { Hours = 2.5m }));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task StartTimerAsync_MissingTimeslipBranch_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.StartTimerAsync(25));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task StopTimerAsync_MissingTimeslipBranch_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}")
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.StopTimerAsync(25));
+    }
 }

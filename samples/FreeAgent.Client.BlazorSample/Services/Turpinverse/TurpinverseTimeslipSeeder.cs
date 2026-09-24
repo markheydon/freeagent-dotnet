@@ -103,7 +103,9 @@ public sealed class TurpinverseTimeslipSeeder
             userId: userId,
             cancellationToken: cancellationToken);
 
-        return page.Items.FirstOrDefault(timeslip => timeslip.DatedOn == datedOn);
+        return page.Items.FirstOrDefault(timeslip =>
+            timeslip.DatedOn == datedOn
+            && string.Equals(timeslip.Comment, comment, StringComparison.Ordinal));
     }
 }
 

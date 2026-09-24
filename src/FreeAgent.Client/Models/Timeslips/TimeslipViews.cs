@@ -8,7 +8,7 @@ public static class TimeslipViews
     /// <summary>Return all timeslips.</summary>
     public const string All = "all";
 
-    /// <summary>Return only timeslips which have not yet been rebilled to a project.</summary>
+    /// <summary>Return only timeslips which have not yet been billed on an invoice.</summary>
     public const string Unbilled = "unbilled";
 
     /// <summary>Return only timeslips which have running timers.</summary>
