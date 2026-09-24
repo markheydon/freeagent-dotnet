@@ -65,7 +65,7 @@ public sealed class TurpinverseTimeslipSeeder
             throw new InvalidOperationException("Could not parse task ID from URL.");
         }
 
-        var existing = await FindExistingTimeslipAsync(client, taskId, userId, datedOn, cancellationToken);
+        var existing = await FindExistingTimeslipAsync(client, taskId, userId, datedOn, comment, cancellationToken);
         var desired = new Timeslip
         {
             LinkedTask = client.Urls.Task(taskId),
@@ -93,6 +93,7 @@ public sealed class TurpinverseTimeslipSeeder
         long taskId,
         long userId,
         DateOnly datedOn,
+        string comment,
         CancellationToken cancellationToken)
     {
         var page = await client.Timeslips.ListAsync(
