@@ -96,17 +96,22 @@ public sealed class TurpinverseTimeslipSeeder
         string comment,
         CancellationToken cancellationToken)
     {
-        var page = await client.Timeslips.ListAsync(
-            perPage: 100,
-            fromDate: datedOn,
-            toDate: datedOn,
-            taskId: taskId,
-            userId: userId,
-            cancellationToken: cancellationToken);
+        await foreach (var timeslip in client.Timeslips.ListAutoPagingAsync(
+                           perPage: 100,
+                           fromDate: datedOn,
+                           toDate: datedOn,
+                           taskId: taskId,
+                           userId: userId,
+                           cancellationToken: cancellationToken))
+        {
+            if (timeslip.DatedOn == datedOn
+                && string.Equals(timeslip.Comment, comment, StringComparison.Ordinal))
+            {
+                return timeslip;
+            }
+        }
 
-        return page.Items.FirstOrDefault(timeslip =>
-            timeslip.DatedOn == datedOn
-            && string.Equals(timeslip.Comment, comment, StringComparison.Ordinal));
+        return null;
     }
 }
 

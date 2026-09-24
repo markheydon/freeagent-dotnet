@@ -437,7 +437,7 @@ public class TimeslipServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new TimeslipService(client);
 
-        await service.GetTimeslipAsync(25, nested: true);
+        await service.GetTimeslipAsync(25, nested: true, options: null);
     }
 
     [Fact]
@@ -739,5 +739,92 @@ public class TimeslipServiceTests
         var service = new TimeslipService(client);
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.StopTimerAsync(25));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenLinkedTaskMissing()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "timeslip": {
+                    "url": "https://api.freeagent.com/v2/timeslips/25",
+                    "task": "https://api.freeagent.com/v2/tasks/3"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}")
+            });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetTimeslipAsync(
+            25,
+            new TimeslipGetOptions { IncludeTask = true }));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenLinkedProjectMissing()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "timeslip": {
+                    "url": "https://api.freeagent.com/v2/timeslips/25",
+                    "project": "https://api.freeagent.com/v2/projects/4"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}")
+            });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetTimeslipAsync(
+            25,
+            new TimeslipGetOptions { IncludeProject = true }));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenLinkedUserMissing()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "timeslip": {
+                    "url": "https://api.freeagent.com/v2/timeslips/25",
+                    "user": "https://api.freeagent.com/v2/users/2"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{}")
+            });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetTimeslipAsync(
+            25,
+            new TimeslipGetOptions { IncludeUser = true }));
     }
 }

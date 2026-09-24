@@ -230,19 +230,6 @@ public sealed class TimeslipService
         GetTimeslipAsync(timeslipId, nested: null, options, cancellationToken);
 
     /// <summary>
-    /// Gets a single timeslip by identifier.
-    /// </summary>
-    /// <param name="timeslipId">Timeslip identifier from the resource URL</param>
-    /// <param name="nested">When <see langword="true"/>, return linked resources as nested JSON objects</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Timeslip details</returns>
-    public Task<Timeslip> GetTimeslipAsync(
-        long timeslipId,
-        bool? nested,
-        CancellationToken cancellationToken = default) =>
-        GetTimeslipAsync(timeslipId, nested, options: null, cancellationToken);
-
-    /// <summary>
     /// Gets a single timeslip by identifier with optional linked-resource hydration.
     /// </summary>
     /// <param name="timeslipId">Timeslip identifier from the resource URL</param>
