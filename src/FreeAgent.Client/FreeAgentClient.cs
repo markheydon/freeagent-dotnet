@@ -3,6 +3,7 @@ using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
 using FreeAgent.Client.Services.EmailAddresses;
+using FreeAgent.Client.Services.Notes;
 using FreeAgent.Client.Services.Projects;
 using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Services.Timeslips;
@@ -57,6 +58,11 @@ public sealed class FreeAgentClient : IDisposable
     /// Timeslips API service.
     /// </summary>
     public TimeslipService Timeslips { get; }
+
+    /// <summary>
+    /// Notes API service.
+    /// </summary>
+    public NoteService Notes { get; }
 
     /// <summary>
     /// Target API environment for this client.
@@ -123,6 +129,7 @@ public sealed class FreeAgentClient : IDisposable
         Projects = new ProjectService(_httpClient);
         Tasks = new TaskService(_httpClient);
         Timeslips = new TimeslipService(_httpClient);
+        Notes = new NoteService(_httpClient);
     }
 
     /// <summary>

@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.Notes;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Timeslips;
@@ -130,5 +131,44 @@ internal static class LinkedResourceHydration
         }
 
         timeslip.AttachUser(response.User);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateNoteParentAsync(
+        Note note,
+        IFreeAgentRequestClient requestClient,
+        bool includeParentContact,
+        bool includeParentProject,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(note);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (includeParentContact
+            && note.Contact is null
+            && note.TryParseParentContactId(out var contactId))
+        {
+            var response = await requestClient.GetAsync<ContactResponse>($"contacts/{contactId}", cancellationToken);
+
+            if (response.Contact is null)
+            {
+                throw new FreeAgentApiException("Contact data missing from API response");
+            }
+
+            note.AttachContact(response.Contact);
+        }
+
+        if (includeParentProject
+            && note.Project is null
+            && note.TryParseParentProjectId(out var projectId))
+        {
+            var response = await requestClient.GetAsync<ProjectResponse>($"projects/{projectId}", cancellationToken);
+
+            if (response.Project is null)
+            {
+                throw new FreeAgentApiException("Project data missing from API response");
+            }
+
+            note.AttachProject(response.Project);
+        }
     }
 }

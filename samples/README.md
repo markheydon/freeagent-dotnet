@@ -106,6 +106,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/tasks/detail](https://localhost:5001/tasks/detail) | `GetTaskAsync()`, `CreateTaskAsync()`, `UpdateTaskAsync()`, `DeleteTaskAsync()` | CRUD probes, Turpinverse seed data, progress bar |
 | [/timeslips](https://localhost:5001/timeslips) | `TimeslipService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/date/user/task/project/nested filters |
 | [/timeslips/detail](https://localhost:5001/timeslips/detail) | `GetTimeslipAsync()`, `CreateTimeslipAsync()`, `CreateTimeslipsAsync()`, `UpdateTimeslipAsync()`, `DeleteTimeslipAsync()`, `StartTimerAsync()`, `StopTimerAsync()` | CRUD + batch create variant + timer probes, Turpinverse seed data |
+| [/notes](https://localhost:5001/notes) | `NoteService.ListContactNotesAsync()` and `ListProjectNotesAsync()` | Per-row mapping inspection, contact/project parent selector |
+| [/notes/detail](https://localhost:5001/notes/detail) | `GetNoteAsync()`, `CreateContactNoteAsync()`, `CreateProjectNoteAsync()`, `UpdateNoteAsync()`, `DeleteNoteAsync()` | CRUD probes, create variant selector, Turpinverse seed data |
 | [/users](https://localhost:5001/users) | `UserService.ListAsync()` | Per-row mapping inspection, view filters |
 | [/users/detail](https://localhost:5001/users/detail) | `GetUserAsync()`, `GetCurrentUserAsync()`, `CreateUserAsync()`, `UpdateUserAsync()`, `UpdateCurrentUserAsync()`, `DeleteUserAsync()` | CRUD probes, personal profile endpoints, progress bar |
 | [/email-addresses](https://localhost:5001/email-addresses) | `EmailAddressesService.ListAsync()` | Per-row mapping inspection, list output |

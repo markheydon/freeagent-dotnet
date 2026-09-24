@@ -22,6 +22,7 @@ For how resources relate to each other and a suggested implementation order, see
 | [Projects](projects.md) | `client.Projects` | [Projects](https://dev.freeagent.com/docs/projects) |
 | [Tasks](tasks.md) | `client.Tasks` | [Tasks](https://dev.freeagent.com/docs/tasks) |
 | [Timeslips](timeslips.md) | `client.Timeslips` | [Timeslips](https://dev.freeagent.com/docs/timeslips) |
+| [Notes](notes.md) | `client.Notes` | [Notes](https://dev.freeagent.com/docs/notes) |
 | [Email addresses](email-addresses.md) | `client.EmailAddresses` | [Email addresses](https://dev.freeagent.com/docs/email_addresses) |
 | [OAuth](oauth.md) | `FreeAgentOAuthClient` | [OAuth](https://dev.freeagent.com/docs/oauth) |
 | [Currency code](currency-code.md) | `CurrencyCode` enum | [Currencies](https://dev.freeagent.com/docs/currencies) |
