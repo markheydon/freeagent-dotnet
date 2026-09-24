@@ -127,7 +127,7 @@ Include a **List API inventory** table in every goals review:
 - [ ] No UI/CLI in the SDK package (`src/FreeAgent.Client`)
 - [ ] No business-rule abstraction (VAT logic, accounting opinions)
 - [ ] No undocumented/experimental endpoints
-- [ ] Blazor sample reflects **implemented** SDK endpoints only (sample sync per AGENTS.md)
+- [ ] Both sample apps reflect **implemented** SDK endpoints only (sample sync per AGENTS.md — Blazor probe pages and console example providers)
 
 ### Sample app sync (when SDK services changed)
 

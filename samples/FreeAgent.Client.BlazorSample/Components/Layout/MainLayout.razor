@@ -131,6 +131,12 @@
                 <MudNavLink Href="/tasks/detail" Icon="@Icons.Material.Filled.Task">
                     Task CRUD
                 </MudNavLink>
+                <MudNavLink Href="/timeslips" Icon="@Icons.Material.Filled.AllInclusive">
+                    Timeslips list
+                </MudNavLink>
+                <MudNavLink Href="/timeslips/detail" Icon="@Icons.Material.Filled.Timer">
+                    Timeslip CRUD
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Users" Icon="@Icons.Material.Filled.People" Expanded="@IsUsersRoute">
@@ -232,7 +238,9 @@
         CurrentPath.Equals("projects", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("projects/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("tasks", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.StartsWith("tasks/", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.StartsWith("tasks/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("timeslips", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("timeslips/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsUsersRoute =>
         CurrentPath.Equals("users", StringComparison.OrdinalIgnoreCase)

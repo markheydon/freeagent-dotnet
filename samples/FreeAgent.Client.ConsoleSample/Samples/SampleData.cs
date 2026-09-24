@@ -1,6 +1,7 @@
 using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Tasks;
+using FreeAgent.Client.Models.Timeslips;
 using FreeAgent.Client.Models.Users;
 using TaskModel = FreeAgent.Client.Models.Tasks.Task;
 
@@ -82,6 +83,22 @@ internal sealed class SampleData
         if (page.Items.Count == 0)
         {
             SampleContext.Skip("no tasks found in sandbox account");
+        }
+
+        return page.Items[0];
+    }
+
+    /// <summary>
+    /// Returns the first timeslip from the timeslips list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A timeslip.</returns>
+    public async Task<Timeslip> GetFirstTimeslipAsync(CancellationToken cancellationToken = default)
+    {
+        var page = await _context.Client.Timeslips.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+        if (page.Items.Count == 0)
+        {
+            SampleContext.Skip("no timeslips found in sandbox account");
         }
 
         return page.Items[0];

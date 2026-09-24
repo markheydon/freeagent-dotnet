@@ -34,4 +34,25 @@ public sealed class FreeAgentResourceUrls
     /// <param name="taskId">Task identifier.</param>
     /// <returns>Task reference.</returns>
     public TaskReference Task(long taskId) => TaskReference.ForEnvironment(_environment, taskId);
+
+    /// <summary>
+    /// Creates a user resource reference.
+    /// </summary>
+    /// <param name="userId">User identifier.</param>
+    /// <returns>User reference.</returns>
+    public UserReference User(long userId) => UserReference.ForEnvironment(_environment, userId);
+
+    /// <summary>
+    /// Creates a timeslip resource reference.
+    /// </summary>
+    /// <param name="timeslipId">Timeslip identifier.</param>
+    /// <returns>Timeslip reference.</returns>
+    public TimeslipReference Timeslip(long timeslipId) => TimeslipReference.ForEnvironment(_environment, timeslipId);
+
+    /// <summary>
+    /// Creates an invoice resource reference.
+    /// </summary>
+    /// <param name="invoiceId">Invoice identifier.</param>
+    /// <returns>Invoice reference.</returns>
+    public InvoiceReference Invoice(long invoiceId) => InvoiceReference.ForEnvironment(_environment, invoiceId);
 }

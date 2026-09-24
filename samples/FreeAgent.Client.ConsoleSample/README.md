@@ -82,7 +82,7 @@ dotnet run
 ### What happens
 
 1. The app completes OAuth (browser flow or token from environment variables).
-2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Users, Email addresses).
+2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Users, Email addresses).
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
@@ -95,6 +95,7 @@ dotnet run
 | Categories | List category sets; get category by nominal code |
 | Projects | List projects; list active projects; get project detail; list projects for contact |
 | Tasks | List tasks; list tasks for project; get task detail |
+| Timeslips | List timeslips; list unbilled timeslips; list timeslips for task; get timeslip detail |
 | Users | List users; get current user; get user by ID |
 | Email addresses | List email addresses |
 

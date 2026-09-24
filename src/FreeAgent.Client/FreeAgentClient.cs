@@ -5,6 +5,7 @@ using FreeAgent.Client.Services.Contacts;
 using FreeAgent.Client.Services.EmailAddresses;
 using FreeAgent.Client.Services.Projects;
 using FreeAgent.Client.Services.Tasks;
+using FreeAgent.Client.Services.Timeslips;
 using FreeAgent.Client.Services.Users;
 
 namespace FreeAgent.Client;
@@ -51,6 +52,11 @@ public sealed class FreeAgentClient : IDisposable
     /// Tasks API service.
     /// </summary>
     public TaskService Tasks { get; }
+
+    /// <summary>
+    /// Timeslips API service.
+    /// </summary>
+    public TimeslipService Timeslips { get; }
 
     /// <summary>
     /// Target API environment for this client.
@@ -116,6 +122,7 @@ public sealed class FreeAgentClient : IDisposable
         EmailAddresses = new EmailAddressesService(_httpClient);
         Projects = new ProjectService(_httpClient);
         Tasks = new TaskService(_httpClient);
+        Timeslips = new TimeslipService(_httpClient);
     }
 
     /// <summary>
