@@ -209,10 +209,15 @@ public class InvoiceServiceTests
     [Fact]
     public async Task MarkInvoiceAsSentAsync_PutsTransitionEndpoint()
     {
-        var handler = new QueueHttpMessageHandler(request =>
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
         {
-            Assert.Equal(HttpMethod.Put, request.Method);
-            Assert.EndsWith("/invoices/5/transitions/mark_as_sent", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            if (request.Method == HttpMethod.Put)
+            {
+                Assert.EndsWith("/invoices/5/transitions/mark_as_sent", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+
+            Assert.EndsWith("/invoices/5", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("""
@@ -224,7 +229,9 @@ public class InvoiceServiceTests
                 }
                 """)
             };
-        });
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond);
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
@@ -244,10 +251,7 @@ public class InvoiceServiceTests
             Assert.Equal(HttpMethod.Post, request.Method);
             Assert.EndsWith("/invoices/8/send_email", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
             postedJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
-            return new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent("{}")
-            };
+            return new HttpResponseMessage(HttpStatusCode.OK);
         });
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
@@ -587,9 +591,14 @@ public class InvoiceServiceTests
     [Fact]
     public async Task MarkInvoiceAsScheduledAsync_PutsTransitionEndpoint()
     {
-        var handler = new QueueHttpMessageHandler(request =>
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
         {
-            Assert.EndsWith("/invoices/5/transitions/mark_as_scheduled", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            if (request.Method == HttpMethod.Put)
+            {
+                Assert.EndsWith("/invoices/5/transitions/mark_as_scheduled", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent("""
@@ -601,7 +610,9 @@ public class InvoiceServiceTests
                 }
                 """)
             };
-        });
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond);
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
@@ -610,6 +621,127 @@ public class InvoiceServiceTests
         var invoice = await service.MarkInvoiceAsScheduledAsync(5);
 
         Assert.Equal(InvoiceStatus.ScheduledToEmail, invoice.Status);
+    }
+
+    [Fact]
+    public async Task ListAsync_UpdatedSince_IncludesFilter()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Contains("updated_since=2024-03-18T09%3A00%3A00.0000000%2B00%3A00", request.RequestUri!.Query, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{ "invoices": [] }""")
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await service.ListAsync(updatedSince: new DateTimeOffset(2024, 3, 18, 9, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact]
+    public async Task ListAsync_ProjectAndProjectId_Throws()
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.ListAsync(
+            project: ProjectReference.Parse("https://api.freeagent.com/v2/projects/1"),
+            projectId: 2));
+    }
+
+    [Fact]
+    public async Task MarkInvoiceAsDraftAsync_PutsTransitionEndpoint()
+    {
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
+        {
+            if (request.Method == HttpMethod.Put)
+            {
+                Assert.EndsWith("/invoices/5/transitions/mark_as_draft", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/5",
+                    "status": "Draft"
+                  }
+                }
+                """)
+            };
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        var invoice = await service.MarkInvoiceAsDraftAsync(5);
+
+        Assert.Equal(InvoiceStatus.Draft, invoice.Status);
+    }
+
+    [Fact]
+    public async Task MarkInvoiceAsCancelledAsync_PutsTransitionEndpoint()
+    {
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
+        {
+            if (request.Method == HttpMethod.Put)
+            {
+                Assert.EndsWith("/invoices/5/transitions/mark_as_cancelled", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/5",
+                    "status": "Written-off"
+                  }
+                }
+                """)
+            };
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        var invoice = await service.MarkInvoiceAsCancelledAsync(5);
+
+        Assert.Equal(InvoiceStatus.WrittenOff, invoice.Status);
+    }
+
+    [Fact]
+    public async Task TakeDirectDebitPaymentAsync_PostsDirectDebitEndpoint()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Equal(HttpMethod.Post, request.Method);
+            Assert.EndsWith("/invoices/12/direct_debit", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await service.TakeDirectDebitPaymentAsync(12);
     }
 
     [Fact]

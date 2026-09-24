@@ -168,7 +168,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task MarkInvoiceAsCancelledAsync(CancellationToken cancellationToken)
     {
-        var sent = await CreateSentSampleInvoiceAsync(cancellationToken);
+        var sent = await CreateSentOverdueSampleInvoiceAsync(cancellationToken);
         var cancelled = await context.Client.Invoices.MarkInvoiceAsCancelledAsync(sent.ResourceId, cancellationToken);
 
         SampleOutput.WriteHeader("Marked invoice as cancelled");
@@ -313,6 +313,39 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
     private async Task<Invoice> CreateSentSampleInvoiceAsync(CancellationToken cancellationToken)
     {
         var draft = await CreateSampleDraftInvoiceAsync(cancellationToken);
+        return await context.Client.Invoices.MarkInvoiceAsSentAsync(draft.ResourceId, cancellationToken);
+    }
+
+    private async Task<Invoice> CreateSentOverdueSampleInvoiceAsync(CancellationToken cancellationToken)
+    {
+        var contact = await context.Data.GetFirstContactAsync(cancellationToken);
+        var nominalCode = await context.Data.GetFirstIncomeCategoryNominalCodeAsync(cancellationToken);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var datedOn = today.AddDays(-30);
+        var dueOn = today.AddDays(-7);
+
+        var draft = await context.Client.Invoices.CreateInvoiceAsync(
+            new Invoice
+            {
+                BillingContact = ContactReference.ForEnvironment(context.Client.Environment, contact.ResourceId),
+                DatedOn = datedOn,
+                DueOn = dueOn,
+                PaymentTermsInDays = dueOn.DayNumber - datedOn.DayNumber,
+                Reference = $"Console overdue sample {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
+                InvoiceItems =
+                [
+                    new InvoiceItem
+                    {
+                        Description = "Console overdue sample line item",
+                        ItemType = InvoiceItemType.Services,
+                        Quantity = 1,
+                        Price = 100,
+                        Category = CategoryReference.ForEnvironment(context.Client.Environment, nominalCode),
+                    }
+                ]
+            },
+            cancellationToken);
+
         return await context.Client.Invoices.MarkInvoiceAsSentAsync(draft.ResourceId, cancellationToken);
     }
 

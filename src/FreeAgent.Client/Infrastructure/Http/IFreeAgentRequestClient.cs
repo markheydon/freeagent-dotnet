@@ -26,9 +26,19 @@ internal interface IFreeAgentRequestClient
     Task<T> PostAsync<T>(string endpoint, HttpContent content, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Sends a POST request without deserializing the response body.
+    /// </summary>
+    Task SendPostAsync(string endpoint, HttpContent content, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Sends a PUT request and deserializes the response body.
     /// </summary>
     Task<T> PutAsync<T>(string endpoint, HttpContent content, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sends a PUT request without deserializing the response body.
+    /// </summary>
+    Task SendPutAsync(string endpoint, HttpContent content, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sends a DELETE request.

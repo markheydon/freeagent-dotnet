@@ -49,6 +49,24 @@ public class InvoiceModelSerializationTests
     }
 
     [Fact]
+    public void DeserializeInvoiceItem_MapsItemIdFromUrlWhenIdOmitted()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/invoice_items/17",
+              "description": "Consulting",
+              "item_type": "Hours",
+              "price": "100.0"
+            }
+            """;
+
+        var item = JsonSerializer.Deserialize<InvoiceItem>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(item);
+        Assert.Equal(17, item!.ItemId);
+    }
+
+    [Fact]
     public void DeserializeInvoiceItem_MapsItemIdAndBlankItemType()
     {
         const string json = """

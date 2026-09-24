@@ -351,7 +351,7 @@ public sealed class InvoiceService
             Invoice = request
         });
 
-        return _requestClient.PostAsync<object>($"invoices/{invoiceId}/send_email", content, cancellationToken);
+        return _requestClient.SendPostAsync($"invoices/{invoiceId}/send_email", content, cancellationToken);
     }
 
     /// <summary>
@@ -399,7 +399,7 @@ public sealed class InvoiceService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(invoiceId);
 
-        return _requestClient.PostAsync<object>(
+        return _requestClient.SendPostAsync(
             $"invoices/{invoiceId}/direct_debit",
             EmptyJsonContent,
             cancellationToken);
@@ -500,17 +500,12 @@ public sealed class InvoiceService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(invoiceId);
         ArgumentException.ThrowIfNullOrWhiteSpace(transition);
 
-        var response = await _requestClient.PutAsync<InvoiceResponse>(
+        await _requestClient.SendPutAsync(
             $"invoices/{invoiceId}/transitions/{transition}",
             EmptyJsonContent,
             cancellationToken);
 
-        if (response.Invoice is null)
-        {
-            throw new FreeAgentApiException("Invoice data missing from API response");
-        }
-
-        return response.Invoice;
+        return await GetInvoiceAsync(invoiceId, cancellationToken: cancellationToken);
     }
 
     private string? ResolveContactFilter(ContactReference? contact, long? contactId)
