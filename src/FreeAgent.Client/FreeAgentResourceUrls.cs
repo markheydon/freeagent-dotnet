@@ -62,4 +62,36 @@ public sealed class FreeAgentResourceUrls
     /// <param name="noteId">Note identifier.</param>
     /// <returns>Note reference.</returns>
     public NoteReference Note(long noteId) => NoteReference.ForEnvironment(_environment, noteId);
+
+    /// <summary>
+    /// Creates a bank account resource reference.
+    /// </summary>
+    /// <param name="bankAccountId">Bank account identifier.</param>
+    /// <returns>Bank account reference.</returns>
+    public BankAccountReference BankAccount(long bankAccountId) =>
+        BankAccountReference.ForEnvironment(_environment, bankAccountId);
+
+    /// <summary>
+    /// Creates a category resource reference.
+    /// </summary>
+    /// <param name="nominalCode">Category nominal code.</param>
+    /// <returns>Category reference.</returns>
+    public CategoryReference Category(string nominalCode) =>
+        CategoryReference.ForEnvironment(_environment, nominalCode);
+
+    /// <summary>
+    /// Creates a recurring invoice resource reference.
+    /// </summary>
+    /// <param name="recurringInvoiceId">Recurring invoice identifier.</param>
+    /// <returns>Recurring invoice reference.</returns>
+    public RecurringInvoiceReference RecurringInvoice(long recurringInvoiceId) =>
+        RecurringInvoiceReference.ForEnvironment(_environment, recurringInvoiceId);
+
+    /// <summary>
+    /// Creates a credit note resource reference.
+    /// </summary>
+    /// <param name="creditNoteId">Credit note identifier.</param>
+    /// <returns>Credit note reference.</returns>
+    public CreditNoteReference CreditNote(long creditNoteId) =>
+        CreditNoteReference.ForEnvironment(_environment, creditNoteId);
 }

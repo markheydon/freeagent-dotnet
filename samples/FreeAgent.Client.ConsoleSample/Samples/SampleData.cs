@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Notes;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Tasks;
@@ -132,6 +133,44 @@ internal sealed class SampleData
 
         SampleContext.Skip("no notes found in sandbox account");
         return default!;
+    }
+
+    /// <summary>
+    /// Returns the nominal code of the first income category.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An income category nominal code.</returns>
+    public async Task<string> GetFirstIncomeCategoryNominalCodeAsync(CancellationToken cancellationToken = default)
+    {
+        var sets = await _context.Client.Categories.ListAsync(cancellationToken: cancellationToken);
+        if (sets.IncomeCategories.Count == 0)
+        {
+            SampleContext.Skip("no income categories found in sandbox account");
+        }
+
+        var nominalCode = sets.IncomeCategories[0].NominalCode;
+        if (string.IsNullOrWhiteSpace(nominalCode))
+        {
+            SampleContext.Skip("first income category has no nominal code");
+        }
+
+        return nominalCode;
+    }
+
+    /// <summary>
+    /// Returns the first invoice from the invoices list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An invoice.</returns>
+    public async Task<Invoice> GetFirstInvoiceAsync(CancellationToken cancellationToken = default)
+    {
+        var page = await _context.Client.Invoices.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+        if (page.Items.Count == 0)
+        {
+            SampleContext.Skip("no invoices found in sandbox account");
+        }
+
+        return page.Items[0];
     }
 
     /// <summary>

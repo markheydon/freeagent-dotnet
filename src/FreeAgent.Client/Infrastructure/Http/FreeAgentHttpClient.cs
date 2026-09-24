@@ -261,6 +261,24 @@ internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
     }
 
     /// <summary>
+    /// Sends a POST request to the API without deserializing the response body.
+    /// </summary>
+    /// <param name="endpoint">API endpoint (relative to base URL)</param>
+    /// <param name="content">Request content</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    public async Task SendPostAsync(string endpoint, HttpContent content, CancellationToken cancellationToken = default)
+    {
+        var bufferedContent = await BufferedHttpContent.CreateAsync(content, cancellationToken);
+
+        await ExecuteWithRetryAsync(
+            HttpMethod.Post,
+            endpoint,
+            createRequest: () => CreateRequestMessage(HttpMethod.Post, endpoint, bufferedContent.CreateContent),
+            deserialize: EnsureSuccessResponseAsync,
+            cancellationToken);
+    }
+
+    /// <summary>
     /// Sends a PUT request to the API.
     /// </summary>
     /// <typeparam name="T">Response type</typeparam>
@@ -277,6 +295,24 @@ internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
             endpoint,
             createRequest: () => CreateRequestMessage(HttpMethod.Put, endpoint, bufferedContent.CreateContent),
             deserialize: (response, ct) => HandleResponseAsync<T>(response, ct),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends a PUT request to the API without deserializing the response body.
+    /// </summary>
+    /// <param name="endpoint">API endpoint (relative to base URL)</param>
+    /// <param name="content">Request content</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    public async Task SendPutAsync(string endpoint, HttpContent content, CancellationToken cancellationToken = default)
+    {
+        var bufferedContent = await BufferedHttpContent.CreateAsync(content, cancellationToken);
+
+        await ExecuteWithRetryAsync(
+            HttpMethod.Put,
+            endpoint,
+            createRequest: () => CreateRequestMessage(HttpMethod.Put, endpoint, bufferedContent.CreateContent),
+            deserialize: EnsureSuccessResponseAsync,
             cancellationToken);
     }
 
@@ -554,6 +590,17 @@ internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
         {
             _rateLimitSemaphore.Release();
         }
+    }
+
+    private static async Task<bool> EnsureSuccessResponseAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new FreeAgentApiException($"API request failed: {response.StatusCode} - {errorContent}");
+        }
+
+        return true;
     }
 
     private static async Task<T> HandleResponseAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)

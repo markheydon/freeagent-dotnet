@@ -113,11 +113,46 @@ When updating a project retrieved from the API, the SDK round-trips the existing
 
 Task create operations scope the parent project via the `project` query parameter (`CreateTaskAsync`), not the request body. Task updates do not accept a parent project on the wire.
 
+Invoices link to contacts, projects, bank accounts, and line-item categories:
+
+| Property | When it is set |
+|----------|----------------|
+| `ContactId`, `ContactName`, `Contact` | Contact link on the invoice |
+| `ProjectId`, `Project` | Optional project link on the invoice |
+| `BankAccountId`, `BankAccount` | Optional remittance bank account |
+| `CategoryNominalCode` | Parsed from line-item `category` URI |
+
+```csharp
+using FreeAgent.Client.Models.Invoices;
+
+var invoice = await client.Invoices.CreateInvoiceAsync(new Invoice
+{
+    BillingContact = client.Urls.Contact(42),
+    DatedOn = new DateOnly(2024, 3, 18),
+    PaymentTermsInDays = 14,
+    InvoiceItems =
+    [
+        new InvoiceItem
+        {
+            Description = "Consulting",
+            ItemType = InvoiceItemType.Hours,
+            Quantity = 2,
+            Price = 100,
+            Category = client.Urls.Category("001")
+        }
+    ]
+});
+```
+
+When updating an invoice retrieved from the API, the SDK round-trips existing contact, project, and bank account links unless you set the corresponding omit flags. Set `OmitBillingContactFromWrite`, `OmitProjectFromWrite`, or `OmitBankAccountFromWrite` to `true` to exclude those links from the write payload. Set `OmitInvoiceItemsFromWrite = true` when updating scalar invoice fields without changing line items.
+
+Line item updates require `InvoiceItem.ItemId`. The SDK maps this from the wire `id` attribute or from a line-item `url` when present.
+
 ## Resource identifiers
 
 `IFreeAgentResource.ResourceId` returns `0` when parsing fails. Use `TryGetResourceId()` or `GetResourceId()` when you need a valid identifier for service calls.
 
-Categories are keyed by nominal code on the wire - use `Category.NominalCode` for API calls, not `ResourceId`.
+Categories are keyed by nominal code on the wire - use `Category.NominalCode` for API calls, not `ResourceId`. For URI links on invoice line items, use `CategoryReference` and `client.Urls.Category(nominalCode)`.
 
 ## Optional hydration (`*GetOptions`)
 

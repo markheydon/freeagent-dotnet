@@ -79,7 +79,9 @@ Layers describe **dependency pressure**, not a mandatory backlog. A resource in 
 
 ### Is Invoices blocked?
 
-**No.** The only required URI when creating an invoice is `contact`, which the SDK already implements. Optional URIs (`project`, `bank_account`, `property`, `recurring_invoice`) and invoice-item `stock_item` can remain opaque URI strings until those services are added. Invoice-item `category` URIs can already resolve through the Categories service.
+**No.** The only required URI when creating an invoice is `contact`, which the SDK already implements. Optional URIs use typed references where the SDK provides them (`ProjectReference`, `BankAccountReference`, `CategoryReference` on line items). `property`, `recurring_invoice`, and invoice-item `stock_item` may remain opaque URI strings until those resources are implemented.
+
+The Invoices implementation introduces **Sales cluster patterns** reused by sibling resources: status transition methods, nested line-item updates on the parent payload, PDF and email actions, and company default-text settings under the resource path. See [Sales cluster SDK patterns](api-entity-map/sales.md#sales-cluster-sdk-patterns).
 
 Resources that are **nice to have nearby** (before or shortly after invoices), depending on how deeply you want sample probes and typed models to resolve links:
 

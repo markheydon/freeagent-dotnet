@@ -82,7 +82,7 @@ dotnet run
 ### What happens
 
 1. The app completes OAuth (browser flow or token from environment variables).
-2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses).
+2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices).
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
@@ -99,6 +99,7 @@ dotnet run
 | Notes | List contact notes; list project notes; get note detail; create contact note; create project note; update note |
 | Users | List users; get current user; get user by ID |
 | Email addresses | List email addresses |
+| Invoices | List invoices; stream all invoices via ListAutoPagingAsync; list invoices filtered by contact; list invoice timeline; get invoice by id; create draft invoice with one line item; update invoice comments; duplicate invoice; send invoice email (template); mark invoice as sent; mark invoice as scheduled; mark invoice as draft; mark invoice as cancelled; get invoice PDF; get default additional text; update default additional text; delete default additional text |
 
 New SDK resource areas should add a matching `*Samples.cs` provider class under `Samples/`.
 

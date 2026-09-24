@@ -1,0 +1,505 @@
+@page "/invoices"
+@using FreeAgent.Client.Models.Invoices
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Invoices - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Invoices endpoint"
+                         Title="Invoices list"
+                         CallUnderTest="InvoiceService.ListAsync(...) / ListAutoPagingAsync(...) / ListTimelineAsync(...)"
+                         Description="Load invoices, inspect wire-to-model mapping for any row, then jump into Invoice CRUD to test get, update, transitions, and delete."
+                         EndpointPath="/v2/invoices?page={page}&per_page={perPage}&view={view}"
+                         DocsUrl="https://dev.freeagent.com/docs/invoices" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load page 1, then use <strong>Inspect mapping</strong> on any row to see wire-to-model diagnostics.
+                        Use <strong>Open in CRUD</strong> to test single-invoice operations.
+                    </MudText>
+
+                    <MudGrid Spacing="2" Class="contacts-filter-grid">
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudSelect T="string"
+                                       @bind-Value="_view"
+                                       Label="View"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       FullWidth="true">
+                                <MudSelectItem Value="@InvoiceViews.RecentOpenOrOverdue">recent_open_or_overdue</MudSelectItem>
+                                <MudSelectItem Value="@InvoiceViews.Open">open</MudSelectItem>
+                                <MudSelectItem Value="@InvoiceViews.Overdue">overdue</MudSelectItem>
+                                <MudSelectItem Value="@InvoiceViews.OpenOrOverdue">open_or_overdue</MudSelectItem>
+                                <MudSelectItem Value="@InvoiceViews.Draft">draft</MudSelectItem>
+                                <MudSelectItem Value="@InvoiceViews.Paid">paid</MudSelectItem>
+                                <MudSelectItem Value="@InvoiceViews.ScheduledToEmail">scheduled_to_email</MudSelectItem>
+                                <MudSelectItem Value="@InvoiceViews.ThankYouEmails">thank_you_emails</MudSelectItem>
+                                <MudSelectItem Value="@InvoiceViews.ReminderEmails">reminder_emails</MudSelectItem>
+                                <MudSelectItem Value="@InvoiceViews.All">all</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudNumericField @bind-Value="_contactIdFilter"
+                                             Label="Contact ID filter"
+                                             Min="1"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudNumericField @bind-Value="_projectIdFilter"
+                                             Label="Project ID filter"
+                                             Min="1"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3" lg="2">
+                            <MudNumericField @bind-Value="_perPage"
+                                             Label="Per page"
+                                             Min="1"
+                                             Max="100"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3" lg="2">
+                            <MudSwitch @bind-Value="_nestedInvoiceItems" Color="Color.Primary" Label="nested_invoice_items" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                                       Disabled="_loading"
+                                       Class="contacts-load-button"
+                                       OnClick="LoadInvoicesAsync">
+                                @if (_loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Loading…</span>
+                                }
+                                else
+                                {
+                                    <span>Load page 1</span>
+                                }
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       Disabled="_loading"
+                                       StartIcon="@Icons.Material.Filled.Timeline"
+                                       Class="contacts-load-button"
+                                       OnClick="LoadTimelineAsync">
+                                Load timeline
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+
+                @if (_timelineItemCount is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                        Loaded @_timelineItemCount timeline item@(_timelineItemCount == 1 ? string.Empty : "s") from <code>/v2/invoices/timeline</code>.
+                    </MudAlert>
+                }
+
+                @if (_pageResult is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load page 1</strong> to fetch invoices from FreeAgent.</MudText>
+                }
+
+                @if (_pageResult is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_pageResult.Items.Count invoice@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
+                        </MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                        @if (_pageResult.Total > 0)
+                        {
+                            <MudChip T="string" Variant="Variant.Outlined">Total: @_pageResult.Total</MudChip>
+                        }
+                    </MudStack>
+
+                    @if (_pageResult.Items.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No invoices returned for view <code>@_view</code>. Try <code>all</code>, or create a test invoice from
+                            <MudLink Href="/invoices/detail">Invoice CRUD</MudLink>.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_invoiceRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Reference</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Contact</MudTh>
+                                    <MudTh>Total</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Reference">@ValueOrDash(context.Reference)</MudTd>
+                                    <MudTd DataLabel="Status">@context.Status</MudTd>
+                                    <MudTd DataLabel="Contact">@ValueOrDash(context.ContactName)</MudTd>
+                                    <MudTd DataLabel="Total">@FormatAmount(context.TotalValue)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectInvoiceAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetCrudHref(context.Id)">
+                                                Open in CRUD
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedInvoice is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Invoice model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected invoice</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    ID: @_inspectedInvoice.ResourceId
+                                </MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">
+                                    Row @(_inspectedIndex + 1) on page @_pageResult?.Page
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Reference</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedInvoice.Reference)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Contact</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedInvoice.ContactName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+
+                <MudExpansionPanels>
+                    <MudExpansionPanel Text="Developer probe: auto-pagination (ListAutoPagingAsync)">
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.body2" Class="hero-copy">
+                                Optional check that the async enumerator walks every page.
+                            </MudText>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.AllInclusive"
+                                       Disabled="_loadingAll"
+                                       OnClick="LoadAllAsync">
+                                @if (_loadingAll)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Enumerating…</span>
+                                }
+                                else
+                                {
+                                    <span>Count all invoices</span>
+                                }
+                            </MudButton>
+
+                            @if (_allInvoicesCount is not null)
+                            {
+                                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+                                    <code>ListAutoPagingAsync</code> yielded @_allInvoicesCount.Value invoice@(_allInvoicesCount.Value == 1 ? string.Empty : "s").
+                                </MudAlert>
+                            }
+                        </MudStack>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private bool _loadingAll;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private PaginatedResponse<Invoice>? _pageResult;
+    private Invoice? _inspectedInvoice;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+    private int? _allInvoicesCount;
+    private int? _timelineItemCount;
+    private string _view = InvoiceViews.RecentOpenOrOverdue;
+    private long? _contactIdFilter;
+    private long? _projectIdFilter;
+    private bool _nestedInvoiceItems;
+    private int _perPage = 25;
+
+    private IReadOnlyList<InvoiceRow> _invoiceRows => _pageResult?.Items
+        .Select(static (invoice, index) => new InvoiceRow(
+            index,
+            invoice.ResourceId,
+            invoice.Reference,
+            invoice.Status?.ToString() ?? "-",
+            invoice.ContactName,
+            invoice.TotalValue))
+        .ToList() ?? [];
+
+    private async Task LoadInvoicesAsync()
+    {
+        _pageResult = null;
+        _inspectedInvoice = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+        _allInvoicesCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var diagnosticsEndpoint = BuildDiagnosticsEndpoint();
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _pageResult = await client.Invoices.ListAsync(
+                page: 1,
+                perPage: _perPage,
+                view: _view,
+                contactId: _contactIdFilter,
+                projectId: _projectIdFilter,
+                nestedInvoiceItems: _nestedInvoiceItems ? true : null);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectInvoiceAsync(int index)
+    {
+        if (_pageResult is null || index < 0 || index >= _pageResult.Items.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedInvoice = _pageResult.Items[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "invoices", index, out var wireInvoice))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedInvoice, wireInvoice);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedInvoice, _wireApiResponse, envelopeProperty: "invoices");
+    }
+
+    private async Task LoadAllAsync()
+    {
+        _allInvoicesCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loadingAll = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var count = 0;
+            await foreach (var _ in client.Invoices.ListAutoPagingAsync(
+                               perPage: _perPage,
+                               view: _view,
+                               contactId: _contactIdFilter,
+                               projectId: _projectIdFilter,
+                               nestedInvoiceItems: _nestedInvoiceItems ? true : null))
+            {
+                count++;
+            }
+
+            _allInvoicesCount = count;
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                BuildDiagnosticsEndpoint());
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loadingAll = false;
+        }
+    }
+
+    private async Task LoadTimelineAsync()
+    {
+        _timelineItemCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var items = await client.Invoices.ListTimelineAsync();
+            _timelineItemCount = items.Count;
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "invoices/timeline");
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "invoices/timeline");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string BuildDiagnosticsEndpoint()
+    {
+        var query = new List<string>
+        {
+            "page=1",
+            $"per_page={_perPage}",
+            $"view={_view}"
+        };
+
+        if (_contactIdFilter is > 0)
+        {
+            query.Add($"contact={Uri.EscapeDataString(ContactReference.ForEnvironment(TokenStore.ConnectedEnvironment, _contactIdFilter.Value).Uri)}");
+        }
+
+        if (_projectIdFilter is > 0)
+        {
+            query.Add($"project={Uri.EscapeDataString(ProjectReference.ForEnvironment(TokenStore.ConnectedEnvironment, _projectIdFilter.Value).Uri)}");
+        }
+
+        if (_nestedInvoiceItems)
+        {
+            query.Add("nested_invoice_items=true");
+        }
+
+        return $"invoices?{string.Join('&', query)}";
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string FormatAmount(decimal? value) =>
+        value is null ? "-" : value.Value.ToString("0.00");
+
+    private static string GetCrudHref(long id) => $"/invoices/detail?id={id}";
+
+    private sealed record InvoiceRow(
+        int Index,
+        long Id,
+        string? Reference,
+        string Status,
+        string? ContactName,
+        decimal? TotalValue);
+}

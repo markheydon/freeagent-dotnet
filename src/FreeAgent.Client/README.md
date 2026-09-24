@@ -10,7 +10,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - Rate limiting and bounded retries for transient failures.
 - Typed exception model (`FreeAgentApiException`, `FreeAgentRateLimitException`, …).
 - Pagination (single-page and auto-pagination).
-- Company, Contacts, Categories, Users, Projects, Tasks, Timeslips, Notes, and Email addresses API support.
+- Company, Contacts, Categories, Users, Projects, Invoices, Tasks, Timeslips, Notes, and Email addresses API support.
 - `CurrencyCode` enum for documented ISO 4217 codes (reference type; not a REST resource).
 - Targets .NET 8.0 and .NET 10.0.
 - Fully async/await with XML documentation.
@@ -25,6 +25,7 @@ dotnet add package FreeAgent.Client
 
 ```csharp
 using FreeAgent.Client;
+using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Tasks;
 
@@ -84,6 +85,25 @@ await client.Timeslips.CreateTimeslipAsync(new Timeslip
     LinkedUser = client.Urls.User(1),
     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
     Hours = 1.5m
+});
+
+// Create a draft invoice for a contact
+await client.Invoices.CreateInvoiceAsync(new Invoice
+{
+    BillingContact = client.Urls.Contact(42),
+    DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+    PaymentTermsInDays = 14,
+    InvoiceItems =
+    [
+        new InvoiceItem
+        {
+            Description = "Consulting",
+            ItemType = InvoiceItemType.Hours,
+            Quantity = 2,
+            Price = 100,
+            Category = client.Urls.Category("001")
+        }
+    ]
 });
 
 // Add a note to a contact

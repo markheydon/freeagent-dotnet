@@ -4,7 +4,7 @@
 
 
 **Project:** FreeAgent.NET
-**Last updated:** 21 September 2026
+**Last updated:** 24 September 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.
@@ -21,19 +21,26 @@ src/
 	├── FreeAgentClient.cs               # Main consumer entry point
 	├── FreeAgentResourceUrls.cs         # Environment-correct resource URI builders
 	├── PaginatedResponse.cs             # Public pagination result type
-	├── ProjectGetOptions.cs             # Single-GET hydration options (Projects)
+	├── *GetOptions.cs                   # Single-GET hydration options (Projects, Invoices, Tasks, Timeslips, Notes)
 	├── Infrastructure/                  # Internal plumbing - not part of the public API surface
 	│   ├── Authentication/              # OAuth token exchange/refresh client and models
 	│   ├── Configuration/               # Environment enum and URL mapping
 	│   ├── Http/                        # HTTP transport, rate limiting, API exceptions, pagination helpers
 	│   └── Serialization/               # JSON converters and TFM compatibility
 	├── Models/                          # Resource-grouped strongly typed models
+	│   ├── BankAccounts/                # Bank account stub models for invoice links
 	│   ├── Categories/                  # Category models, operation-variant requests, nominal-code validation
 	│   ├── Company/                     # Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers
 	│   ├── Contacts/                    # Contact models and response wrappers
+	│   ├── CreditNotes/                 # Credit note stub models for invoice transitions
 	│   ├── EmailAddresses/              # Email addresses response wrapper
+	│   ├── Invoices/                    # Invoice models, line items, transitions, response wrappers
+	│   ├── Notes/                       # Note models and response wrappers
 	│   ├── Projects/                    # Project models, views, sort options, response wrappers
+	│   ├── RecurringInvoices/           # Recurring invoice stub models for invoice links
 	│   ├── Shared/                      # Cross-resource primitives (ContactReference, ProjectReference, CurrencyCode)
+	│   ├── Tasks/                       # Task models and response wrappers
+	│   ├── Timeslips/                   # Timeslip models and response wrappers
 	│   └── Users/                       # User models and response wrappers
 	└── Services/                        # Resource-oriented service classes
 		├── Categories/                  # CategoryService and category write/response mappers
@@ -43,8 +50,16 @@ src/
 		│   └── ContactService.cs
 		├── EmailAddresses/
 		│   └── EmailAddressesService.cs
+		├── Invoices/
+		│   └── InvoiceService.cs
+		├── Notes/
+		│   └── NoteService.cs
 		├── Projects/
 		│   └── ProjectService.cs
+		├── Tasks/
+		│   └── TaskService.cs
+		├── Timeslips/
+		│   └── TimeslipService.cs
 		└── Users/
 		    └── UserService.cs
 
@@ -59,27 +74,36 @@ tests/
 	├── Models/
 	│   ├── Categories/
 	│   ├── Contacts/
+	│   ├── Invoices/
+	│   ├── Notes/
 	│   ├── Projects/
 	│   ├── Shared/
+	│   ├── Tasks/
+	│   ├── Timeslips/
 	│   └── Users/
 	├── Sample/                          # Sample-app helper tests (Turpinverse, wire diagnostics)
+	├── Samples/                         # Console sample helper tests
 	├── Services/
 	│   ├── Categories/
 	│   ├── Company/
 	│   ├── Contacts/
 	│   ├── EmailAddresses/
+	│   ├── Invoices/
+	│   ├── Notes/
 	│   ├── Projects/
+	│   ├── Tasks/
+	│   ├── Timeslips/
 	│   └── Users/
 	└── TestSupport/
 ```
 
 **Namespace layout:**
-- `FreeAgent.Client` - top-level consumer namespace (`FreeAgentClient`, `PaginatedResponse<T>`, `ProjectGetOptions`)
+- `FreeAgent.Client` - top-level consumer namespace (`FreeAgentClient`, `PaginatedResponse<T>`, `*GetOptions`)
 - `FreeAgent.Client.Infrastructure.Authentication` - OAuth types
 - `FreeAgent.Client.Infrastructure.Configuration` - FreeAgentEnvironment, FreeAgentEnvironmentEndpoints
 - `FreeAgent.Client.Infrastructure.Http` - HTTP client, exceptions, pagination helpers
-- `FreeAgent.Client.Models.[Resource]` - resource models (Categories, Company, Contacts, EmailAddresses, Projects, Shared, Users)
-- `FreeAgent.Client.Services.[Resource]` - resource services (Categories, Company, Contacts, EmailAddresses, Projects, Users)
+- `FreeAgent.Client.Models.[Resource]` - resource models (BankAccounts, Categories, Company, Contacts, CreditNotes, EmailAddresses, Invoices, Notes, Projects, RecurringInvoices, Shared, Tasks, Timeslips, Users)
+- `FreeAgent.Client.Services.[Resource]` - resource services (Categories, Company, Contacts, EmailAddresses, Invoices, Notes, Projects, Tasks, Timeslips, Users)
 
 **Key naming rules (unchanged):**
 - Service: [Resource]Service (CompanyService, ContactService)
@@ -150,6 +174,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
+| 24 September 2026 | Refresh project-structure tree for Invoices, Tasks, Timeslips, Notes, and stub link models | Goals review documentation drift |
 | 21 September 2026 | Refresh project-structure tree for all implemented resources and tests layout | Goals review sample-sync and docs drift |
 | 21 September 2026 | Adopt Stripe.NET-aligned `ListAsync` / `ListAutoPagingAsync` naming for collection reads | ADR-0012 |
 | 21 September 2026 | Add linked resource identity conventions (`ExpandableField<T>`, `*Reference`, `client.Urls`) | ADR-0011 |
