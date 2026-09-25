@@ -111,6 +111,33 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
         SampleOutput.WriteField("Status", sent.Status);
     }
 
+    [ConsoleSample(Name = "Update credit note comments")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateCreditNoteCommentsAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftCreditNoteAsync(cancellationToken);
+        draft.Comments = "Updated by console sample";
+        draft.OmitCreditNoteItemsFromWrite = true;
+
+        var updated = await context.Client.CreditNotes.UpdateCreditNoteAsync(draft.ResourceId, draft, cancellationToken);
+
+        SampleOutput.WriteHeader("Updated credit note comments");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+        SampleOutput.WriteField("Comments", updated.Comments);
+    }
+
+    [ConsoleSample(Name = "Mark credit note as draft")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task MarkCreditNoteAsDraftAsync(CancellationToken cancellationToken)
+    {
+        var sent = await CreateSentSampleCreditNoteAsync(cancellationToken);
+        var draft = await context.Client.CreditNotes.MarkCreditNoteAsDraftAsync(sent.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Marked credit note as draft");
+        SampleOutput.WriteField("Id", draft.ResourceId);
+        SampleOutput.WriteField("Status", draft.Status);
+    }
+
     [ConsoleSample(Name = "Get credit note PDF", ExcludeFromRunAll = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task GetCreditNotePdfAsync(CancellationToken cancellationToken)
@@ -173,6 +200,12 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
                 ]
             },
             cancellationToken);
+    }
+
+    private async Task<CreditNote> CreateSentSampleCreditNoteAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftCreditNoteAsync(cancellationToken);
+        return await context.Client.CreditNotes.MarkCreditNoteAsSentAsync(draft.ResourceId, cancellationToken);
     }
 
     private static string FormatCreditNoteRow(CreditNote creditNote) =>
