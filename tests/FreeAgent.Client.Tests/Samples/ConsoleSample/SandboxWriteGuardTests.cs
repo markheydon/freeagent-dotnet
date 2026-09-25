@@ -73,6 +73,22 @@ public class SandboxWriteGuardTests
             Environment.SetEnvironmentVariable(SandboxWriteGuard.AllowProductionWritesVariableName, previous);
         }
     }
+
+    [Fact]
+    public void ResolveAllowProductionWrites_EnvironmentOne_ReturnsTrue()
+    {
+        var previous = Environment.GetEnvironmentVariable(SandboxWriteGuard.AllowProductionWritesVariableName);
+        try
+        {
+            Environment.SetEnvironmentVariable(SandboxWriteGuard.AllowProductionWritesVariableName, "1");
+
+            Assert.True(SandboxWriteGuard.ResolveAllowProductionWrites(false));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(SandboxWriteGuard.AllowProductionWritesVariableName, previous);
+        }
+    }
 }
 
 #endif

@@ -46,6 +46,18 @@ public class ConsoleSampleRunnerTests
         Assert.IsNotType<SampleSkippedException>(exception);
     }
 
+    [Fact]
+    public async Task RunAllAsync_Production_ThrowsBeforeRunningExamples()
+    {
+        var services = CreateServices(FreeAgentEnvironment.Production, allowProductionWrites: false);
+
+        using var scope = services.BuildServiceProvider().CreateScope();
+        var runner = scope.ServiceProvider.GetRequiredService<ConsoleSampleRunner>();
+        var options = ConsoleRunOptions.Parse(["--run-all"]);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => runner.RunAllAsync(options));
+    }
+
     private static ServiceCollection CreateServices(FreeAgentEnvironment environment, bool allowProductionWrites)
     {
         var services = new ServiceCollection();

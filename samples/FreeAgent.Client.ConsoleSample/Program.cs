@@ -51,17 +51,7 @@ using var oauthClient = new FreeAgentOAuthClient(
 
 Console.WriteLine("FreeAgent.Client console sample");
 Console.WriteLine($"Environment: {environment}");
-if (allowProductionWrites)
-{
-    Console.WriteLine(
-        "Warning: Production writes enabled — mutating examples will modify live account data.");
-}
-else
-{
-    Console.WriteLine(
-        "Warning: Examples marked as mutating create, update, or delete data in the connected account.");
-}
-
+ConsoleSampleStartup.WriteEnvironmentNotice(environment, allowProductionWrites);
 Console.WriteLine();
 
 OAuthTokenResponse token;

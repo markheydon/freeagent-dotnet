@@ -9,6 +9,7 @@ namespace FreeAgent.Client.Tests.Samples.ConsoleSample;
 
 public class ConsoleSampleClassificationTests
 {
+    // Update both constants when adding or removing [ConsoleSample] methods.
     private const int ExpectedExampleCount = 120;
     private const int ExpectedMutatingCount = 65;
 
@@ -23,7 +24,7 @@ public class ConsoleSampleClassificationTests
     }
 
     [Fact]
-    public void DiscoverSamples_MutatingMethodsHaveMutatesDataAttribute()
+    public void DiscoverSamples_MutatesDataMatchesHeuristic()
     {
         var assembly = typeof(DependencyInjection).Assembly;
         var providerTypes = assembly.GetTypes()
@@ -39,11 +40,12 @@ public class ConsoleSampleClassificationTests
             {
                 var attribute = method.GetCustomAttribute<ConsoleSampleAttribute>()!;
                 var name = string.IsNullOrWhiteSpace(attribute.Name) ? method.Name : attribute.Name;
+                var expectedMutating = LooksMutating(name);
 
-                if (LooksMutating(name))
-                {
-                    Assert.True(attribute.MutatesData, $"Expected MutatesData on {providerType.Name}.{method.Name} ({name}).");
-                }
+                Assert.True(
+                    attribute.MutatesData == expectedMutating,
+                    $"MutatesData mismatch on {providerType.Name}.{method.Name} ({name}). " +
+                    "Set MutatesData = true for create/update/delete examples, or rename the example.");
             }
         }
     }

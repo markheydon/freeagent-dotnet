@@ -24,7 +24,9 @@ internal static class SampleEnvironment
             return AuthBootstrap.DefaultEnvironment;
         }
 
-        if (!Enum.TryParse<FreeAgentEnvironment>(value, ignoreCase: true, out var environment))
+        var trimmed = value.Trim();
+        if (!Enum.TryParse<FreeAgentEnvironment>(trimmed, ignoreCase: true, out var environment)
+            || !string.Equals(Enum.GetName(environment), trimmed, StringComparison.OrdinalIgnoreCase))
         {
             throw new InvalidOperationException(
                 $"{EnvironmentVariableName} must be 'Sandbox' or 'Production' (got '{value}').");

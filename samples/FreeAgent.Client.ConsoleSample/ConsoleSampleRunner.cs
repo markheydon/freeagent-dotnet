@@ -34,11 +34,6 @@ internal sealed class ConsoleSampleRunner
     }
 
     /// <summary>
-    /// Whether any discovered example mutates API data.
-    /// </summary>
-    public bool HasMutatingExamples => _entries.Exists(e => e.MutatesData);
-
-    /// <summary>
     /// Returns discovered examples for unit tests.
     /// </summary>
     internal IReadOnlyList<DiscoveredConsoleSample> GetDiscoveredSamples() =>
@@ -117,6 +112,8 @@ internal sealed class ConsoleSampleRunner
     /// <returns>Process exit code.</returns>
     public async Task<int> RunAllAsync(ConsoleRunOptions options, CancellationToken cancellationToken = default)
     {
+        SandboxWriteGuard.EnsureRunAllAllowed(_runtime.Environment);
+
         var reporter = new SampleRunReporter();
         var entries = FilterEntries(options.CategoryFilter)
             .Where(e => e.IncludeInRunAll)

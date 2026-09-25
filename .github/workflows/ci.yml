@@ -132,6 +132,7 @@ jobs:
       - name: Run console sample examples
         if: steps.policy.outputs.mode == 'run'
         env:
+          FREEAGENT_ENVIRONMENT: Sandbox
           FREEAGENT_CLIENT_ID: ${{ secrets.FREEAGENT_CLIENT_ID }}
           FREEAGENT_CLIENT_SECRET: ${{ secrets.FREEAGENT_CLIENT_SECRET }}
           FREEAGENT_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
