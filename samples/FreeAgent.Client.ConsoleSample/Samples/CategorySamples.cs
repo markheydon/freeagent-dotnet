@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using FreeAgent.Client.Models.Categories;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
@@ -55,9 +56,10 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateIncomeCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
-            "048",
-            ct => context.Client.Categories.CreateIncomeCategoryAsync(
-                CreateIncomeCategoryRequest.Create("Console probe income category", "048"),
+            IncomeNominalCodeRangeMin,
+            IncomeNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateIncomeCategoryAsync(
+                CreateIncomeCategoryRequest.Create("Console probe income category", nominalCode),
                 ct),
             cancellationToken);
 
@@ -65,13 +67,14 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateIncomeCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
-            "048",
-            ct => context.Client.Categories.CreateIncomeCategoryAsync(
-                CreateIncomeCategoryRequest.Create("Console probe income category", "048"),
+            IncomeNominalCodeRangeMin,
+            IncomeNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateIncomeCategoryAsync(
+                CreateIncomeCategoryRequest.Create("Console probe income category", nominalCode),
                 ct),
-            ct => context.Client.Categories.UpdateIncomeCategoryAsync(
-                "048",
-                UpdateIncomeCategoryRequest.Create("Console probe income category (updated)", "048"),
+            (nominalCode, ct) => context.Client.Categories.UpdateIncomeCategoryAsync(
+                nominalCode,
+                UpdateIncomeCategoryRequest.Create("Console probe income category (updated)", nominalCode),
                 ct),
             cancellationToken);
 
@@ -79,11 +82,12 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateCostOfSalesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
-            "101",
-            ct => context.Client.Categories.CreateCostOfSalesCategoryAsync(
+            CostOfSalesNominalCodeRangeMin,
+            CostOfSalesNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateCostOfSalesCategoryAsync(
                 CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(
                     "Console probe cost of sales category",
-                    "101",
+                    nominalCode,
                     UkLimitedCompanyCostOfSalesTaxReportingName.Purchases,
                     allowableForTax: true,
                     autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate),
@@ -94,20 +98,21 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateCostOfSalesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
-            "101",
-            ct => context.Client.Categories.CreateCostOfSalesCategoryAsync(
+            CostOfSalesNominalCodeRangeMin,
+            CostOfSalesNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateCostOfSalesCategoryAsync(
                 CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(
                     "Console probe cost of sales category",
-                    "101",
+                    nominalCode,
                     UkLimitedCompanyCostOfSalesTaxReportingName.Purchases,
                     allowableForTax: true,
                     autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate),
                 ct),
-            ct => context.Client.Categories.UpdateCostOfSalesCategoryAsync(
-                "101",
+            (nominalCode, ct) => context.Client.Categories.UpdateCostOfSalesCategoryAsync(
+                nominalCode,
                 UpdateCostOfSalesCategoryRequest.ForUkLimitedCompany(
                     "Console probe cost of sales category (updated)",
-                    "101",
+                    nominalCode,
                     UkLimitedCompanyCostOfSalesTaxReportingName.Purchases,
                     allowableForTax: true,
                     autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate),
@@ -118,11 +123,12 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateAdminExpensesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
-            "212",
-            ct => context.Client.Categories.CreateAdminExpensesCategoryAsync(
+            AdminExpensesNominalCodeRangeMin,
+            AdminExpensesNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateAdminExpensesCategoryAsync(
                 CreateAdminExpensesCategoryRequest.ForUkLimitedCompany(
                     "Console probe admin expenses category",
-                    "212",
+                    nominalCode,
                     UkLimitedCompanyAdminExpensesTaxReportingName.ComputerSoftwareCosts,
                     allowableForTax: true,
                     autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate),
@@ -133,20 +139,21 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateAdminExpensesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
-            "212",
-            ct => context.Client.Categories.CreateAdminExpensesCategoryAsync(
+            AdminExpensesNominalCodeRangeMin,
+            AdminExpensesNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateAdminExpensesCategoryAsync(
                 CreateAdminExpensesCategoryRequest.ForUkLimitedCompany(
                     "Console probe admin expenses category",
-                    "212",
+                    nominalCode,
                     UkLimitedCompanyAdminExpensesTaxReportingName.ComputerSoftwareCosts,
                     allowableForTax: true,
                     autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate),
                 ct),
-            ct => context.Client.Categories.UpdateAdminExpensesCategoryAsync(
-                "212",
+            (nominalCode, ct) => context.Client.Categories.UpdateAdminExpensesCategoryAsync(
+                nominalCode,
                 UpdateAdminExpensesCategoryRequest.ForUkLimitedCompany(
                     "Console probe admin expenses category (updated)",
-                    "212",
+                    nominalCode,
                     UkLimitedCompanyAdminExpensesTaxReportingName.ComputerSoftwareCosts,
                     allowableForTax: true,
                     autoSalesTaxRate: CategoryAutoSalesTaxRate.StandardRate),
@@ -157,11 +164,12 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateCurrentAssetCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
-            "672",
-            ct => context.Client.Categories.CreateCurrentAssetCategoryAsync(
+            CurrentAssetNominalCodeRangeMin,
+            CurrentAssetNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateCurrentAssetCategoryAsync(
                 CreateCurrentAssetCategoryRequest.Create(
                     "Console probe current asset category",
-                    "672",
+                    nominalCode,
                     CurrentAssetTaxReportingName.Debtors),
                 ct),
             cancellationToken);
@@ -170,18 +178,19 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateCurrentAssetCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
-            "672",
-            ct => context.Client.Categories.CreateCurrentAssetCategoryAsync(
+            CurrentAssetNominalCodeRangeMin,
+            CurrentAssetNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateCurrentAssetCategoryAsync(
                 CreateCurrentAssetCategoryRequest.Create(
                     "Console probe current asset category",
-                    "672",
+                    nominalCode,
                     CurrentAssetTaxReportingName.Debtors),
                 ct),
-            ct => context.Client.Categories.UpdateCurrentAssetCategoryAsync(
-                "672",
+            (nominalCode, ct) => context.Client.Categories.UpdateCurrentAssetCategoryAsync(
+                nominalCode,
                 UpdateCurrentAssetCategoryRequest.Create(
                     "Console probe current asset category (updated)",
-                    "672",
+                    nominalCode,
                     CurrentAssetTaxReportingName.Debtors),
                 ct),
             cancellationToken);
@@ -190,12 +199,13 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateLiabilitiesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
-            "732",
-            ct => context.Client.Categories.CreateLiabilitiesCategoryAsync(
-                CreateLiabilitiesCategoryRequest.ForOtherCompanyTypes(
+            LiabilitiesNominalCodeRangeMin,
+            LiabilitiesNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateLiabilitiesCategoryAsync(
+                CreateLiabilitiesCategoryRequest.ForUkLimitedCompany(
                     "Console probe liabilities category",
-                    "732",
-                    OtherCompanyLiabilitiesTaxReportingName.Creditors),
+                    nominalCode,
+                    UkLimitedCompanyLiabilitiesTaxReportingName.Creditors),
                 ct),
             cancellationToken);
 
@@ -203,18 +213,19 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateLiabilitiesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
-            "732",
-            ct => context.Client.Categories.CreateLiabilitiesCategoryAsync(
-                CreateLiabilitiesCategoryRequest.ForOtherCompanyTypes(
+            LiabilitiesNominalCodeRangeMin,
+            LiabilitiesNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateLiabilitiesCategoryAsync(
+                CreateLiabilitiesCategoryRequest.ForUkLimitedCompany(
                     "Console probe liabilities category",
-                    "732",
-                    OtherCompanyLiabilitiesTaxReportingName.Creditors),
+                    nominalCode,
+                    UkLimitedCompanyLiabilitiesTaxReportingName.Creditors),
                 ct),
-            ct => context.Client.Categories.UpdateLiabilitiesCategoryAsync(
-                "732",
+            (nominalCode, ct) => context.Client.Categories.UpdateLiabilitiesCategoryAsync(
+                nominalCode,
                 UpdateLiabilitiesCategoryRequest.ForUkLimitedCompany(
                     "Console probe liabilities category (updated)",
-                    "732",
+                    nominalCode,
                     UkLimitedCompanyLiabilitiesTaxReportingName.Creditors),
                 ct),
             cancellationToken);
@@ -223,9 +234,10 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateEquityCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
-            "922",
-            ct => context.Client.Categories.CreateEquityCategoryAsync(
-                CreateEquityCategoryRequest.Create("Console probe equity category", "922"),
+            EquityNominalCodeRangeMin,
+            EquityNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateEquityCategoryAsync(
+                CreateEquityCategoryRequest.Create("Console probe equity category", nominalCode),
                 ct),
             cancellationToken);
 
@@ -233,49 +245,85 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateEquityCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
-            "922",
-            ct => context.Client.Categories.CreateEquityCategoryAsync(
-                CreateEquityCategoryRequest.Create("Console probe equity category", "922"),
+            EquityNominalCodeRangeMin,
+            EquityNominalCodeRangeMax,
+            (nominalCode, ct) => context.Client.Categories.CreateEquityCategoryAsync(
+                CreateEquityCategoryRequest.Create("Console probe equity category", nominalCode),
                 ct),
-            ct => context.Client.Categories.UpdateEquityCategoryAsync(
-                "922",
-                UpdateEquityCategoryRequest.Create("Console probe equity category (updated)", "922"),
+            (nominalCode, ct) => context.Client.Categories.UpdateEquityCategoryAsync(
+                nominalCode,
+                UpdateEquityCategoryRequest.Create("Console probe equity category (updated)", nominalCode),
                 ct),
             cancellationToken);
 
+    private const int IncomeNominalCodeRangeMin = 1;
+    private const int IncomeNominalCodeRangeMax = 49;
+    private const int CostOfSalesNominalCodeRangeMin = 96;
+    private const int CostOfSalesNominalCodeRangeMax = 199;
+    private const int AdminExpensesNominalCodeRangeMin = 200;
+    private const int AdminExpensesNominalCodeRangeMax = 399;
+    private const int CurrentAssetNominalCodeRangeMin = 671;
+    private const int CurrentAssetNominalCodeRangeMax = 720;
+    private const int LiabilitiesNominalCodeRangeMin = 731;
+    private const int LiabilitiesNominalCodeRangeMax = 780;
+    private const int EquityNominalCodeRangeMin = 921;
+    private const int EquityNominalCodeRangeMax = 960;
+
     private async Task RunCreateAndDeleteAsync(
-        string nominalCode,
-        Func<CancellationToken, Task<Category>> create,
+        int minNominalCode,
+        int maxNominalCode,
+        Func<string, CancellationToken, Task<Category>> create,
         CancellationToken cancellationToken)
     {
-        var created = await create(cancellationToken);
+        var nominalCode = AllocateProbeNominalCode(minNominalCode, maxNominalCode);
+        var created = await create(nominalCode, cancellationToken);
 
-        SampleOutput.WriteHeader("Created category");
-        SampleOutput.WriteField("Nominal code", created.NominalCode);
-        SampleOutput.WriteField("Description", created.Description);
+        try
+        {
+            SampleOutput.WriteHeader("Created category");
+            SampleOutput.WriteField("Nominal code", created.NominalCode);
+            SampleOutput.WriteField("Description", created.Description);
+        }
+        finally
+        {
+            await context.Client.Categories.DeleteCategoryAsync(nominalCode, cancellationToken);
 
-        await context.Client.Categories.DeleteCategoryAsync(nominalCode, cancellationToken);
-
-        SampleOutput.WriteHeader("Deleted category");
-        SampleOutput.WriteField("Nominal code", nominalCode);
+            SampleOutput.WriteHeader("Deleted category");
+            SampleOutput.WriteField("Nominal code", nominalCode);
+        }
     }
 
     private async Task RunUpdateAndDeleteAsync(
-        string nominalCode,
-        Func<CancellationToken, Task<Category>> create,
-        Func<CancellationToken, Task<Category>> update,
+        int minNominalCode,
+        int maxNominalCode,
+        Func<string, CancellationToken, Task<Category>> create,
+        Func<string, CancellationToken, Task<Category>> update,
         CancellationToken cancellationToken)
     {
-        await create(cancellationToken);
-        var updated = await update(cancellationToken);
+        var nominalCode = AllocateProbeNominalCode(minNominalCode, maxNominalCode);
+        await create(nominalCode, cancellationToken);
 
-        SampleOutput.WriteHeader("Updated category");
-        SampleOutput.WriteField("Nominal code", updated.NominalCode);
-        SampleOutput.WriteField("Description", updated.Description);
+        try
+        {
+            var updated = await update(nominalCode, cancellationToken);
 
-        await context.Client.Categories.DeleteCategoryAsync(nominalCode, cancellationToken);
+            SampleOutput.WriteHeader("Updated category");
+            SampleOutput.WriteField("Nominal code", updated.NominalCode);
+            SampleOutput.WriteField("Description", updated.Description);
+        }
+        finally
+        {
+            await context.Client.Categories.DeleteCategoryAsync(nominalCode, cancellationToken);
 
-        SampleOutput.WriteHeader("Deleted category");
-        SampleOutput.WriteField("Nominal code", nominalCode);
+            SampleOutput.WriteHeader("Deleted category");
+            SampleOutput.WriteField("Nominal code", nominalCode);
+        }
+    }
+
+    private static string AllocateProbeNominalCode(int minInclusive, int maxInclusive)
+    {
+        var range = maxInclusive - minInclusive + 1;
+        var offset = (int)(Math.Abs(DateTime.UtcNow.Ticks % range));
+        return (minInclusive + offset).ToString("D3", CultureInfo.InvariantCulture);
     }
 }

@@ -79,22 +79,29 @@ internal sealed class UserSamples(SampleContext context) : IConsoleSampleProvide
         await context.Client.Users.DeleteUserAsync(updated.ResourceId, cancellationToken);
     }
 
-    [ConsoleSample(Name = "Update current user opening mileage")]
+    [ConsoleSample(Name = "Update current user opening mileage", ExcludeFromRunAll = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateCurrentUserOpeningMileageAsync(CancellationToken cancellationToken)
     {
         var current = await context.Client.Users.GetCurrentUserAsync(cancellationToken);
         var previousMileage = current.OpeningMileage ?? 0;
-        current.OpeningMileage = previousMileage + 1;
 
-        var updated = await context.Client.Users.UpdateCurrentUserAsync(current, cancellationToken);
+        try
+        {
+            current.OpeningMileage = previousMileage + 1;
 
-        SampleOutput.WriteHeader("Updated current user opening mileage");
-        SampleOutput.WriteField("Id", updated.ResourceId);
-        SampleOutput.WriteField("Opening mileage", updated.OpeningMileage);
+            var updated = await context.Client.Users.UpdateCurrentUserAsync(current, cancellationToken);
 
-        current.OpeningMileage = previousMileage;
-        await context.Client.Users.UpdateCurrentUserAsync(current, cancellationToken);
+            SampleOutput.WriteHeader("Updated current user opening mileage");
+            SampleOutput.WriteField("Id", updated.ResourceId);
+            SampleOutput.WriteField("Opening mileage", updated.OpeningMileage);
+        }
+        finally
+        {
+            var restore = await context.Client.Users.GetCurrentUserAsync(cancellationToken);
+            restore.OpeningMileage = previousMileage;
+            await context.Client.Users.UpdateCurrentUserAsync(restore, cancellationToken);
+        }
     }
 
     private Task<User> CreateSampleUserAsync(CancellationToken cancellationToken)

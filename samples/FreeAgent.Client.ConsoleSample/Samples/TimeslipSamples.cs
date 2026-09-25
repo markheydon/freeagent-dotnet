@@ -100,6 +100,11 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
         var probe = await BuildSampleTimeslipAsync(cancellationToken);
         var created = await context.Client.Timeslips.CreateTimeslipsAsync([probe], cancellationToken);
 
+        if (created.Count == 0)
+        {
+            SampleContext.Skip("batch create returned no timeslips");
+        }
+
         SampleOutput.WriteHeader("Batch created timeslips");
         SampleOutput.WriteField("Count", created.Count);
         SampleOutput.WriteField("First ID", created[0].ResourceId);
@@ -134,7 +139,7 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
     private async Task StartAndStopTimeslipTimerAsync(CancellationToken cancellationToken)
     {
         var created = await CreateSampleTimeslipAsync(cancellationToken);
-        var started = await context.Client.Timeslips.StartTimerAsync(created.ResourceId, cancellationToken);
+        await context.Client.Timeslips.StartTimerAsync(created.ResourceId, cancellationToken);
         var stopped = await context.Client.Timeslips.StopTimerAsync(created.ResourceId, cancellationToken);
 
         SampleOutput.WriteHeader("Started and stopped timeslip timer");
