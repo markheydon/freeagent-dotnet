@@ -256,28 +256,28 @@ internal static class LinkedResourceHydration
         task.AttachProject(response.Project);
     }
 
-    public static async System.Threading.Tasks.Task HydrateTaskAsync(
+    public static async System.Threading.Tasks.Task HydrateProjectTaskAsync(
         Timeslip timeslip,
         IFreeAgentRequestClient requestClient,
-        bool includeTask,
+        bool includeProjectTask,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(timeslip);
         ArgumentNullException.ThrowIfNull(requestClient);
 
-        if (!includeTask || timeslip.Task is not null || timeslip.TaskId is not long taskId)
+        if (!includeProjectTask || timeslip.ProjectTask is not null || timeslip.ProjectTaskId is not long projectTaskId)
         {
             return;
         }
 
-        var response = await requestClient.GetAsync<TaskResponse>($"tasks/{taskId}", cancellationToken);
+        var response = await requestClient.GetAsync<ProjectTaskResponse>($"tasks/{projectTaskId}", cancellationToken);
 
-        if (response.Task is null)
+        if (response.ProjectTask is null)
         {
             throw new FreeAgentApiException("Task data missing from API response");
         }
 
-        timeslip.AttachTask(response.Task);
+        timeslip.AttachProjectTask(response.ProjectTask);
     }
 
     public static async System.Threading.Tasks.Task HydrateProjectAsync(

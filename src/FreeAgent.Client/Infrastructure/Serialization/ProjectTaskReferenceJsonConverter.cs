@@ -5,11 +5,11 @@ using FreeAgent.Client.Models.Shared;
 namespace FreeAgent.Client.Infrastructure.Serialization;
 
 /// <summary>
-/// Serialises <see cref="TaskReference"/> as a URI string.
+/// Serialises <see cref="ProjectTaskReference"/> as a URI string.
 /// </summary>
-internal sealed class TaskReferenceJsonConverter : JsonConverter<TaskReference>
+internal sealed class ProjectTaskReferenceJsonConverter : JsonConverter<ProjectTaskReference>
 {
-    public override TaskReference Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override ProjectTaskReference Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType == JsonTokenType.Null)
         {
@@ -27,10 +27,10 @@ internal sealed class TaskReferenceJsonConverter : JsonConverter<TaskReference>
             throw new JsonException("Task reference URI cannot be null or empty.");
         }
 
-        return TaskReference.Parse(uri);
+        return ProjectTaskReference.Parse(uri);
     }
 
-    public override void Write(Utf8JsonWriter writer, TaskReference value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, ProjectTaskReference value, JsonSerializerOptions options)
     {
         writer.WriteStringValue(value.Uri);
     }

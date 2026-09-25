@@ -73,7 +73,7 @@ src/
 		├── StockItems/
 		│   └── StockItemsService.cs
 		├── Tasks/
-		│   └── TaskService.cs
+		│   └── ProjectTaskService.cs
 		├── Timeslips/
 		│   └── TimeslipService.cs
 		└── Users/

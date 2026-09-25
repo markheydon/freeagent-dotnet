@@ -78,11 +78,11 @@ var organisation = withContact.Contact!.OrganisationName;
 // 3. Create a task under the project (parent scoped via query param)
 using FreeAgent.Client.Models.Tasks;
 
-var task = await client.Tasks.CreateTaskAsync(projectId, new ProjectTask
+var task = await client.ProjectTasks.CreateProjectTaskAsync(projectId, new ProjectTask
 {
     Name = "Planning",
     IsBillable = true,
-    Status = TaskStatus.Active
+    Status = ProjectTaskStatus.Active
 });
 var taskId = task.ResourceId;
 
@@ -91,7 +91,7 @@ using FreeAgent.Client.Models.Timeslips;
 
 await client.Timeslips.CreateTimeslipAsync(new Timeslip
 {
-    TaskId = taskId,
+    ProjectTaskId = projectTaskId,
     ProjectId = projectId,
     UserId = 1,
     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),

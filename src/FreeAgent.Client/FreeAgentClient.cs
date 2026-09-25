@@ -59,7 +59,7 @@ public sealed class FreeAgentClient : IDisposable
     /// <summary>
     /// Tasks API service.
     /// </summary>
-    public TaskService Tasks { get; }
+    public ProjectTaskService ProjectTasks { get; }
 
     /// <summary>
     /// Timeslips API service.
@@ -169,7 +169,7 @@ public sealed class FreeAgentClient : IDisposable
         Users = new UserService(_httpClient);
         EmailAddresses = new EmailAddressesService(_httpClient);
         Projects = new ProjectService(_httpClient);
-        Tasks = new TaskService(_httpClient);
+        ProjectTasks = new ProjectTaskService(_httpClient);
         Timeslips = new TimeslipService(_httpClient);
         Notes = new NoteService(_httpClient);
         Invoices = new InvoiceService(_httpClient);

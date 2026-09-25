@@ -8,7 +8,7 @@ public sealed class TimeslipGetOptions
     /// <summary>
     /// When <see langword="true"/>, fetches the linked task when the response contains only a task URI.
     /// </summary>
-    public bool IncludeTask { get; init; }
+    public bool IncludeProjectTask { get; init; }
 
     /// <summary>
     /// When <see langword="true"/>, fetches the linked project when the response contains only a project URI.

@@ -14,8 +14,8 @@ internal static class LinkedResourceWriteMapper
     public static ProjectReference? ToProjectReference(FreeAgentEnvironment environment, long? projectId) =>
         projectId is long id ? ProjectReference.ForEnvironment(environment, id) : null;
 
-    public static TaskReference? ToTaskReference(FreeAgentEnvironment environment, long? taskId) =>
-        taskId is long id ? TaskReference.ForEnvironment(environment, id) : null;
+    public static ProjectTaskReference? ToProjectTaskReference(FreeAgentEnvironment environment, long? projectTaskId) =>
+        projectTaskId is long id ? ProjectTaskReference.ForEnvironment(environment, id) : null;
 
     public static UserReference? ToUserReference(FreeAgentEnvironment environment, long? userId) =>
         userId is long id ? UserReference.ForEnvironment(environment, id) : null;

@@ -11,7 +11,7 @@ namespace FreeAgent.Client.Models.Timeslips;
 internal sealed class TimeslipWritePayload
 {
     [JsonPropertyName("task")]
-    public TaskReference? Task { get; set; }
+    public ProjectTaskReference? ProjectTask { get; set; }
 
     [JsonPropertyName("user")]
     public UserReference? User { get; set; }
@@ -35,7 +35,7 @@ internal sealed class TimeslipWritePayload
 
         return new TimeslipWritePayload
         {
-            Task = LinkedResourceWriteMapper.ToTaskReference(environment, timeslip.TaskId),
+            ProjectTask = LinkedResourceWriteMapper.ToProjectTaskReference(environment, timeslip.ProjectTaskId),
             User = LinkedResourceWriteMapper.ToUserReference(environment, timeslip.UserId),
             Project = LinkedResourceWriteMapper.ToProjectReference(environment, timeslip.ProjectId),
             DatedOn = timeslip.DatedOn,

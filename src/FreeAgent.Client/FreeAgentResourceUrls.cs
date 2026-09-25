@@ -32,9 +32,9 @@ public sealed class FreeAgentResourceUrls
     /// <summary>
     /// Creates a task resource reference.
     /// </summary>
-    /// <param name="taskId">Task identifier.</param>
+    /// <param name="projectTaskId">Task identifier.</param>
     /// <returns>Task reference.</returns>
-    public TaskReference Task(long taskId) => TaskReference.ForEnvironment(_environment, taskId);
+    public ProjectTaskReference ProjectTask(long projectTaskId) => ProjectTaskReference.ForEnvironment(_environment, projectTaskId);
 
     /// <summary>
     /// Creates a user resource reference.

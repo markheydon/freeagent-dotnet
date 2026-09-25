@@ -18,12 +18,12 @@ internal sealed class TaskWritePayload
     public decimal? BillingRate { get; set; }
 
     [JsonPropertyName("billing_period")]
-    public TaskBillingPeriod? BillingPeriod { get; set; }
+    public ProjectTaskBillingPeriod? BillingPeriod { get; set; }
 
     [JsonPropertyName("status")]
-    public TaskStatus? Status { get; set; }
+    public ProjectTaskStatus? Status { get; set; }
 
-    public static TaskWritePayload FromTask(ProjectTask task)
+    public static TaskWritePayload FromProjectTask(ProjectTask task)
     {
         ArgumentNullException.ThrowIfNull(task);
 

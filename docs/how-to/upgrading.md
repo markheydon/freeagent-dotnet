@@ -60,6 +60,24 @@ Top-level resources implement `IFreeAgentResource` with a computed `ResourceId` 
 
 `ExpandableField<T>` is no longer part of the public API.
 
+### Project task naming consistency
+
+Task-related public API members now use the `ProjectTask` prefix to align with the `ProjectTask` model and avoid confusion with `System.Threading.Tasks.Task`:
+
+| Before | After |
+|---|---|
+| `client.Tasks` | `client.ProjectTasks` |
+| `TaskService` | `ProjectTaskService` |
+| `GetTaskAsync` / `CreateTaskAsync` / `UpdateTaskAsync` / `DeleteTaskAsync` | `GetProjectTaskAsync` / `CreateProjectTaskAsync` / `UpdateProjectTaskAsync` / `DeleteProjectTaskAsync` |
+| `TaskGetOptions` | `ProjectTaskGetOptions` |
+| `TaskReference` | `ProjectTaskReference` |
+| `client.Urls.Task(id)` | `client.Urls.ProjectTask(id)` |
+| `TaskStatus`, `TaskViews`, `TaskSortOptions`, `TaskBillingPeriod` | `ProjectTaskStatus`, `ProjectTaskViews`, `ProjectTaskSortOptions`, `ProjectTaskBillingPeriod` |
+| `Timeslip.Task` / `Timeslip.TaskId` | `Timeslip.ProjectTask` / `Timeslip.ProjectTaskId` |
+| `TimeslipGetOptions.IncludeTask` | `TimeslipGetOptions.IncludeProjectTask` |
+
+Wire JSON property names (`task`, `tasks`) are unchanged.
+
 ### Contacts list returns full `Contact` models
 
 Contact list methods now return `Contact` instead of the removed `ContactSummary` type. Update any code that depended on the slimmer list shape.

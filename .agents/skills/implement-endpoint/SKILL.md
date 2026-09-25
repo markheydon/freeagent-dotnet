@@ -114,7 +114,7 @@ Follow the probe-page standard documented in [`docs/contributing/sample-probe-pa
 
 ### Console sample (example providers)
 
-1. Add or update `Samples/<Resource>Samples.cs` with `[ConsoleSamples]` / `[ConsoleSample]` examples (see `TaskSamples.cs`).
+1. Add or update `Samples/<Resource>Samples.cs` with `[ConsoleSamples]` / `[ConsoleSample]` examples (see `ProjectTaskSamples.cs`).
 2. Add any required helpers to `Samples/SampleData.cs` when examples need sandbox entities.
 3. Update the example catalogue in [`samples/FreeAgent.Client.ConsoleSample/README.md`](../../samples/FreeAgent.Client.ConsoleSample/README.md).
 

@@ -26,7 +26,7 @@ public sealed class TurpinverseTimeslipSeeder
         ArgumentNullException.ThrowIfNull(client);
 
         var taskResult = await _taskSeeder.CreateBlackBessGeneralTaskAsync(client, cancellationToken);
-        var task = taskResult.Task;
+        var task = taskResult.ProjectTask;
 
         if (task.ProjectId is not long projectId)
         {
@@ -40,8 +40,7 @@ public sealed class TurpinverseTimeslipSeeder
         }
 
         return await UpsertTimeslipAsync(
-            client,
-            task,
+            client, task,
             projectId,
             userId,
             ProbeDatedOn,
@@ -60,15 +59,15 @@ public sealed class TurpinverseTimeslipSeeder
         string comment,
         CancellationToken cancellationToken)
     {
-        if (!task.TryGetResourceId(out var taskId))
+        if (!task.TryGetResourceId(out var projectTaskId))
         {
             throw new InvalidOperationException("Could not parse task ID from URL.");
         }
 
-        var existing = await FindExistingTimeslipAsync(client, taskId, userId, datedOn, comment, cancellationToken);
+        var existing = await FindExistingTimeslipAsync(client, projectTaskId, userId, datedOn, comment, cancellationToken);
         var desired = new Timeslip
         {
-            TaskId = taskId,
+            ProjectTaskId = projectTaskId,
             UserId = userId,
             ProjectId = projectId,
             DatedOn = datedOn,
@@ -90,7 +89,7 @@ public sealed class TurpinverseTimeslipSeeder
 
     private static async Task<Timeslip?> FindExistingTimeslipAsync(
         FreeAgentClient client,
-        long taskId,
+        long projectTaskId,
         long userId,
         DateOnly datedOn,
         string comment,
@@ -100,7 +99,7 @@ public sealed class TurpinverseTimeslipSeeder
                            perPage: 100,
                            fromDate: datedOn,
                            toDate: datedOn,
-                           taskId: taskId,
+                           projectTaskId: projectTaskId,
                            userId: userId,
                            cancellationToken: cancellationToken))
         {

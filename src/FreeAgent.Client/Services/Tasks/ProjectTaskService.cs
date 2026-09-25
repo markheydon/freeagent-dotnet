@@ -13,7 +13,7 @@ namespace FreeAgent.Client.Services.Tasks;
 /// Tasks belong to a project. List and create operations scope the parent via <c>project</c> query parameters.
 /// See also <see cref="Projects.ProjectService"/> for project operations.
 /// </remarks>
-public sealed class TaskService
+public sealed class ProjectTaskService
 {
     private readonly IFreeAgentRequestClient _requestClient;
 
@@ -21,7 +21,7 @@ public sealed class TaskService
     /// Initializes a new instance of the task service.
     /// </summary>
     /// <param name="requestClient">Internal FreeAgent request client dependency.</param>
-    internal TaskService(IFreeAgentRequestClient requestClient)
+    internal ProjectTaskService(IFreeAgentRequestClient requestClient)
     {
         _requestClient = requestClient ?? throw new ArgumentNullException(nameof(requestClient));
     }
@@ -31,7 +31,7 @@ public sealed class TaskService
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="TaskViews.Active"/>)</param>
+    /// <param name="view">Optional view filter (for example: <see cref="ProjectTaskViews.Active"/>)</param>
     /// <param name="sort">Sort field (name, project, billing_rate, created_at, updated_at); prefix with <c>-</c> for descending</param>
     /// <param name="updatedSince">Return tasks updated on or after this date</param>
     /// <param name="project">Filter by parent project resource reference</param>
@@ -84,27 +84,27 @@ public sealed class TaskService
 
         var endpoint = FreeAgentQueryStringBuilder.BuildEndpoint("tasks", queryParameters);
 
-        var response = await _requestClient.GetWithMetadataAsync<TasksResponse>(endpoint, cancellationToken);
+        var response = await _requestClient.GetWithMetadataAsync<ProjectTasksResponse>(endpoint, cancellationToken);
 
-        if (response.Data.Tasks is null)
+        if (response.Data.ProjectTasks is null)
         {
             throw new FreeAgentApiException("Tasks data missing from API response");
         }
 
-        var total = FreeAgentPaginationHelper.GetTotalCountOrEstimate(response, page, perPage, response.Data.Tasks.Count);
+        var total = FreeAgentPaginationHelper.GetTotalCountOrEstimate(response, page, perPage, response.Data.ProjectTasks.Count);
 
         return new PaginatedResponse<ProjectTask>(
             page,
             perPage,
             total,
-            response.Data.Tasks);
+            response.Data.ProjectTasks);
     }
 
     /// <summary>
     /// Lists all tasks across all pages.
     /// </summary>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="TaskViews.Active"/>)</param>
+    /// <param name="view">Optional view filter (for example: <see cref="ProjectTaskViews.Active"/>)</param>
     /// <param name="sort">Sort field (name, project, billing_rate, created_at, updated_at); prefix with <c>-</c> for descending</param>
     /// <param name="updatedSince">Return tasks updated on or after this date</param>
     /// <param name="project">Filter by parent project resource reference</param>
@@ -144,40 +144,40 @@ public sealed class TaskService
     /// <summary>
     /// Gets a single task by identifier.
     /// </summary>
-    /// <param name="taskId">Task identifier from the resource URL</param>
+    /// <param name="projectTaskId"></param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task details</returns>
-    public Task<ProjectTask> GetTaskAsync(long taskId, CancellationToken cancellationToken = default) =>
-        GetTaskAsync(taskId, options: null, cancellationToken);
+    public Task<ProjectTask> GetProjectTaskAsync(long projectTaskId, CancellationToken cancellationToken = default) =>
+        GetProjectTaskAsync(projectTaskId, options: null, cancellationToken);
 
     /// <summary>
     /// Gets a single task by identifier with optional linked-resource hydration.
     /// </summary>
-    /// <param name="taskId">Task identifier from the resource URL</param>
+    /// <param name="projectTaskId"></param>
     /// <param name="options">Optional hydration settings</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task details</returns>
-    public async Task<ProjectTask> GetTaskAsync(
-        long taskId,
-        TaskGetOptions? options,
+    public async Task<ProjectTask> GetProjectTaskAsync(
+        long projectTaskId,
+        ProjectTaskGetOptions? options,
         CancellationToken cancellationToken = default)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(taskId);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(projectTaskId);
 
-        var response = await _requestClient.GetAsync<TaskResponse>($"tasks/{taskId}", cancellationToken);
+        var response = await _requestClient.GetAsync<ProjectTaskResponse>($"tasks/{projectTaskId}", cancellationToken);
 
-        if (response.Task is null)
+        if (response.ProjectTask is null)
         {
             throw new FreeAgentApiException("Task data missing from API response");
         }
 
         await LinkedResourceHydration.HydrateProjectAsync(
-            response.Task,
+            response.ProjectTask,
             _requestClient,
             options?.IncludeProject == true,
             cancellationToken);
 
-        return response.Task;
+        return response.ProjectTask;
     }
 
     /// <summary>
@@ -187,8 +187,8 @@ public sealed class TaskService
     /// <param name="task">Task attributes to create</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created task</returns>
-    public Task<ProjectTask> CreateTaskAsync(long projectId, ProjectTask task, CancellationToken cancellationToken = default) =>
-        CreateTaskAsync(ProjectReference.ForEnvironment(_requestClient.Environment, projectId), task, cancellationToken);
+    public Task<ProjectTask> CreateProjectTaskAsync(long projectId, ProjectTask task, CancellationToken cancellationToken = default) =>
+        CreateProjectTaskAsync(ProjectReference.ForEnvironment(_requestClient.Environment, projectId), task, cancellationToken);
 
     /// <summary>
     /// Creates a task under a project.
@@ -197,7 +197,7 @@ public sealed class TaskService
     /// <param name="task">Task attributes to create</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created task</returns>
-    public async Task<ProjectTask> CreateTaskAsync(
+    public async Task<ProjectTask> CreateProjectTaskAsync(
         ProjectReference project,
         ProjectTask task,
         CancellationToken cancellationToken = default)
@@ -208,50 +208,50 @@ public sealed class TaskService
             "tasks",
             [new KeyValuePair<string, string>("project", project.Uri)]);
 
-        var content = FreeAgentJsonSerializer.CreateContent(new TaskRequest { Task = TaskWritePayload.FromTask(task) });
-        var response = await _requestClient.PostAsync<TaskResponse>(endpoint, content, cancellationToken);
+        var content = FreeAgentJsonSerializer.CreateContent(new ProjectTaskRequest { ProjectTask = TaskWritePayload.FromProjectTask(task) });
+        var response = await _requestClient.PostAsync<ProjectTaskResponse>(endpoint, content, cancellationToken);
 
-        if (response.Task is null)
+        if (response.ProjectTask is null)
         {
             throw new FreeAgentApiException("Task data missing from API response");
         }
 
-        return response.Task;
+        return response.ProjectTask;
     }
 
     /// <summary>
     /// Updates a task.
     /// </summary>
-    /// <param name="taskId">Task identifier from the resource URL</param>
+    /// <param name="projectTaskId"></param>
     /// <param name="task">Task attributes to update</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated task</returns>
-    public async Task<ProjectTask> UpdateTaskAsync(long taskId, ProjectTask task, CancellationToken cancellationToken = default)
+    public async Task<ProjectTask> UpdateProjectTaskAsync(long projectTaskId, ProjectTask task, CancellationToken cancellationToken = default)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(taskId);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(projectTaskId);
         ArgumentNullException.ThrowIfNull(task);
 
-        var content = FreeAgentJsonSerializer.CreateContent(new TaskRequest { Task = TaskWritePayload.FromTask(task) });
-        var response = await _requestClient.PutAsync<TaskResponse>($"tasks/{taskId}", content, cancellationToken);
+        var content = FreeAgentJsonSerializer.CreateContent(new ProjectTaskRequest { ProjectTask = TaskWritePayload.FromProjectTask(task) });
+        var response = await _requestClient.PutAsync<ProjectTaskResponse>($"tasks/{projectTaskId}", content, cancellationToken);
 
-        if (response.Task is null)
+        if (response.ProjectTask is null)
         {
             throw new FreeAgentApiException("Task data missing from API response");
         }
 
-        return response.Task;
+        return response.ProjectTask;
     }
 
     /// <summary>
     /// Deletes a task.
     /// </summary>
-    /// <param name="taskId">Task identifier from the resource URL</param>
+    /// <param name="projectTaskId"></param>
     /// <param name="cancellationToken">Cancellation token</param>
-    public System.Threading.Tasks.Task DeleteTaskAsync(long taskId, CancellationToken cancellationToken = default)
+    public System.Threading.Tasks.Task DeleteProjectTaskAsync(long projectTaskId, CancellationToken cancellationToken = default)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(taskId);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(projectTaskId);
 
-        return _requestClient.DeleteAsync($"tasks/{taskId}", cancellationToken);
+        return _requestClient.DeleteAsync($"tasks/{projectTaskId}", cancellationToken);
     }
 
     private string? ResolveProjectFilter(ProjectReference? project, long? projectId)

@@ -12,7 +12,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Tasks endpoint"
                          Title="Get, create, update, and delete tasks"
-                         CallUnderTest="TaskService.GetTaskAsync / CreateTaskAsync / UpdateTaskAsync / DeleteTaskAsync"
+                         CallUnderTest="ProjectTaskService.GetProjectTaskAsync / CreateProjectTaskAsync / UpdateProjectTaskAsync / DeleteProjectTaskAsync"
                          Description="Exercises single-task CRUD operations and shows wire-to-model diagnostics."
                          EndpointPath="/v2/tasks/:id"
                          DocsUrl="https://dev.freeagent.com/docs/tasks" />
@@ -50,7 +50,7 @@
                         <code>?id=12345</code> in the URL. Create requires a parent project ID (query param on the API).
                         Seed Turpinverse tasks after seeding projects from <MudLink Href="/projects/detail">Project CRUD</MudLink>.
                     </MudText>
-                    <MudNumericField @bind-Value="_taskId" Label="Task ID" Min="1" />
+                    <MudNumericField @bind-Value="_projectTaskId" Label="Task ID" Min="1" />
                     <MudNumericField @bind-Value="_projectId"
                                      Label="Parent project ID (create only)"
                                      Min="1"
@@ -60,17 +60,17 @@
                     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
                                    StartIcon="@Icons.Material.Filled.CloudDownload"
-                                   OnClick="GetTaskAsync">Get task</MudButton>
+                                   OnClick="GetProjectTaskAsync">Get task</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
                                    OnClick="CreateBlackBessGeneralTaskAsync">Create Black Bess general task</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
                                    OnClick="CreateAllTurpinverseTasksAsync">Create all Turpinverse tasks</MudButton>
                         <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _projectId is null or < 1"
                                    OnClick="CreateProbeTaskAsync">Create probe task</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _taskId is null or < 1"
-                                   OnClick="UpdateTaskAsync">Update task name</MudButton>
-                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _taskId is null or < 1"
-                                   OnClick="DeleteTaskAsync">Delete task</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _projectTaskId is null or < 1"
+                                   OnClick="UpdateProjectTaskAsync">Update task name</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _projectTaskId is null or < 1"
+                                   OnClick="DeleteProjectTaskAsync">Delete task</MudButton>
                     </MudStack>
                 </MudStack>
 
@@ -137,21 +137,21 @@
     private string _wireApiResponse = string.Empty;
     private ProjectTask? _task;
     private ModelProbeSnapshot? _probe;
-    private long? _taskId;
+    private long? _projectTaskId;
     private long? _projectId;
 
     protected override void OnParametersSet()
     {
-        if (TaskIdFromQuery is > 0 && _taskId != TaskIdFromQuery)
+        if (TaskIdFromQuery is > 0 && _projectTaskId != TaskIdFromQuery)
         {
-            _taskId = TaskIdFromQuery;
-            _operationMessage = $"Task ID {_taskId} loaded from URL. Press Get task to fetch diagnostics.";
+            _projectTaskId = TaskIdFromQuery;
+            _operationMessage = $"Task ID {_projectTaskId} loaded from URL. Press Get task to fetch diagnostics.";
         }
     }
 
-    private async System.Threading.Tasks.Task GetTaskAsync()
+    private async System.Threading.Tasks.Task GetProjectTaskAsync()
     {
-        if (_taskId is null or < 1)
+        if (_projectTaskId is null or < 1)
         {
             _error = "Enter a task ID.";
             return;
@@ -160,11 +160,11 @@
         await RunOperationAsync(
             async client =>
             {
-                _task = await client.Tasks.GetTaskAsync(
-                    _taskId.Value,
-                    new TaskGetOptions { IncludeProject = true });
-                _operationMessage = $"Loaded task {_taskId.Value}: {_task.Name}";
-                return $"tasks/{_taskId}";
+                _task = await client.ProjectTasks.GetProjectTaskAsync(
+                    _projectTaskId.Value,
+                    new ProjectTaskGetOptions { IncludeProject = true });
+                _operationMessage = $"Loaded task {_projectTaskId.Value}: {_task.Name}";
+                return $"tasks/{_projectTaskId}";
             },
             envelopeProperty: "task");
     }
@@ -175,10 +175,10 @@
             async client =>
             {
                 var result = await TurpinverseTaskSeeder.CreateBlackBessGeneralTaskAsync(client);
-                _task = result.Task;
+                _task = result.ProjectTask;
                 if (_task.TryGetResourceId(out var assignedId))
                 {
-                    _taskId = assignedId;
+                    _projectTaskId = assignedId;
                     _projectId = _task.ProjectId;
                     _operationMessage = result.Action == TaskSeedAction.Updated
                         ? $"Updated Black Bess general task (task {assignedId}) from current Turpinverse canon."
@@ -186,7 +186,7 @@
                     return $"tasks/{assignedId}";
                 }
 
-                _taskId = null;
+                _projectTaskId = null;
                 _operationMessage = "Created Black Bess general task but could not parse ID from URL.";
                 return null;
             },
@@ -223,7 +223,7 @@
 
                 if (_task.TryGetResourceId(out var assignedId))
                 {
-                    _taskId = assignedId;
+                    _projectTaskId = assignedId;
                     _projectId = _task.ProjectId;
 
                     _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
@@ -235,13 +235,13 @@
                 }
                 else
                 {
-                    _taskId = null;
+                    _projectTaskId = null;
                 }
             }
             else
             {
                 _task = null;
-                _taskId = null;
+                _projectTaskId = null;
             }
 
             var summaryParts = new List<string>();
@@ -301,32 +301,32 @@
         await RunOperationAsync(
             async client =>
             {
-                _task = await client.Tasks.CreateTaskAsync(_projectId.Value, new ProjectTask
+                _task = await client.ProjectTasks.CreateProjectTaskAsync(_projectId.Value, new ProjectTask
                 {
                     Name = $"SDK probe task {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}",
                     IsBillable = true,
-                    Status = Models.Tasks.TaskStatus.Active,
+                    Status = Models.Tasks.ProjectTaskStatus.Active,
                     BillingRate = 0m,
-                    BillingPeriod = TaskBillingPeriod.Hour
+                    BillingPeriod = ProjectTaskBillingPeriod.Hour
                 });
 
                 if (_task.TryGetResourceId(out var assignedId))
                 {
-                    _taskId = assignedId;
+                    _projectTaskId = assignedId;
                     _operationMessage = $"Created probe task {assignedId}.";
                     return $"tasks/{assignedId}";
                 }
 
-                _taskId = null;
+                _projectTaskId = null;
                 _operationMessage = "Created probe task but could not parse ID from URL.";
                 return null;
             },
             envelopeProperty: "task");
     }
 
-    private async System.Threading.Tasks.Task UpdateTaskAsync()
+    private async System.Threading.Tasks.Task UpdateProjectTaskAsync()
     {
-        if (_taskId is null or < 1)
+        if (_projectTaskId is null or < 1)
         {
             return;
         }
@@ -334,28 +334,28 @@
         await RunOperationAsync(
             async client =>
             {
-                var existing = _task ?? await client.Tasks.GetTaskAsync(_taskId.Value);
+                var existing = _task ?? await client.ProjectTasks.GetProjectTaskAsync(_projectTaskId.Value);
                 existing.Name = $"{existing.Name} (updated)";
-                _task = await client.Tasks.UpdateTaskAsync(_taskId.Value, existing);
-                _operationMessage = $"Updated task {_taskId.Value}.";
-                return $"tasks/{_taskId}";
+                _task = await client.ProjectTasks.UpdateProjectTaskAsync(_projectTaskId.Value, existing);
+                _operationMessage = $"Updated task {_projectTaskId.Value}.";
+                return $"tasks/{_projectTaskId}";
             },
             envelopeProperty: "task");
     }
 
-    private async System.Threading.Tasks.Task DeleteTaskAsync()
+    private async System.Threading.Tasks.Task DeleteProjectTaskAsync()
     {
-        if (_taskId is null or < 1)
+        if (_projectTaskId is null or < 1)
         {
             return;
         }
 
-        var deletedId = _taskId.Value;
+        var deletedId = _projectTaskId.Value;
 
         await RunOperationAsync(
             async client =>
             {
-                await client.Tasks.DeleteTaskAsync(deletedId);
+                await client.ProjectTasks.DeleteProjectTaskAsync(deletedId);
                 _task = null;
                 _probe = null;
                 _operationMessage = $"Deleted task {deletedId}. No wire payload is returned for DELETE.";

@@ -27,7 +27,7 @@ For how resources relate to each other and a suggested implementation order, see
 | [Credit note reconciliations](credit-note-reconciliations.md) | `client.CreditNoteReconciliations` | [Credit note reconciliations](https://dev.freeagent.com/docs/credit_note_reconciliations) |
 | [Stock items](stock-items.md) | `client.StockItems` | [Stock items](https://dev.freeagent.com/docs/stock_items) |
 | [Price list items](price-list-items.md) | `client.PriceListItems` | [Price list items](https://dev.freeagent.com/docs/price_list_items) |
-| [Tasks](tasks.md) | `client.Tasks` | [Tasks](https://dev.freeagent.com/docs/tasks) |
+| [Tasks](tasks.md) | `client.ProjectTasks` | [Tasks](https://dev.freeagent.com/docs/tasks) |
 | [Timeslips](timeslips.md) | `client.Timeslips` | [Timeslips](https://dev.freeagent.com/docs/timeslips) |
 | [Notes](notes.md) | `client.Notes` | [Notes](https://dev.freeagent.com/docs/notes) |
 | [Email addresses](email-addresses.md) | `client.EmailAddresses` | [Email addresses](https://dev.freeagent.com/docs/email_addresses) |

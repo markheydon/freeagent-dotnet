@@ -1,17 +1,17 @@
 using System.Text.Json;
 using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Models.Tasks;
-using FreeAgentTaskStatus = FreeAgent.Client.Models.Tasks.TaskStatus;
+using FreeAgentProjectTaskStatus = FreeAgent.Client.Models.Tasks.ProjectTaskStatus;
 
 namespace FreeAgent.Client.Tests.Models.Tasks;
 
-public class TaskModelSerializationTests
+public class ProjectTaskModelSerializationTests
 {
     [Theory]
-    [InlineData("\"Active\"", FreeAgentTaskStatus.Active)]
-    [InlineData("\"Completed\"", FreeAgentTaskStatus.Completed)]
-    [InlineData("\"Hidden\"", FreeAgentTaskStatus.Hidden)]
-    public void TaskStatus_DeserializesWireValues(string wireValue, FreeAgentTaskStatus expected)
+    [InlineData("\"Active\"", FreeAgentProjectTaskStatus.Active)]
+    [InlineData("\"Completed\"", FreeAgentProjectTaskStatus.Completed)]
+    [InlineData("\"Hidden\"", FreeAgentProjectTaskStatus.Hidden)]
+    public void ProjectTaskStatus_DeserializesWireValues(string wireValue, FreeAgentProjectTaskStatus expected)
     {
         var task = JsonSerializer.Deserialize<ProjectTask>($$"""{ "status": {{wireValue}} }""");
 
@@ -19,9 +19,9 @@ public class TaskModelSerializationTests
     }
 
     [Theory]
-    [InlineData("\"hour\"", TaskBillingPeriod.Hour)]
-    [InlineData("\"day\"", TaskBillingPeriod.Day)]
-    public void TaskBillingPeriod_DeserializesWireValues(string wireValue, TaskBillingPeriod expected)
+    [InlineData("\"hour\"", ProjectTaskBillingPeriod.Hour)]
+    [InlineData("\"day\"", ProjectTaskBillingPeriod.Day)]
+    public void ProjectTaskBillingPeriod_DeserializesWireValues(string wireValue, ProjectTaskBillingPeriod expected)
     {
         var task = JsonSerializer.Deserialize<ProjectTask>($$"""{ "billing_period": {{wireValue}} }""");
 
@@ -56,8 +56,8 @@ public class TaskModelSerializationTests
         Assert.Equal(CurrencyCode.GBP, task.Currency);
         Assert.True(task.IsBillable);
         Assert.Equal(0m, task.BillingRate);
-        Assert.Equal(TaskBillingPeriod.Hour, task.BillingPeriod);
-        Assert.Equal(FreeAgentTaskStatus.Active, task.Status);
+        Assert.Equal(ProjectTaskBillingPeriod.Hour, task.BillingPeriod);
+        Assert.Equal(FreeAgentProjectTaskStatus.Active, task.Status);
         Assert.Equal(new DateTimeOffset(2011, 8, 16, 11, 6, 57, TimeSpan.Zero), task.CreatedAt);
         Assert.False(task.IsDeletable);
     }
@@ -89,13 +89,13 @@ public class TaskModelSerializationTests
             Name = "Writable Task",
             IsBillable = true,
             BillingRate = 50m,
-            BillingPeriod = TaskBillingPeriod.Hour,
-            Status = FreeAgentTaskStatus.Active,
+            BillingPeriod = ProjectTaskBillingPeriod.Hour,
+            Status = FreeAgentProjectTaskStatus.Active,
             Currency = CurrencyCode.GBP,
             CreatedAt = DateTimeOffset.UtcNow
         };
 
-        var payload = TaskWritePayload.FromTask(task);
+        var payload = TaskWritePayload.FromProjectTask(task);
         var json = JsonSerializer.Serialize(payload);
 
         Assert.Contains("\"name\":\"Writable Task\"", json, StringComparison.Ordinal);

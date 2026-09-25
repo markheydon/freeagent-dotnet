@@ -29,7 +29,7 @@ public class ProjectTask : IFreeAgentResource
     internal ExpandableField<Project>? ProjectLink { get; set; }
 
     /// <summary>
-    /// Parent project when returned nested on the wire or hydrated via <see cref="TaskGetOptions.IncludeProject"/>.
+    /// Parent project when returned nested on the wire or hydrated via <see cref="ProjectTaskGetOptions.IncludeProject"/>.
     /// </summary>
     [JsonIgnore]
     public Project? Project => ProjectLink?.Value;
@@ -79,13 +79,13 @@ public class ProjectTask : IFreeAgentResource
     /// Unit for <see cref="BillingRate"/>.
     /// </summary>
     [JsonPropertyName("billing_period")]
-    public TaskBillingPeriod? BillingPeriod { get; set; }
+    public ProjectTaskBillingPeriod? BillingPeriod { get; set; }
 
     /// <summary>
     /// Task status.
     /// </summary>
     [JsonPropertyName("status")]
-    public TaskStatus? Status { get; set; }
+    public ProjectTaskStatus? Status { get; set; }
 
     /// <summary>
     /// Whether the task can be deleted. Returned on single-task GET only.

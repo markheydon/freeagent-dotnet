@@ -14,7 +14,7 @@ namespace FreeAgent.Client.Models.Timeslips;
 /// </summary>
 public class Timeslip : IFreeAgentResource
 {
-    private SettableLinkId _taskId;
+    private SettableLinkId _projectTaskId;
     private SettableLinkId _projectId;
     private SettableLinkId _userId;
 
@@ -33,22 +33,22 @@ public class Timeslip : IFreeAgentResource
     /// </summary>
     [JsonPropertyName("task")]
     [JsonInclude]
-    internal ExpandableField<ProjectTask>? TaskLink { get; set; }
+    internal ExpandableField<ProjectTask>? ProjectTaskLink { get; set; }
 
     /// <summary>
-    /// Task when returned nested on the wire or hydrated via <see cref="TimeslipGetOptions.IncludeTask"/>.
+    /// Task when returned nested on the wire or hydrated via <see cref="TimeslipGetOptions.IncludeProjectTask"/>.
     /// </summary>
     [JsonIgnore]
-    public ProjectTask? Task => TaskLink?.Value;
+    public ProjectTask? ProjectTask => ProjectTaskLink?.Value;
 
     /// <summary>
     /// Task identifier for create and update requests. Populated after GET when the API returns a task link.
     /// </summary>
     [JsonIgnore]
-    public long? TaskId
+    public long? ProjectTaskId
     {
-        get => _taskId.Get(TaskLink?.Id);
-        set => _taskId.Set(value);
+        get => _projectTaskId.Get(ProjectTaskLink?.Id);
+        set => _projectTaskId.Set(value);
     }
 
     /// <summary>
@@ -151,10 +151,10 @@ public class Timeslip : IFreeAgentResource
     /// Attaches a hydrated task to this timeslip.
     /// </summary>
     /// <param name="task">Task details.</param>
-    internal void AttachTask(ProjectTask task)
+    internal void AttachProjectTask(ProjectTask task)
     {
         ArgumentNullException.ThrowIfNull(task);
-        TaskLink = new ExpandableField<ProjectTask>(task.Url, task);
+        ProjectTaskLink = new ExpandableField<ProjectTask>(task.Url, task);
     }
 
     /// <summary>

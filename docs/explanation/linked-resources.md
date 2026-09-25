@@ -43,9 +43,9 @@ Tasks follow the same pattern for the parent project link:
 | `Project` | When the API returns a nested project object **or** when you request hydration on single GET |
 
 ```csharp
-var task = await client.Tasks.GetTaskAsync(
+var task = await client.ProjectTasks.GetProjectTaskAsync(
     456,
-    new TaskGetOptions { IncludeProject = true });
+    new ProjectTaskGetOptions { IncludeProject = true });
 
 var projectName = task.Project!.Name;
 ```
@@ -54,15 +54,15 @@ Timeslips link to task, project, and user resources:
 
 | Property | When it is set |
 |----------|----------------|
-| `TaskId`, `ProjectId`, `UserId` | Always when the API returns URI links |
-| `Task`, `Project`, `User` | When the API returns nested objects **or** when you request hydration on single GET |
+| `ProjectTaskId`, `ProjectId`, `UserId` | Always when the API returns URI links |
+| `ProjectTask`, `Project`, `User` | When the API returns nested objects **or** when you request hydration on single GET |
 
 ```csharp
 using FreeAgent.Client.Models.Timeslips;
 
 var timeslip = await client.Timeslips.CreateTimeslipAsync(new Timeslip
 {
-    TaskId = 1,
+    ProjectTaskId = 1,
     ProjectId = 1,
     UserId = 1,
     DatedOn = new DateOnly(2024, 3, 18),
@@ -71,8 +71,8 @@ var timeslip = await client.Timeslips.CreateTimeslipAsync(new Timeslip
 
 var hydrated = await client.Timeslips.GetTimeslipAsync(
     timeslip.ResourceId,
-    new TimeslipGetOptions { IncludeTask = true });
-var taskName = hydrated.Task!.Name;
+    new TimeslipGetOptions { IncludeProjectTask = true });
+var taskName = hydrated.ProjectTask!.Name;
 ```
 
 `BilledOnInvoiceId` is read-only and is populated when time has been invoiced.
@@ -109,7 +109,7 @@ await client.Projects.CreateProjectAsync(new Project
 
 After a GET, `ContactId` (and other `*Id` properties) round-trip from the response. Change a link by setting the id explicitly; leave it unset on a freshly constructed model when the API allows the field to be omitted.
 
-Task create operations scope the parent project via the `project` query parameter (`CreateTaskAsync`), not the request body. Task updates do not accept a parent project on the wire.
+Task create operations scope the parent project via the `project` query parameter (`CreateProjectTaskAsync`), not the request body. Task updates do not accept a parent project on the wire.
 
 Invoices link to contacts, projects, bank accounts, and line-item categories:
 

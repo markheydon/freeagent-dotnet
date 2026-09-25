@@ -73,11 +73,11 @@ public sealed class TurpinverseTaskSeeder
 
                 if (result.Action == TaskSeedAction.Created)
                 {
-                    created.Add(result.Task);
+                    created.Add(result.ProjectTask);
                 }
                 else
                 {
-                    updated.Add(result.Task);
+                    updated.Add(result.ProjectTask);
                 }
             }
             catch (Exception ex) when (ex is InvalidOperationException or FreeAgentApiException)
@@ -104,27 +104,27 @@ public sealed class TurpinverseTaskSeeder
         {
             Name = taskName,
             IsBillable = true,
-            Status = Models.Tasks.TaskStatus.Active,
+            Status = Models.Tasks.ProjectTaskStatus.Active,
             BillingRate = project.NormalBillingRate ?? 0m,
             BillingPeriod = project.BillingPeriod == ProjectBillingPeriod.Day
-                ? TaskBillingPeriod.Day
-                : TaskBillingPeriod.Hour
+                ? ProjectTaskBillingPeriod.Day
+                : ProjectTaskBillingPeriod.Hour
         };
 
         if (!existingTasks.TryGetValue(taskName, out var existingMatch))
         {
-            var created = await client.Tasks.CreateTaskAsync(projectId, desired, cancellationToken);
+            var created = await client.ProjectTasks.CreateProjectTaskAsync(projectId, desired, cancellationToken);
             return new TurpinverseTaskSeedResult(created, TaskSeedAction.Created);
         }
 
         var taskId = existingMatch.GetResourceId();
-        var current = await client.Tasks.GetTaskAsync(taskId, cancellationToken);
+        var current = await client.ProjectTasks.GetProjectTaskAsync(taskId, cancellationToken);
         current.Name = desired.Name;
         current.IsBillable = desired.IsBillable;
         current.Status = desired.Status;
         current.BillingRate = desired.BillingRate;
         current.BillingPeriod = desired.BillingPeriod;
-        var updated = await client.Tasks.UpdateTaskAsync(taskId, current, cancellationToken);
+        var updated = await client.ProjectTasks.UpdateProjectTaskAsync(taskId, current, cancellationToken);
         return new TurpinverseTaskSeedResult(updated, TaskSeedAction.Updated);
     }
 
@@ -170,7 +170,7 @@ public sealed class TurpinverseTaskSeeder
     {
         var tasksByName = new Dictionary<string, ProjectTask>(StringComparer.Ordinal);
 
-        await foreach (var task in client.Tasks.ListAutoPagingAsync(projectId: projectId, cancellationToken: cancellationToken))
+        await foreach (var task in client.ProjectTasks.ListAutoPagingAsync(projectId: projectId, cancellationToken: cancellationToken))
         {
             if (string.IsNullOrWhiteSpace(task.Name)
                 || !task.Name.StartsWith(TaskNamePrefix, StringComparison.Ordinal))
@@ -191,7 +191,7 @@ public enum TaskSeedAction
     Updated
 }
 
-public sealed record TurpinverseTaskSeedResult(ProjectTask Task, TaskSeedAction Action);
+public sealed record TurpinverseTaskSeedResult(ProjectTask ProjectTask, TaskSeedAction Action);
 
 public sealed record TurpinverseTaskSeedFailure(string ProjectId, string Title, string Message);
 

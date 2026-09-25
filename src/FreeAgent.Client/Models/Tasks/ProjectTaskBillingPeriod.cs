@@ -6,8 +6,8 @@ namespace FreeAgent.Client.Models.Tasks;
 /// <summary>
 /// Billing period values for <see cref="ProjectTask.BillingRate"/>.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<TaskBillingPeriod>))]
-public enum TaskBillingPeriod
+[JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<ProjectTaskBillingPeriod>))]
+public enum ProjectTaskBillingPeriod
 {
     /// <summary>Hourly billing period (wire value: "hour").</summary>
     [JsonStringEnumMemberName("hour")]

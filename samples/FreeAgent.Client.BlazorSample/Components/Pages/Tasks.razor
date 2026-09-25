@@ -11,7 +11,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Tasks endpoint"
                          Title="Tasks list"
-                         CallUnderTest="TaskService.ListAsync(...)"
+                         CallUnderTest="ProjectTaskService.ListAsync(...)"
                          Description="Load tasks, inspect wire-to-model mapping for any row, then jump into Task CRUD to test get, update, and delete."
                          EndpointPath="/v2/tasks?page={page}&amp;per_page={perPage}&amp;view={view}"
                          DocsUrl="https://dev.freeagent.com/docs/tasks" />
@@ -49,10 +49,10 @@
                                        Margin="Margin.Dense"
                                        Clearable="true"
                                        FullWidth="true">
-                                <MudSelectItem Value="@TaskViews.Active">active</MudSelectItem>
-                                <MudSelectItem Value="@TaskViews.Completed">completed</MudSelectItem>
-                                <MudSelectItem Value="@TaskViews.Hidden">hidden</MudSelectItem>
-                                <MudSelectItem Value="@TaskViews.All">all</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskViews.Active">active</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskViews.Completed">completed</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskViews.Hidden">hidden</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskViews.All">all</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
@@ -63,10 +63,10 @@
                                        Margin="Margin.Dense"
                                        Clearable="true"
                                        FullWidth="true">
-                                <MudSelectItem Value="@TaskSortOptions.Name">name</MudSelectItem>
-                                <MudSelectItem Value="@TaskSortOptions.Project">project</MudSelectItem>
-                                <MudSelectItem Value="@TaskSortOptions.BillingRate">billing_rate</MudSelectItem>
-                                <MudSelectItem Value="@TaskSortOptions.CreatedAt">created_at</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskSortOptions.Name">name</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskSortOptions.Project">project</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskSortOptions.BillingRate">billing_rate</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskSortOptions.CreatedAt">created_at</MudSelectItem>
                                 <MudSelectItem Value="@DescUpdatedAtSort">-updated_at</MudSelectItem>
                             </MudSelect>
                         </MudItem>
@@ -268,7 +268,7 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allTasksCount;
-    private string? _view = TaskViews.Active;
+    private string? _view = ProjectTaskViews.Active;
     private string? _sort;
     private long? _projectIdFilter;
     private DateTime? _updatedSince;
@@ -307,7 +307,7 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _pageResult = await client.Tasks.ListAsync(
+            _pageResult = await client.ProjectTasks.ListAsync(
                 page: 1,
                 perPage: _perPage,
                 view: _view,
@@ -379,7 +379,7 @@
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
             var count = 0;
-            await foreach (var _ in client.Tasks.ListAutoPagingAsync(
+            await foreach (var _ in client.ProjectTasks.ListAutoPagingAsync(
                                perPage: _perPage,
                                view: _view,
                                sort: _sort,

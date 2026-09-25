@@ -70,7 +70,7 @@ Shared rules:
 - Add or update a matching `*Samples.cs` provider class under `samples/FreeAgent.Client.ConsoleSample/Samples/` for each SDK resource area (discovered via `ConsoleSamplesAttribute`).
 - Register read-only examples that exercise the main SDK calls for that resource (list, filtered list, and get detail as appropriate).
 - Update the example catalogue in [`samples/FreeAgent.Client.ConsoleSample/README.md`](samples/FreeAgent.Client.ConsoleSample/README.md).
-- Use existing providers such as `TaskSamples.cs` and `ProjectSamples.cs` as reference implementations.
+- Use existing providers such as `ProjectTaskSamples.cs` and `ProjectSamples.cs` as reference implementations.
 
 ## Skills
 

@@ -86,7 +86,7 @@ internal sealed class SampleData
     /// <returns>A task.</returns>
     public async Task<ProjectTask> GetFirstTaskAsync(CancellationToken cancellationToken = default)
     {
-        var page = await _context.Client.Tasks.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+        var page = await _context.Client.ProjectTasks.ListAsync(perPage: 25, cancellationToken: cancellationToken);
         if (page.Items.Count == 0)
         {
             SampleContext.Skip("no tasks found in sandbox account");
