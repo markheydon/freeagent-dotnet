@@ -82,7 +82,7 @@ dotnet run
 ### What happens
 
 1. The app completes OAuth (browser flow or token from environment variables).
-2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices).
+2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes).
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
@@ -102,6 +102,7 @@ dotnet run
 | Invoices | List invoices; stream all invoices via ListAutoPagingAsync; list invoices filtered by contact; list invoice timeline; get invoice by id; create draft invoice with one line item; update invoice comments; duplicate invoice; send invoice email (template); mark invoice as sent; mark invoice as scheduled; mark invoice as draft; mark invoice as cancelled; get invoice PDF; get default additional text; update default additional text; delete default additional text |
 | Estimates | List estimates; stream all estimates via ListAutoPagingAsync; list estimates filtered by contact; get estimate by id; create probe estimate and delete; mark estimate as sent; duplicate probe estimate and delete; get estimate PDF; get default additional text |
 | Recurring invoices | List recurring invoices; stream all recurring invoices via ListAutoPagingAsync; list recurring invoices filtered by contact; get recurring invoice by id |
+| Credit notes | List credit notes; stream all credit notes via ListAutoPagingAsync; list credit notes filtered by contact; get credit note by id; create probe credit note and delete; mark credit note as sent; get credit note PDF; send credit note email (template) |
 
 New SDK resource areas should add a matching `*Samples.cs` provider class under `Samples/`.
 

@@ -32,7 +32,7 @@ src/
 	│   ├── Categories/                  # Category models, operation-variant requests, nominal-code validation
 	│   ├── Company/                     # Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers
 	│   ├── Contacts/                    # Contact models and response wrappers
-	│   ├── CreditNotes/                 # Credit note stub models for invoice transitions
+	│   ├── CreditNotes/                 # Credit note models and write payloads
 	│   ├── EmailAddresses/              # Email addresses response wrapper
 	│   ├── Invoices/                    # Invoice models, line items, transitions, response wrappers
 	│   ├── Notes/                       # Note models and response wrappers

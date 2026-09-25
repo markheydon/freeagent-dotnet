@@ -34,6 +34,8 @@ builder.Services.AddSingleton<TurpinverseInvoiceCatalog>();
 builder.Services.AddSingleton<TurpinverseInvoiceSeeder>();
 builder.Services.AddSingleton<TurpinverseQuoteCatalog>();
 builder.Services.AddSingleton<TurpinverseQuoteSeeder>();
+builder.Services.AddSingleton<TurpinverseCreditNoteCatalog>();
+builder.Services.AddSingleton<TurpinverseCreditNoteSeeder>();
 builder.Services.AddSingleton<TurpinverseTaskSeeder>();
 builder.Services.AddSingleton<TurpinverseTimeslipSeeder>();
 builder.Services.AddSingleton<TurpinverseNoteSeeder>();

@@ -1,0 +1,576 @@
+@page "/credit-notes/detail"
+@using FreeAgent.Client.Models.CreditNotes
+@using FreeAgent.Client.Models.Invoices
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services
+@using FreeAgent.Client.BlazorSample.Services.Turpinverse
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject TurpinverseCreditNoteSeeder TurpinverseCreditNoteSeeder
+@inject NavigationManager NavigationManager
+
+<PageTitle>Credit note detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Credit notes endpoint"
+                         Title="Get, create, update, delete, and transition credit notes"
+                         CallUnderTest="CreditNotesService.GetCreditNoteAsync / CreateCreditNoteAsync / UpdateCreditNoteAsync / DeleteCreditNoteAsync / GetCreditNotePdfAsync / SendCreditNoteEmailAsync / MarkCreditNoteAsSentAsync / MarkCreditNoteAsDraftAsync"
+                         Description="Exercises single-credit-note CRUD, status transitions, line item updates via parent payload, PDF download, and email sending. Shows wire-to-model diagnostics after each mutation."
+                         EndpointPath="/v2/credit_notes/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/credit_notes" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a credit note ID from the <MudLink Href="/credit-notes">credit notes list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Seed Turpinverse canon credit notes after seeding contacts.
+                        Each Turpinverse seed upserts on <code>reference</code> values prefixed with <code>turpinverse:</code>.
+                    </MudText>
+                    <MudNumericField @bind-Value="_creditNoteId" Label="Credit note ID" Min="1" />
+                    <MudNumericField @bind-Value="_contactId"
+                                     Label="Billing contact ID (create only)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+                    <MudNumericField @bind-Value="_creditNoteItemId"
+                                     Label="Credit note item ID (update line item)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetCreditNoteAsync">Get credit note</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateHighwayCommissionDraftAsync">Create Highway Commission draft</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateAllTurpinverseCreditNotesAsync">Create all Turpinverse credit notes</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _contactId is null or < 1"
+                                   OnClick="CreateProbeCreditNoteAsync">Create probe credit note</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _creditNoteId is null or < 1"
+                                   OnClick="UpdateCreditNoteAsync">Update comments</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _creditNoteId is null or < 1"
+                                   OnClick="DeleteCreditNoteAsync">Delete credit note</MudButton>
+                    </MudStack>
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _creditNoteId is null or < 1"
+                                   OnClick="MarkAsSentAsync">Mark as sent</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _creditNoteId is null or < 1"
+                                   OnClick="MarkAsDraftAsync">Mark as draft</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _creditNoteId is null or < 1"
+                                   OnClick="SendEmailWithTemplateAsync">Send email (template)</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading || _creditNoteId is null or < 1"
+                                   OnClick="GetCreditNotePdfAsync">Get PDF</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _creditNoteItemId is null or < 1 || _creditNoteId is null or < 1"
+                                   OnClick="UpdateCreditNoteItemAsync">Update credit note item</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _creditNote is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All CreditNote model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_creditNote.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_creditNote.Status?.ToString())</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Reference</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_creditNote.Reference)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Contact</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_creditNote.ContactName ?? _creditNote.Contact?.OrganisationName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Dated on</MudText>
+                                        <MudText Typo="Typo.subtitle1">@FormatDate(_creditNote.DatedOn)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Net value</MudText>
+                                        <MudText Typo="Typo.subtitle1">@FormatAmount(_creditNote.NetValue)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load credit note diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? CreditNoteIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private CreditNote? _creditNote;
+    private ModelProbeSnapshot? _probe;
+    private long? _creditNoteId;
+    private long? _contactId;
+    private long? _creditNoteItemId;
+
+    protected override void OnParametersSet()
+    {
+        if (CreditNoteIdFromQuery is > 0 && _creditNoteId != CreditNoteIdFromQuery)
+        {
+            _creditNoteId = CreditNoteIdFromQuery;
+            _operationMessage = $"Credit note ID {_creditNoteId} loaded from URL. Press Get credit note to fetch diagnostics.";
+        }
+    }
+
+    private async Task GetCreditNoteAsync()
+    {
+        if (_creditNoteId is null or < 1)
+        {
+            _error = "Enter a credit note ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _creditNote = await client.CreditNotes.GetCreditNoteAsync(
+                    _creditNoteId.Value,
+                    new CreditNoteGetOptions { IncludeContact = true, IncludeProject = true });
+                _operationMessage = $"Loaded credit note {_creditNoteId.Value}: {ValueOrFallback(_creditNote.Reference)}";
+                return $"credit_notes/{_creditNoteId}";
+            },
+            envelopeProperty: "credit_note");
+    }
+
+    private async Task CreateHighwayCommissionDraftAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await TurpinverseCreditNoteSeeder.CreateHighwayCommissionDraftAsync(client);
+                _creditNote = result.CreditNote;
+                if (_creditNote.TryGetResourceId(out var assignedId))
+                {
+                    _creditNoteId = assignedId;
+                    _operationMessage = result.Action == CreditNoteSeedAction.Updated
+                        ? $"Updated Highway Commission draft (credit note {assignedId}) from current Turpinverse canon."
+                        : $"Created Highway Commission draft as credit note {assignedId}.";
+                    return $"credit_notes/{assignedId}";
+                }
+
+                _creditNoteId = null;
+                _operationMessage = "Created Highway Commission draft but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "credit_note");
+    }
+
+    private async Task CreateAllTurpinverseCreditNotesAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var result = await TurpinverseCreditNoteSeeder.CreateAllCreditNotesAsync(client);
+            var lastTouched = result.Updated.Count > 0
+                ? result.Updated[^1]
+                : result.Created.Count > 0
+                    ? result.Created[^1]
+                    : null;
+
+            if (lastTouched is not null)
+            {
+                _creditNote = lastTouched;
+
+                if (_creditNote.TryGetResourceId(out var assignedId))
+                {
+                    _creditNoteId = assignedId;
+
+                    _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                        token.AccessToken,
+                        TokenStore.ConnectedEnvironment,
+                        $"credit_notes/{assignedId}");
+
+                    _probe = ModelWireDiagnostics.Build(_creditNote, _wireApiResponse, "credit_note");
+                }
+                else
+                {
+                    _creditNoteId = null;
+                }
+            }
+            else
+            {
+                _creditNote = null;
+                _creditNoteId = null;
+            }
+
+            var summaryParts = new List<string>();
+            if (result.Created.Count > 0)
+            {
+                summaryParts.Add($"created {result.Created.Count}");
+            }
+
+            if (result.Updated.Count > 0)
+            {
+                summaryParts.Add($"updated {result.Updated.Count}");
+            }
+
+            if (result.Failures.Count > 0)
+            {
+                summaryParts.Add($"failed {result.Failures.Count}");
+            }
+
+            _operationMessage = summaryParts.Count == 0
+                ? "No Turpinverse credit notes were created or updated."
+                : $"Turpinverse credit note sync complete: {string.Join(", ", summaryParts)}.";
+
+            if (result.Failures.Count > 0)
+            {
+                var failureSummary = string.Join(
+                    "; ",
+                    result.Failures.Select(static failure => $"{failure.CreditNoteNumber}: {failure.Message}"));
+                _error = $"Some credit notes could not be seeded: {failureSummary}";
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CreateProbeCreditNoteAsync()
+    {
+        if (_contactId is null or < 1)
+        {
+            _error = "Enter a billing contact ID before creating a probe credit note.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _creditNote = await client.CreditNotes.CreateCreditNoteAsync(new CreditNote
+                {
+                    BillingContact = client.Urls.Contact(_contactId.Value),
+                    DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+                    Currency = CurrencyCode.GBP,
+                    Reference = $"probe-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+                    PaymentTermsInDays = 0,
+                    CreditNoteItems =
+                    [
+                        new CreditNoteItem
+                        {
+                            Description = "SDK probe line item",
+                            ItemType = InvoiceItemType.Hours,
+                            Quantity = 1,
+                            Price = -100m,
+                            SalesTaxRate = 20m,
+                            SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+                        }
+                    ]
+                });
+
+                if (_creditNote.TryGetResourceId(out var assignedId))
+                {
+                    _creditNoteId = assignedId;
+                    _operationMessage = $"Created probe credit note {assignedId}.";
+                    return $"credit_notes/{assignedId}";
+                }
+
+                _creditNoteId = null;
+                _operationMessage = "Created probe credit note but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "credit_note");
+    }
+
+    private async Task UpdateCreditNoteAsync()
+    {
+        if (_creditNoteId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _creditNote ?? await client.CreditNotes.GetCreditNoteAsync(_creditNoteId.Value);
+                existing.Comments = $"{existing.Comments} (updated)".Trim();
+                existing.OmitCreditNoteItemsFromWrite = true;
+                _creditNote = await client.CreditNotes.UpdateCreditNoteAsync(_creditNoteId.Value, existing);
+                _operationMessage = $"Updated credit note {_creditNoteId.Value}.";
+                return $"credit_notes/{_creditNoteId}";
+            },
+            envelopeProperty: "credit_note");
+    }
+
+    private async Task DeleteCreditNoteAsync()
+    {
+        if (_creditNoteId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _creditNoteId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.CreditNotes.DeleteCreditNoteAsync(deletedId);
+                _creditNote = null;
+                _probe = null;
+                _operationMessage = $"Deleted credit note {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task MarkAsSentAsync()
+    {
+        if (_creditNoteId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _creditNote = await client.CreditNotes.MarkCreditNoteAsSentAsync(_creditNoteId.Value);
+                _operationMessage = $"Marked credit note {_creditNoteId.Value} as sent.";
+                return $"credit_notes/{_creditNoteId}";
+            },
+            envelopeProperty: "credit_note");
+    }
+
+    private async Task MarkAsDraftAsync()
+    {
+        if (_creditNoteId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _creditNote = await client.CreditNotes.MarkCreditNoteAsDraftAsync(_creditNoteId.Value);
+                _operationMessage = $"Marked credit note {_creditNoteId.Value} as draft.";
+                return $"credit_notes/{_creditNoteId}";
+            },
+            envelopeProperty: "credit_note");
+    }
+
+    private async Task SendEmailWithTemplateAsync()
+    {
+        if (_creditNoteId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.CreditNotes.SendCreditNoteEmailAsync(
+                    _creditNoteId.Value,
+                    new SendCreditNoteEmailRequest
+                    {
+                        Email = new CreditNoteEmailDetails { UseTemplate = true }
+                    });
+
+                _creditNote = await client.CreditNotes.GetCreditNoteAsync(_creditNoteId.Value);
+                _operationMessage = $"Sent credit note {_creditNoteId.Value} using the default email template.";
+                return $"credit_notes/{_creditNoteId}";
+            },
+            envelopeProperty: "credit_note");
+    }
+
+    private async Task GetCreditNotePdfAsync()
+    {
+        if (_creditNoteId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var pdfBytes = await client.CreditNotes.GetCreditNotePdfAsync(_creditNoteId.Value);
+                _operationMessage = $"Downloaded PDF for credit note {_creditNoteId.Value} ({pdfBytes.Length} bytes).";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task UpdateCreditNoteItemAsync()
+    {
+        if (_creditNoteId is null or < 1)
+        {
+            _error = "Enter a credit note ID before updating a line item.";
+            return;
+        }
+
+        if (_creditNoteItemId is null or < 1)
+        {
+            _error = "Enter a credit note item ID to update.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _creditNote ?? await client.CreditNotes.GetCreditNoteAsync(_creditNoteId.Value);
+                existing.CreditNoteItems =
+                [
+                    new CreditNoteItem
+                    {
+                        ItemId = _creditNoteItemId.Value,
+                        Description = "SDK probe line item (updated)",
+                        ItemType = InvoiceItemType.Services,
+                        Quantity = 2,
+                        Price = -50m,
+                        SalesTaxRate = 20m,
+                        SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+                    }
+                ];
+                _creditNote = await client.CreditNotes.UpdateCreditNoteAsync(_creditNoteId.Value, existing);
+                _operationMessage = $"Updated credit note item {_creditNoteItemId.Value} on credit note {_creditNoteId.Value}.";
+                return $"credit_notes/{_creditNoteId}";
+            },
+            envelopeProperty: "credit_note");
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgentClient, Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _creditNote is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_creditNote, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+
+    private static string FormatDate(DateOnly? value) =>
+        value is null ? "Not returned" : value.Value.ToString("yyyy-MM-dd");
+
+    private static string FormatAmount(decimal? value) =>
+        value is null ? "Not returned" : value.Value.ToString("0.00");
+}

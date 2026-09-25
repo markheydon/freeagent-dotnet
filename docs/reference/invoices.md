@@ -209,7 +209,7 @@ Task<CreditNote> ConvertToCreditNoteAsync(long invoiceId, CancellationToken canc
 
 **HTTP:** `PUT /v2/invoices/:id/transitions/convert_to_credit_note`
 
-Returns a stub `CreditNote` model. Full credit note operations are tracked separately.
+Returns the converted credit note. Use `client.CreditNotes` for full credit note operations — see [Credit notes](credit-notes.md).
 
 ---
 

@@ -1,15 +1,14 @@
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Models.CreditNotes;
 
-namespace FreeAgent.Client.Models.Invoices;
+namespace FreeAgent.Client.Models.CreditNotes;
 
 /// <summary>
-/// Response envelope when an invoice is converted to a credit note.
+/// Response envelope for a single credit note.
 /// </summary>
 public sealed class CreditNoteResponse
 {
     /// <summary>
-    /// Converted credit note payload.
+    /// Credit note payload.
     /// </summary>
     [JsonPropertyName("credit_note")]
     public CreditNote? CreditNote { get; set; }
