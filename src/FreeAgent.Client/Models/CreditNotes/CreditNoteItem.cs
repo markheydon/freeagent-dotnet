@@ -14,6 +14,10 @@ namespace FreeAgent.Client.Models.CreditNotes;
 /// </summary>
 public sealed class CreditNoteItem
 {
+    private SettableLinkId _stockItemId;
+    private SettableLinkId _projectId;
+    private SettableLinkValue _categoryNominalCode;
+
     /// <summary>
     /// Credit note item resource URL.
     /// </summary>
@@ -94,22 +98,20 @@ public sealed class CreditNoteItem
     internal ExpandableField<StockItem>? StockItemLink { get; set; }
 
     /// <summary>
-    /// Stock item identifier parsed from the line item response.
+    /// Stock item identifier for create and update requests. Populated after GET when the API returns a stock item link.
     /// </summary>
     [JsonIgnore]
-    public long? StockItemId => StockItemLink?.Id;
+    public long? StockItemId
+    {
+        get => _stockItemId.Get(StockItemLink?.Id);
+        set => _stockItemId.Set(value);
+    }
 
     /// <summary>
     /// Stock item when returned nested on the wire.
     /// </summary>
     [JsonIgnore]
     public StockItem? StockItemResource => StockItemLink?.Value;
-
-    /// <summary>
-    /// Stock item to assign on create or update requests.
-    /// </summary>
-    [JsonIgnore]
-    public StockItemReference? StockItem { get; set; }
 
     /// <summary>
     /// Wire representation of the category link.
@@ -119,18 +121,21 @@ public sealed class CreditNoteItem
     internal ExpandableField<Category>? CategoryLink { get; set; }
 
     /// <summary>
-    /// Category nominal code when returned as a URI link.
+    /// Category nominal code for create and update requests. Populated after GET when the API returns a category link.
     /// </summary>
     [JsonIgnore]
-    public string? CategoryNominalCode => CategoryLink?.Uri is string uri
-        ? CategoryReference.ExtractNominalCode(uri)
-        : null;
+    public string? CategoryNominalCode
+    {
+        get => _categoryNominalCode.Get(
+            CategoryLink?.Uri is string uri ? CategoryReference.ExtractNominalCode(uri) : null);
+        set => _categoryNominalCode.Set(value);
+    }
 
     /// <summary>
-    /// Category to assign on create or update requests.
+    /// Category when returned nested on the wire.
     /// </summary>
     [JsonIgnore]
-    public CategoryReference? Category { get; set; }
+    public Category? Category => CategoryLink?.Value;
 
     /// <summary>
     /// Wire representation of the project link.
@@ -146,16 +151,14 @@ public sealed class CreditNoteItem
     public Project? Project => ProjectLink?.Value;
 
     /// <summary>
-    /// Project identifier parsed from the line item response.
+    /// Project identifier for create and update requests. Populated after GET when the API returns a project link.
     /// </summary>
     [JsonIgnore]
-    public long? ProjectId => ProjectLink?.Id;
-
-    /// <summary>
-    /// Project to assign on create or update requests.
-    /// </summary>
-    [JsonIgnore]
-    public ProjectReference? LinkedProject { get; set; }
+    public long? ProjectId
+    {
+        get => _projectId.Get(ProjectLink?.Id);
+        set => _projectId.Set(value);
+    }
 
     /// <summary>
     /// Wire representation of the credit note item identifier returned on read responses.

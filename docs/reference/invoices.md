@@ -113,7 +113,7 @@ Task<Invoice> CreateInvoiceAsync(Invoice invoice, CancellationToken cancellation
 
 **HTTP:** `POST /v2/invoices`
 
-Required on create: `BillingContact`, `DatedOn`, `PaymentTermsInDays`, and at least one line item with `Description`.
+Required on create: `ContactId`, `DatedOn`, `PaymentTermsInDays`, and at least one line item with `Description`.
 
 ---
 
@@ -130,12 +130,16 @@ Task<Invoice> DuplicateInvoiceAsync(long invoiceId, CancellationToken cancellati
 ### UpdateInvoiceAsync
 
 ```csharp
-Task<Invoice> UpdateInvoiceAsync(long invoiceId, Invoice invoice, CancellationToken cancellationToken = default)
+Task<Invoice> UpdateInvoiceAsync(
+    long invoiceId,
+    Invoice invoice,
+    InvoiceUpdateOptions? options = null,
+    CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `PUT /v2/invoices/:id`
 
-Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`.
+Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new InvoiceUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items.
 
 ---
 
@@ -247,6 +251,12 @@ Company-level default text shown on all invoices.
 | `IncludeContact` | `bool` | Fetch contact when only a URI is returned |
 | `IncludeProject` | `bool` | Fetch project when only a URI is returned |
 
+## InvoiceUpdateOptions
+
+| Property | Type | Purpose |
+|----------|------|---------|
+| `OmitLineItems` | `bool` | Exclude line items from the update payload |
+
 ## Invoice model
 
 Key properties:
@@ -258,15 +268,12 @@ Key properties:
 | `DatedOn` | `DateOnly?` | `dated_on` | Required on create |
 | `DueOn` | `DateOnly?` | `due_on` | |
 | `PaymentTermsInDays` | `int?` | `payment_terms_in_days` | Required on create |
-| `BillingContact` | `ContactReference?` | `contact` | Required on create |
-| `LinkedProject` | `ProjectReference?` | `project` | Write payload |
-| `RemittanceBankAccount` | `BankAccountReference?` | `bank_account` | Write payload |
+| `ContactId` | `long?` | `contact` | Required on create |
+| `ProjectId` | `long?` | `project` | Optional project link |
+| `BankAccountId` | `long?` | `bank_account` | Optional remittance bank account |
 | `InvoiceItems` | `List<InvoiceItem>?` | `invoice_items` | Nested line items |
 | `ItemId` | `long?` | `id` (line items) | Required to update or delete existing line items |
-| `OmitBillingContactFromWrite` | `bool` | - | Exclude contact from update payload |
-| `OmitProjectFromWrite` | `bool` | - | Exclude project from update payload |
-| `OmitBankAccountFromWrite` | `bool` | - | Exclude bank account from update payload |
-| `OmitInvoiceItemsFromWrite` | `bool` | - | Exclude line items from update payload |
+| `CategoryNominalCode` | `string?` | `category` (line items) | Category link on line items |
 | `Url` | `string` | `url` | |
 
 ## Errors

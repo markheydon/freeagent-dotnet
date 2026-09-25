@@ -11,5 +11,5 @@ public class TasksResponse
     /// Task collection payload.
     /// </summary>
     [JsonPropertyName("tasks")]
-    public List<Task>? Tasks { get; set; }
+    public List<ProjectTask>? Tasks { get; set; }
 }

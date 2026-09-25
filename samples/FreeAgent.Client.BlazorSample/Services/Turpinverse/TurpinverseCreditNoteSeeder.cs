@@ -89,8 +89,8 @@ public sealed class TurpinverseCreditNoteSeeder
         CancellationToken cancellationToken,
         Dictionary<string, CreditNote>? existingCreditNotes = null)
     {
-        var contact = await ResolveOrganisationContactReferenceAsync(client, creditNote.AccountId, cancellationToken);
-        var desired = TurpinverseCreditNoteMapper.ToFreeAgentCreditNote(creditNote, contact);
+        var contactId = await ResolveOrganisationContactIdAsync(client, creditNote.AccountId, cancellationToken);
+        var desired = TurpinverseCreditNoteMapper.ToFreeAgentCreditNote(creditNote, contactId);
         var reference = TurpinverseCreditNoteMapper.BuildReference(creditNote.CreditNoteId);
 
         existingCreditNotes ??= await LoadExistingCreditNotesByReferenceAsync(client, cancellationToken);
@@ -104,12 +104,12 @@ public sealed class TurpinverseCreditNoteSeeder
         var creditNoteId = existingMatch.GetResourceId();
         var current = await client.CreditNotes.GetCreditNoteAsync(creditNoteId, cancellationToken);
         MergeWritableFields(current, desired);
-        var updated = await client.CreditNotes.UpdateCreditNoteAsync(creditNoteId, current, cancellationToken);
+        var updated = await client.CreditNotes.UpdateCreditNoteAsync(creditNoteId, current, cancellationToken: cancellationToken);
         existingCreditNotes[reference] = updated;
         return new TurpinverseCreditNoteSeedResult(updated, CreditNoteSeedAction.Updated);
     }
 
-    private async Task<ContactReference> ResolveOrganisationContactReferenceAsync(
+    private async Task<long> ResolveOrganisationContactIdAsync(
         FreeAgentClient client,
         string organisationId,
         CancellationToken cancellationToken)
@@ -126,7 +126,7 @@ public sealed class TurpinverseCreditNoteSeeder
                 $"No FreeAgent contact exists for organisation '{organisation.TradingName}'. Seed contacts first from Contact CRUD.");
         }
 
-        return ContactReference.Parse(contact.Url);
+        return contact.ResourceId;
     }
 
     private static async Task<Dictionary<string, CreditNote>> LoadExistingCreditNotesByReferenceAsync(
@@ -153,11 +153,7 @@ public sealed class TurpinverseCreditNoteSeeder
 
     private static void MergeWritableFields(CreditNote current, CreditNote desired)
     {
-        current.BillingContact = desired.BillingContact;
-        current.OmitBillingContactFromWrite = false;
-        current.OmitProjectFromWrite = true;
-        current.OmitBankAccountFromWrite = false;
-        current.OmitCreditNoteItemsFromWrite = false;
+        current.ContactId = desired.ContactId;
         current.Reference = desired.Reference;
         current.PoReference = desired.PoReference;
         current.DatedOn = desired.DatedOn;

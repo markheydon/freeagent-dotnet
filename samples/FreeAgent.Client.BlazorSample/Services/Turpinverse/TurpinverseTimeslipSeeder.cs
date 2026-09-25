@@ -1,7 +1,7 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Shared;
+using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Timeslips;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
 
 namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 
@@ -52,7 +52,7 @@ public sealed class TurpinverseTimeslipSeeder
 
     private static async Task<TurpinverseTimeslipSeedResult> UpsertTimeslipAsync(
         FreeAgentClient client,
-        TaskModel task,
+        ProjectTask task,
         long projectId,
         long userId,
         DateOnly datedOn,
@@ -68,9 +68,9 @@ public sealed class TurpinverseTimeslipSeeder
         var existing = await FindExistingTimeslipAsync(client, taskId, userId, datedOn, comment, cancellationToken);
         var desired = new Timeslip
         {
-            LinkedTask = client.Urls.Task(taskId),
-            LinkedUser = client.Urls.User(userId),
-            LinkedProject = client.Urls.Project(projectId),
+            TaskId = taskId,
+            UserId = userId,
+            ProjectId = projectId,
             DatedOn = datedOn,
             Hours = hours,
             Comment = comment

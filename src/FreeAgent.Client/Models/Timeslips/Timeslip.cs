@@ -4,8 +4,8 @@ using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
+using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Users;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
 
 namespace FreeAgent.Client.Models.Timeslips;
 
@@ -14,6 +14,10 @@ namespace FreeAgent.Client.Models.Timeslips;
 /// </summary>
 public class Timeslip : IFreeAgentResource
 {
+    private SettableLinkId _taskId;
+    private SettableLinkId _projectId;
+    private SettableLinkId _userId;
+
     /// <summary>
     /// Timeslip resource URL.
     /// </summary>
@@ -29,25 +33,23 @@ public class Timeslip : IFreeAgentResource
     /// </summary>
     [JsonPropertyName("task")]
     [JsonInclude]
-    internal ExpandableField<TaskModel>? TaskLink { get; set; }
+    internal ExpandableField<ProjectTask>? TaskLink { get; set; }
 
     /// <summary>
     /// Task when returned nested on the wire or hydrated via <see cref="TimeslipGetOptions.IncludeTask"/>.
     /// </summary>
     [JsonIgnore]
-    public TaskModel? Task => TaskLink?.Value;
+    public ProjectTask? Task => TaskLink?.Value;
 
     /// <summary>
-    /// Task identifier parsed from the timeslip response.
+    /// Task identifier for create and update requests. Populated after GET when the API returns a task link.
     /// </summary>
     [JsonIgnore]
-    public long? TaskId => TaskLink?.Id;
-
-    /// <summary>
-    /// Task to assign on create or update requests.
-    /// </summary>
-    [JsonIgnore]
-    public TaskReference? LinkedTask { get; set; }
+    public long? TaskId
+    {
+        get => _taskId.Get(TaskLink?.Id);
+        set => _taskId.Set(value);
+    }
 
     /// <summary>
     /// Wire representation of the project link.
@@ -63,16 +65,14 @@ public class Timeslip : IFreeAgentResource
     public Project? Project => ProjectLink?.Value;
 
     /// <summary>
-    /// Project identifier parsed from the timeslip response.
+    /// Project identifier for create and update requests. Populated after GET when the API returns a project link.
     /// </summary>
     [JsonIgnore]
-    public long? ProjectId => ProjectLink?.Id;
-
-    /// <summary>
-    /// Project to assign on create or update requests.
-    /// </summary>
-    [JsonIgnore]
-    public ProjectReference? LinkedProject { get; set; }
+    public long? ProjectId
+    {
+        get => _projectId.Get(ProjectLink?.Id);
+        set => _projectId.Set(value);
+    }
 
     /// <summary>
     /// Wire representation of the user link.
@@ -88,16 +88,14 @@ public class Timeslip : IFreeAgentResource
     public User? User => UserLink?.Value;
 
     /// <summary>
-    /// User identifier parsed from the timeslip response.
+    /// User identifier for create and update requests. Populated after GET when the API returns a user link.
     /// </summary>
     [JsonIgnore]
-    public long? UserId => UserLink?.Id;
-
-    /// <summary>
-    /// User to assign on create or update requests.
-    /// </summary>
-    [JsonIgnore]
-    public UserReference? LinkedUser { get; set; }
+    public long? UserId
+    {
+        get => _userId.Get(UserLink?.Id);
+        set => _userId.Set(value);
+    }
 
     /// <summary>
     /// Wire representation of the billed invoice link.
@@ -153,10 +151,10 @@ public class Timeslip : IFreeAgentResource
     /// Attaches a hydrated task to this timeslip.
     /// </summary>
     /// <param name="task">Task details.</param>
-    internal void AttachTask(TaskModel task)
+    internal void AttachTask(ProjectTask task)
     {
         ArgumentNullException.ThrowIfNull(task);
-        TaskLink = new ExpandableField<TaskModel>(task.Url, task);
+        TaskLink = new ExpandableField<ProjectTask>(task.Url, task);
     }
 
     /// <summary>

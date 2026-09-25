@@ -1,6 +1,5 @@
 @page "/tasks/detail"
 @using FreeAgent.Client.Models.Tasks
-@using TaskModel = FreeAgent.Client.Models.Tasks.Task
 @using FreeAgent.Client.BlazorSample.Services.Turpinverse
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
@@ -136,7 +135,7 @@
     private string? _error;
     private string? _operationMessage;
     private string _wireApiResponse = string.Empty;
-    private TaskModel? _task;
+    private ProjectTask? _task;
     private ModelProbeSnapshot? _probe;
     private long? _taskId;
     private long? _projectId;
@@ -302,7 +301,7 @@
         await RunOperationAsync(
             async client =>
             {
-                _task = await client.Tasks.CreateTaskAsync(_projectId.Value, new TaskModel
+                _task = await client.Tasks.CreateTaskAsync(_projectId.Value, new ProjectTask
                 {
                     Name = $"SDK probe task {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}",
                     IsBillable = true,

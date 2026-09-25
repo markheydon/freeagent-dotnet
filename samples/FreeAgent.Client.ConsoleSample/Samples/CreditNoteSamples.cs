@@ -128,9 +128,11 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
         try
         {
             draft.Comments = "Updated by console sample";
-            draft.OmitCreditNoteItemsFromWrite = true;
-
-            var updated = await context.Client.CreditNotes.UpdateCreditNoteAsync(draft.ResourceId, draft, cancellationToken);
+            var updated = await context.Client.CreditNotes.UpdateCreditNoteAsync(
+                draft.ResourceId,
+                draft,
+                new CreditNoteUpdateOptions { OmitLineItems = true },
+                cancellationToken);
 
             SampleOutput.WriteHeader("Updated credit note comments");
             SampleOutput.WriteField("Id", updated.ResourceId);
@@ -203,7 +205,7 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
         return await context.Client.CreditNotes.CreateCreditNoteAsync(
             new CreditNote
             {
-                BillingContact = ContactReference.Parse(contact.Url),
+                ContactId = contact.ResourceId,
                 DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
                 DueOn = DateOnly.FromDateTime(DateTime.UtcNow),
                 PaymentTermsInDays = 0,
@@ -218,8 +220,7 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
                         Price = -25m,
                         SalesTaxRate = 20m,
                         SalesTaxStatus = InvoiceSalesTaxStatus.Taxable,
-                        Category = CategoryReference.Parse(
-                            CategoryReference.ForEnvironment(context.Client.Environment, nominalCode).Uri)
+                        CategoryNominalCode = nominalCode
                     }
                 ]
             },

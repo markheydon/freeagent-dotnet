@@ -1,4 +1,5 @@
 using System.Text.Json;
+using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
 
@@ -99,19 +100,19 @@ public class ProjectModelSerializationTests
     }
 
     [Fact]
-    public void WritePayload_UsesBillingContact()
+    public void WritePayload_UsesContactId()
     {
         var payload = ProjectWritePayload.FromProject(new Project
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/3"),
+            ContactId = 3,
             Name = "Example"
-        });
+        }, FreeAgentEnvironment.Production);
 
         Assert.Equal("https://api.freeagent.com/v2/contacts/3", payload.Contact!.Value.Uri);
     }
 
     [Fact]
-    public void WritePayload_FallsBackToContactLinkWhenBillingContactMissing()
+    public void WritePayload_FallsBackToContactLinkWhenContactIdMissing()
     {
         var project = JsonSerializer.Deserialize<Project>("""
             {
@@ -121,13 +122,13 @@ public class ProjectModelSerializationTests
             }
             """)!;
 
-        var payload = ProjectWritePayload.FromProject(project);
+        var payload = ProjectWritePayload.FromProject(project, FreeAgentEnvironment.Production);
 
         Assert.Equal("https://api.freeagent.com/v2/contacts/8", payload.Contact!.Value.Uri);
     }
 
     [Fact]
-    public void WritePayload_OmitBillingContactFromWrite_ExcludesRoundTrippedContact()
+    public void WritePayload_SetContactId_OverridesRoundTrippedContact()
     {
         var project = JsonSerializer.Deserialize<Project>("""
             {
@@ -136,11 +137,11 @@ public class ProjectModelSerializationTests
               "name": "Example"
             }
             """)!;
-        project.OmitBillingContactFromWrite = true;
+        project.ContactId = 3;
 
-        var payload = ProjectWritePayload.FromProject(project);
+        var payload = ProjectWritePayload.FromProject(project, FreeAgentEnvironment.Production);
 
-        Assert.Null(payload.Contact);
+        Assert.Equal("https://api.freeagent.com/v2/contacts/3", payload.Contact!.Value.Uri);
     }
 
     [Fact]

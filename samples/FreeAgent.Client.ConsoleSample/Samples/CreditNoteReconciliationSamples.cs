@@ -67,10 +67,7 @@ internal sealed class CreditNoteReconciliationSamples(SampleContext context) : I
         var grossValue = ResolveProbeGrossValue(invoice.TotalValue, creditNote.TotalValue);
 
         var created = await context.Client.CreditNoteReconciliations.CreateCreditNoteReconciliationAsync(
-            CreateCreditNoteReconciliationRequest.Create(
-                grossValue,
-                context.Client.Urls.Invoice(invoice.ResourceId),
-                context.Client.Urls.CreditNote(creditNote.ResourceId),
+            CreateCreditNoteReconciliationRequest.Create(grossValue, invoiceId: invoice.ResourceId, creditNoteId: creditNote.ResourceId,
                 datedOn: DateOnly.FromDateTime(DateTime.UtcNow)),
             cancellationToken);
 
@@ -97,10 +94,7 @@ internal sealed class CreditNoteReconciliationSamples(SampleContext context) : I
         var grossValue = ResolveProbeGrossValue(invoice.TotalValue, creditNote.TotalValue);
 
         var created = await context.Client.CreditNoteReconciliations.CreateCreditNoteReconciliationAsync(
-            CreateCreditNoteReconciliationRequest.Create(
-                grossValue,
-                context.Client.Urls.Invoice(invoice.ResourceId),
-                context.Client.Urls.CreditNote(creditNote.ResourceId),
+            CreateCreditNoteReconciliationRequest.Create(grossValue, invoiceId: invoice.ResourceId, creditNoteId: creditNote.ResourceId,
                 datedOn: DateOnly.FromDateTime(DateTime.UtcNow)),
             cancellationToken);
 

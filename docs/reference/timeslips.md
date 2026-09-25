@@ -160,9 +160,9 @@ using FreeAgent.Client.Models.Timeslips;
 
 var timeslip = await client.Timeslips.CreateTimeslipAsync(new Timeslip
 {
-    LinkedTask = client.Urls.Task(1),
-    LinkedProject = client.Urls.Project(1),
-    LinkedUser = client.Urls.User(1),
+    TaskId = 1,
+    ProjectId = 1,
+    UserId = 1,
     DatedOn = new DateOnly(2024, 3, 18),
     Hours = 1.5m,
     Comment = "Planning session"
@@ -261,12 +261,12 @@ Key properties:
 
 | Property | Type | Wire name | Notes |
 |----------|------|-----------|-------|
-| `LinkedTask` | `TaskReference?` | `task` | Write only |
-| `LinkedProject` | `ProjectReference?` | `project` | Write only |
-| `LinkedUser` | `UserReference?` | `user` | Write only |
-| `TaskId` | `long?` | - | Parsed from `task` URI |
-| `ProjectId` | `long?` | - | Parsed from `project` URI |
-| `UserId` | `long?` | - | Parsed from `user` URI |
+| `TaskId` | `long?` | `task` | Read: parsed from URI; write: task id |
+| `ProjectId` | `long?` | `project` | Read: parsed from URI; write: project id |
+| `UserId` | `long?` | `user` | Read: parsed from URI; write: user id |
+| `Task` | `ProjectTask?` | `task` | Nested or hydrated task |
+| `Project` | `Project?` | `project` | Nested or hydrated project |
+| `User` | `User?` | `user` | Nested or hydrated user |
 | `DatedOn` | `DateOnly?` | `dated_on` | Required on create |
 | `Hours` | `decimal?` | `hours` | Required on create |
 | `Comment` | `string?` | `comment` | |
@@ -276,9 +276,9 @@ Key properties:
 | `UpdatedAt` | `DateTimeOffset?` | `updated_at` | Read-only |
 | `Url` | `string` | `url` | |
 
-## Reference types
+## Reference types (list filters and inbound URLs)
 
-Use `client.Urls` to build environment-correct URIs:
+Use `client.Urls` or `*Reference.Parse` for list filters and webhook URL parsing — not for create or update payloads:
 
 - `client.Urls.Task(id)` → `TaskReference`
 - `client.Urls.Project(id)` → `ProjectReference`

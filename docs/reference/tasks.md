@@ -21,7 +21,7 @@ Pagination patterns: see [Pagination](../how-to/pagination.md). Parent project l
 ### ListAsync
 
 ```csharp
-Task<PaginatedResponse<Task>> ListAsync(
+Task<PaginatedResponse<ProjectTask>> ListAsync(
     int page = 1,
     int perPage = 25,
     string? view = null,
@@ -63,7 +63,7 @@ var page = await client.Tasks.ListAsync(
 ### ListAutoPagingAsync
 
 ```csharp
-IAsyncEnumerable<Task> ListAutoPagingAsync(
+IAsyncEnumerable<ProjectTask> ListAutoPagingAsync(
     int perPage = 25,
     string? view = null,
     string? sort = null,
@@ -80,9 +80,9 @@ Same query parameters as `ListAsync` except `page`.
 ### GetTaskAsync
 
 ```csharp
-Task<Task> GetTaskAsync(long taskId, CancellationToken cancellationToken = default)
+Task<ProjectTask> GetTaskAsync(long taskId, CancellationToken cancellationToken = default)
 
-Task<Task> GetTaskAsync(
+Task<ProjectTask> GetTaskAsync(
     long taskId,
     TaskGetOptions? options,
     CancellationToken cancellationToken = default)
@@ -111,15 +111,15 @@ var task = await client.Tasks.GetTaskAsync(
 ### CreateTaskAsync
 
 ```csharp
-Task<Task> CreateTaskAsync(long projectId, Task task, CancellationToken cancellationToken = default)
+Task<ProjectTask> CreateTaskAsync(long projectId, ProjectTask task, CancellationToken cancellationToken = default)
 
-Task<Task> CreateTaskAsync(ProjectReference project, Task task, CancellationToken cancellationToken = default)
+Task<ProjectTask> CreateTaskAsync(ProjectReference project, ProjectTask task, CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
 | `projectId` / `project` | `long` / `ProjectReference` | Yes | - | `project` query param (URI) |
-| `task` | `Task` | Yes | - | `task` envelope |
+| `task` | `ProjectTask` | Yes | - | `task` envelope |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `POST /v2/tasks?project=:project`
@@ -129,7 +129,7 @@ The parent project is supplied as a query parameter, not in the request body.
 **Sample:**
 
 ```csharp
-var task = await client.Tasks.CreateTaskAsync(42, new Task
+var task = await client.Tasks.CreateTaskAsync(42, new ProjectTask
 {
     Name = "Planning",
     IsBillable = true,
@@ -142,13 +142,13 @@ var task = await client.Tasks.CreateTaskAsync(42, new Task
 ### UpdateTaskAsync
 
 ```csharp
-Task<Task> UpdateTaskAsync(long taskId, Task task, CancellationToken cancellationToken = default)
+Task<ProjectTask> UpdateTaskAsync(long taskId, ProjectTask task, CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
 | `taskId` | `long` | Yes | - | path `:id` |
-| `task` | `Task` | Yes | - | `task` envelope |
+| `task` | `ProjectTask` | Yes | - | `task` envelope |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `PUT /v2/tasks/:id`
@@ -189,7 +189,7 @@ Task DeleteTaskAsync(long taskId, CancellationToken cancellationToken = default)
 |----------|------|---------|
 | `IncludeProject` | `bool` | Fetch parent project when only a URI is returned |
 
-## Task model
+## ProjectTask model
 
 Key properties:
 
@@ -208,7 +208,7 @@ Key properties:
 
 ## TaskReference
 
-Use `client.Urls.Task(id)` or `TaskReference.ForEnvironment(environment, id)` to build environment-correct task URIs for downstream resources such as timeslips.
+Use `client.Urls.Task(id)` or `TaskReference.ForEnvironment(environment, id)` to build environment-correct task URIs for list filters and inbound URL parsing. For timeslip writes, set `Timeslip.TaskId` instead.
 
 ## Errors
 

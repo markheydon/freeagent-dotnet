@@ -1,7 +1,6 @@
 @page "/tasks"
 @using FreeAgent.Client.Models.Shared
 @using FreeAgent.Client.Models.Tasks
-@using TaskModel = FreeAgent.Client.Models.Tasks.Task
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
 @inject ApiDiagnosticsService ApiDiagnostics
@@ -264,8 +263,8 @@
     private bool _loadingAll;
     private string? _error;
     private string _wireApiResponse = string.Empty;
-    private PaginatedResponse<TaskModel>? _pageResult;
-    private TaskModel? _inspectedTask;
+    private PaginatedResponse<ProjectTask>? _pageResult;
+    private ProjectTask? _inspectedTask;
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allTasksCount;

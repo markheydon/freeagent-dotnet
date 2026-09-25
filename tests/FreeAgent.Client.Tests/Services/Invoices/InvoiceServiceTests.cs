@@ -213,7 +213,7 @@ public class InvoiceServiceTests
 
         var created = await service.CreateInvoiceAsync(new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
             InvoiceItems =
@@ -589,12 +589,11 @@ public class InvoiceServiceTests
 
         var invoice = await service.UpdateInvoiceAsync(4, new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
-            OmitInvoiceItemsFromWrite = true,
             Comments = "Updated"
-        });
+        }, new InvoiceUpdateOptions { OmitLineItems = true });
 
         Assert.Equal("Updated", invoice.Comments);
     }

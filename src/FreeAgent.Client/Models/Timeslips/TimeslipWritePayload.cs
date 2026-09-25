@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Timeslips;
@@ -27,18 +29,15 @@ internal sealed class TimeslipWritePayload
     [JsonPropertyName("comment")]
     public string? Comment { get; set; }
 
-    public static TimeslipWritePayload FromTimeslip(Timeslip timeslip)
+    public static TimeslipWritePayload FromTimeslip(Timeslip timeslip, FreeAgentEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(timeslip);
 
         return new TimeslipWritePayload
         {
-            Task = timeslip.LinkedTask
-                ?? (timeslip.TaskLink?.Uri is string taskUri ? TaskReference.Parse(taskUri) : null),
-            User = timeslip.LinkedUser
-                ?? (timeslip.UserLink?.Uri is string userUri ? UserReference.Parse(userUri) : null),
-            Project = timeslip.LinkedProject
-                ?? (timeslip.ProjectLink?.Uri is string projectUri ? ProjectReference.Parse(projectUri) : null),
+            Task = LinkedResourceWriteMapper.ToTaskReference(environment, timeslip.TaskId),
+            User = LinkedResourceWriteMapper.ToUserReference(environment, timeslip.UserId),
+            Project = LinkedResourceWriteMapper.ToProjectReference(environment, timeslip.ProjectId),
             DatedOn = timeslip.DatedOn,
             Hours = timeslip.Hours,
             Comment = timeslip.Comment

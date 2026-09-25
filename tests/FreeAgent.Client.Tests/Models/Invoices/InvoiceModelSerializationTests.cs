@@ -104,7 +104,7 @@ public class InvoiceModelSerializationTests
     }
 
     [Fact]
-    public void WritePayload_OmitBillingContactFromWrite_ExcludesRoundTrippedContact()
+    public void WritePayload_SetContactId_OverridesRoundTrippedContact()
     {
         var invoice = JsonSerializer.Deserialize<Invoice>("""
             {
@@ -114,22 +114,21 @@ public class InvoiceModelSerializationTests
               "payment_terms_in_days": 14
             }
             """)!;
-        invoice.OmitBillingContactFromWrite = true;
+        invoice.ContactId = 3;
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
 
-        Assert.Null(payload.Contact);
+        Assert.Equal("https://api.freeagent.com/v2/contacts/3", payload.Contact!.Value.Uri);
     }
 
     [Fact]
-    public void WritePayload_OmitInvoiceItemsFromWrite_ExcludesLineItems()
+    public void WritePayload_OmitLineItems_ExcludesLineItems()
     {
         var invoice = new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
-            OmitInvoiceItemsFromWrite = true,
             InvoiceItems =
             [
                 new InvoiceItem
@@ -140,7 +139,7 @@ public class InvoiceModelSerializationTests
             ]
         };
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production, omitLineItems: true);
 
         Assert.Null(payload.InvoiceItems);
     }
@@ -150,7 +149,7 @@ public class InvoiceModelSerializationTests
     {
         var invoice = new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
             InvoiceItems =
@@ -164,7 +163,7 @@ public class InvoiceModelSerializationTests
             ]
         };
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"id\":42", json, StringComparison.Ordinal);
@@ -176,7 +175,7 @@ public class InvoiceModelSerializationTests
     {
         var invoice = new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
             InvoiceItems =
@@ -187,12 +186,12 @@ public class InvoiceModelSerializationTests
                     ItemType = InvoiceItemType.Hours,
                     Quantity = 2,
                     Price = 100,
-                    Category = CategoryReference.ForEnvironment(FreeAgentEnvironment.Production, "001")
+                    CategoryNominalCode = "001"
                 }
             ]
         };
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"contact\":\"https://api.freeagent.com/v2/contacts/2\"", json, StringComparison.Ordinal);
@@ -251,7 +250,7 @@ public class InvoiceModelSerializationTests
             }
             """, FreeAgentJsonSerializer.Options)!;
 
-        var payload = InvoiceItemWritePayload.FromInvoiceItem(item);
+        var payload = InvoiceItemWritePayload.FromInvoiceItem(item, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"stock_item\":\"https://api.freeagent.com/v2/stock_items/3\"", json, StringComparison.Ordinal);
@@ -262,7 +261,7 @@ public class InvoiceModelSerializationTests
     {
         var invoice = new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
             InvoiceItems =
@@ -273,12 +272,12 @@ public class InvoiceModelSerializationTests
                     ItemType = InvoiceItemType.Stock,
                     Quantity = 1,
                     Price = 10,
-                    StockItem = StockItemReference.Parse("https://api.freeagent.com/v2/stock_items/3")
+                    StockItemId = 3
                 }
             ]
         };
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"stock_item\":\"https://api.freeagent.com/v2/stock_items/3\"", json, StringComparison.Ordinal);
@@ -289,7 +288,7 @@ public class InvoiceModelSerializationTests
     {
         var invoice = new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
             InvoiceItems =
@@ -302,7 +301,7 @@ public class InvoiceModelSerializationTests
             ]
         };
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"id\":42", json, StringComparison.Ordinal);

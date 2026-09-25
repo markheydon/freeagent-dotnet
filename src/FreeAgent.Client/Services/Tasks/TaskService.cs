@@ -4,8 +4,6 @@ using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Models.Tasks;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
-
 namespace FreeAgent.Client.Services.Tasks;
 
 /// <summary>
@@ -41,7 +39,7 @@ public sealed class TaskService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated tasks response</returns>
     /// <exception cref="ArgumentException"><paramref name="project"/> and <paramref name="projectId"/> are both supplied.</exception>
-    public async Task<PaginatedResponse<TaskModel>> ListAsync(
+    public async Task<PaginatedResponse<ProjectTask>> ListAsync(
         int page = 1,
         int perPage = 25,
         string? view = null,
@@ -95,7 +93,7 @@ public sealed class TaskService
 
         var total = FreeAgentPaginationHelper.GetTotalCountOrEstimate(response, page, perPage, response.Data.Tasks.Count);
 
-        return new PaginatedResponse<TaskModel>(
+        return new PaginatedResponse<ProjectTask>(
             page,
             perPage,
             total,
@@ -113,7 +111,7 @@ public sealed class TaskService
     /// <param name="projectId">Filter by parent project identifier (equivalent to <c>client.Urls.Project(projectId)</c>)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Async stream of tasks</returns>
-    public async IAsyncEnumerable<TaskModel> ListAutoPagingAsync(
+    public async IAsyncEnumerable<ProjectTask> ListAutoPagingAsync(
         int perPage = 25,
         string? view = null,
         string? sort = null,
@@ -149,7 +147,7 @@ public sealed class TaskService
     /// <param name="taskId">Task identifier from the resource URL</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task details</returns>
-    public Task<TaskModel> GetTaskAsync(long taskId, CancellationToken cancellationToken = default) =>
+    public Task<ProjectTask> GetTaskAsync(long taskId, CancellationToken cancellationToken = default) =>
         GetTaskAsync(taskId, options: null, cancellationToken);
 
     /// <summary>
@@ -159,7 +157,7 @@ public sealed class TaskService
     /// <param name="options">Optional hydration settings</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Task details</returns>
-    public async Task<TaskModel> GetTaskAsync(
+    public async Task<ProjectTask> GetTaskAsync(
         long taskId,
         TaskGetOptions? options,
         CancellationToken cancellationToken = default)
@@ -189,7 +187,7 @@ public sealed class TaskService
     /// <param name="task">Task attributes to create</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created task</returns>
-    public Task<TaskModel> CreateTaskAsync(long projectId, TaskModel task, CancellationToken cancellationToken = default) =>
+    public Task<ProjectTask> CreateTaskAsync(long projectId, ProjectTask task, CancellationToken cancellationToken = default) =>
         CreateTaskAsync(ProjectReference.ForEnvironment(_requestClient.Environment, projectId), task, cancellationToken);
 
     /// <summary>
@@ -199,9 +197,9 @@ public sealed class TaskService
     /// <param name="task">Task attributes to create</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created task</returns>
-    public async Task<TaskModel> CreateTaskAsync(
+    public async Task<ProjectTask> CreateTaskAsync(
         ProjectReference project,
-        TaskModel task,
+        ProjectTask task,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(task);
@@ -228,7 +226,7 @@ public sealed class TaskService
     /// <param name="task">Task attributes to update</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated task</returns>
-    public async Task<TaskModel> UpdateTaskAsync(long taskId, TaskModel task, CancellationToken cancellationToken = default)
+    public async Task<ProjectTask> UpdateTaskAsync(long taskId, ProjectTask task, CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(taskId);
         ArgumentNullException.ThrowIfNull(task);

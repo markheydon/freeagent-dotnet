@@ -11,5 +11,5 @@ public class TaskResponse
     /// Task payload.
     /// </summary>
     [JsonPropertyName("task")]
-    public Task? Task { get; set; }
+    public ProjectTask? Task { get; set; }
 }

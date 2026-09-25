@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
@@ -50,15 +51,9 @@ internal sealed class EstimateItemWritePayload
     [JsonPropertyName("_destroy")]
     public int? Destroy { get; set; }
 
-    public static EstimateItemWritePayload FromEstimateItem(EstimateItem item)
+    public static EstimateItemWritePayload FromEstimateItem(EstimateItem item, FreeAgentEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(item);
-
-        CategoryReference? category = item.Category;
-        if (category is null && item.CategoryLink?.Uri is string categoryUri)
-        {
-            category = CategoryReference.Parse(categoryUri);
-        }
 
         return new EstimateItemWritePayload
         {
@@ -72,7 +67,7 @@ internal sealed class EstimateItemWritePayload
             SecondSalesTaxRate = item.SecondSalesTaxRate,
             SalesTaxStatus = item.SalesTaxStatus,
             SecondSalesTaxStatus = item.SecondSalesTaxStatus,
-            Category = category,
+            Category = LinkedResourceWriteMapper.ToCategoryReference(environment, item.CategoryNominalCode),
             Id = item.ItemId,
             Destroy = item.Destroy
         };

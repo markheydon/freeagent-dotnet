@@ -101,7 +101,7 @@ internal sealed class ProjectSamples(SampleContext context) : IConsoleSampleProv
             new Project
             {
                 Name = $"Console probe project {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
-                BillingContact = ContactReference.ForEnvironment(context.Client.Environment, contact.ResourceId),
+                ContactId = contact.ResourceId,
                 Status = ProjectStatus.Active,
                 Currency = CurrencyCode.GBP,
                 Budget = 0m,

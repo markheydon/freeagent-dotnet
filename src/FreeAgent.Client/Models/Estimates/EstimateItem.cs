@@ -12,6 +12,8 @@ namespace FreeAgent.Client.Models.Estimates;
 /// </summary>
 public sealed class EstimateItem
 {
+    private SettableLinkValue _categoryNominalCode;
+
     /// <summary>
     /// Estimate item resource URL.
     /// </summary>
@@ -100,18 +102,21 @@ public sealed class EstimateItem
     internal ExpandableField<Category>? CategoryLink { get; set; }
 
     /// <summary>
-    /// Category nominal code when returned as a URI link.
+    /// Category nominal code for create and update requests. Populated after GET when the API returns a category link.
     /// </summary>
     [JsonIgnore]
-    public string? CategoryNominalCode => CategoryLink?.Uri is string uri
-        ? CategoryReference.ExtractNominalCode(uri)
-        : null;
+    public string? CategoryNominalCode
+    {
+        get => _categoryNominalCode.Get(
+            CategoryLink?.Uri is string uri ? CategoryReference.ExtractNominalCode(uri) : null);
+        set => _categoryNominalCode.Set(value);
+    }
 
     /// <summary>
-    /// Category to assign on create or update requests.
+    /// Category when returned nested on the wire.
     /// </summary>
     [JsonIgnore]
-    public CategoryReference? Category { get; set; }
+    public Category? Category => CategoryLink?.Value;
 
     /// <summary>
     /// Creation timestamp.

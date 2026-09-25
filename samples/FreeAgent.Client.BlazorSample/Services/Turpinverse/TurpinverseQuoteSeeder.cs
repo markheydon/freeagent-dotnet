@@ -94,9 +94,9 @@ public sealed class TurpinverseQuoteSeeder
         CancellationToken cancellationToken,
         Dictionary<string, Estimate>? existingEstimates = null)
     {
-        var contact = await ResolveOrganisationContactReferenceAsync(client, quote.AccountId, cancellationToken);
-        var project = await ResolveProjectReferenceAsync(client, quote, cancellationToken);
-        var desired = TurpinverseQuoteMapper.ToFreeAgentEstimate(quote, contact, project);
+        var contactId = await ResolveOrganisationContactIdAsync(client, quote.AccountId, cancellationToken);
+        var projectId = await ResolveProjectIdAsync(client, quote, cancellationToken);
+        var desired = TurpinverseQuoteMapper.ToFreeAgentEstimate(quote, contactId, projectId);
         var reference = TurpinverseQuoteMapper.BuildReference(quote.QuoteId);
 
         existingEstimates ??= await LoadExistingEstimatesByReferenceAsync(client, cancellationToken);
@@ -116,13 +116,13 @@ public sealed class TurpinverseQuoteSeeder
 
         var current = await client.Estimates.GetEstimateAsync(estimateId, cancellationToken);
         MergeWritableFields(current, desired);
-        var updated = await client.Estimates.UpdateEstimateAsync(estimateId, current, cancellationToken);
+        var updated = await client.Estimates.UpdateEstimateAsync(estimateId, current, cancellationToken: cancellationToken);
         updated = await ApplyCanonStatusAsync(client, updated, quote, cancellationToken);
         existingEstimates[reference] = updated;
         return new TurpinverseQuoteSeedResult(updated, QuoteSeedAction.Updated);
     }
 
-    private async Task<ContactReference> ResolveOrganisationContactReferenceAsync(
+    private async Task<long> ResolveOrganisationContactIdAsync(
         FreeAgentClient client,
         string organisationId,
         CancellationToken cancellationToken)
@@ -139,32 +139,32 @@ public sealed class TurpinverseQuoteSeeder
                 $"No FreeAgent contact exists for organisation '{organisation.TradingName}'. Seed contacts first from Contact CRUD.");
         }
 
-        return ContactReference.Parse(contact.Url);
+        return contact.ResourceId;
     }
 
-    private static async Task<ProjectReference?> ResolveProjectReferenceAsync(
+    private static async Task<long?> ResolveProjectIdAsync(
         FreeAgentClient client,
         TurpinverseQuote quote,
         CancellationToken cancellationToken)
     {
-        var projectId = quote.Lines
+        var turpinverseProjectId = quote.Lines
             .Select(static line => line.ProjectId)
             .FirstOrDefault(static id => !string.IsNullOrWhiteSpace(id));
 
-        if (string.IsNullOrWhiteSpace(projectId))
+        if (string.IsNullOrWhiteSpace(turpinverseProjectId))
         {
             return null;
         }
 
-        var contractReference = TurpinverseProjectMapper.BuildContractReference(projectId);
+        var contractReference = TurpinverseProjectMapper.BuildContractReference(turpinverseProjectId);
         var projectsByReference = await LoadExistingProjectsByContractReferenceAsync(client, cancellationToken);
         if (!projectsByReference.TryGetValue(contractReference, out var project))
         {
             throw new InvalidOperationException(
-                $"No FreeAgent project exists for Turpinverse project '{projectId}'. Seed projects first from Project CRUD.");
+                $"No FreeAgent project exists for Turpinverse project '{turpinverseProjectId}'. Seed projects first from Project CRUD.");
         }
 
-        return ProjectReference.Parse(project.Url);
+        return project.ResourceId;
     }
 
     private static async Task<Dictionary<string, Estimate>> LoadExistingEstimatesByReferenceAsync(
@@ -256,11 +256,8 @@ public sealed class TurpinverseQuoteSeeder
 
     private static void MergeWritableFields(Estimate current, Estimate desired)
     {
-        current.BillingContact = desired.BillingContact;
-        current.LinkedProject = desired.LinkedProject;
-        current.OmitBillingContactFromWrite = false;
-        current.OmitProjectFromWrite = desired.LinkedProject is null;
-        current.OmitEstimateItemsFromWrite = false;
+        current.ContactId = desired.ContactId;
+        current.ProjectId = desired.ProjectId;
         current.EstimateType = desired.EstimateType;
         current.Reference = desired.Reference;
         current.DatedOn = desired.DatedOn;

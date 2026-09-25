@@ -114,7 +114,7 @@ public class TimeslipModelSerializationTests
             }
             """)!;
 
-        var payload = TimeslipWritePayload.FromTimeslip(timeslip);
+        var payload = TimeslipWritePayload.FromTimeslip(timeslip, FreeAgentEnvironment.Production);
 
         Assert.Equal("https://api.freeagent.com/v2/tasks/1", payload.Task!.Value.Uri);
         Assert.Equal("https://api.freeagent.com/v2/projects/2", payload.Project!.Value.Uri);
@@ -136,7 +136,7 @@ public class TimeslipModelSerializationTests
             }
             """)!;
 
-        var json = JsonSerializer.Serialize(TimeslipWritePayload.FromTimeslip(timeslip));
+        var json = JsonSerializer.Serialize(TimeslipWritePayload.FromTimeslip(timeslip, FreeAgentEnvironment.Production));
 
         Assert.DoesNotContain("billed_on_invoice", json, StringComparison.Ordinal);
     }

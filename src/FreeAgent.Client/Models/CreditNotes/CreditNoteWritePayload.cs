@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
 
@@ -72,56 +74,23 @@ internal sealed class CreditNoteWritePayload
     [JsonPropertyName("credit_note_items")]
     public List<CreditNoteItemWritePayload>? CreditNoteItems { get; set; }
 
-    public static CreditNoteWritePayload FromCreditNote(CreditNote creditNote)
+    public static CreditNoteWritePayload FromCreditNote(
+        CreditNote creditNote,
+        FreeAgentEnvironment environment,
+        bool omitLineItems = false)
     {
         ArgumentNullException.ThrowIfNull(creditNote);
 
-        ContactReference? contact = null;
-        if (!creditNote.OmitBillingContactFromWrite)
-        {
-            contact = creditNote.BillingContact
-                ?? (creditNote.ContactLink?.Uri is string contactUri ? ContactReference.Parse(contactUri) : null);
-        }
-        else
-        {
-            contact = creditNote.BillingContact;
-        }
-
-        ProjectReference? project = null;
-        if (!creditNote.OmitProjectFromWrite)
-        {
-            project = creditNote.LinkedProject
-                ?? (creditNote.ProjectLink?.Uri is string projectUri ? ProjectReference.Parse(projectUri) : null);
-        }
-        else
-        {
-            project = creditNote.LinkedProject;
-        }
-
-        BankAccountReference? bankAccount = null;
-        if (!creditNote.OmitBankAccountFromWrite)
-        {
-            bankAccount = creditNote.RemittanceBankAccount;
-            if (bankAccount is null && creditNote.BankAccountLink?.Uri is string bankAccountUri)
-            {
-                bankAccount = BankAccountReference.Parse(bankAccountUri);
-            }
-        }
-        else
-        {
-            bankAccount = creditNote.RemittanceBankAccount;
-        }
-
         List<CreditNoteItemWritePayload>? items = null;
-        if (!creditNote.OmitCreditNoteItemsFromWrite && creditNote.CreditNoteItems is not null)
+        if (!omitLineItems && creditNote.CreditNoteItems is not null)
         {
-            items = creditNote.CreditNoteItems.ConvertAll(CreditNoteItemWritePayload.FromCreditNoteItem);
+            items = creditNote.CreditNoteItems.ConvertAll(i => CreditNoteItemWritePayload.FromCreditNoteItem(i, environment));
         }
 
         return new CreditNoteWritePayload
         {
-            Contact = contact,
-            Project = project,
+            Contact = LinkedResourceWriteMapper.ToContactReference(environment, creditNote.ContactId),
+            Project = LinkedResourceWriteMapper.ToProjectReference(environment, creditNote.ProjectId),
             Property = creditNote.PropertyUri,
             Reference = creditNote.Reference,
             DatedOn = creditNote.DatedOn,
@@ -135,7 +104,7 @@ internal sealed class CreditNoteWritePayload
             ClientContactName = creditNote.ClientContactName,
             PaymentTerms = creditNote.PaymentTerms,
             PoReference = creditNote.PoReference,
-            BankAccount = bankAccount,
+            BankAccount = LinkedResourceWriteMapper.ToBankAccountReference(environment, creditNote.BankAccountId),
             OmitHeader = creditNote.OmitHeader,
             ShowProjectName = creditNote.ShowProjectName,
             EcStatus = creditNote.EcStatus,

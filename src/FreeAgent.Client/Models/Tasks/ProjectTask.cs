@@ -7,9 +7,9 @@ using FreeAgent.Client.Models.Shared;
 namespace FreeAgent.Client.Models.Tasks;
 
 /// <summary>
-/// Represents a FreeAgent task.
+/// Represents a FreeAgent task belonging to a project.
 /// </summary>
-public class Task : IFreeAgentResource
+public class ProjectTask : IFreeAgentResource
 {
     /// <summary>
     /// Task resource URL.

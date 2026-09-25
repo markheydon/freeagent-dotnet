@@ -13,7 +13,7 @@ internal static class TurpinverseCreditNoteMapper
 
     public static CreditNote ToFreeAgentCreditNote(
         TurpinverseCreditNote creditNote,
-        ContactReference contact)
+        long contactId)
     {
         ArgumentNullException.ThrowIfNull(creditNote);
 
@@ -21,7 +21,7 @@ internal static class TurpinverseCreditNoteMapper
 
         return new CreditNote
         {
-            BillingContact = contact,
+            ContactId = contactId,
             Reference = BuildReference(creditNote.CreditNoteId),
             PoReference = creditNote.CreditNoteNumber,
             DatedOn = datedOn,

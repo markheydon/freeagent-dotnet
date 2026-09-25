@@ -207,9 +207,9 @@
             {
                 var probe = new Timeslip
                 {
-                    LinkedTask = client.Urls.Task(_taskId.Value),
-                    LinkedProject = client.Urls.Project(_projectId.Value),
-                    LinkedUser = client.Urls.User(_userId.Value),
+                    TaskId = _taskId.Value,
+                    ProjectId = _projectId.Value,
+                    UserId = _userId.Value,
                     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
                     Hours = 0.5m,
                     Comment = $"SDK probe timeslip {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}"

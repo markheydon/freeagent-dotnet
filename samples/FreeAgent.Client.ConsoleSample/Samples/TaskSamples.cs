@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
+using FreeAgent.Client.Models.Tasks;
 using TaskStatus = FreeAgent.Client.Models.Tasks.TaskStatus;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
@@ -80,13 +80,13 @@ internal sealed class TaskSamples(SampleContext context) : IConsoleSampleProvide
         await context.Client.Tasks.DeleteTaskAsync(updated.ResourceId, cancellationToken);
     }
 
-    private async Task<TaskModel> CreateSampleTaskAsync(CancellationToken cancellationToken)
+    private async Task<ProjectTask> CreateSampleTaskAsync(CancellationToken cancellationToken)
     {
         var project = await context.Data.GetFirstProjectAsync(cancellationToken);
 
         return await context.Client.Tasks.CreateTaskAsync(
             project.ResourceId,
-            new TaskModel
+            new ProjectTask
             {
                 Name = $"Console probe task {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
                 IsBillable = true,

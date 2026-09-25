@@ -325,7 +325,7 @@
             {
                 _creditNote = await client.CreditNotes.CreateCreditNoteAsync(new CreditNote
                 {
-                    BillingContact = client.Urls.Contact(_contactId.Value),
+                    ContactId = _contactId.Value,
                     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
                     Currency = CurrencyCode.GBP,
                     Reference = $"probe-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
@@ -370,8 +370,10 @@
             {
                 var existing = _creditNote ?? await client.CreditNotes.GetCreditNoteAsync(_creditNoteId.Value);
                 existing.Comments = $"{existing.Comments} (updated)".Trim();
-                existing.OmitCreditNoteItemsFromWrite = true;
-                _creditNote = await client.CreditNotes.UpdateCreditNoteAsync(_creditNoteId.Value, existing);
+                _creditNote = await client.CreditNotes.UpdateCreditNoteAsync(
+                    _creditNoteId.Value,
+                    existing,
+                    new CreditNoteUpdateOptions { OmitLineItems = true });
                 _operationMessage = $"Updated credit note {_creditNoteId.Value}.";
                 return $"credit_notes/{_creditNoteId}";
             },

@@ -94,9 +94,9 @@ public sealed class TurpinverseInvoiceSeeder
         CancellationToken cancellationToken,
         Dictionary<string, Invoice>? existingInvoices = null)
     {
-        var contact = await ResolveOrganisationContactReferenceAsync(client, invoice.AccountId, cancellationToken);
-        var project = await ResolveProjectReferenceAsync(client, invoice, cancellationToken);
-        var desired = TurpinverseInvoiceMapper.ToFreeAgentInvoice(invoice, contact, project);
+        var contactId = await ResolveOrganisationContactIdAsync(client, invoice.AccountId, cancellationToken);
+        var projectId = await ResolveProjectIdAsync(client, invoice, cancellationToken);
+        var desired = TurpinverseInvoiceMapper.ToFreeAgentInvoice(invoice, contactId, projectId);
         var reference = TurpinverseInvoiceMapper.BuildReference(invoice.InvoiceId);
 
         existingInvoices ??= await LoadExistingInvoicesByReferenceAsync(client, cancellationToken);
@@ -111,13 +111,13 @@ public sealed class TurpinverseInvoiceSeeder
         var invoiceId = existingMatch.GetResourceId();
         var current = await client.Invoices.GetInvoiceAsync(invoiceId, cancellationToken);
         MergeWritableFields(current, desired);
-        var updated = await client.Invoices.UpdateInvoiceAsync(invoiceId, current, cancellationToken);
+        var updated = await client.Invoices.UpdateInvoiceAsync(invoiceId, current, cancellationToken: cancellationToken);
         updated = await ApplyCanonStatusAsync(client, updated, invoice, cancellationToken);
         existingInvoices[reference] = updated;
         return new TurpinverseInvoiceSeedResult(updated, InvoiceSeedAction.Updated);
     }
 
-    private async Task<ContactReference> ResolveOrganisationContactReferenceAsync(
+    private async Task<long> ResolveOrganisationContactIdAsync(
         FreeAgentClient client,
         string organisationId,
         CancellationToken cancellationToken)
@@ -134,32 +134,32 @@ public sealed class TurpinverseInvoiceSeeder
                 $"No FreeAgent contact exists for organisation '{organisation.TradingName}'. Seed contacts first from Contact CRUD.");
         }
 
-        return ContactReference.Parse(contact.Url);
+        return contact.ResourceId;
     }
 
-    private static async Task<ProjectReference?> ResolveProjectReferenceAsync(
+    private static async Task<long?> ResolveProjectIdAsync(
         FreeAgentClient client,
         TurpinverseInvoice invoice,
         CancellationToken cancellationToken)
     {
-        var projectId = invoice.Lines
+        var turpinverseProjectId = invoice.Lines
             .Select(static line => line.ProjectId)
             .FirstOrDefault(static id => !string.IsNullOrWhiteSpace(id));
 
-        if (string.IsNullOrWhiteSpace(projectId))
+        if (string.IsNullOrWhiteSpace(turpinverseProjectId))
         {
             return null;
         }
 
-        var contractReference = TurpinverseProjectMapper.BuildContractReference(projectId);
+        var contractReference = TurpinverseProjectMapper.BuildContractReference(turpinverseProjectId);
         var projectsByReference = await LoadExistingProjectsByContractReferenceAsync(client, cancellationToken);
         if (!projectsByReference.TryGetValue(contractReference, out var project))
         {
             throw new InvalidOperationException(
-                $"No FreeAgent project exists for Turpinverse project '{projectId}'. Seed projects first from Project CRUD.");
+                $"No FreeAgent project exists for Turpinverse project '{turpinverseProjectId}'. Seed projects first from Project CRUD.");
         }
 
-        return ProjectReference.Parse(project.Url);
+        return project.ResourceId;
     }
 
     private static async Task<Dictionary<string, Invoice>> LoadExistingInvoicesByReferenceAsync(
@@ -228,12 +228,8 @@ public sealed class TurpinverseInvoiceSeeder
 
     private static void MergeWritableFields(Invoice current, Invoice desired)
     {
-        current.BillingContact = desired.BillingContact;
-        current.LinkedProject = desired.LinkedProject;
-        current.OmitBillingContactFromWrite = false;
-        current.OmitProjectFromWrite = desired.LinkedProject is null;
-        current.OmitBankAccountFromWrite = false;
-        current.OmitInvoiceItemsFromWrite = false;
+        current.ContactId = desired.ContactId;
+        current.ProjectId = desired.ProjectId;
         current.Reference = desired.Reference;
         current.PoReference = desired.PoReference;
         current.DatedOn = desired.DatedOn;

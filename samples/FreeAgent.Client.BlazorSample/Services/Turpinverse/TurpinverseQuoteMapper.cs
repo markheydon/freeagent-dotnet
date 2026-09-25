@@ -13,15 +13,15 @@ internal static class TurpinverseQuoteMapper
 
     public static Estimate ToFreeAgentEstimate(
         TurpinverseQuote quote,
-        ContactReference contact,
-        ProjectReference? project)
+        long contactId,
+        long? projectId)
     {
         ArgumentNullException.ThrowIfNull(quote);
 
         return new Estimate
         {
-            BillingContact = contact,
-            LinkedProject = project,
+            ContactId = contactId,
+            ProjectId = projectId,
             EstimateType = EstimateType.Quote,
             Reference = BuildReference(quote.QuoteId),
             DatedOn = ParseDate(quote.IssueDate, nameof(quote.IssueDate)),

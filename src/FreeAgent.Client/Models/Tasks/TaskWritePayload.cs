@@ -23,7 +23,7 @@ internal sealed class TaskWritePayload
     [JsonPropertyName("status")]
     public TaskStatus? Status { get; set; }
 
-    public static TaskWritePayload FromTask(Task task)
+    public static TaskWritePayload FromTask(ProjectTask task)
     {
         ArgumentNullException.ThrowIfNull(task);
 

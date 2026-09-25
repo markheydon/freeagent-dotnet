@@ -206,7 +206,7 @@ public class EstimateServiceTests
 
         var created = await service.CreateEstimateAsync(new Estimate
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             Reference = "EST-001",
             EstimateType = EstimateType.Estimate,
@@ -296,7 +296,7 @@ public class EstimateServiceTests
 
         await service.UpdateEstimateAsync(5, new Estimate
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             EstimateItems =
             [
                 new EstimateItem

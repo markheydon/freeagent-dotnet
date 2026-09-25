@@ -170,9 +170,9 @@ public class TimeslipServiceTests
 
         var created = await service.CreateTimeslipAsync(new Timeslip
         {
-            LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-            LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-            LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+            TaskId = 1,
+            UserId = 1,
+            ProjectId = 1,
             DatedOn = new DateOnly(2011, 8, 15),
             Hours = 1.5m
         });
@@ -219,17 +219,17 @@ public class TimeslipServiceTests
         var created = await service.CreateTimeslipsAsync([
             new Timeslip
             {
-                LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+                TaskId = 1,
+                UserId = 1,
+                ProjectId = 1,
                 DatedOn = new DateOnly(2011, 8, 15),
                 Hours = 12.0m
             },
             new Timeslip
             {
-                LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+                TaskId = 1,
+                UserId = 1,
+                ProjectId = 1,
                 DatedOn = new DateOnly(2011, 8, 14),
                 Hours = 12.0m
             }
@@ -654,9 +654,9 @@ public class TimeslipServiceTests
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateTimeslipAsync(new Timeslip
         {
-            LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-            LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-            LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+            TaskId = 1,
+            UserId = 1,
+            ProjectId = 1,
             DatedOn = new DateOnly(2011, 8, 15),
             Hours = 1.5m
         }));
@@ -687,9 +687,9 @@ public class TimeslipServiceTests
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateTimeslipsAsync([
             new Timeslip
             {
-                LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+                TaskId = 1,
+                UserId = 1,
+                ProjectId = 1,
                 DatedOn = new DateOnly(2011, 8, 15),
                 Hours = 1.5m
             }
@@ -742,7 +742,7 @@ public class TimeslipServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenLinkedTaskMissing()
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenTaskIdMissing()
     {
         var handler = new QueueHttpMessageHandler(
             _ => new HttpResponseMessage(HttpStatusCode.OK)
@@ -771,7 +771,7 @@ public class TimeslipServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenLinkedProjectMissing()
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenProjectIdMissing()
     {
         var handler = new QueueHttpMessageHandler(
             _ => new HttpResponseMessage(HttpStatusCode.OK)
@@ -800,7 +800,7 @@ public class TimeslipServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenLinkedUserMissing()
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenUserIdMissing()
     {
         var handler = new QueueHttpMessageHandler(
             _ => new HttpResponseMessage(HttpStatusCode.OK)

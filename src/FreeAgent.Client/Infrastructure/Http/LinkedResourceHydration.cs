@@ -9,8 +9,6 @@ using FreeAgent.Client.Models.RecurringInvoices;
 using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Timeslips;
 using FreeAgent.Client.Models.Users;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
-
 namespace FreeAgent.Client.Infrastructure.Http;
 
 /// <summary>
@@ -18,16 +16,16 @@ namespace FreeAgent.Client.Infrastructure.Http;
 /// </summary>
 internal static class LinkedResourceHydration
 {
-    public static async System.Threading.Tasks.Task HydrateBillingContactAsync(
+    public static async System.Threading.Tasks.Task HydrateContactAsync(
         Project project,
         IFreeAgentRequestClient requestClient,
-        bool includeBillingContact,
+        bool includeContact,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(requestClient);
 
-        if (!includeBillingContact || project.Contact is not null || project.ContactId is not long contactId)
+        if (!includeContact || project.Contact is not null || project.ContactId is not long contactId)
         {
             return;
         }
@@ -235,7 +233,7 @@ internal static class LinkedResourceHydration
     }
 
     public static async System.Threading.Tasks.Task HydrateProjectAsync(
-        TaskModel task,
+        ProjectTask task,
         IFreeAgentRequestClient requestClient,
         bool includeProject,
         CancellationToken cancellationToken)

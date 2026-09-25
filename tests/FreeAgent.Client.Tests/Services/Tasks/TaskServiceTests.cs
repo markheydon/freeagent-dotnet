@@ -7,7 +7,6 @@ using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Tests.TestSupport;
 using FreeAgentTaskStatus = FreeAgent.Client.Models.Tasks.TaskStatus;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
 
 namespace FreeAgent.Client.Tests.Services.Tasks;
 
@@ -283,7 +282,7 @@ public class TaskServiceTests
 
         var created = await service.CreateTaskAsync(
             ProjectReference.Parse("https://api.sandbox.freeagent.com/v2/projects/3"),
-            new TaskModel { Name = "Sandbox Task" });
+            new ProjectTask { Name = "Sandbox Task" });
 
         Assert.Equal("Sandbox Task", created.Name);
     }
@@ -322,7 +321,7 @@ public class TaskServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new TaskService(client);
 
-        var created = await service.CreateTaskAsync(1, new TaskModel
+        var created = await service.CreateTaskAsync(1, new ProjectTask
         {
             Name = "New Task",
             IsBillable = true,
@@ -360,7 +359,7 @@ public class TaskServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new TaskService(client);
 
-        var updated = await service.UpdateTaskAsync(42, new TaskModel { Name = "Renamed" });
+        var updated = await service.UpdateTaskAsync(42, new ProjectTask { Name = "Renamed" });
 
         Assert.Equal("Renamed", updated.Name);
     }
@@ -436,7 +435,7 @@ public class TaskServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new TaskService(client);
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateTaskAsync(1, new TaskModel { Name = "Example" }));
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateTaskAsync(1, new ProjectTask { Name = "Example" }));
     }
 
     [Fact]
@@ -451,7 +450,7 @@ public class TaskServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new TaskService(client);
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.UpdateTaskAsync(42, new TaskModel { Name = "Example" }));
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.UpdateTaskAsync(42, new ProjectTask { Name = "Example" }));
     }
 
     [Fact]

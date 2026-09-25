@@ -119,7 +119,7 @@ Task<Estimate> CreateEstimateAsync(Estimate estimate, CancellationToken cancella
 
 **HTTP:** `POST /v2/estimates`
 
-Required on create: `BillingContact`, `DatedOn`, `EstimateType`, and at least one line item with `Description`.
+Required on create: `ContactId`, `DatedOn`, `EstimateType`, and at least one line item with `Description`.
 
 ---
 
@@ -136,12 +136,16 @@ Task<Estimate> DuplicateEstimateAsync(long estimateId, CancellationToken cancell
 ### UpdateEstimateAsync
 
 ```csharp
-Task<Estimate> UpdateEstimateAsync(long estimateId, Estimate estimate, CancellationToken cancellationToken = default)
+Task<Estimate> UpdateEstimateAsync(
+    long estimateId,
+    Estimate estimate,
+    EstimateUpdateOptions? options = null,
+    CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `PUT /v2/estimates/:id`
 
-Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`.
+Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new EstimateUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items.
 
 ---
 
@@ -263,6 +267,12 @@ Company-level default text shown on all estimates.
 | `IncludeContact` | `bool` | Fetch contact when only a URI is returned |
 | `IncludeProject` | `bool` | Fetch project when only a URI is returned |
 
+## EstimateUpdateOptions
+
+| Property | Type | Purpose |
+|----------|------|---------|
+| `OmitLineItems` | `bool` | Exclude line items from the update payload |
+
 ## Estimate model
 
 Key properties:
@@ -273,13 +283,11 @@ Key properties:
 | `Status` | `EstimateStatus?` | `status` | |
 | `EstimateType` | `EstimateType?` | `estimate_type` | Required on create |
 | `DatedOn` | `DateOnly?` | `dated_on` | Required on create |
-| `BillingContact` | `ContactReference?` | `contact` | Required on create |
-| `LinkedProject` | `ProjectReference?` | `project` | Write payload |
+| `ContactId` | `long?` | `contact` | Required on create |
+| `ProjectId` | `long?` | `project` | Optional project link |
 | `EstimateItems` | `List<EstimateItem>?` | `estimate_items` | Nested line items |
 | `ItemId` | `long?` | `id` (line items) | Required to update or delete existing line items |
-| `OmitBillingContactFromWrite` | `bool` | - | Exclude contact from update payload |
-| `OmitProjectFromWrite` | `bool` | - | Exclude project from update payload |
-| `OmitEstimateItemsFromWrite` | `bool` | - | Exclude line items from update payload |
+| `CategoryNominalCode` | `string?` | `category` (line items) | Category link on line items |
 | `SalesTaxStatus` | `InvoiceSalesTaxStatus?` | `sales_tax_status` | Read-only on list/get responses; set per line item on create/update |
 | `SalesTaxValue` | `decimal?` | `sales_tax_value` | Read-only total from line items |
 | `Url` | `string` | `url` | |

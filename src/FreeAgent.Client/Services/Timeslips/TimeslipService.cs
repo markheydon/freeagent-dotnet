@@ -296,7 +296,7 @@ public sealed class TimeslipService
         ArgumentNullException.ThrowIfNull(timeslip);
 
         var content = FreeAgentJsonSerializer.CreateContent(
-            new TimeslipRequest { Timeslip = TimeslipWritePayload.FromTimeslip(timeslip) });
+            new TimeslipRequest { Timeslip = TimeslipWritePayload.FromTimeslip(timeslip, _requestClient.Environment) });
 
         var response = await _requestClient.PostAsync<TimeslipResponse>("timeslips", content, cancellationToken);
 
@@ -327,7 +327,7 @@ public sealed class TimeslipService
 
         var content = FreeAgentJsonSerializer.CreateContent(new TimeslipsBatchRequest
         {
-            Timeslips = timeslips.Select(TimeslipWritePayload.FromTimeslip).ToList()
+            Timeslips = timeslips.Select(t => TimeslipWritePayload.FromTimeslip(t, _requestClient.Environment)).ToList()
         });
 
         var response = await _requestClient.PostAsync<TimeslipsResponse>("timeslips", content, cancellationToken);
@@ -356,7 +356,7 @@ public sealed class TimeslipService
         ArgumentNullException.ThrowIfNull(timeslip);
 
         var content = FreeAgentJsonSerializer.CreateContent(
-            new TimeslipRequest { Timeslip = TimeslipWritePayload.FromTimeslip(timeslip) });
+            new TimeslipRequest { Timeslip = TimeslipWritePayload.FromTimeslip(timeslip, _requestClient.Environment) });
 
         var response = await _requestClient.PutAsync<TimeslipResponse>($"timeslips/{timeslipId}", content, cancellationToken);
 

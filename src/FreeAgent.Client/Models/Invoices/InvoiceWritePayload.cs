@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Invoices;
@@ -95,56 +97,23 @@ internal sealed class InvoiceWritePayload
     [JsonPropertyName("invoice_items")]
     public List<InvoiceItemWritePayload>? InvoiceItems { get; set; }
 
-    public static InvoiceWritePayload FromInvoice(Invoice invoice)
+    public static InvoiceWritePayload FromInvoice(
+        Invoice invoice,
+        FreeAgentEnvironment environment,
+        bool omitLineItems = false)
     {
         ArgumentNullException.ThrowIfNull(invoice);
 
-        ContactReference? contact = null;
-        if (!invoice.OmitBillingContactFromWrite)
-        {
-            contact = invoice.BillingContact
-                ?? (invoice.ContactLink?.Uri is string contactUri ? ContactReference.Parse(contactUri) : null);
-        }
-        else
-        {
-            contact = invoice.BillingContact;
-        }
-
-        ProjectReference? project = null;
-        if (!invoice.OmitProjectFromWrite)
-        {
-            project = invoice.LinkedProject
-                ?? (invoice.ProjectLink?.Uri is string projectUri ? ProjectReference.Parse(projectUri) : null);
-        }
-        else
-        {
-            project = invoice.LinkedProject;
-        }
-
-        BankAccountReference? bankAccount = null;
-        if (!invoice.OmitBankAccountFromWrite)
-        {
-            bankAccount = invoice.RemittanceBankAccount;
-            if (bankAccount is null && invoice.BankAccountLink?.Uri is string bankAccountUri)
-            {
-                bankAccount = BankAccountReference.Parse(bankAccountUri);
-            }
-        }
-        else
-        {
-            bankAccount = invoice.RemittanceBankAccount;
-        }
-
         List<InvoiceItemWritePayload>? items = null;
-        if (!invoice.OmitInvoiceItemsFromWrite && invoice.InvoiceItems is not null)
+        if (!omitLineItems && invoice.InvoiceItems is not null)
         {
-            items = invoice.InvoiceItems.ConvertAll(InvoiceItemWritePayload.FromInvoiceItem);
+            items = invoice.InvoiceItems.ConvertAll(i => InvoiceItemWritePayload.FromInvoiceItem(i, environment));
         }
 
         return new InvoiceWritePayload
         {
-            Contact = contact,
-            Project = project,
+            Contact = LinkedResourceWriteMapper.ToContactReference(environment, invoice.ContactId),
+            Project = LinkedResourceWriteMapper.ToProjectReference(environment, invoice.ProjectId),
             Property = invoice.PropertyUri,
             IncludeTimeslips = invoice.IncludeTimeslips,
             IncludeExpenses = invoice.IncludeExpenses,
@@ -164,7 +133,7 @@ internal sealed class InvoiceWritePayload
             ClientContactName = invoice.ClientContactName,
             PaymentTerms = invoice.PaymentTerms,
             PoReference = invoice.PoReference,
-            BankAccount = bankAccount,
+            BankAccount = LinkedResourceWriteMapper.ToBankAccountReference(environment, invoice.BankAccountId),
             OmitHeader = invoice.OmitHeader,
             ShowProjectName = invoice.ShowProjectName,
             AlwaysShowBicAndIban = invoice.AlwaysShowBicAndIban,

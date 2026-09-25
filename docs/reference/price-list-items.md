@@ -122,7 +122,7 @@ The official FreeAgent docs show a singular `price_list_item` path for delete; t
 
 ### CreatePriceListItemRequest / UpdatePriceListItemRequest
 
-Typed write payloads exposing only documented attributes. Use `CategoryReference` and `StockItemReference` for linked resources.
+Typed write payloads exposing only documented attributes. Set `CategoryNominalCode` and `StockItemId` for linked resources.
 
 ### PriceListItemVatStatus
 

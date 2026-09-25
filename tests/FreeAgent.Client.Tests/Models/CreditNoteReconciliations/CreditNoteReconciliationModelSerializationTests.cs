@@ -1,4 +1,5 @@
 using System.Text.Json;
+using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.CreditNoteReconciliations;
 using FreeAgent.Client.Models.Shared;
@@ -102,14 +103,14 @@ public class CreditNoteReconciliationModelSerializationTests
     {
         var request = CreateCreditNoteReconciliationRequest.Create(
             100m,
-            InvoiceReference.Parse("https://api.freeagent.com/v2/invoices/1"),
-            CreditNoteReference.Parse("https://api.freeagent.com/v2/credit_notes/2"),
+            invoiceId: 1,
+            creditNoteId: 2,
             datedOn: new DateOnly(2020, 6, 29),
             exchangeRate: 1m,
             currency: CurrencyCode.GBP);
 
         var json = JsonSerializer.Serialize(
-            CreditNoteReconciliationWritePayload.FromCreate(request),
+            CreditNoteReconciliationWritePayload.FromCreate(request, FreeAgentEnvironment.Production),
             FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"gross_value\":100", json, StringComparison.Ordinal);
@@ -127,7 +128,7 @@ public class CreditNoteReconciliationModelSerializationTests
         var request = UpdateCreditNoteReconciliationRequest.Create(grossValue: 25m);
 
         var json = JsonSerializer.Serialize(
-            CreditNoteReconciliationWritePayload.FromUpdate(request),
+            CreditNoteReconciliationWritePayload.FromUpdate(request, FreeAgentEnvironment.Production),
             FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"gross_value\":25", json, StringComparison.Ordinal);

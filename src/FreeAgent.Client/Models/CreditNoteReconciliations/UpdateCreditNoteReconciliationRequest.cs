@@ -9,9 +9,9 @@ public sealed class UpdateCreditNoteReconciliationRequest
 {
     internal decimal? GrossValue { get; private init; }
 
-    internal InvoiceReference? Invoice { get; private init; }
+    internal long? InvoiceId { get; private init; }
 
-    internal CreditNoteReference? CreditNote { get; private init; }
+    internal long? CreditNoteId { get; private init; }
 
     internal DateOnly? DatedOn { get; private init; }
 
@@ -23,25 +23,35 @@ public sealed class UpdateCreditNoteReconciliationRequest
     /// Creates a request to update credit note reconciliation attributes.
     /// </summary>
     /// <param name="grossValue">Updated amount reconciled between the credit note and invoice.</param>
-    /// <param name="invoice">Updated invoice reference.</param>
-    /// <param name="creditNote">Updated credit note reference.</param>
+    /// <param name="invoiceId">Updated invoice identifier.</param>
+    /// <param name="creditNoteId">Updated credit note identifier.</param>
     /// <param name="datedOn">Updated reconciliation date.</param>
     /// <param name="exchangeRate">Updated exchange rate.</param>
     /// <param name="currency">Updated currency code.</param>
     /// <returns>An update-credit-note-reconciliation request.</returns>
     public static UpdateCreditNoteReconciliationRequest Create(
         decimal? grossValue = null,
-        InvoiceReference? invoice = null,
-        CreditNoteReference? creditNote = null,
+        long? invoiceId = null,
+        long? creditNoteId = null,
         DateOnly? datedOn = null,
         decimal? exchangeRate = null,
         CurrencyCode? currency = null)
     {
+        if (invoiceId is long invoice && invoice <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(invoiceId));
+        }
+
+        if (creditNoteId is long creditNote && creditNote <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(creditNoteId));
+        }
+
         return new UpdateCreditNoteReconciliationRequest
         {
             GrossValue = grossValue,
-            Invoice = invoice,
-            CreditNote = creditNote,
+            InvoiceId = invoiceId,
+            CreditNoteId = creditNoteId,
             DatedOn = datedOn,
             ExchangeRate = exchangeRate,
             Currency = currency

@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Estimates;
@@ -47,42 +49,23 @@ internal sealed class EstimateWritePayload
     [JsonPropertyName("estimate_items")]
     public List<EstimateItemWritePayload>? EstimateItems { get; set; }
 
-    public static EstimateWritePayload FromEstimate(Estimate estimate)
+    public static EstimateWritePayload FromEstimate(
+        Estimate estimate,
+        FreeAgentEnvironment environment,
+        bool omitLineItems = false)
     {
         ArgumentNullException.ThrowIfNull(estimate);
 
-        ContactReference? contact = null;
-        if (!estimate.OmitBillingContactFromWrite)
-        {
-            contact = estimate.BillingContact
-                ?? (estimate.ContactLink?.Uri is string contactUri ? ContactReference.Parse(contactUri) : null);
-        }
-        else
-        {
-            contact = estimate.BillingContact;
-        }
-
-        ProjectReference? project = null;
-        if (!estimate.OmitProjectFromWrite)
-        {
-            project = estimate.LinkedProject
-                ?? (estimate.ProjectLink?.Uri is string projectUri ? ProjectReference.Parse(projectUri) : null);
-        }
-        else
-        {
-            project = estimate.LinkedProject;
-        }
-
         List<EstimateItemWritePayload>? items = null;
-        if (!estimate.OmitEstimateItemsFromWrite && estimate.EstimateItems is not null)
+        if (!omitLineItems && estimate.EstimateItems is not null)
         {
-            items = estimate.EstimateItems.ConvertAll(EstimateItemWritePayload.FromEstimateItem);
+            items = estimate.EstimateItems.ConvertAll(i => EstimateItemWritePayload.FromEstimateItem(i, environment));
         }
 
         return new EstimateWritePayload
         {
-            Contact = contact,
-            Project = project,
+            Contact = LinkedResourceWriteMapper.ToContactReference(environment, estimate.ContactId),
+            Project = LinkedResourceWriteMapper.ToProjectReference(environment, estimate.ProjectId),
             EstimateType = estimate.EstimateType,
             Reference = estimate.Reference,
             DatedOn = estimate.DatedOn,

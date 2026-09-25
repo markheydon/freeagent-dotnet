@@ -164,9 +164,9 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
 
         return new Timeslip
         {
-            LinkedTask = context.Client.Urls.Task(task.ResourceId),
-            LinkedProject = context.Client.Urls.Project(project.ResourceId),
-            LinkedUser = context.Client.Urls.User(user.ResourceId),
+            TaskId = task.ResourceId,
+            ProjectId = project.ResourceId,
+            UserId = user.ResourceId,
             DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
             Hours = 0.5m,
             Comment = $"Console probe timeslip {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}"

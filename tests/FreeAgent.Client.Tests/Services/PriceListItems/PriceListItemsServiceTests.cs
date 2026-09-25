@@ -134,7 +134,7 @@ public class PriceListItemsServiceTests
             Description = "Apple",
             Price = 1.99m,
             VatStatus = PriceListItemVatStatus.Standard,
-            Category = CategoryReference.Parse("https://api.freeagent.com/v2/categories/2")
+            CategoryNominalCode = "2"
         });
 
         Assert.Equal("A001", created.Code);
@@ -169,7 +169,7 @@ public class PriceListItemsServiceTests
             ItemType = InvoiceItemType.Stock,
             Description = "Widget",
             Price = 5m,
-            StockItem = StockItemReference.Parse("https://api.freeagent.com/v2/stock_items/3")
+            StockItemId = 3
         });
 
         Assert.Equal(InvoiceItemType.Stock, created.ItemType);

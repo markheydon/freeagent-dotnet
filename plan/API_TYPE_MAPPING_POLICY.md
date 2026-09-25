@@ -23,7 +23,7 @@ This reduces model drift, avoids repeated type debates, and supports the project
 | boolean | bool | Direct mapping | Use bool? when API field is optional |
 | array | IReadOnlyList<T> or List<T> | Collection semantics | Follow existing repo convention for the specific model area |
 | object | Strongly typed model | Predictable contracts | Use JsonExtensionData only for intentionally open-ended data |
-| URI (resource link) | `[Resource]?` + `long? [Resource]Id` (read) / `[Resource]Reference` (write, filter) | Type-safe links; flat consumer surface; internal `ExpandableField<T>` for JSON | Build URIs with `client.Urls`; optional `*GetOptions` hydration on single GET. See [adr-0011](../adr/adr-0011-linked-resource-identity-and-expandable-references.md) and [linked-resources.md](../docs/explanation/linked-resources.md) |
+| URI (resource link) | `[Resource]?` + `long? [Resource]Id` (read/write on models) / `[Resource]Reference` (list filter, inbound URL) | Type-safe links; flat consumer surface; internal `ExpandableField<T>` for JSON | Model writes use `*Id` or `CategoryNominalCode`; `client.Urls` for filters and webhooks; optional `*GetOptions` hydration and `*UpdateOptions.OmitLineItems`. See [adr-0011](../adr/adr-0011-linked-resource-identity-and-expandable-references.md) and [linked-resources.md](../docs/explanation/linked-resources.md) |
 
 ## Constrained String Policy
 

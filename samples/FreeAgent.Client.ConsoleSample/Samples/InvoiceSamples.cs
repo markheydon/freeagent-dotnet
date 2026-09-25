@@ -111,9 +111,12 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
     {
         var draft = await CreateSampleDraftInvoiceAsync(cancellationToken);
         draft.Comments = "Updated by console sample";
-        draft.OmitInvoiceItemsFromWrite = true;
 
-        var updated = await context.Client.Invoices.UpdateInvoiceAsync(draft.ResourceId, draft, cancellationToken);
+        var updated = await context.Client.Invoices.UpdateInvoiceAsync(
+            draft.ResourceId,
+            draft,
+            new InvoiceUpdateOptions { OmitLineItems = true },
+            cancellationToken);
 
         SampleOutput.WriteHeader("Updated invoice comments");
         SampleOutput.WriteField("Id", updated.ResourceId);
@@ -280,7 +283,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         var draft = await context.Client.Invoices.CreateInvoiceAsync(
             new Invoice
             {
-                BillingContact = ContactReference.ForEnvironment(context.Client.Environment, contact.ResourceId),
+                ContactId = contact.ResourceId,
                 DatedOn = today,
                 PaymentTermsInDays = 14,
                 Reference = $"Console credit-note source {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
@@ -292,7 +295,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
                         ItemType = InvoiceItemType.Services,
                         Quantity = 1,
                         Price = -100,
-                        Category = CategoryReference.ForEnvironment(context.Client.Environment, nominalCode),
+                        CategoryNominalCode = nominalCode,
                     }
                 ]
             },
@@ -314,7 +317,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         return await context.Client.Invoices.CreateInvoiceAsync(
             new Invoice
             {
-                BillingContact = ContactReference.ForEnvironment(context.Client.Environment, contact.ResourceId),
+                ContactId = contact.ResourceId,
                 DatedOn = today,
                 DueOn = today.AddDays(14),
                 PaymentTermsInDays = 14,
@@ -327,7 +330,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
                         ItemType = InvoiceItemType.Services,
                         Quantity = 1,
                         Price = 100,
-                        Category = CategoryReference.ForEnvironment(context.Client.Environment, nominalCode),
+                        CategoryNominalCode = nominalCode,
                     }
                 ]
             },
@@ -351,7 +354,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         var draft = await context.Client.Invoices.CreateInvoiceAsync(
             new Invoice
             {
-                BillingContact = ContactReference.ForEnvironment(context.Client.Environment, contact.ResourceId),
+                ContactId = contact.ResourceId,
                 DatedOn = datedOn,
                 DueOn = dueOn,
                 PaymentTermsInDays = dueOn.DayNumber - datedOn.DayNumber,
@@ -364,7 +367,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
                         ItemType = InvoiceItemType.Services,
                         Quantity = 1,
                         Price = 100,
-                        Category = CategoryReference.ForEnvironment(context.Client.Environment, nominalCode),
+                        CategoryNominalCode = nominalCode,
                     }
                 ]
             },

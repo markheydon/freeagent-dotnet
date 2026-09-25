@@ -334,7 +334,7 @@
             {
                 _invoice = await client.Invoices.CreateInvoiceAsync(new Invoice
                 {
-                    BillingContact = client.Urls.Contact(_contactId.Value),
+                    ContactId = _contactId.Value,
                     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
                     PaymentTermsInDays = 14,
                     Currency = CurrencyCode.GBP,
@@ -379,8 +379,10 @@
             {
                 var existing = _invoice ?? await client.Invoices.GetInvoiceAsync(_invoiceId.Value);
                 existing.Comments = $"{existing.Comments} (updated)".Trim();
-                existing.OmitInvoiceItemsFromWrite = true;
-                _invoice = await client.Invoices.UpdateInvoiceAsync(_invoiceId.Value, existing);
+                _invoice = await client.Invoices.UpdateInvoiceAsync(
+                    _invoiceId.Value,
+                    existing,
+                    new InvoiceUpdateOptions { OmitLineItems = true });
                 _operationMessage = $"Updated invoice {_invoiceId.Value}.";
                 return $"invoices/{_invoiceId}";
             },

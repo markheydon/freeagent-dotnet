@@ -171,10 +171,10 @@ public sealed class ProjectService
             throw new FreeAgentApiException("Project data missing from API response");
         }
 
-        await LinkedResourceHydration.HydrateBillingContactAsync(
+        await LinkedResourceHydration.HydrateContactAsync(
             response.Project,
             _requestClient,
-            options?.IncludeBillingContact == true,
+            options?.IncludeContact == true,
             cancellationToken);
 
         return response.Project;
@@ -190,7 +190,10 @@ public sealed class ProjectService
     {
         ArgumentNullException.ThrowIfNull(project);
 
-        var content = FreeAgentJsonSerializer.CreateContent(new ProjectRequest { Project = ProjectWritePayload.FromProject(project) });
+        var content = FreeAgentJsonSerializer.CreateContent(new ProjectRequest
+        {
+            Project = ProjectWritePayload.FromProject(project, _requestClient.Environment)
+        });
         var response = await _requestClient.PostAsync<ProjectResponse>("projects", content, cancellationToken);
 
         if (response.Project is null)
@@ -213,7 +216,10 @@ public sealed class ProjectService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(projectId);
         ArgumentNullException.ThrowIfNull(project);
 
-        var content = FreeAgentJsonSerializer.CreateContent(new ProjectRequest { Project = ProjectWritePayload.FromProject(project) });
+        var content = FreeAgentJsonSerializer.CreateContent(new ProjectRequest
+        {
+            Project = ProjectWritePayload.FromProject(project, _requestClient.Environment)
+        });
         var response = await _requestClient.PutAsync<ProjectResponse>($"projects/{projectId}", content, cancellationToken);
 
         if (response.Project is null)

@@ -10,14 +10,14 @@ internal static class TurpinverseProjectMapper
 {
     public const string ContractReferencePrefix = "turpinverse:";
 
-    public static Project ToFreeAgentProject(TurpinverseProject project, ContactReference contact)
+    public static Project ToFreeAgentProject(TurpinverseProject project, long contactId)
     {
         ArgumentNullException.ThrowIfNull(project);
 
         return new Project
         {
             Name = project.Title,
-            BillingContact = contact,
+            ContactId = contactId,
             Status = ProjectStatus.Active,
             ContractPoReference = BuildContractReference(project.Id),
             Currency = CurrencyCode.GBP,

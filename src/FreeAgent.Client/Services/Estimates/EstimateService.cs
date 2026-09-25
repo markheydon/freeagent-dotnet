@@ -281,7 +281,7 @@ public sealed class EstimateService
 
         var content = FreeAgentJsonSerializer.CreateContent(new EstimateRequest
         {
-            Estimate = EstimateWritePayload.FromEstimate(estimate)
+            Estimate = EstimateWritePayload.FromEstimate(estimate, _requestClient.Environment)
         });
 
         var response = await _requestClient.PostAsync<EstimateResponse>("estimates", content, cancellationToken);
@@ -299,11 +299,13 @@ public sealed class EstimateService
     /// </summary>
     /// <param name="estimateId">Estimate identifier from the resource URL</param>
     /// <param name="estimate">Estimate attributes to update</param>
+    /// <param name="options">Optional update behaviour</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated estimate</returns>
     public async Task<Estimate> UpdateEstimateAsync(
         long estimateId,
         Estimate estimate,
+        EstimateUpdateOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(estimateId);
@@ -311,7 +313,10 @@ public sealed class EstimateService
 
         var content = FreeAgentJsonSerializer.CreateContent(new EstimateRequest
         {
-            Estimate = EstimateWritePayload.FromEstimate(estimate)
+            Estimate = EstimateWritePayload.FromEstimate(
+                estimate,
+                _requestClient.Environment,
+                options?.OmitLineItems == true)
         });
 
         var response = await _requestClient.PutAsync<EstimateResponse>($"estimates/{estimateId}", content, cancellationToken);
@@ -377,7 +382,7 @@ public sealed class EstimateService
         var content = FreeAgentJsonSerializer.CreateContent(new CreateEstimateItemRequest
         {
             Estimate = EstimateReference.ForEnvironment(_requestClient.Environment, estimateId),
-            EstimateItem = EstimateItemWritePayload.FromEstimateItem(estimateItem)
+            EstimateItem = EstimateItemWritePayload.FromEstimateItem(estimateItem, _requestClient.Environment)
         });
 
         var response = await _requestClient.PostAsync<EstimateItemResponse>("estimate_items", content, cancellationToken);
@@ -407,7 +412,7 @@ public sealed class EstimateService
 
         var content = FreeAgentJsonSerializer.CreateContent(new EstimateItemRequest
         {
-            EstimateItem = EstimateItemWritePayload.FromEstimateItem(estimateItem)
+            EstimateItem = EstimateItemWritePayload.FromEstimateItem(estimateItem, _requestClient.Environment)
         });
 
         var response = await _requestClient.PutAsync<EstimateItemResponse>(

@@ -113,7 +113,7 @@ Task<CreditNote> CreateCreditNoteAsync(CreditNote creditNote, CancellationToken 
 
 **HTTP:** `POST /v2/credit_notes`
 
-Required on create: `BillingContact`, `DatedOn`, `PaymentTermsInDays`, and at least one line item with `Description`. Credit notes are created in `Draft` status.
+Required on create: `ContactId`, `DatedOn`, `PaymentTermsInDays`, and at least one line item with `Description`. Credit notes are created in `Draft` status.
 
 ---
 
@@ -123,12 +123,13 @@ Required on create: `BillingContact`, `DatedOn`, `PaymentTermsInDays`, and at le
 Task<CreditNote> UpdateCreditNoteAsync(
     long creditNoteId,
     CreditNote creditNote,
+    CreditNoteUpdateOptions? options = null,
     CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `PUT /v2/credit_notes/:id`
 
-Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`.
+Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new CreditNoteUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items.
 
 ---
 
@@ -202,6 +203,12 @@ Prefix with `-` for descending order.
 | `IncludeContact` | `bool` | Fetch contact when only a URI is returned |
 | `IncludeProject` | `bool` | Fetch project when only a URI is returned |
 
+## CreditNoteUpdateOptions
+
+| Property | Type | Purpose |
+|----------|------|---------|
+| `OmitLineItems` | `bool` | Exclude line items from the update payload |
+
 ## Credit note model
 
 Key properties:
@@ -213,16 +220,14 @@ Key properties:
 | `DatedOn` | `DateOnly?` | `dated_on` | Required on create |
 | `DueOn` | `DateOnly?` | `due_on` | |
 | `PaymentTermsInDays` | `int?` | `payment_terms_in_days` | Required on create; `0` for due on receipt |
-| `BillingContact` | `ContactReference?` | `contact` | Required on create |
-| `LinkedProject` | `ProjectReference?` | `project` | Write payload |
-| `RemittanceBankAccount` | `BankAccountReference?` | `bank_account` | Write payload |
+| `ContactId` | `long?` | `contact` | Required on create |
+| `ProjectId` | `long?` | `project` | Optional project link |
+| `BankAccountId` | `long?` | `bank_account` | Optional remittance bank account |
 | `CreditNoteItems` | `List<CreditNoteItem>?` | `credit_note_items` | Nested line items |
 | `ItemId` | `long?` | `id` (line items) | Required to update or delete existing line items |
+| `CategoryNominalCode` | `string?` | `category` (line items) | Category link on line items |
 | `RefundedValue` | `decimal?` | `refunded_value` | Read-only |
 | `DueValue` | `decimal?` | `due_value` | Read-only |
-| `OmitBillingContactFromWrite` | `bool` | - | Exclude contact from update payload |
-| `OmitProjectFromWrite` | `bool` | - | Exclude project from update payload |
-| `OmitCreditNoteItemsFromWrite` | `bool` | - | Exclude line items from update payload |
 | `Url` | `string` | `url` | |
 
 ## Errors

@@ -46,51 +46,64 @@ The SDK provides protocol-level OAuth utilities only, your application owns call
 
 ## Linked resources
 
-FreeAgent links resources with URI strings. The SDK types those links so you do not parse URLs or hard-code API hosts:
+FreeAgent links resources with URI strings on the wire. For writes, set `*Id` properties on models (or `CategoryNominalCode` for categories) — the SDK builds environment-correct URIs internally. For reads, use flat properties such as `ContactId`, `ContactName`, and optional hydration.
+
+The following flow chains ids from each response into the next create call:
 
 ```csharp
-// Create a project for a known contact ID (no manual URI construction)
-await client.Projects.CreateProjectAsync(new Project
+// 1. Contact id from a prior list or create call
+const long contactId = 42;
+
+// 2. Create a project for that contact
+using FreeAgent.Client.Models.Projects;
+
+var project = await client.Projects.CreateProjectAsync(new Project
 {
     Name = "Website redesign",
-    BillingContact = client.Urls.Contact(42),
+    ContactId = contactId,
     Status = ProjectStatus.Active
 });
+var projectId = project.ResourceId;
 
-// Read full billing contact fields when you need them
-var project = await client.Projects.GetProjectAsync(
-    123,
-    new ProjectGetOptions { IncludeBillingContact = true });
-var organisation = project.Contact!.OrganisationName;
-
-// Display name only - one HTTP call
-var summary = await client.Projects.GetProjectAsync(123);
+// Display name from one GET — no extra HTTP call
+var summary = await client.Projects.GetProjectAsync(projectId);
 var label = summary.ContactName;
 
-// Create a task under a project (parent scoped via query param)
-await client.Tasks.CreateTaskAsync(123, new Task
+// Full contact fields when you need them
+var withContact = await client.Projects.GetProjectAsync(
+    projectId,
+    new ProjectGetOptions { IncludeContact = true });
+var organisation = withContact.Contact!.OrganisationName;
+
+// 3. Create a task under the project (parent scoped via query param)
+using FreeAgent.Client.Models.Tasks;
+
+var task = await client.Tasks.CreateTaskAsync(projectId, new ProjectTask
 {
     Name = "Planning",
     IsBillable = true,
     Status = TaskStatus.Active
 });
+var taskId = task.ResourceId;
 
-// Log time against a task
+// 4. Log time against the task
 using FreeAgent.Client.Models.Timeslips;
 
 await client.Timeslips.CreateTimeslipAsync(new Timeslip
 {
-    LinkedTask = client.Urls.Task(456),
-    LinkedProject = client.Urls.Project(123),
-    LinkedUser = client.Urls.User(1),
+    TaskId = taskId,
+    ProjectId = projectId,
+    UserId = 1,
     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
     Hours = 1.5m
 });
 
-// Create a draft invoice for a contact
+// 5. Raise a draft invoice for the contact
+using FreeAgent.Client.Models.Invoices;
+
 await client.Invoices.CreateInvoiceAsync(new Invoice
 {
-    BillingContact = client.Urls.Contact(42),
+    ContactId = contactId,
     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
     PaymentTermsInDays = 14,
     InvoiceItems =
@@ -101,44 +114,15 @@ await client.Invoices.CreateInvoiceAsync(new Invoice
             ItemType = InvoiceItemType.Hours,
             Quantity = 2,
             Price = 100,
-            Category = client.Urls.Category("001")
+            CategoryNominalCode = "001"
         }
     ]
 });
-
-// List recurring invoice profiles (read-only API)
-using FreeAgent.Client.Models.RecurringInvoices;
-
-var recurringPage = await client.RecurringInvoices.ListAsync(
-    view: RecurringInvoiceViews.Active,
-    contactId: 42);
-
-// List credit notes with nested line items
-using FreeAgent.Client.Models.CreditNotes;
-
-var creditNotesPage = await client.CreditNotes.ListAsync(
-    view: CreditNoteViews.Open,
-    contactId: 42,
-    nestedCreditNoteItems: true);
-
-// Reconcile a credit note against an invoice
-using FreeAgent.Client.Models.CreditNoteReconciliations;
-
-var reconciliation = await client.CreditNoteReconciliations.CreateCreditNoteReconciliationAsync(
-    CreateCreditNoteReconciliationRequest.Create(
-        grossValue: 100m,
-        invoice: client.Urls.Invoice(1),
-        creditNote: client.Urls.CreditNote(2)));
-
-// Add a note to a contact
-using FreeAgent.Client.Models.Notes;
-
-await client.Notes.CreateContactNoteAsync(
-    42,
-    CreateContactNoteRequest.Create("Follow up next week"));
 ```
 
-See [linked resources](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/explanation/linked-resources.md) for the full pattern.
+Further resources that link to contacts and projects include [recurring invoices](https://markheydon.me.uk/freeagent-dotnet/reference/recurring-invoices), [credit notes](https://markheydon.me.uk/freeagent-dotnet/reference/credit-notes), [credit note reconciliations](https://markheydon.me.uk/freeagent-dotnet/reference/credit-note-reconciliations), and [notes](https://markheydon.me.uk/freeagent-dotnet/reference/notes).
+
+See [linked resources](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/explanation/linked-resources.md) for the full pattern, including list filters, webhook URL parsing, and update options.
 
 ## Documentation
 

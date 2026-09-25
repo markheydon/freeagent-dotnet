@@ -153,9 +153,11 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
         try
         {
             draft.Notes = "Updated by console sample";
-            draft.OmitEstimateItemsFromWrite = true;
-
-            var updated = await context.Client.Estimates.UpdateEstimateAsync(draft.ResourceId, draft, cancellationToken);
+            var updated = await context.Client.Estimates.UpdateEstimateAsync(
+                draft.ResourceId,
+                draft,
+                new EstimateUpdateOptions { OmitLineItems = true },
+                cancellationToken);
 
             SampleOutput.WriteHeader("Updated estimate comments");
             SampleOutput.WriteField("Id", updated.ResourceId);
@@ -457,7 +459,7 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
         return await context.Client.Estimates.CreateEstimateAsync(
             new Estimate
             {
-                BillingContact = ContactReference.ForEnvironment(context.Client.Environment, contact.ResourceId),
+                ContactId = contact.ResourceId,
                 DatedOn = today,
                 EstimateType = EstimateType.Estimate,
                 Reference = $"Console sample {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
@@ -469,7 +471,7 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
                         ItemType = EstimateItemType.Services,
                         Quantity = 1,
                         Price = 100,
-                        Category = CategoryReference.ForEnvironment(context.Client.Environment, nominalCode),
+                        CategoryNominalCode = nominalCode,
                     }
                 ]
             },

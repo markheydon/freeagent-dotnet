@@ -1,7 +1,6 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Tasks;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
 
 namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
 
@@ -46,8 +45,8 @@ public sealed class TurpinverseTaskSeeder
 
         await _projectCatalog.EnsureLoadedAsync(forceRefresh: true, cancellationToken).ConfigureAwait(false);
         var existingProjects = await LoadTurpinverseProjectsAsync(client, cancellationToken);
-        var created = new List<TaskModel>();
-        var updated = new List<TaskModel>();
+        var created = new List<ProjectTask>();
+        var updated = new List<ProjectTask>();
         var failures = new List<TurpinverseTaskSeedFailure>();
 
         foreach (var canonProject in _projectCatalog.Projects)
@@ -101,7 +100,7 @@ public sealed class TurpinverseTaskSeeder
     {
         var projectId = project.GetResourceId();
         var existingTasks = await LoadTasksByNameForProjectAsync(client, projectId, cancellationToken);
-        var desired = new TaskModel
+        var desired = new ProjectTask
         {
             Name = taskName,
             IsBillable = true,
@@ -164,12 +163,12 @@ public sealed class TurpinverseTaskSeeder
         return projectsByReference;
     }
 
-    private static async Task<Dictionary<string, TaskModel>> LoadTasksByNameForProjectAsync(
+    private static async Task<Dictionary<string, ProjectTask>> LoadTasksByNameForProjectAsync(
         FreeAgentClient client,
         long projectId,
         CancellationToken cancellationToken)
     {
-        var tasksByName = new Dictionary<string, TaskModel>(StringComparer.Ordinal);
+        var tasksByName = new Dictionary<string, ProjectTask>(StringComparer.Ordinal);
 
         await foreach (var task in client.Tasks.ListAutoPagingAsync(projectId: projectId, cancellationToken: cancellationToken))
         {
@@ -192,11 +191,11 @@ public enum TaskSeedAction
     Updated
 }
 
-public sealed record TurpinverseTaskSeedResult(TaskModel Task, TaskSeedAction Action);
+public sealed record TurpinverseTaskSeedResult(ProjectTask Task, TaskSeedAction Action);
 
 public sealed record TurpinverseTaskSeedFailure(string ProjectId, string Title, string Message);
 
 public sealed record TurpinverseTaskBulkSeedResult(
-    IReadOnlyList<TaskModel> Created,
-    IReadOnlyList<TaskModel> Updated,
+    IReadOnlyList<ProjectTask> Created,
+    IReadOnlyList<ProjectTask> Updated,
     IReadOnlyList<TurpinverseTaskSeedFailure> Failures);

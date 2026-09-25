@@ -1,18 +1,19 @@
 using System.Text.Json;
 using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Models.Tasks;
+using FreeAgentTaskStatus = FreeAgent.Client.Models.Tasks.TaskStatus;
 
 namespace FreeAgent.Client.Tests.Models.Tasks;
 
 public class TaskModelSerializationTests
 {
     [Theory]
-    [InlineData("\"Active\"", FreeAgent.Client.Models.Tasks.TaskStatus.Active)]
-    [InlineData("\"Completed\"", FreeAgent.Client.Models.Tasks.TaskStatus.Completed)]
-    [InlineData("\"Hidden\"", FreeAgent.Client.Models.Tasks.TaskStatus.Hidden)]
-    public void TaskStatus_DeserializesWireValues(string wireValue, FreeAgent.Client.Models.Tasks.TaskStatus expected)
+    [InlineData("\"Active\"", FreeAgentTaskStatus.Active)]
+    [InlineData("\"Completed\"", FreeAgentTaskStatus.Completed)]
+    [InlineData("\"Hidden\"", FreeAgentTaskStatus.Hidden)]
+    public void TaskStatus_DeserializesWireValues(string wireValue, FreeAgentTaskStatus expected)
     {
-        var task = JsonSerializer.Deserialize<FreeAgent.Client.Models.Tasks.Task>($$"""{ "status": {{wireValue}} }""");
+        var task = JsonSerializer.Deserialize<ProjectTask>($$"""{ "status": {{wireValue}} }""");
 
         Assert.Equal(expected, task!.Status);
     }
@@ -22,7 +23,7 @@ public class TaskModelSerializationTests
     [InlineData("\"day\"", TaskBillingPeriod.Day)]
     public void TaskBillingPeriod_DeserializesWireValues(string wireValue, TaskBillingPeriod expected)
     {
-        var task = JsonSerializer.Deserialize<FreeAgent.Client.Models.Tasks.Task>($$"""{ "billing_period": {{wireValue}} }""");
+        var task = JsonSerializer.Deserialize<ProjectTask>($$"""{ "billing_period": {{wireValue}} }""");
 
         Assert.Equal(expected, task!.BillingPeriod);
     }
@@ -46,7 +47,7 @@ public class TaskModelSerializationTests
         }
         """;
 
-        var task = JsonSerializer.Deserialize<FreeAgent.Client.Models.Tasks.Task>(json);
+        var task = JsonSerializer.Deserialize<ProjectTask>(json);
 
         Assert.Equal("https://api.freeagent.com/v2/tasks/1", task!.Url);
         Assert.Null(task.Project);
@@ -56,7 +57,7 @@ public class TaskModelSerializationTests
         Assert.True(task.IsBillable);
         Assert.Equal(0m, task.BillingRate);
         Assert.Equal(TaskBillingPeriod.Hour, task.BillingPeriod);
-        Assert.Equal(FreeAgent.Client.Models.Tasks.TaskStatus.Active, task.Status);
+        Assert.Equal(FreeAgentTaskStatus.Active, task.Status);
         Assert.Equal(new DateTimeOffset(2011, 8, 16, 11, 6, 57, TimeSpan.Zero), task.CreatedAt);
         Assert.False(task.IsDeletable);
     }
@@ -73,7 +74,7 @@ public class TaskModelSerializationTests
         }
         """;
 
-        var task = JsonSerializer.Deserialize<FreeAgent.Client.Models.Tasks.Task>(json);
+        var task = JsonSerializer.Deserialize<ProjectTask>(json);
 
         Assert.Equal(9, task!.ProjectId);
         Assert.Equal("Nested Project", task.Project!.Name);
@@ -82,14 +83,14 @@ public class TaskModelSerializationTests
     [Fact]
     public void Serialize_WritePayload_ExcludesReadOnlyFields()
     {
-        var task = new FreeAgent.Client.Models.Tasks.Task
+        var task = new ProjectTask
         {
             Url = "https://api.freeagent.com/v2/tasks/1",
             Name = "Writable Task",
             IsBillable = true,
             BillingRate = 50m,
             BillingPeriod = TaskBillingPeriod.Hour,
-            Status = FreeAgent.Client.Models.Tasks.TaskStatus.Active,
+            Status = FreeAgentTaskStatus.Active,
             Currency = CurrencyCode.GBP,
             CreatedAt = DateTimeOffset.UtcNow
         };
