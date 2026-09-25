@@ -87,7 +87,8 @@ gh secret set FREEAGENT_REFRESH_TOKEN --repo markheydon/freeagent-dotnet
 Before `--run-all`, the job:
 
 1. Refreshes the access token via [`scripts/ci/refresh-freeagent-access-token.sh`](../../scripts/ci/refresh-freeagent-access-token.sh)
-2. Runs the console sample smoke suite with the fresh access token
+2. Registers the access token with GitHub Actions log masking (`::add-mask::`) before passing it to the smoke step — repository secrets are masked automatically, but step outputs are not
+3. Runs the console sample smoke suite with the fresh access token
 
 If FreeAgent returns a new refresh token during that exchange, update the `FREEAGENT_REFRESH_TOKEN` repository secret manually (GitHub Actions cannot rotate secrets with the default `GITHUB_TOKEN`).
 

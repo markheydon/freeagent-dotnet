@@ -26,6 +26,14 @@ if [[ -z "$access_token" ]]; then
   exit 1
 fi
 
+# Step outputs are not auto-masked like secrets.*; register tokens before any later step logs env.
+if [[ -n "${GITHUB_ACTIONS:-}" ]]; then
+  echo "::add-mask::${access_token}"
+  if [[ -n "$refresh_token" ]]; then
+    echo "::add-mask::${refresh_token}"
+  fi
+fi
+
 if [[ -n "${GITHUB_OUTPUT:-}" ]]; then
   {
     echo "access_token=${access_token}"
