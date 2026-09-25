@@ -307,7 +307,9 @@ public sealed class InvoiceService
     /// <remarks>
     /// <see cref="Invoice.ShowProjectName"/> is sent on update only when
     /// <see cref="Invoice.Status"/> is <see cref="InvoiceStatus.Draft"/>. FreeAgent locks
-    /// <c>show_project_name</c> once an invoice leaves draft.
+    /// <c>show_project_name</c> once an invoice leaves draft. Setting
+    /// <see cref="Invoice.ShowProjectName"/> without <see cref="Invoice.Status"/> throws
+    /// <see cref="ArgumentException"/>.
     /// </remarks>
     public async Task<Invoice> UpdateInvoiceAsync(
         long invoiceId,
@@ -317,6 +319,7 @@ public sealed class InvoiceService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(invoiceId);
         ArgumentNullException.ThrowIfNull(invoice);
+        ShowProjectNameWriteSupport.ValidateInvoiceUpdate(invoice);
 
         var content = FreeAgentJsonSerializer.CreateContent(new InvoiceRequest
         {
@@ -325,7 +328,7 @@ public sealed class InvoiceService
                 _requestClient.Environment,
                 options?.OmitLineItems == true,
                 LinkedResourceWriteOptions.FromInvoiceUpdate(options),
-                includeShowProjectName: invoice.Status == InvoiceStatus.Draft)
+                includeShowProjectName: ShowProjectNameWriteSupport.ShouldIncludeOnInvoiceUpdate(invoice.Status))
         });
 
         var response = await _requestClient.PutAsync<InvoiceResponse>($"invoices/{invoiceId}", content, cancellationToken);

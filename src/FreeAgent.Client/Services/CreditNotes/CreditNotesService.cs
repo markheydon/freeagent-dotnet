@@ -289,7 +289,9 @@ public sealed class CreditNotesService
     /// <remarks>
     /// <see cref="CreditNote.ShowProjectName"/> is sent on update only when
     /// <see cref="CreditNote.Status"/> is <see cref="CreditNoteStatus.Draft"/>. FreeAgent locks
-    /// <c>show_project_name</c> once a credit note leaves draft.
+    /// <c>show_project_name</c> once a credit note leaves draft. Setting
+    /// <see cref="CreditNote.ShowProjectName"/> without <see cref="CreditNote.Status"/> throws
+    /// <see cref="ArgumentException"/>.
     /// </remarks>
     public async Task<CreditNote> UpdateCreditNoteAsync(
         long creditNoteId,
@@ -299,6 +301,7 @@ public sealed class CreditNotesService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(creditNoteId);
         ArgumentNullException.ThrowIfNull(creditNote);
+        ShowProjectNameWriteSupport.ValidateCreditNoteUpdate(creditNote);
 
         var content = FreeAgentJsonSerializer.CreateContent(new CreditNoteRequest
         {
@@ -307,7 +310,7 @@ public sealed class CreditNotesService
                 _requestClient.Environment,
                 options?.OmitLineItems == true,
                 LinkedResourceWriteOptions.FromCreditNoteUpdate(options),
-                includeShowProjectName: creditNote.Status == CreditNoteStatus.Draft)
+                includeShowProjectName: ShowProjectNameWriteSupport.ShouldIncludeOnCreditNoteUpdate(creditNote.Status))
         });
 
         var response = await _requestClient.PutAsync<CreditNoteResponse>(
