@@ -38,13 +38,28 @@ catch (Exception ex)
     return 1;
 }
 
+if (runOptions.BootstrapRefreshToken)
+{
+    try
+    {
+        RefreshTokenBootstrap.WriteInstructions(token);
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine(ex.Message);
+        return 1;
+    }
+}
+
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddSingleton(token);
-builder.Services.AddSingleton(_ => new FreeAgentClient(
-    oauthClient,
-    token,
-    AuthBootstrap.DefaultEnvironment));
+builder.Services.AddSingleton(_ =>
+{
+    var options = runOptions.RunAll ? RunAllHttpClientOptions.Create() : null;
+    return new FreeAgentClient(oauthClient, token, AuthBootstrap.DefaultEnvironment, options);
+});
 builder.Services.AddSingleton<SampleContext>();
 builder.Services.AddConsoleSamples();
 

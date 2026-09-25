@@ -145,7 +145,11 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
             draft.ResourceId,
             new SendInvoiceEmailRequest
             {
-                Email = new InvoiceEmailDetails { UseTemplate = true }
+                Email = new InvoiceEmailDetails
+                {
+                    UseTemplate = true,
+                    Body = "Please find your invoice attached.",
+                }
             },
             cancellationToken);
 

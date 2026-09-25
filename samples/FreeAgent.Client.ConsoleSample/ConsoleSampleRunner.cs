@@ -105,6 +105,7 @@ internal sealed class ConsoleSampleRunner
                 entry.Category,
                 entry.Name,
                 async ct => await entry.Action(_serviceProvider, ct),
+                retryOnRateLimit: true,
                 cancellationToken);
         }
 

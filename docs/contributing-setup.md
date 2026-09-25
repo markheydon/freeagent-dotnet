@@ -73,6 +73,10 @@ If changes are reported, run `dotnet format FreeAgent.slnx` and commit the resul
 
 The Blazor sample requires .NET 10 and FreeAgent OAuth credentials. See [samples/README.md](../samples/README.md).
 
+## CI sandbox smoke
+
+To enable live API smoke on `main`, configure GitHub Actions secrets using [CI sandbox smoke](contributing/ci-sandbox-smoke.md).
+
 When adding or retrofitting SDK endpoints, build sample probe pages per [Sample probe pages](contributing/sample-probe-pages.md). Use **Company** and **Contacts** as references.
 
 ## Documentation site

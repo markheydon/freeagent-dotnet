@@ -12,6 +12,11 @@ internal sealed class ConsoleRunOptions
     public string? CategoryFilter { get; init; }
 
     /// <summary>
+    /// When <see langword="true"/>, runs interactive OAuth once and prints the refresh token for CI setup.
+    /// </summary>
+    public bool BootstrapRefreshToken { get; init; }
+
+    /// <summary>
     /// Parses command-line arguments for console sample options.
     /// </summary>
     /// <param name="args">Application arguments.</param>
@@ -19,6 +24,7 @@ internal sealed class ConsoleRunOptions
     public static ConsoleRunOptions Parse(string[] args)
     {
         var runAll = false;
+        var bootstrapRefreshToken = false;
         string? categoryFilter = null;
 
         for (var i = 0; i < args.Length; i++)
@@ -28,6 +34,12 @@ internal sealed class ConsoleRunOptions
             if (arg is "--run-all" or "-a")
             {
                 runAll = true;
+                continue;
+            }
+
+            if (arg is "--bootstrap-refresh-token" or "-b")
+            {
+                bootstrapRefreshToken = true;
                 continue;
             }
 
@@ -47,9 +59,15 @@ internal sealed class ConsoleRunOptions
             throw new InvalidOperationException("--category requires --run-all.");
         }
 
+        if (bootstrapRefreshToken && runAll)
+        {
+            throw new InvalidOperationException("--bootstrap-refresh-token cannot be combined with --run-all.");
+        }
+
         return new ConsoleRunOptions
         {
             RunAll = runAll,
+            BootstrapRefreshToken = bootstrapRefreshToken,
             CategoryFilter = categoryFilter,
         };
     }

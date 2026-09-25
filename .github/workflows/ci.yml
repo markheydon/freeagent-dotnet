@@ -7,6 +7,10 @@ on:
   pull_request:
     branches:
       - main
+  schedule:
+    # Weekly sandbox smoke on Monday 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -73,7 +77,10 @@ jobs:
     name: Console Sample Smoke
     runs-on: ubuntu-latest
     needs: build-and-test
-    timeout-minutes: 10
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      secrets: write
 
     steps:
       - name: Checkout
@@ -84,14 +91,66 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Run console sample examples
+      - name: Resolve smoke policy
+        id: policy
+        env:
+          REFRESH_TOKEN: ${{ secrets.FREEAGENT_REFRESH_TOKEN }}
         run: |
-          if [ -z "${FREEAGENT_REFRESH_TOKEN}" ]; then
-            echo "Skipping console smoke: FREEAGENT_REFRESH_TOKEN not configured"
+          if [[ -n "$REFRESH_TOKEN" ]]; then
+            echo "mode=run" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          dotnet run --project samples/FreeAgent.Client.ConsoleSample --configuration Release -- --run-all
+
+          case "${{ github.event_name }}" in
+            push|schedule|workflow_dispatch)
+              if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+                echo "mode=required" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              ;;
+          esac
+
+          echo "mode=skip" >> "$GITHUB_OUTPUT"
+
+      - name: Require sandbox credentials on main
+        if: steps.policy.outputs.mode == 'required'
+        run: |
+          echo "::error::FREEAGENT_REFRESH_TOKEN is not configured. See docs/contributing/ci-sandbox-smoke.md"
+          exit 1
+
+      - name: Skip sandbox smoke
+        if: steps.policy.outputs.mode == 'skip'
+        run: echo "Skipping console smoke: FREEAGENT_REFRESH_TOKEN not configured"
+
+      - name: Refresh sandbox access token
+        if: steps.policy.outputs.mode == 'run'
+        id: auth
         env:
           FREEAGENT_CLIENT_ID: ${{ secrets.FREEAGENT_CLIENT_ID }}
           FREEAGENT_CLIENT_SECRET: ${{ secrets.FREEAGENT_CLIENT_SECRET }}
           FREEAGENT_REFRESH_TOKEN: ${{ secrets.FREEAGENT_REFRESH_TOKEN }}
+        run: bash scripts/ci/refresh-freeagent-access-token.sh
+
+      - name: Rotate refresh token secret when changed
+        if: steps.policy.outputs.mode == 'run'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STORED_REFRESH_TOKEN: ${{ secrets.FREEAGENT_REFRESH_TOKEN }}
+          NEW_REFRESH_TOKEN: ${{ steps.auth.outputs.refresh_token }}
+        run: |
+          if [[ -z "$NEW_REFRESH_TOKEN" || "$NEW_REFRESH_TOKEN" == "$STORED_REFRESH_TOKEN" ]]; then
+            echo "Refresh token unchanged; secret rotation not required"
+            exit 0
+          fi
+
+          echo "::add-mask::$NEW_REFRESH_TOKEN"
+          gh secret set FREEAGENT_REFRESH_TOKEN --body "$NEW_REFRESH_TOKEN"
+          echo "Updated FREEAGENT_REFRESH_TOKEN repository secret"
+
+      - name: Run console sample examples
+        if: steps.policy.outputs.mode == 'run'
+        env:
+          FREEAGENT_CLIENT_ID: ${{ secrets.FREEAGENT_CLIENT_ID }}
+          FREEAGENT_CLIENT_SECRET: ${{ secrets.FREEAGENT_CLIENT_SECRET }}
+          FREEAGENT_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+        run: dotnet run --project samples/FreeAgent.Client.ConsoleSample --configuration Release -- --run-all

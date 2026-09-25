@@ -15,7 +15,7 @@ public class SampleRunReporterTests
             "Contacts",
             "Example",
             _ => throw new SampleSkippedException("no data"),
-            CancellationToken.None);
+            cancellationToken: CancellationToken.None);
 
         var exitCode = reporter.WriteSummaryAndGetExitCode();
 
@@ -31,7 +31,7 @@ public class SampleRunReporterTests
             "Contacts",
             "Example",
             _ => Task.CompletedTask,
-            CancellationToken.None);
+            cancellationToken: CancellationToken.None);
 
         var exitCode = reporter.WriteSummaryAndGetExitCode();
 
@@ -47,7 +47,7 @@ public class SampleRunReporterTests
             "Contacts",
             "Example",
             _ => throw new InvalidOperationException("boom"),
-            CancellationToken.None);
+            cancellationToken: CancellationToken.None);
 
         var exitCode = reporter.WriteSummaryAndGetExitCode();
 

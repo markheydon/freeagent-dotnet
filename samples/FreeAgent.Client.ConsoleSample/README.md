@@ -121,6 +121,8 @@ On any platform, if the local listener cannot start (port in use, permissions, r
 
 Use `--run-all` to execute every registered example without the interactive menu. Output follows a `dotnet test`-style report with pass, fail, and skip counts.
 
+`--run-all` enables request pacing (600 ms between API calls) and a single rate-limit retry per example so the full batch stays within FreeAgent's 120 requests per minute limit.
+
 ```bash
 dotnet run --project samples/FreeAgent.Client.ConsoleSample -- --run-all
 ```
@@ -130,6 +132,18 @@ Filter to one category:
 ```bash
 dotnet run --project samples/FreeAgent.Client.ConsoleSample -- --run-all --category Contacts
 ```
+
+### Bootstrap a refresh token (CI setup)
+
+Run interactive OAuth once and print a refresh token for GitHub Actions or local `--run-all`:
+
+```bash
+dotnet run -- --bootstrap-refresh-token
+```
+
+Complete authorisation in the browser (on WSL, paste the redirect URL manually when prompted). The command prints the refresh token and `gh secret set` instructions.
+
+Full guide: [docs/contributing/ci-sandbox-smoke.md](../../docs/contributing/ci-sandbox-smoke.md).
 
 ### Non-interactive authentication
 
@@ -153,13 +167,13 @@ Examples marked `ExcludeFromRunAll` (such as **Stream all contacts**) appear in 
 
 ### CI integration
 
-The repository CI workflow includes a smoke step that runs `--run-all` when `FREEAGENT_REFRESH_TOKEN` is configured. Configure these GitHub secrets to enable live API smoke coverage:
+The repository CI workflow runs `--run-all` when `FREEAGENT_REFRESH_TOKEN` is configured. Configure these GitHub secrets:
 
 - `FREEAGENT_CLIENT_ID`
 - `FREEAGENT_CLIENT_SECRET`
 - `FREEAGENT_REFRESH_TOKEN`
 
-When the refresh token secret is absent, the step exits successfully without running examples so PRs are not blocked. The smoke run fails if no examples pass.
+On pull requests, smoke is **skipped** when secrets are absent so forks and draft work stay unblocked. On `main` (and on the weekly schedule), smoke is **required** and fails when secrets are missing or the refresh token is invalid. The workflow refreshes the access token before each run and rotates `FREEAGENT_REFRESH_TOKEN` when FreeAgent returns a new value.
 
 ---
 

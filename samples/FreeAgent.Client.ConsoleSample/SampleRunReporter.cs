@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using FreeAgent.Client;
 
 namespace FreeAgent.Client.ConsoleSample;
 
@@ -56,17 +57,19 @@ internal sealed class SampleRunReporter
     /// <param name="category">Example category.</param>
     /// <param name="name">Example name.</param>
     /// <param name="action">Example action.</param>
+    /// <param name="retryOnRateLimit">When <see langword="true"/>, waits once on <see cref="FreeAgentRateLimitException"/> and retries the example.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     public async Task RunExampleAsync(
         string category,
         string name,
         Func<CancellationToken, Task> action,
+        bool retryOnRateLimit = false,
         CancellationToken cancellationToken = default)
     {
         var stopwatch = Stopwatch.StartNew();
         try
         {
-            await action(cancellationToken);
+            await RunWithOptionalRateLimitRetryAsync(action, retryOnRateLimit, cancellationToken);
             stopwatch.Stop();
             var result = new SampleRunResult(category, name, SampleRunOutcome.Passed, stopwatch.Elapsed, null);
             _results.Add(result);
@@ -85,6 +88,29 @@ internal sealed class SampleRunReporter
             var result = new SampleRunResult(category, name, SampleRunOutcome.Failed, stopwatch.Elapsed, ex.Message);
             _results.Add(result);
             WriteLine(result);
+        }
+    }
+
+    private static async Task RunWithOptionalRateLimitRetryAsync(
+        Func<CancellationToken, Task> action,
+        bool retryOnRateLimit,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            await action(cancellationToken);
+        }
+        catch (FreeAgentRateLimitException ex) when (retryOnRateLimit)
+        {
+            var delay = ex.RetryAfter ?? TimeSpan.FromSeconds(60);
+            if (delay > TimeSpan.FromMinutes(2))
+            {
+                delay = TimeSpan.FromMinutes(2);
+            }
+
+            Console.WriteLine($"  Rate limited; waiting {delay.TotalSeconds:F0}s before one retry...");
+            await Task.Delay(delay, cancellationToken);
+            await action(cancellationToken);
         }
     }
 
