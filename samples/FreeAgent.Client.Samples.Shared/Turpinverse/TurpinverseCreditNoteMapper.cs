@@ -13,11 +13,14 @@ internal static class TurpinverseCreditNoteMapper
 
     public static CreditNote ToFreeAgentCreditNote(
         TurpinverseCreditNote creditNote,
-        long contactId)
+        long contactId,
+        DateOnly minimumDocumentDate)
     {
         ArgumentNullException.ThrowIfNull(creditNote);
 
-        var datedOn = ParseDate(creditNote.IssueDate, nameof(creditNote.IssueDate));
+        var datedOn = TurpinverseSalesDateSupport.ClampToMinimum(
+            TurpinverseSalesDateSupport.ParseCanonDate(creditNote.IssueDate, nameof(creditNote.IssueDate)),
+            minimumDocumentDate);
 
         return new CreditNote
         {
@@ -68,13 +71,4 @@ internal static class TurpinverseCreditNoteMapper
             ? parsed
             : CurrencyCode.GBP;
 
-    private static DateOnly ParseDate(string value, string fieldName)
-    {
-        if (DateOnly.TryParse(value, out var parsed))
-        {
-            return parsed;
-        }
-
-        throw new InvalidOperationException($"Turpinverse credit note field '{fieldName}' is not a valid date: '{value}'.");
-    }
 }

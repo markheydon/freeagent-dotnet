@@ -117,9 +117,13 @@ app.MapGet("/oauth/callback", async (
     return Results.Redirect("/");
 });
 
-app.MapGet("/oauth/disconnect", (TokenStore tokenStore, HttpContext httpContext) =>
+app.MapGet("/oauth/disconnect", (
+    TokenStore tokenStore,
+    TurpinverseCompanyDates companyDates,
+    HttpContext httpContext) =>
 {
     tokenStore.ClearToken(httpContext.Response);
+    companyDates.ClearCache();
     return Results.Redirect("/");
 });
 

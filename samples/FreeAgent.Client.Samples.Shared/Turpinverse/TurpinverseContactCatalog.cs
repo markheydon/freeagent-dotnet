@@ -87,5 +87,12 @@ public sealed class TurpinverseContactCatalog : IDisposable
         }
     }
 
+    /// <summary>Clears in-memory canon without clearing the shared HTTP JSON cache.</summary>
+    public void InvalidateInMemory()
+    {
+        _organisations = null;
+        _personasById = null;
+    }
+
     public void Dispose() => _loadLock.Dispose();
 }

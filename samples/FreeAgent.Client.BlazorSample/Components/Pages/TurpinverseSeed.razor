@@ -33,7 +33,7 @@
 
     @if (_running)
     {
-        <MudProgressLinear Color="Color.Primary" Indeterminate="@(_currentStage is null)" Value="@ProgressValue" Class="mb-3" />
+        <MudProgressLinear Color="Color.Primary" Indeterminate="@IsProgressIndeterminate" Value="@ProgressValue" Class="mb-3" />
     }
 
     <MudGrid Spacing="3">
@@ -134,7 +134,6 @@
 @code {
     private bool _running;
     private string? _error;
-    private TurpinverseSeedStage? _currentStage;
     private TurpinverseSeedRunResult? _runResult;
     private readonly List<TurpinverseSeedStageResult> _stageResults = new();
 
@@ -147,8 +146,12 @@
 
     private string ConnectedEnvironmentName => TokenStore.ConnectedEnvironment.ToString();
 
+    private int TotalStageCount => TurpinverseSeedStageOrder.All.Count;
+
+    private bool IsProgressIndeterminate => _running && _stageResults.Count == 0;
+
     private double ProgressValue =>
-        _stageResults.Count == 0 ? 0 : (_stageResults.Count / 8d) * 100d;
+        _stageResults.Count == 0 ? 0 : (_stageResults.Count / (double)TotalStageCount) * 100d;
 
     private async Task SeedAllAsync()
     {
@@ -168,21 +171,17 @@
         _error = null;
         _runResult = null;
         _stageResults.Clear();
-        _currentStage = TurpinverseSeedStage.Contacts;
 
         try
         {
-            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            using var client = OAuthService.CreatePacedFreeAgentClient(token, TokenStore.ConnectedEnvironment);
             var progress = new Progress<TurpinverseSeedStageProgress>(update =>
             {
-                _currentStage = update.Stage;
                 _stageResults.Add(update.Result);
-                InvokeAsync(StateHasChanged);
+                _ = InvokeAsync(StateHasChanged);
             });
 
             _runResult = await TurpinverseSeedOrchestrator.SeedAllAsync(client, progress);
-            _stageResults.Clear();
-            _stageResults.AddRange(_runResult.Stages);
         }
         catch (TurpinverseCanonFetchException ex)
         {
@@ -195,7 +194,6 @@
         finally
         {
             _running = false;
-            _currentStage = null;
         }
     }
 

@@ -231,7 +231,7 @@
 
         try
         {
-            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            using var client = OAuthService.CreatePacedFreeAgentClient(token, TokenStore.ConnectedEnvironment);
             var result = await TurpinverseContactSeeder.CreateAllOrganisationContactsAsync(client);
             var lastTouched = result.Updated.Count > 0
                 ? result.Updated[^1]

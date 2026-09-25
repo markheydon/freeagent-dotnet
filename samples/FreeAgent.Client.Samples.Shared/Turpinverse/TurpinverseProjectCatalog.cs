@@ -65,5 +65,8 @@ public sealed class TurpinverseProjectCatalog : IDisposable
     public TurpinverseProject BlackBessRouteOptimiser =>
         Projects.First(static project => project.Id == BlackBessRouteOptimiserProjectId);
 
+    /// <summary>Clears in-memory canon without clearing the shared HTTP JSON cache.</summary>
+    public void InvalidateInMemory() => _projects = null;
+
     public void Dispose() => _loadLock.Dispose();
 }

@@ -14,9 +14,14 @@ internal static class TurpinverseQuoteMapper
     public static Estimate ToFreeAgentEstimate(
         TurpinverseQuote quote,
         long contactId,
-        long? projectId)
+        long? projectId,
+        DateOnly minimumDocumentDate)
     {
         ArgumentNullException.ThrowIfNull(quote);
+
+        var datedOn = TurpinverseSalesDateSupport.ClampToMinimum(
+            TurpinverseSalesDateSupport.ParseCanonDate(quote.IssueDate, nameof(quote.IssueDate)),
+            minimumDocumentDate);
 
         return new Estimate
         {
@@ -24,7 +29,7 @@ internal static class TurpinverseQuoteMapper
             ProjectId = projectId,
             EstimateType = EstimateType.Quote,
             Reference = BuildReference(quote.QuoteId),
-            DatedOn = ParseDate(quote.IssueDate, nameof(quote.IssueDate)),
+            DatedOn = datedOn,
             Currency = ParseCurrency(quote.Currency),
             Notes = BuildNotes(quote),
             EstimateItems = quote.Lines
@@ -41,7 +46,9 @@ internal static class TurpinverseQuoteMapper
         {
             "Accepted" => EstimateStatus.Approved,
             "Declined" => EstimateStatus.Rejected,
+            "Expired" => EstimateStatus.Rejected,
             "Draft" => EstimateStatus.Draft,
+            "Sent" => EstimateStatus.Sent,
             _ => EstimateStatus.Sent
         };
 
@@ -73,16 +80,6 @@ internal static class TurpinverseQuoteMapper
         Enum.TryParse<CurrencyCode>(currency, ignoreCase: true, out var parsed)
             ? parsed
             : CurrencyCode.GBP;
-
-    private static DateOnly ParseDate(string value, string fieldName)
-    {
-        if (DateOnly.TryParse(value, out var parsed))
-        {
-            return parsed;
-        }
-
-        throw new InvalidOperationException($"Turpinverse quote field '{fieldName}' is not a valid date: '{value}'.");
-    }
 
     private static string? BuildNotes(TurpinverseQuote quote)
     {

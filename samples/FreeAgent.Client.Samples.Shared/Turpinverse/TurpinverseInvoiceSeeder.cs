@@ -14,15 +14,18 @@ public sealed class TurpinverseInvoiceSeeder
     private readonly TurpinverseInvoiceCatalog _invoiceCatalog;
     private readonly TurpinverseContactCatalog _contactCatalog;
     private readonly TurpinverseProjectCatalog _projectCatalog;
+    private readonly TurpinverseCompanyDates _companyDates;
 
     public TurpinverseInvoiceSeeder(
         TurpinverseInvoiceCatalog invoiceCatalog,
         TurpinverseContactCatalog contactCatalog,
-        TurpinverseProjectCatalog projectCatalog)
+        TurpinverseProjectCatalog projectCatalog,
+        TurpinverseCompanyDates companyDates)
     {
         _invoiceCatalog = invoiceCatalog ?? throw new ArgumentNullException(nameof(invoiceCatalog));
         _contactCatalog = contactCatalog ?? throw new ArgumentNullException(nameof(contactCatalog));
         _projectCatalog = projectCatalog ?? throw new ArgumentNullException(nameof(projectCatalog));
+        _companyDates = companyDates ?? throw new ArgumentNullException(nameof(companyDates));
     }
 
     public async Task<TurpinverseInvoiceSeedResult> CreateHighwayCommissionDraftAsync(
@@ -38,11 +41,12 @@ public sealed class TurpinverseInvoiceSeeder
 
     public async Task<TurpinverseInvoiceBulkSeedResult> CreateAllInvoicesAsync(
         FreeAgentClient client,
+        bool refreshCanon = true,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        await EnsureCanonLoadedAsync(forceRefresh: true, cancellationToken).ConfigureAwait(false);
+        await EnsureCanonLoadedAsync(refreshCanon, cancellationToken).ConfigureAwait(false);
         var existingInvoices = await LoadExistingInvoicesByReferenceAsync(client, cancellationToken);
         var created = new List<Invoice>();
         var updated = new List<Invoice>();
@@ -96,7 +100,8 @@ public sealed class TurpinverseInvoiceSeeder
     {
         var contactId = await ResolveOrganisationContactIdAsync(client, invoice.AccountId, cancellationToken);
         var projectId = await ResolveProjectIdAsync(client, invoice, cancellationToken);
-        var desired = TurpinverseInvoiceMapper.ToFreeAgentInvoice(invoice, contactId, projectId);
+        var minimumDocumentDate = await _companyDates.GetMinimumDocumentDateAsync(client, cancellationToken);
+        var desired = TurpinverseInvoiceMapper.ToFreeAgentInvoice(invoice, contactId, projectId, minimumDocumentDate);
         var reference = TurpinverseInvoiceMapper.BuildReference(invoice.InvoiceId);
 
         existingInvoices ??= await LoadExistingInvoicesByReferenceAsync(client, cancellationToken);
@@ -211,6 +216,14 @@ public sealed class TurpinverseInvoiceSeeder
         CancellationToken cancellationToken)
     {
         var invoiceId = invoice.GetResourceId();
+
+        if (TurpinverseInvoiceMapper.ShouldMarkAsCancelled(canon.Status))
+        {
+            return invoice.Status is InvoiceStatus.WrittenOff or InvoiceStatus.PartWrittenOff
+                ? invoice
+                : await client.Invoices.MarkInvoiceAsCancelledAsync(invoiceId, cancellationToken);
+        }
+
         var shouldMarkAsSent = TurpinverseInvoiceMapper.ShouldMarkAsSent(canon.Status);
 
         if (shouldMarkAsSent && invoice.Status == InvoiceStatus.Draft)

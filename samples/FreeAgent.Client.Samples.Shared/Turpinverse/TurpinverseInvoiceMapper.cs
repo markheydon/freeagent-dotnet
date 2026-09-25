@@ -13,12 +13,14 @@ internal static class TurpinverseInvoiceMapper
     public static Invoice ToFreeAgentInvoice(
         TurpinverseInvoice invoice,
         long contactId,
-        long? projectId)
+        long? projectId,
+        DateOnly minimumDocumentDate)
     {
         ArgumentNullException.ThrowIfNull(invoice);
 
-        var datedOn = ParseDate(invoice.IssueDate, nameof(invoice.IssueDate));
-        var dueOn = ParseDate(invoice.DueDate, nameof(invoice.DueDate));
+        var issueDate = TurpinverseSalesDateSupport.ParseCanonDate(invoice.IssueDate, nameof(invoice.IssueDate));
+        var dueDate = TurpinverseSalesDateSupport.ParseCanonDate(invoice.DueDate, nameof(invoice.DueDate));
+        var (datedOn, dueOn) = TurpinverseSalesDateSupport.ClampInvoiceDates(issueDate, dueDate, minimumDocumentDate);
         var paymentTermsInDays = Math.Max(0, dueOn.DayNumber - datedOn.DayNumber);
 
         return new Invoice
@@ -45,8 +47,17 @@ internal static class TurpinverseInvoiceMapper
     public static string BuildReference(string invoiceId) =>
         $"{ReferencePrefix}{invoiceId}";
 
+    /// <summary>
+    /// Returns whether a canon invoice should be marked as sent in FreeAgent.
+    /// Canon <c>Paid</c> entries are included so drafts transition to open; payment recording is out of scope.
+    /// </summary>
     public static bool ShouldMarkAsSent(string status) =>
-        !string.Equals(status, "Draft", StringComparison.OrdinalIgnoreCase);
+        string.Equals(status, "Authorised", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(status, "Paid", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(status, "Overdue", StringComparison.OrdinalIgnoreCase);
+
+    public static bool ShouldMarkAsCancelled(string status) =>
+        string.Equals(status, "Void", StringComparison.OrdinalIgnoreCase);
 
     private static InvoiceItem ToInvoiceItem(TurpinverseInvoiceLine line, int position)
     {
@@ -77,13 +88,4 @@ internal static class TurpinverseInvoiceMapper
             ? parsed
             : CurrencyCode.GBP;
 
-    private static DateOnly ParseDate(string value, string fieldName)
-    {
-        if (DateOnly.TryParse(value, out var parsed))
-        {
-            return parsed;
-        }
-
-        throw new InvalidOperationException($"Turpinverse invoice field '{fieldName}' is not a valid date: '{value}'.");
-    }
 }

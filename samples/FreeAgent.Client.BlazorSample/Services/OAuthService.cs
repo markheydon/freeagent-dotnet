@@ -1,4 +1,5 @@
 using FreeAgent.Client;
+using FreeAgent.Client.Samples.Shared.Seeding;
 
 namespace FreeAgent.Client.BlazorSample.Services;
 
@@ -91,14 +92,28 @@ public sealed class OAuthService : IDisposable
     /// Creates a <see cref="FreeAgentClient"/> configured for automatic token refresh.
     /// The caller is responsible for disposing the returned client.
     /// </summary>
-    public FreeAgentClient CreateFreeAgentClient(OAuthTokenResponse token, FreeAgentEnvironment connectedEnvironment)
+    /// <param name="token">OAuth token response.</param>
+    /// <param name="connectedEnvironment">Environment used for the active OAuth session.</param>
+    /// <param name="httpClientOptions">Optional HTTP pacing and transport options.</param>
+    public FreeAgentClient CreateFreeAgentClient(
+        OAuthTokenResponse token,
+        FreeAgentEnvironment connectedEnvironment,
+        FreeAgentHttpClientOptions? httpClientOptions = null)
     {
         ArgumentNullException.ThrowIfNull(token);
         EnsureConfigured();
 
         var oauthClient = GetOrCreateOAuthClient();
-        return new FreeAgentClient(oauthClient, token, connectedEnvironment);
+        return new FreeAgentClient(oauthClient, token, connectedEnvironment, httpClientOptions);
     }
+
+    /// <summary>
+    /// Creates a paced <see cref="FreeAgentClient"/> for bulk Turpinverse seed operations.
+    /// </summary>
+    public FreeAgentClient CreatePacedFreeAgentClient(
+        OAuthTokenResponse token,
+        FreeAgentEnvironment connectedEnvironment) =>
+        CreateFreeAgentClient(token, connectedEnvironment, SampleHttpClientPacing.CreateRunAllOptions());
 
     private FreeAgentOAuthClient GetOrCreateOAuthClient()
     {

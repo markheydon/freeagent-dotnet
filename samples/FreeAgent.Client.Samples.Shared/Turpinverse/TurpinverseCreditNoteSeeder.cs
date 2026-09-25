@@ -12,13 +12,16 @@ public sealed class TurpinverseCreditNoteSeeder
 {
     private readonly TurpinverseCreditNoteCatalog _creditNoteCatalog;
     private readonly TurpinverseContactCatalog _contactCatalog;
+    private readonly TurpinverseCompanyDates _companyDates;
 
     public TurpinverseCreditNoteSeeder(
         TurpinverseCreditNoteCatalog creditNoteCatalog,
-        TurpinverseContactCatalog contactCatalog)
+        TurpinverseContactCatalog contactCatalog,
+        TurpinverseCompanyDates companyDates)
     {
         _creditNoteCatalog = creditNoteCatalog ?? throw new ArgumentNullException(nameof(creditNoteCatalog));
         _contactCatalog = contactCatalog ?? throw new ArgumentNullException(nameof(contactCatalog));
+        _companyDates = companyDates ?? throw new ArgumentNullException(nameof(companyDates));
     }
 
     public async Task<TurpinverseCreditNoteSeedResult> CreateHighwayCommissionDraftAsync(
@@ -34,11 +37,12 @@ public sealed class TurpinverseCreditNoteSeeder
 
     public async Task<TurpinverseCreditNoteBulkSeedResult> CreateAllCreditNotesAsync(
         FreeAgentClient client,
+        bool refreshCanon = true,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        await EnsureCanonLoadedAsync(forceRefresh: true, cancellationToken).ConfigureAwait(false);
+        await EnsureCanonLoadedAsync(refreshCanon, cancellationToken).ConfigureAwait(false);
         var existingCreditNotes = await LoadExistingCreditNotesByReferenceAsync(client, cancellationToken);
         var created = new List<CreditNote>();
         var updated = new List<CreditNote>();
@@ -90,7 +94,8 @@ public sealed class TurpinverseCreditNoteSeeder
         Dictionary<string, CreditNote>? existingCreditNotes = null)
     {
         var contactId = await ResolveOrganisationContactIdAsync(client, creditNote.AccountId, cancellationToken);
-        var desired = TurpinverseCreditNoteMapper.ToFreeAgentCreditNote(creditNote, contactId);
+        var minimumDocumentDate = await _companyDates.GetMinimumDocumentDateAsync(client, cancellationToken);
+        var desired = TurpinverseCreditNoteMapper.ToFreeAgentCreditNote(creditNote, contactId, minimumDocumentDate);
         var reference = TurpinverseCreditNoteMapper.BuildReference(creditNote.CreditNoteId);
 
         existingCreditNotes ??= await LoadExistingCreditNotesByReferenceAsync(client, cancellationToken);

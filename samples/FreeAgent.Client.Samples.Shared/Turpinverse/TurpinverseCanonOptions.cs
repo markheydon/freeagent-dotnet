@@ -15,5 +15,5 @@ public sealed class TurpinverseCanonOptions
     /// <summary>
     /// Git branch, tag, or commit SHA for canon files under <c>canon/</c>.
     /// </summary>
-    public string CanonRef { get; set; } = "main";
+    public string CanonRef { get; set; } = "dc51006a80c9";
 }

@@ -6,6 +6,17 @@ namespace FreeAgent.Client.Tests.Samples.Turpinverse;
 public class TurpinverseSeedModelsTests
 {
     [Fact]
+    public void StageOrder_IncludesEveryEnumValue()
+    {
+        var orderedStages = TurpinverseSeedStageOrder.All.ToHashSet();
+
+        foreach (var stage in Enum.GetValues<TurpinverseSeedStage>())
+        {
+            Assert.Contains(stage, orderedStages);
+        }
+    }
+
+    [Fact]
     public void StageOrder_ContactsFirst_TimeslipsLast()
     {
         var stages = TurpinverseSeedStageOrder.All;

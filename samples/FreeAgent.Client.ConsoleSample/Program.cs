@@ -106,7 +106,23 @@ if (runOptions.SeedTurpinverse)
 {
     var client = scope.ServiceProvider.GetRequiredService<FreeAgentClient>();
     var orchestrator = scope.ServiceProvider.GetRequiredService<TurpinverseSeedOrchestrator>();
-    var seedResult = await orchestrator.SeedAllAsync(client);
+
+    TurpinverseSeedRunResult seedResult;
+    try
+    {
+        seedResult = await orchestrator.SeedAllAsync(client);
+    }
+    catch (TurpinverseCanonFetchException ex)
+    {
+        Console.Error.WriteLine($"Turpinverse canon error: {ex.Message}");
+        return 1;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Turpinverse seed failed: {ex.Message}");
+        return 1;
+    }
+
     TurpinverseSeedReporter.WriteSummary(seedResult);
 
     if (!seedResult.Succeeded)

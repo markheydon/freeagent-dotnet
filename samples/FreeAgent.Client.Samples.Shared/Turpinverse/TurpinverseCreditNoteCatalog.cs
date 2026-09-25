@@ -65,5 +65,8 @@ public sealed class TurpinverseCreditNoteCatalog : IDisposable
     public TurpinverseCreditNote HighwayCommissionCreditNote =>
         CreditNotes.First(static creditNote => creditNote.CreditNoteId == HighwayCommissionCreditNoteId);
 
+    /// <summary>Clears in-memory canon without clearing the shared HTTP JSON cache.</summary>
+    public void InvalidateInMemory() => _creditNotes = null;
+
     public void Dispose() => _loadLock.Dispose();
 }

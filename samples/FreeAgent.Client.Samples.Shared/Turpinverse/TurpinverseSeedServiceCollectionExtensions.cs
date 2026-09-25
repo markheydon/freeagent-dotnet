@@ -24,6 +24,8 @@ public static class TurpinverseSeedServiceCollectionExtensions
         services.Configure<TurpinverseCanonOptions>(
             configuration.GetSection(TurpinverseCanonOptions.SectionName));
         services.AddHttpClient<TurpinverseCanonClient>();
+        services.AddSingleton<TurpinverseCanonCoordinator>();
+        services.AddSingleton<TurpinverseCompanyDates>();
         services.AddSingleton<TurpinverseContactCatalog>();
         services.AddSingleton<TurpinverseContactSeeder>();
         services.AddSingleton<TurpinverseProjectCatalog>();

@@ -39,11 +39,12 @@ public sealed class TurpinverseTaskSeeder
 
     public async Task<TurpinverseTaskBulkSeedResult> CreateAllTurpinverseTasksAsync(
         FreeAgentClient client,
+        bool refreshCanon = true,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        await _projectCatalog.EnsureLoadedAsync(forceRefresh: true, cancellationToken).ConfigureAwait(false);
+        await _projectCatalog.EnsureLoadedAsync(forceRefresh: refreshCanon, cancellationToken).ConfigureAwait(false);
         var existingProjects = await LoadTurpinverseProjectsAsync(client, cancellationToken);
         var created = new List<ProjectTask>();
         var updated = new List<ProjectTask>();

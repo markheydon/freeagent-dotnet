@@ -14,15 +14,18 @@ public sealed class TurpinverseQuoteSeeder
     private readonly TurpinverseQuoteCatalog _quoteCatalog;
     private readonly TurpinverseContactCatalog _contactCatalog;
     private readonly TurpinverseProjectCatalog _projectCatalog;
+    private readonly TurpinverseCompanyDates _companyDates;
 
     public TurpinverseQuoteSeeder(
         TurpinverseQuoteCatalog quoteCatalog,
         TurpinverseContactCatalog contactCatalog,
-        TurpinverseProjectCatalog projectCatalog)
+        TurpinverseProjectCatalog projectCatalog,
+        TurpinverseCompanyDates companyDates)
     {
         _quoteCatalog = quoteCatalog ?? throw new ArgumentNullException(nameof(quoteCatalog));
         _contactCatalog = contactCatalog ?? throw new ArgumentNullException(nameof(contactCatalog));
         _projectCatalog = projectCatalog ?? throw new ArgumentNullException(nameof(projectCatalog));
+        _companyDates = companyDates ?? throw new ArgumentNullException(nameof(companyDates));
     }
 
     public async Task<TurpinverseQuoteSeedResult> CreateHighwayCommissionDraftAsync(
@@ -38,11 +41,12 @@ public sealed class TurpinverseQuoteSeeder
 
     public async Task<TurpinverseQuoteBulkSeedResult> CreateAllQuotesAsync(
         FreeAgentClient client,
+        bool refreshCanon = true,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        await EnsureCanonLoadedAsync(forceRefresh: true, cancellationToken).ConfigureAwait(false);
+        await EnsureCanonLoadedAsync(refreshCanon, cancellationToken).ConfigureAwait(false);
         var existingEstimates = await LoadExistingEstimatesByReferenceAsync(client, cancellationToken);
         var created = new List<Estimate>();
         var updated = new List<Estimate>();
@@ -96,7 +100,8 @@ public sealed class TurpinverseQuoteSeeder
     {
         var contactId = await ResolveOrganisationContactIdAsync(client, quote.AccountId, cancellationToken);
         var projectId = await ResolveProjectIdAsync(client, quote, cancellationToken);
-        var desired = TurpinverseQuoteMapper.ToFreeAgentEstimate(quote, contactId, projectId);
+        var minimumDocumentDate = await _companyDates.GetMinimumDocumentDateAsync(client, cancellationToken);
+        var desired = TurpinverseQuoteMapper.ToFreeAgentEstimate(quote, contactId, projectId, minimumDocumentDate);
         var reference = TurpinverseQuoteMapper.BuildReference(quote.QuoteId);
 
         existingEstimates ??= await LoadExistingEstimatesByReferenceAsync(client, cancellationToken);
@@ -222,7 +227,7 @@ public sealed class TurpinverseQuoteSeeder
 
         var targetStatus = TurpinverseQuoteMapper.MapStatus(canon.Status);
 
-        if (estimate.Status == targetStatus)
+        if (TurpinverseEstimateStatusSupport.StatusesEquivalent(estimate.Status, targetStatus))
         {
             return estimate;
         }
@@ -241,15 +246,21 @@ public sealed class TurpinverseQuoteSeeder
                 : await client.Estimates.MarkEstimateAsDraftAsync(estimateId, cancellationToken);
         }
 
-        if (estimate.Status == EstimateStatus.Draft)
+        if (estimate.Status == EstimateStatus.Draft
+            && TurpinverseEstimateStatusSupport.RequiresSentState(targetStatus))
         {
             estimate = await client.Estimates.MarkEstimateAsSentAsync(estimateId, cancellationToken);
         }
 
         return targetStatus switch
         {
-            EstimateStatus.Approved => await client.Estimates.MarkEstimateAsApprovedAsync(estimateId, cancellationToken),
-            EstimateStatus.Rejected => await client.Estimates.MarkEstimateAsRejectedAsync(estimateId, cancellationToken),
+            EstimateStatus.Approved => estimate.Status == EstimateStatus.Approved
+                ? estimate
+                : await client.Estimates.MarkEstimateAsApprovedAsync(estimateId, cancellationToken),
+            EstimateStatus.Rejected => estimate.Status == EstimateStatus.Rejected
+                ? estimate
+                : await client.Estimates.MarkEstimateAsRejectedAsync(estimateId, cancellationToken),
+            EstimateStatus.Sent => estimate,
             _ => estimate
         };
     }

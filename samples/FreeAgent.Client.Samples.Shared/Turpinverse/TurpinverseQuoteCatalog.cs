@@ -65,5 +65,8 @@ public sealed class TurpinverseQuoteCatalog : IDisposable
     public TurpinverseQuote HighwayCommissionDraft =>
         Quotes.First(static quote => quote.QuoteId == HighwayCommissionDraftQuoteId);
 
+    /// <summary>Clears in-memory canon without clearing the shared HTTP JSON cache.</summary>
+    public void InvalidateInMemory() => _quotes = null;
+
     public void Dispose() => _loadLock.Dispose();
 }

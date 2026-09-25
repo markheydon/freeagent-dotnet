@@ -65,5 +65,8 @@ public sealed class TurpinverseInvoiceCatalog : IDisposable
     public TurpinverseInvoice HighwayCommissionDraft =>
         Invoices.First(static invoice => invoice.InvoiceId == HighwayCommissionDraftInvoiceId);
 
+    /// <summary>Clears in-memory canon without clearing the shared HTTP JSON cache.</summary>
+    public void InvalidateInMemory() => _invoices = null;
+
     public void Dispose() => _loadLock.Dispose();
 }

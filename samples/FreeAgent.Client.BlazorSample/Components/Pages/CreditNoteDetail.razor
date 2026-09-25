@@ -232,7 +232,7 @@
 
         try
         {
-            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            using var client = OAuthService.CreatePacedFreeAgentClient(token, TokenStore.ConnectedEnvironment);
             var result = await TurpinverseCreditNoteSeeder.CreateAllCreditNotesAsync(client);
             var lastTouched = result.Updated.Count > 0
                 ? result.Updated[^1]

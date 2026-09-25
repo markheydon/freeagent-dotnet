@@ -29,11 +29,12 @@ public sealed class TurpinverseContactSeeder
 
     public async Task<TurpinverseBulkSeedResult> CreateAllOrganisationContactsAsync(
         FreeAgentClient client,
+        bool refreshCanon = true,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(client);
 
-        await _catalog.EnsureLoadedAsync(forceRefresh: true, cancellationToken).ConfigureAwait(false);
+        await _catalog.EnsureLoadedAsync(forceRefresh: refreshCanon, cancellationToken).ConfigureAwait(false);
         var existingContacts = await ContactSeederSupport.LoadExistingContactsByEmailAsync(client, cancellationToken);
         var created = new List<Contact>();
         var updated = new List<Contact>();
