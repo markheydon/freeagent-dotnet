@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
@@ -175,12 +176,21 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task MarkInvoiceAsScheduledAsync(CancellationToken cancellationToken)
     {
-        var draft = await CreateSampleDraftInvoiceAsync(cancellationToken);
-        var scheduled = await context.Client.Invoices.MarkInvoiceAsScheduledAsync(draft.ResourceId, cancellationToken);
+        var draft = await CreateSchedulableSampleInvoiceAsync(cancellationToken);
 
-        SampleOutput.WriteHeader("Marked invoice as scheduled");
-        SampleOutput.WriteField("Id", scheduled.ResourceId);
-        SampleOutput.WriteField("Status", scheduled.Status);
+        try
+        {
+            var scheduled = await context.Client.Invoices.MarkInvoiceAsScheduledAsync(draft.ResourceId, cancellationToken);
+
+            SampleOutput.WriteHeader("Marked invoice as scheduled");
+            SampleOutput.WriteField("Id", scheduled.ResourceId);
+            SampleOutput.WriteField("Status", scheduled.Status);
+        }
+        catch (FreeAgentApiException ex) when (IsInvoiceSchedulingPreconditionFailure(ex))
+        {
+            SampleContext.Skip(
+                "sandbox account cannot schedule invoice emails (invoice email template may be missing)");
+        }
     }
 
     [ConsoleSample(Name = "Mark invoice as draft", MutatesData = true)]
@@ -341,6 +351,42 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
             cancellationToken);
     }
 
+    /// <summary>
+    /// Creates a draft invoice that satisfies <c>mark_as_scheduled</c> preconditions:
+    /// <c>send_new_invoice_emails</c> must be enabled on create, and the invoice date must be in the future.
+    /// </summary>
+    private async Task<Invoice> CreateSchedulableSampleInvoiceAsync(CancellationToken cancellationToken)
+    {
+        var contact = await context.Data.GetFirstContactAsync(cancellationToken);
+        var nominalCode = await context.Data.GetFirstIncomeCategoryNominalCodeAsync(cancellationToken);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var datedOn = today.AddDays(1);
+        var dueOn = datedOn.AddDays(14);
+
+        return await context.Client.Invoices.CreateInvoiceAsync(
+            new Invoice
+            {
+                ContactId = contact.ResourceId,
+                DatedOn = datedOn,
+                DueOn = dueOn,
+                PaymentTermsInDays = dueOn.DayNumber - datedOn.DayNumber,
+                Reference = $"Console scheduled sample {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
+                SendNewInvoiceEmails = true,
+                InvoiceItems =
+                [
+                    new InvoiceItem
+                    {
+                        Description = "Console scheduled sample line item",
+                        ItemType = InvoiceItemType.Services,
+                        Quantity = 1,
+                        Price = 100,
+                        CategoryNominalCode = nominalCode,
+                    }
+                ]
+            },
+            cancellationToken);
+    }
+
     private async Task<Invoice> CreateSentSampleInvoiceAsync(CancellationToken cancellationToken)
     {
         var draft = await CreateSampleDraftInvoiceAsync(cancellationToken);
@@ -378,6 +424,21 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
             cancellationToken);
 
         return await context.Client.Invoices.MarkInvoiceAsSentAsync(draft.ResourceId, cancellationToken);
+    }
+
+    private static bool IsInvoiceSchedulingPreconditionFailure(FreeAgentApiException exception)
+    {
+        if (exception.StatusCode is not (HttpStatusCode.Forbidden or HttpStatusCode.UnprocessableEntity))
+        {
+            return false;
+        }
+
+        if (exception.RequestPath?.Contains("mark_as_scheduled", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            return true;
+        }
+
+        return exception.Message.Contains("cannot be marked as scheduled", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string FormatInvoiceRow(Invoice invoice) =>
