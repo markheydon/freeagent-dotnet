@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using TaskModel = FreeAgent.Client.Models.Tasks.Task;
+using TaskStatus = FreeAgent.Client.Models.Tasks.TaskStatus;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
@@ -44,5 +46,54 @@ internal sealed class TaskSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Name", detail.Name);
         SampleOutput.WriteField("Status", detail.Status);
         SampleOutput.WriteField("Billing rate", detail.BillingRate);
+    }
+
+    [ConsoleSample(Name = "Create probe task and delete", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task CreateProbeTaskAndDeleteAsync(CancellationToken cancellationToken)
+    {
+        var created = await CreateSampleTaskAsync(cancellationToken);
+
+        SampleOutput.WriteHeader("Created probe task");
+        SampleOutput.WriteField("Id", created.ResourceId);
+        SampleOutput.WriteField("Name", created.Name);
+
+        await context.Client.Tasks.DeleteTaskAsync(created.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted probe task");
+        SampleOutput.WriteField("Id", created.ResourceId);
+    }
+
+    [ConsoleSample(Name = "Update task name")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateTaskNameAsync(CancellationToken cancellationToken)
+    {
+        var created = await CreateSampleTaskAsync(cancellationToken);
+        created.Name = $"{created.Name} (updated)";
+
+        var updated = await context.Client.Tasks.UpdateTaskAsync(created.ResourceId, created, cancellationToken);
+
+        SampleOutput.WriteHeader("Updated task name");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+        SampleOutput.WriteField("Name", updated.Name);
+
+        await context.Client.Tasks.DeleteTaskAsync(updated.ResourceId, cancellationToken);
+    }
+
+    private async Task<TaskModel> CreateSampleTaskAsync(CancellationToken cancellationToken)
+    {
+        var project = await context.Data.GetFirstProjectAsync(cancellationToken);
+
+        return await context.Client.Tasks.CreateTaskAsync(
+            project.ResourceId,
+            new TaskModel
+            {
+                Name = $"Console probe task {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
+                IsBillable = true,
+                Status = TaskStatus.Active,
+                BillingRate = 0m,
+                BillingPeriod = Models.Tasks.TaskBillingPeriod.Hour
+            },
+            cancellationToken);
     }
 }

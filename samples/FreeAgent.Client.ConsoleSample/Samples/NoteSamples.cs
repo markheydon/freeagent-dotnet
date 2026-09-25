@@ -95,6 +95,22 @@ internal sealed class NoteSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Content", updated.Content);
     }
 
+    [ConsoleSample(Name = "Delete note", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task DeleteNoteAsync(CancellationToken cancellationToken)
+    {
+        var contact = await context.Data.GetFirstContactAsync(cancellationToken);
+        var created = await context.Client.Notes.CreateContactNoteAsync(
+            contact.ResourceId,
+            CreateContactNoteRequest.Create($"Console sample note to delete {DateTimeOffset.UtcNow:O}"),
+            cancellationToken);
+
+        await context.Client.Notes.DeleteNoteAsync(created.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted note");
+        SampleOutput.WriteField("Id", created.ResourceId);
+    }
+
     private static string Truncate(string? value)
     {
         if (string.IsNullOrWhiteSpace(value))

@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using FreeAgent.Client.Models.Projects;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
@@ -58,5 +59,60 @@ internal sealed class ProjectSamples(SampleContext context) : IConsoleSampleProv
 
         SampleOutput.WriteHeader($"Projects for {contact.DisplayName} ({page.Items.Count})");
         SampleOutput.WriteRows(page.Items, project => $"{project.ResourceId,8}  {project.Name}");
+    }
+
+    [ConsoleSample(Name = "Create probe project and delete", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task CreateProbeProjectAndDeleteAsync(CancellationToken cancellationToken)
+    {
+        var created = await CreateSampleProjectAsync(cancellationToken);
+
+        SampleOutput.WriteHeader("Created probe project");
+        SampleOutput.WriteField("Id", created.ResourceId);
+        SampleOutput.WriteField("Name", created.Name);
+
+        await context.Client.Projects.DeleteProjectAsync(created.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted probe project");
+        SampleOutput.WriteField("Id", created.ResourceId);
+    }
+
+    [ConsoleSample(Name = "Update project name")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateProjectNameAsync(CancellationToken cancellationToken)
+    {
+        var created = await CreateSampleProjectAsync(cancellationToken);
+        created.Name = $"{created.Name} (updated)";
+
+        var updated = await context.Client.Projects.UpdateProjectAsync(created.ResourceId, created, cancellationToken);
+
+        SampleOutput.WriteHeader("Updated project name");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+        SampleOutput.WriteField("Name", updated.Name);
+
+        await context.Client.Projects.DeleteProjectAsync(updated.ResourceId, cancellationToken);
+    }
+
+    private async Task<Project> CreateSampleProjectAsync(CancellationToken cancellationToken)
+    {
+        var contact = await context.Data.GetFirstContactAsync(cancellationToken);
+
+        return await context.Client.Projects.CreateProjectAsync(
+            new Project
+            {
+                Name = $"Console probe project {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
+                BillingContact = ContactReference.ForEnvironment(context.Client.Environment, contact.ResourceId),
+                Status = ProjectStatus.Active,
+                Currency = CurrencyCode.GBP,
+                Budget = 0m,
+                BudgetUnits = ProjectBudgetUnits.Hours,
+                HoursPerDay = 8m,
+                NormalBillingRate = 0m,
+                BillingPeriod = ProjectBillingPeriod.Hour,
+                UsesProjectInvoiceSequence = false,
+                IncludeUnbilledTimeInProfitability = true,
+                IsIr35 = false
+            },
+            cancellationToken);
     }
 }

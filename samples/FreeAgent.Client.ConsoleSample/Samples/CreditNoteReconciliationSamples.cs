@@ -104,7 +104,15 @@ internal sealed class CreditNoteReconciliationSamples(SampleContext context) : I
                 datedOn: DateOnly.FromDateTime(DateTime.UtcNow)),
             cancellationToken);
 
-        var updatedGrossValue = grossValue > 1m ? grossValue - 1m : grossValue;
+        if (grossValue <= 1m)
+        {
+            await context.Client.CreditNoteReconciliations.DeleteCreditNoteReconciliationAsync(
+                created.ResourceId,
+                cancellationToken);
+            SampleContext.Skip("probe gross value cannot be decremented for update test");
+        }
+
+        var updatedGrossValue = grossValue - 1m;
         var updated = await context.Client.CreditNoteReconciliations.UpdateCreditNoteReconciliationAsync(
             created.ResourceId,
             UpdateCreditNoteReconciliationRequest.Create(

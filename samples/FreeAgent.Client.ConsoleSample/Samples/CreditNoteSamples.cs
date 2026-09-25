@@ -103,12 +103,20 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
     private async Task MarkCreditNoteAsSentAsync(CancellationToken cancellationToken)
     {
         var draft = await CreateSampleDraftCreditNoteAsync(cancellationToken);
-        var sent = await context.Client.CreditNotes.MarkCreditNoteAsSentAsync(draft.ResourceId, cancellationToken);
 
-        SampleOutput.WriteHeader("Marked credit note as sent");
-        SampleOutput.WriteField("Id", sent.ResourceId);
-        SampleOutput.WriteField("Reference", sent.Reference);
-        SampleOutput.WriteField("Status", sent.Status);
+        try
+        {
+            var sent = await context.Client.CreditNotes.MarkCreditNoteAsSentAsync(draft.ResourceId, cancellationToken);
+
+            SampleOutput.WriteHeader("Marked credit note as sent");
+            SampleOutput.WriteField("Id", sent.ResourceId);
+            SampleOutput.WriteField("Reference", sent.Reference);
+            SampleOutput.WriteField("Status", sent.Status);
+        }
+        finally
+        {
+            await DeleteProbeCreditNoteAsync(draft.ResourceId, cancellationToken);
+        }
     }
 
     [ConsoleSample(Name = "Update credit note comments")]
@@ -116,14 +124,22 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
     private async Task UpdateCreditNoteCommentsAsync(CancellationToken cancellationToken)
     {
         var draft = await CreateSampleDraftCreditNoteAsync(cancellationToken);
-        draft.Comments = "Updated by console sample";
-        draft.OmitCreditNoteItemsFromWrite = true;
 
-        var updated = await context.Client.CreditNotes.UpdateCreditNoteAsync(draft.ResourceId, draft, cancellationToken);
+        try
+        {
+            draft.Comments = "Updated by console sample";
+            draft.OmitCreditNoteItemsFromWrite = true;
 
-        SampleOutput.WriteHeader("Updated credit note comments");
-        SampleOutput.WriteField("Id", updated.ResourceId);
-        SampleOutput.WriteField("Comments", updated.Comments);
+            var updated = await context.Client.CreditNotes.UpdateCreditNoteAsync(draft.ResourceId, draft, cancellationToken);
+
+            SampleOutput.WriteHeader("Updated credit note comments");
+            SampleOutput.WriteField("Id", updated.ResourceId);
+            SampleOutput.WriteField("Comments", updated.Comments);
+        }
+        finally
+        {
+            await DeleteProbeCreditNoteAsync(draft.ResourceId, cancellationToken);
+        }
     }
 
     [ConsoleSample(Name = "Mark credit note as draft")]
@@ -131,11 +147,19 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
     private async Task MarkCreditNoteAsDraftAsync(CancellationToken cancellationToken)
     {
         var sent = await CreateSentSampleCreditNoteAsync(cancellationToken);
-        var draft = await context.Client.CreditNotes.MarkCreditNoteAsDraftAsync(sent.ResourceId, cancellationToken);
 
-        SampleOutput.WriteHeader("Marked credit note as draft");
-        SampleOutput.WriteField("Id", draft.ResourceId);
-        SampleOutput.WriteField("Status", draft.Status);
+        try
+        {
+            var draft = await context.Client.CreditNotes.MarkCreditNoteAsDraftAsync(sent.ResourceId, cancellationToken);
+
+            SampleOutput.WriteHeader("Marked credit note as draft");
+            SampleOutput.WriteField("Id", draft.ResourceId);
+            SampleOutput.WriteField("Status", draft.Status);
+        }
+        finally
+        {
+            await DeleteProbeCreditNoteAsync(sent.ResourceId, cancellationToken);
+        }
     }
 
     [ConsoleSample(Name = "Get credit note PDF", ExcludeFromRunAll = true)]
@@ -206,6 +230,19 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
     {
         var draft = await CreateSampleDraftCreditNoteAsync(cancellationToken);
         return await context.Client.CreditNotes.MarkCreditNoteAsSentAsync(draft.ResourceId, cancellationToken);
+    }
+
+    private async Task DeleteProbeCreditNoteAsync(long creditNoteId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await context.Client.CreditNotes.DeleteCreditNoteAsync(creditNoteId, cancellationToken);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            await context.Client.CreditNotes.MarkCreditNoteAsDraftAsync(creditNoteId, cancellationToken);
+            await context.Client.CreditNotes.DeleteCreditNoteAsync(creditNoteId, cancellationToken);
+        }
     }
 
     private static string FormatCreditNoteRow(CreditNote creditNote) =>

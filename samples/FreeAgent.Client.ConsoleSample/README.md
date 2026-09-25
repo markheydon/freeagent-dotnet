@@ -91,16 +91,16 @@ dotnet run
 | Category | Examples |
 |----------|----------|
 | Company | Get company profile; list business categories; list tax timeline |
-| Contacts | List active contacts; stream all contacts; get contact detail |
-| Categories | List category sets; get category by nominal code |
-| Projects | List projects; list active projects; get project detail; list projects for contact |
-| Tasks | List tasks; list tasks for project; get task detail |
-| Timeslips | List timeslips; list unbilled timeslips; list timeslips for task; get timeslip detail |
-| Notes | List contact notes; list project notes; get note detail; create contact note; create project note; update note |
-| Users | List users; get current user; get user by ID |
+| Contacts | List active contacts; stream all contacts; get contact detail; create probe contact and delete; update contact organisation name |
+| Categories | List category sets; get category by nominal code; create/update income category and delete; create/update cost of sales category and delete; create/update admin expenses category and delete; create/update current asset category and delete; create/update liabilities category and delete; create/update equity category and delete |
+| Projects | List projects; list active projects; get project detail; list projects for contact; create probe project and delete; update project name |
+| Tasks | List tasks; list tasks for project; get task detail; create probe task and delete; update task name |
+| Timeslips | List timeslips; list unbilled timeslips; list timeslips for task; get timeslip detail; create probe timeslip and delete; create probe timeslips batch and delete; update timeslip hours; start and stop timeslip timer |
+| Notes | List contact notes; list project notes; get note detail; create contact note; create project note; update note; delete note |
+| Users | List users; get current user; get user by ID; create probe user and delete; update user last name; update current user opening mileage |
 | Email addresses | List email addresses |
 | Invoices | List invoices; stream all invoices via ListAutoPagingAsync; list invoices filtered by contact; list invoice timeline; get invoice by id; create draft invoice with one line item; update invoice comments; duplicate invoice; send invoice email (template); mark invoice as sent; mark invoice as scheduled; mark invoice as draft; mark invoice as cancelled; get invoice PDF; get default additional text; update default additional text; delete default additional text |
-| Estimates | List estimates; stream all estimates via ListAutoPagingAsync; list estimates filtered by contact; get estimate by id; create probe estimate and delete; update estimate comments; mark estimate as sent; mark estimate as draft; mark estimate as approved; mark estimate as rejected; send estimate email (template); create estimate item; update estimate item; delete estimate item; duplicate probe estimate and delete; convert estimate to invoice; get estimate PDF; get default additional text; update default additional text; delete default additional text |
+| Estimates | List estimates; stream all estimates via ListAutoPagingAsync; list estimates filtered by contact; get estimate by id; create probe estimate and delete; update estimate comments; mark estimate as sent; mark estimate as draft; mark estimate as approved; mark estimate as rejected; send estimate email (template); create estimate item; update estimate item; delete estimate item; duplicate probe estimate and delete; convert estimate to invoice; get estimate PDF; get estimate default additional text; update estimate default additional text; delete estimate default additional text |
 | Recurring invoices | List recurring invoices; stream all recurring invoices via ListAutoPagingAsync; list recurring invoices filtered by contact; get recurring invoice by id |
 | Credit notes | List credit notes; stream all credit notes via ListAutoPagingAsync; list credit notes filtered by contact; get credit note by id; create probe credit note and delete; update credit note comments; mark credit note as sent; mark credit note as draft; get credit note PDF; send credit note email (template) |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; create probe credit note reconciliation and delete; update credit note reconciliation |
