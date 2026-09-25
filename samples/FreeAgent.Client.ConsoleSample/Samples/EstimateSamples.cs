@@ -234,14 +234,26 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
     private async Task UpdateEstimateItemAsync(CancellationToken cancellationToken)
     {
         var draft = await CreateSampleDraftEstimateAsync(cancellationToken);
-        var itemId = draft.EstimateItems?.FirstOrDefault()?.ItemId;
-        if (itemId is not > 0)
+        var item = await context.Client.Estimates.CreateEstimateItemAsync(
+            draft.ResourceId,
+            new EstimateItem
+            {
+                Description = "Console sample line item to update",
+                ItemType = EstimateItemType.Services,
+                Quantity = 1,
+                Price = 25,
+                SalesTaxRate = 20,
+                SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+            },
+            cancellationToken);
+
+        if (item.ItemId is not > 0)
         {
-            SampleContext.Skip("created estimate has no line item ID");
+            SampleContext.Skip("created estimate item has no ID");
         }
 
         var updatedItem = await context.Client.Estimates.UpdateEstimateItemAsync(
-            itemId.Value,
+            item.ItemId.Value,
             new EstimateItem
             {
                 Description = "Console sample line item (updated)",

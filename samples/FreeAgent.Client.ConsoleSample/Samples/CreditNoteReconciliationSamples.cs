@@ -104,16 +104,18 @@ internal sealed class CreditNoteReconciliationSamples(SampleContext context) : I
                 datedOn: DateOnly.FromDateTime(DateTime.UtcNow)),
             cancellationToken);
 
+        var updatedGrossValue = grossValue > 1m ? grossValue - 1m : grossValue;
         var updated = await context.Client.CreditNoteReconciliations.UpdateCreditNoteReconciliationAsync(
             created.ResourceId,
             UpdateCreditNoteReconciliationRequest.Create(
-                grossValue: grossValue,
+                grossValue: updatedGrossValue,
                 datedOn: DateOnly.FromDateTime(DateTime.UtcNow)),
             cancellationToken);
 
         SampleOutput.WriteHeader("Updated credit note reconciliation");
         SampleOutput.WriteField("Id", updated.ResourceId);
-        SampleOutput.WriteField("Gross value", updated.GrossValue);
+        SampleOutput.WriteField("Original gross value", grossValue);
+        SampleOutput.WriteField("Updated gross value", updated.GrossValue);
         SampleOutput.WriteField("Dated on", updated.DatedOn);
 
         await context.Client.CreditNoteReconciliations.DeleteCreditNoteReconciliationAsync(

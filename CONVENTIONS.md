@@ -99,7 +99,6 @@ tests/
 	│   ├── Notes/
 	│   ├── Projects/
 	│   ├── Shared/
-	│   ├── StockItems/
 	│   ├── Tasks/
 	│   ├── Timeslips/
 	│   └── Users/
