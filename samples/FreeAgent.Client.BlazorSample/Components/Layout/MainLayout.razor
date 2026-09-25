@@ -160,6 +160,21 @@
                 </MudNavLink>
             </MudNavGroup>
 
+            <MudNavGroup Title="Sales catalogue" Icon="@Icons.Material.Filled.Inventory2" Expanded="@IsSalesCatalogueRoute">
+                <MudNavLink Href="/stock-items" Icon="@Icons.Material.Filled.AllInclusive">
+                    Stock items list
+                </MudNavLink>
+                <MudNavLink Href="/stock-items/detail" Icon="@Icons.Material.Filled.Visibility">
+                    Stock item detail
+                </MudNavLink>
+                <MudNavLink Href="/price-list-items" Icon="@Icons.Material.Filled.AllInclusive">
+                    Price list items list
+                </MudNavLink>
+                <MudNavLink Href="/price-list-items/detail" Icon="@Icons.Material.Filled.Edit">
+                    Price list item CRUD
+                </MudNavLink>
+            </MudNavGroup>
+
             <MudNavGroup Title="Projects and time" Icon="@Icons.Material.Filled.Work" Expanded="@IsProjectsRoute">
                 <MudNavLink Href="/projects" Icon="@Icons.Material.Filled.AllInclusive">
                     Projects list
@@ -299,6 +314,12 @@
         || CurrentPath.StartsWith("credit-notes/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("credit-note-reconciliations", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("credit-note-reconciliations/", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsSalesCatalogueRoute =>
+        CurrentPath.Equals("stock-items", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("stock-items/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("price-list-items", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("price-list-items/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsProjectsRoute =>
         CurrentPath.Equals("projects", StringComparison.OrdinalIgnoreCase)

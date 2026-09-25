@@ -73,6 +73,41 @@ public class CreditNoteModelSerializationTests
     }
 
     [Fact]
+    public void DeserializeCreditNoteItem_MapsStockItemUriLink()
+    {
+        const string json = """
+            {
+              "description": "Widget",
+              "item_type": "Stock",
+              "stock_item": "https://api.freeagent.com/v2/stock_items/3"
+            }
+            """;
+
+        var item = JsonSerializer.Deserialize<CreditNoteItem>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(item);
+        Assert.Equal(3, item!.StockItemId);
+        Assert.Null(item.StockItemResource);
+    }
+
+    [Fact]
+    public void WritePayload_RoundTripsStockItemFromUriLink()
+    {
+        var item = JsonSerializer.Deserialize<CreditNoteItem>("""
+            {
+              "description": "Widget",
+              "item_type": "Stock",
+              "stock_item": "https://api.freeagent.com/v2/stock_items/3"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+
+        var payload = CreditNoteItemWritePayload.FromCreditNoteItem(item);
+        var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"stock_item\":\"https://api.freeagent.com/v2/stock_items/3\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void WritePayload_FromCreditNote_SerialisesContactAndItems()
     {
         var creditNote = new CreditNote

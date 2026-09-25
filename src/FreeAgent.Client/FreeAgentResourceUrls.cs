@@ -110,4 +110,12 @@ public sealed class FreeAgentResourceUrls
     /// <returns>Credit note reconciliation reference.</returns>
     public CreditNoteReconciliationReference CreditNoteReconciliation(long creditNoteReconciliationId) =>
         CreditNoteReconciliationReference.ForEnvironment(_environment, creditNoteReconciliationId);
+
+    /// <summary>
+    /// Creates a stock item resource reference.
+    /// </summary>
+    /// <param name="stockItemId">Stock item identifier.</param>
+    /// <returns>Stock item reference.</returns>
+    public StockItemReference StockItem(long stockItemId) =>
+        StockItemReference.ForEnvironment(_environment, stockItemId);
 }

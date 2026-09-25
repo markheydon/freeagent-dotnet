@@ -41,7 +41,7 @@ internal sealed class InvoiceItemWritePayload
     public string? SecondSalesTaxStatus { get; set; }
 
     [JsonPropertyName("stock_item")]
-    public string? StockItem { get; set; }
+    public StockItemReference? StockItem { get; set; }
 
     [JsonPropertyName("category")]
     public CategoryReference? Category { get; set; }
@@ -71,6 +71,12 @@ internal sealed class InvoiceItemWritePayload
             project = ProjectReference.Parse(projectUri);
         }
 
+        StockItemReference? stockItem = item.StockItem;
+        if (stockItem is null && item.StockItemLink?.Uri is string stockItemUri)
+        {
+            stockItem = StockItemReference.Parse(stockItemUri);
+        }
+
         return new InvoiceItemWritePayload
         {
             Url = item.ItemId is null ? item.Url : null,
@@ -83,7 +89,7 @@ internal sealed class InvoiceItemWritePayload
             SecondSalesTaxRate = item.SecondSalesTaxRate,
             SalesTaxStatus = item.SalesTaxStatus,
             SecondSalesTaxStatus = item.SecondSalesTaxStatus,
-            StockItem = item.StockItem ?? item.StockItemUri,
+            StockItem = stockItem,
             Category = category,
             Project = project,
             Id = item.ItemId,

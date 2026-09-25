@@ -4,8 +4,10 @@ using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Notes;
+using FreeAgent.Client.Models.PriceListItems;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.RecurringInvoices;
+using FreeAgent.Client.Models.StockItems;
 using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Timeslips;
 using FreeAgent.Client.Models.Users;
@@ -255,5 +257,37 @@ internal sealed class SampleData
         }
 
         return users[0];
+    }
+
+    /// <summary>
+    /// Returns the first stock item from the stock items list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A stock item.</returns>
+    public async Task<StockItem> GetFirstStockItemAsync(CancellationToken cancellationToken = default)
+    {
+        var stockItems = await _context.Client.StockItems.ListAsync(cancellationToken: cancellationToken);
+        if (stockItems.Count == 0)
+        {
+            SampleContext.Skip("no stock items found in sandbox account");
+        }
+
+        return stockItems[0];
+    }
+
+    /// <summary>
+    /// Returns the first price list item from the price list items list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A price list item.</returns>
+    public async Task<PriceListItem> GetFirstPriceListItemAsync(CancellationToken cancellationToken = default)
+    {
+        var items = await _context.Client.PriceListItems.ListAsync(cancellationToken: cancellationToken);
+        if (items.Count == 0)
+        {
+            SampleContext.Skip("no price list items found in sandbox account");
+        }
+
+        return items[0];
     }
 }
