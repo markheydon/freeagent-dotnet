@@ -7,6 +7,7 @@ using FreeAgent.Client.Services.Estimates;
 using FreeAgent.Client.Services.Invoices;
 using FreeAgent.Client.Services.Notes;
 using FreeAgent.Client.Services.Projects;
+using FreeAgent.Client.Services.RecurringInvoices;
 using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Services.Timeslips;
 using FreeAgent.Client.Services.Users;
@@ -77,6 +78,11 @@ public sealed class FreeAgentClient : IDisposable
     public EstimateService Estimates { get; }
 
     /// <summary>
+    /// Recurring invoices API service.
+    /// </summary>
+    public RecurringInvoiceService RecurringInvoices { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -144,6 +150,7 @@ public sealed class FreeAgentClient : IDisposable
         Notes = new NoteService(_httpClient);
         Invoices = new InvoiceService(_httpClient);
         Estimates = new EstimateService(_httpClient);
+        RecurringInvoices = new RecurringInvoiceService(_httpClient);
     }
 
     /// <summary>

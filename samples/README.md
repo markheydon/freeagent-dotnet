@@ -106,6 +106,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/invoices/detail](https://localhost:5001/invoices/detail) | `GetInvoiceAsync()`, `CreateInvoiceAsync()`, `UpdateInvoiceAsync()`, `DeleteInvoiceAsync()`, transition and email methods | CRUD probes, Turpinverse seed data, progress bar |
 | [/estimates](https://localhost:5001/estimates) | `EstimateService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/date/contact/project/invoice filters |
 | [/estimates/detail](https://localhost:5001/estimates/detail) | `GetEstimateAsync()`, `CreateEstimateAsync()`, `UpdateEstimateAsync()`, `DeleteEstimateAsync()`, transition and email methods | CRUD probes, Turpinverse seed data, progress bar |
+| [/recurring-invoices](https://localhost:5001/recurring-invoices) | `RecurringInvoiceService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/contact filters (read-only API) |
+| [/recurring-invoices/detail](https://localhost:5001/recurring-invoices/detail) | `GetRecurringInvoiceAsync()` | GET probe, optional linked-resource hydration, progress bar |
 | [/tasks](https://localhost:5001/tasks) | `TaskService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/sort/project/updated_since filters |
 | [/tasks/detail](https://localhost:5001/tasks/detail) | `GetTaskAsync()`, `CreateTaskAsync()`, `UpdateTaskAsync()`, `DeleteTaskAsync()` | CRUD probes, Turpinverse seed data, progress bar |
 | [/timeslips](https://localhost:5001/timeslips) | `TimeslipService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/date/user/task/project/nested filters |

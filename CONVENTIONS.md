@@ -21,7 +21,7 @@ src/
 	├── FreeAgentClient.cs               # Main consumer entry point
 	├── FreeAgentResourceUrls.cs         # Environment-correct resource URI builders
 	├── PaginatedResponse.cs             # Public pagination result type
-	├── *GetOptions.cs                   # Single-GET hydration options (Projects, Invoices, Tasks, Timeslips, Notes)
+	├── *GetOptions.cs                   # Single-GET hydration options (Projects, Invoices, Estimates, RecurringInvoices, Tasks, Timeslips, Notes)
 	├── Infrastructure/                  # Internal plumbing - not part of the public API surface
 	│   ├── Authentication/              # OAuth token exchange/refresh client and models
 	│   ├── Configuration/               # Environment enum and URL mapping
@@ -37,7 +37,7 @@ src/
 	│   ├── Invoices/                    # Invoice models, line items, transitions, response wrappers
 	│   ├── Notes/                       # Note models and response wrappers
 	│   ├── Projects/                    # Project models, views, sort options, response wrappers
-	│   ├── RecurringInvoices/           # Recurring invoice stub models for invoice links
+	│   ├── RecurringInvoices/           # Recurring invoice models and response wrappers
 	│   ├── Shared/                      # Cross-resource primitives (ContactReference, ProjectReference, CurrencyCode)
 	│   ├── Tasks/                       # Task models and response wrappers
 	│   ├── Timeslips/                   # Timeslip models and response wrappers
@@ -52,6 +52,8 @@ src/
 		│   └── EmailAddressesService.cs
 		├── Invoices/
 		│   └── InvoiceService.cs
+		├── RecurringInvoices/
+		│   └── RecurringInvoiceService.cs
 		├── Notes/
 		│   └── NoteService.cs
 		├── Projects/
@@ -75,6 +77,7 @@ tests/
 	│   ├── Categories/
 	│   ├── Contacts/
 	│   ├── Invoices/
+	│   ├── RecurringInvoices/
 	│   ├── Notes/
 	│   ├── Projects/
 	│   ├── Shared/
@@ -89,6 +92,7 @@ tests/
 	│   ├── Contacts/
 	│   ├── EmailAddresses/
 	│   ├── Invoices/
+	│   ├── RecurringInvoices/
 	│   ├── Notes/
 	│   ├── Projects/
 	│   ├── Tasks/

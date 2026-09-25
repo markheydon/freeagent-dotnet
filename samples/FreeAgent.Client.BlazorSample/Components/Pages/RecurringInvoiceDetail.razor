@@ -1,0 +1,219 @@
+@page "/recurring-invoices/detail"
+@using FreeAgent.Client.Models.RecurringInvoices
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Recurring invoice detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Recurring invoices endpoint"
+                         Title="Get a recurring invoice"
+                         CallUnderTest="RecurringInvoiceService.GetRecurringInvoiceAsync(...)"
+                         Description="Read-only GET probe for a single recurring invoice profile, including optional linked contact and project hydration."
+                         EndpointPath="/v2/recurring_invoices/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/recurring_invoices" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick an ID from the <MudLink Href="/recurring-invoices">recurring invoices list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. The FreeAgent API documents list and get only for this resource.
+                    </MudText>
+                    <MudNumericField @bind-Value="_recurringInvoiceId" @bind-Value:after="OnRecurringInvoiceIdChanged" Label="Recurring invoice ID" Min="1" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudSwitch @bind-Value="_includeContact" Color="Color.Primary" Label="Include contact" />
+                        <MudSwitch @bind-Value="_includeProject" Color="Color.Primary" Label="Include project" />
+                    </MudStack>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                               StartIcon="@Icons.Material.Filled.CloudDownload"
+                               OnClick="GetRecurringInvoiceAsync">
+                        Get recurring invoice
+                    </MudButton>
+                </MudStack>
+
+                @if (_probe is not null && _recurringInvoice is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All RecurringInvoice model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_recurringInvoice.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_recurringInvoice.RecurringStatus?.ToString())</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Reference</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_recurringInvoice.Reference)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Frequency</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_recurringInvoice.Frequency?.ToString())</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Contact</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_recurringInvoice.ContactName ?? _recurringInvoice.Contact?.OrganisationName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Next recurs on</MudText>
+                                        <MudText Typo="Typo.subtitle1">@FormatDate(_recurringInvoice.NextRecursOn)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run <strong>Get recurring invoice</strong> to load wire-to-model diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? RecurringInvoiceIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private RecurringInvoice? _recurringInvoice;
+    private ModelProbeSnapshot? _probe;
+    private long? _recurringInvoiceId;
+    private long? _loadedRecurringInvoiceId;
+    private bool _includeContact;
+    private bool _includeProject;
+
+    protected override void OnParametersSet()
+    {
+        if (RecurringInvoiceIdFromQuery is > 0 && _recurringInvoiceId != RecurringInvoiceIdFromQuery)
+        {
+            _recurringInvoiceId = RecurringInvoiceIdFromQuery;
+            ClearLoadedState();
+            _operationMessage = $"Recurring invoice ID {_recurringInvoiceId} loaded from URL. Press Get recurring invoice to fetch diagnostics.";
+        }
+    }
+
+    private void OnRecurringInvoiceIdChanged()
+    {
+        if (_loadedRecurringInvoiceId is not null && _loadedRecurringInvoiceId != _recurringInvoiceId)
+        {
+            ClearLoadedState();
+        }
+    }
+
+    private void ClearLoadedState()
+    {
+        _recurringInvoice = null;
+        _probe = null;
+        _loadedRecurringInvoiceId = null;
+    }
+
+    private async Task GetRecurringInvoiceAsync()
+    {
+        if (_recurringInvoiceId is null or < 1)
+        {
+            _error = "Enter a recurring invoice ID.";
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+        var endpoint = $"recurring_invoices/{_recurringInvoiceId}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _recurringInvoice = await client.RecurringInvoices.GetRecurringInvoiceAsync(
+                _recurringInvoiceId.Value,
+                new RecurringInvoiceGetOptions
+                {
+                    IncludeContact = _includeContact,
+                    IncludeProject = _includeProject
+                });
+
+            _loadedRecurringInvoiceId = _recurringInvoiceId;
+            _operationMessage = $"Loaded recurring invoice {_recurringInvoiceId.Value}: {ValueOrFallback(_recurringInvoice.Reference)}";
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                endpoint);
+
+            _probe = ModelWireDiagnostics.Build(_recurringInvoice, _wireApiResponse, envelopeProperty: "recurring_invoice");
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                endpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string FormatDate(DateOnly? value) =>
+        value is null ? "-" : value.Value.ToString("yyyy-MM-dd");
+}
