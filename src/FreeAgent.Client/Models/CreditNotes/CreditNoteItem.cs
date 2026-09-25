@@ -5,6 +5,7 @@ using FreeAgent.Client.Models.Categories;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
+using FreeAgent.Client.Models.StockItems;
 
 namespace FreeAgent.Client.Models.CreditNotes;
 
@@ -89,7 +90,26 @@ public sealed class CreditNoteItem
     /// Wire representation of the stock item link.
     /// </summary>
     [JsonPropertyName("stock_item")]
-    public string? StockItemUri { get; set; }
+    [JsonInclude]
+    internal ExpandableField<StockItem>? StockItemLink { get; set; }
+
+    /// <summary>
+    /// Stock item identifier parsed from the line item response.
+    /// </summary>
+    [JsonIgnore]
+    public long? StockItemId => StockItemLink?.Id;
+
+    /// <summary>
+    /// Stock item when returned nested on the wire.
+    /// </summary>
+    [JsonIgnore]
+    public StockItem? StockItemResource => StockItemLink?.Value;
+
+    /// <summary>
+    /// Stock item to assign on create or update requests.
+    /// </summary>
+    [JsonIgnore]
+    public StockItemReference? StockItem { get; set; }
 
     /// <summary>
     /// Wire representation of the category link.
@@ -161,15 +181,6 @@ public sealed class CreditNoteItem
     /// </summary>
     [JsonIgnore]
     public int? Destroy { get; set; }
-
-    /// <summary>
-    /// Stock item URI to assign on create or update requests.
-    /// </summary>
-    /// <remarks>
-    /// Full stock item operations are not yet implemented in the SDK.
-    /// </remarks>
-    [JsonIgnore]
-    public string? StockItem { get; set; }
 
     private long? TryParseItemIdFromUrl() =>
         !string.IsNullOrWhiteSpace(Url) && FreeAgentResourceId.TryParse(Url, out var id) ? id : null;

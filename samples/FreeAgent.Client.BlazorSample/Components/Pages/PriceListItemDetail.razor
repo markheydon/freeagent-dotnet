@@ -1,0 +1,310 @@
+@page "/price-list-items/detail"
+@using FreeAgent.Client.Models.Invoices
+@using FreeAgent.Client.Models.PriceListItems
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Price list item detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Price list items endpoint"
+                         Title="Get, create, update, and delete price list items"
+                         CallUnderTest="PriceListItemsService.GetPriceListItemAsync / CreatePriceListItemAsync / UpdatePriceListItemAsync / DeletePriceListItemAsync"
+                         Description="Exercises price list item CRUD with wire-to-model diagnostics after each successful call."
+                         EndpointPath="/v2/price_list_items/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/price_list_items" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick an ID from the <MudLink Href="/price-list-items">price list items list</MudLink>, or pass <code>?id=12345</code>.
+                        <strong>Create probe item</strong> upserts by stable code <code>SDK-PROBE-PLI</code>.
+                    </MudText>
+                    <MudNumericField @bind-Value="_priceListItemId" @bind-Value:after="OnPriceListItemIdChanged" Label="Price list item ID" Min="1" />
+                    <MudTextField @bind-Value="_code" Label="Code" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudTextField @bind-Value="_description" Label="Description" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudNumericField @bind-Value="_quantity" Label="Quantity" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <MudNumericField @bind-Value="_price" Label="Price" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <MudSelect T="InvoiceItemType?"
+                               @bind-Value="_itemType"
+                               Label="Item type"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               FullWidth="true">
+                        @foreach (var itemType in Enum.GetValues<InvoiceItemType>())
+                        {
+                            <MudSelectItem Value="@itemType">@itemType</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudSelect T="PriceListItemVatStatus?"
+                               @bind-Value="_vatStatus"
+                               Label="VAT status (UK)"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               FullWidth="true"
+                               Clearable="true">
+                        @foreach (var status in Enum.GetValues<PriceListItemVatStatus>())
+                        {
+                            <MudSelectItem Value="@status">@status</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _priceListItemId is null or < 1"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetPriceListItemAsync">Get item</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateProbeItemAsync">Create probe item</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _priceListItemId is null or < 1"
+                                   OnClick="UpdatePriceListItemAsync">Update item</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _priceListItemId is null or < 1"
+                                   OnClick="DeletePriceListItemAsync">Delete item</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _item is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All PriceListItem model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_item.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_item.Code)</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Run an operation above to load price list item diagnostics.</MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private const string ProbeCode = "SDK-PROBE-PLI";
+
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? PriceListItemIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private long? _priceListItemId;
+    private PriceListItem? _item;
+    private ModelProbeSnapshot? _probe;
+
+    private string _code = ProbeCode;
+    private string _description = "SDK probe price list item";
+    private decimal _quantity = 1m;
+    private decimal _price = 9.99m;
+    private InvoiceItemType? _itemType = InvoiceItemType.Products;
+    private PriceListItemVatStatus? _vatStatus = PriceListItemVatStatus.Standard;
+
+    protected override void OnParametersSet()
+    {
+        if (PriceListItemIdFromQuery is > 0)
+        {
+            _priceListItemId = PriceListItemIdFromQuery;
+        }
+    }
+
+    private void OnPriceListItemIdChanged()
+    {
+        _item = null;
+        _probe = null;
+        _error = null;
+        _operationMessage = null;
+    }
+
+    private async Task GetPriceListItemAsync()
+    {
+        if (_priceListItemId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _item = await client.PriceListItems.GetPriceListItemAsync(_priceListItemId.Value);
+                _operationMessage = $"Loaded price list item {_item.ResourceId}.";
+            },
+            $"price_list_items/{_priceListItemId}",
+            "price_list_item");
+    }
+
+    private async Task CreateProbeItemAsync()
+    {
+        if (_itemType is null)
+        {
+            _error = "Select an item type before creating.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = await client.PriceListItems.ListAsync(sort: PriceListItemSortOptions.Code);
+                var match = existing.FirstOrDefault(item => string.Equals(item.Code, ProbeCode, StringComparison.Ordinal));
+
+                if (match is not null)
+                {
+                    _item = await client.PriceListItems.UpdatePriceListItemAsync(match.ResourceId, new UpdatePriceListItemRequest
+                    {
+                        Description = _description,
+                        Price = _price,
+                        Quantity = _quantity,
+                        ItemType = _itemType,
+                        VatStatus = _vatStatus
+                    });
+                    _priceListItemId = _item.ResourceId;
+                    _operationMessage = $"Updated existing probe item {_item.ResourceId} (code {ProbeCode}).";
+                }
+                else
+                {
+                    _item = await client.PriceListItems.CreatePriceListItemAsync(new CreatePriceListItemRequest
+                    {
+                        Code = ProbeCode,
+                        Description = _description,
+                        Quantity = _quantity,
+                        Price = _price,
+                        ItemType = _itemType.Value,
+                        VatStatus = _vatStatus
+                    });
+                    _priceListItemId = _item.ResourceId;
+                    _operationMessage = $"Created probe item {_item.ResourceId} (code {ProbeCode}).";
+                }
+            },
+            _priceListItemId is > 0 ? $"price_list_items/{_priceListItemId}" : "price_list_items",
+            "price_list_item");
+    }
+
+    private async Task UpdatePriceListItemAsync()
+    {
+        if (_priceListItemId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _item = await client.PriceListItems.UpdatePriceListItemAsync(_priceListItemId.Value, new UpdatePriceListItemRequest
+                {
+                    Code = string.IsNullOrWhiteSpace(_code) ? null : _code,
+                    Description = _description,
+                    Quantity = _quantity,
+                    Price = _price,
+                    ItemType = _itemType,
+                    VatStatus = _vatStatus
+                });
+                _operationMessage = $"Updated price list item {_item.ResourceId}.";
+            },
+            $"price_list_items/{_priceListItemId}",
+            "price_list_item");
+    }
+
+    private async Task DeletePriceListItemAsync()
+    {
+        if (_priceListItemId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.PriceListItems.DeletePriceListItemAsync(_priceListItemId.Value);
+                _item = null;
+                _probe = null;
+                _operationMessage = $"Deleted price list item {_priceListItemId}.";
+            },
+            $"price_list_items/{_priceListItemId}",
+            envelopeProperty: null);
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgent.Client.FreeAgentClient, Task> operation,
+        string diagnosticsEndpoint,
+        string? envelopeProperty)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await operation(client);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+
+            if (_item is not null && envelopeProperty is not null)
+            {
+                _probe = ModelWireDiagnostics.Build(_item, _wireApiResponse, envelopeProperty: envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

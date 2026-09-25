@@ -1,0 +1,235 @@
+@page "/price-list-items"
+@using FreeAgent.Client.Models.PriceListItems
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Price list items - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Price list items endpoint"
+                         Title="Price list items list"
+                         CallUnderTest="PriceListItemsService.ListAsync(...)"
+                         Description="Load price book entries, inspect wire-to-model mapping for any row, then jump into Price list item CRUD."
+                         EndpointPath="/v2/price_list_items?sort={sort}"
+                         DocsUrl="https://dev.freeagent.com/docs/price_list_items" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load all price list items, inspect mapping per row, then use <MudLink Href="/price-list-items/detail">Price list item CRUD</MudLink> for create, update, and delete.
+                    </MudText>
+
+                    <MudGrid Spacing="2" Class="contacts-filter-grid">
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudSelect T="string"
+                                       @bind-Value="_sort"
+                                       Label="Sort"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       FullWidth="true">
+                                <MudSelectItem Value="@PriceListItemSortOptions.CreatedAt">created_at</MudSelectItem>
+                                <MudSelectItem Value="@PriceListItemSortOptions.Code">code</MudSelectItem>
+                                <MudSelectItem Value="@PriceListItemSortOptions.UpdatedAt">updated_at</MudSelectItem>
+                                <MudSelectItem Value="@($"-{PriceListItemSortOptions.Code}")">-code</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                                       Disabled="_loading"
+                                       OnClick="LoadPriceListItemsAsync">
+                                @if (_loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Loading…</span>
+                                }
+                                else
+                                {
+                                    <span>Load price list items</span>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+
+                @if (_items is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load price list items</strong> to fetch the price book from FreeAgent.</MudText>
+                }
+
+                @if (_items is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_items.Count price list item@(_items.Count == 1 ? "" : "s") loaded
+                    </MudChip>
+
+                    @if (_items.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No price list items returned. Create a probe item from
+                            <MudLink Href="/price-list-items/detail">Price list item CRUD</MudLink>.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Code</MudTh>
+                                    <MudTh>Type</MudTh>
+                                    <MudTh>Price</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Code">@ValueOrDash(context.Code)</MudTd>
+                                    <MudTd DataLabel="Type">@context.ItemType</MudTd>
+                                    <MudTd DataLabel="Price">@context.Price</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectRowAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetCrudHref(context.Id)">
+                                                Open in CRUD
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedItem is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All PriceListItem model fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private IReadOnlyList<PriceListItem>? _items;
+    private PriceListItem? _inspectedItem;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+    private string _sort = PriceListItemSortOptions.CreatedAt;
+
+    private IReadOnlyList<PriceListItemRow> _rows => _items?
+        .Select(static (item, index) => new PriceListItemRow(
+            index,
+            item.ResourceId,
+            item.Code,
+            item.ItemType?.ToString() ?? "-",
+            item.Price?.ToString() ?? "-"))
+        .ToList() ?? [];
+
+    private async Task LoadPriceListItemsAsync()
+    {
+        _items = null;
+        _inspectedItem = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var diagnosticsEndpoint = $"price_list_items?sort={Uri.EscapeDataString(_sort)}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _items = await client.PriceListItems.ListAsync(sort: _sort);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_items is null || index < 0 || index >= _items.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedItem = _items[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "price_list_items", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, _wireApiResponse, envelopeProperty: "price_list_items");
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string GetCrudHref(long id) => $"/price-list-items/detail?id={id}";
+
+    private sealed record PriceListItemRow(int Index, long Id, string? Code, string ItemType, string Price);
+}
