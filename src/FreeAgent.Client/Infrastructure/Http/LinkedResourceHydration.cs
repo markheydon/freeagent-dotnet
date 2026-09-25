@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Notes;
 using FreeAgent.Client.Models.Projects;
@@ -84,6 +85,54 @@ internal static class LinkedResourceHydration
         }
 
         invoice.AttachProject(response.Project);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateBillingContactAsync(
+        Estimate estimate,
+        IFreeAgentRequestClient requestClient,
+        bool includeContact,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(estimate);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeContact || estimate.Contact is not null || estimate.ContactId is not long contactId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<ContactResponse>($"contacts/{contactId}", cancellationToken);
+
+        if (response.Contact is null)
+        {
+            throw new FreeAgentApiException("Contact data missing from API response");
+        }
+
+        estimate.AttachContact(response.Contact);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateProjectAsync(
+        Estimate estimate,
+        IFreeAgentRequestClient requestClient,
+        bool includeProject,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(estimate);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeProject || estimate.Project is not null || estimate.ProjectId is not long projectId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<ProjectResponse>($"projects/{projectId}", cancellationToken);
+
+        if (response.Project is null)
+        {
+            throw new FreeAgentApiException("Project data missing from API response");
+        }
+
+        estimate.AttachProject(response.Project);
     }
 
     public static async System.Threading.Tasks.Task HydrateProjectAsync(

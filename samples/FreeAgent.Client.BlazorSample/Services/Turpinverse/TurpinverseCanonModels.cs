@@ -149,6 +149,78 @@ public sealed class TurpinverseInvoiceLine
     public string? SalesOrderId { get; set; }
 }
 
+public sealed class TurpinverseQuote
+{
+    [JsonPropertyName("quoteId")]
+    public string QuoteId { get; set; } = string.Empty;
+
+    [JsonPropertyName("quoteNumber")]
+    public string QuoteNumber { get; set; } = string.Empty;
+
+    [JsonPropertyName("accountId")]
+    public string AccountId { get; set; } = string.Empty;
+
+    [JsonPropertyName("contactId")]
+    public string? ContactId { get; set; }
+
+    [JsonPropertyName("dealId")]
+    public string? DealId { get; set; }
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = string.Empty;
+
+    [JsonPropertyName("issueDate")]
+    public string IssueDate { get; set; } = string.Empty;
+
+    [JsonPropertyName("expiryDate")]
+    public string ExpiryDate { get; set; } = string.Empty;
+
+    [JsonPropertyName("currency")]
+    public string Currency { get; set; } = string.Empty;
+
+    [JsonPropertyName("subtotal")]
+    public decimal Subtotal { get; set; }
+
+    [JsonPropertyName("taxTotal")]
+    public decimal TaxTotal { get; set; }
+
+    [JsonPropertyName("total")]
+    public decimal Total { get; set; }
+
+    [JsonPropertyName("notes")]
+    public string? Notes { get; set; }
+
+    [JsonPropertyName("terms")]
+    public string? Terms { get; set; }
+
+    [JsonPropertyName("lines")]
+    public IReadOnlyList<TurpinverseQuoteLine> Lines { get; set; } = [];
+}
+
+public sealed class TurpinverseQuoteLine
+{
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = string.Empty;
+
+    [JsonPropertyName("quantity")]
+    public decimal Quantity { get; set; }
+
+    [JsonPropertyName("unitPrice")]
+    public decimal UnitPrice { get; set; }
+
+    [JsonPropertyName("taxRateId")]
+    public string? TaxRateId { get; set; }
+
+    [JsonPropertyName("lineTotal")]
+    public decimal LineTotal { get; set; }
+
+    [JsonPropertyName("productId")]
+    public string? ProductId { get; set; }
+
+    [JsonPropertyName("projectId")]
+    public string? ProjectId { get; set; }
+}
+
 public sealed class TurpinverseOrganisation
 {
     [JsonPropertyName("id")]

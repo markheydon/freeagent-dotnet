@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Notes;
 using FreeAgent.Client.Models.Projects;
@@ -168,6 +169,22 @@ internal sealed class SampleData
         if (page.Items.Count == 0)
         {
             SampleContext.Skip("no invoices found in sandbox account");
+        }
+
+        return page.Items[0];
+    }
+
+    /// <summary>
+    /// Returns the first estimate from the estimates list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An estimate.</returns>
+    public async Task<Estimate> GetFirstEstimateAsync(CancellationToken cancellationToken = default)
+    {
+        var page = await _context.Client.Estimates.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+        if (page.Items.Count == 0)
+        {
+            SampleContext.Skip("no estimates found in sandbox account");
         }
 
         return page.Items[0];

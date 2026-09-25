@@ -57,6 +57,13 @@ public sealed class FreeAgentResourceUrls
     public InvoiceReference Invoice(long invoiceId) => InvoiceReference.ForEnvironment(_environment, invoiceId);
 
     /// <summary>
+    /// Creates an estimate resource reference.
+    /// </summary>
+    /// <param name="estimateId">Estimate identifier.</param>
+    /// <returns>Estimate reference.</returns>
+    public EstimateReference Estimate(long estimateId) => EstimateReference.ForEnvironment(_environment, estimateId);
+
+    /// <summary>
     /// Creates a note resource reference.
     /// </summary>
     /// <param name="noteId">Note identifier.</param>
