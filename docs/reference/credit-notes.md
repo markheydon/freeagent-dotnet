@@ -129,7 +129,7 @@ Task<CreditNote> UpdateCreditNoteAsync(
 
 **HTTP:** `PUT /v2/credit_notes/:id`
 
-Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new CreditNoteUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items.
+Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new CreditNoteUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items. `ShowProjectName` is sent on update only when `Status` is `Draft` — FreeAgent locks `show_project_name` once a credit note leaves draft. Setting `ShowProjectName` on update without `Status` throws `ArgumentException` (populate `Status` from GET first).
 
 ---
 
@@ -227,6 +227,7 @@ Key properties:
 | `ProjectId` | `long?` | `project` | Optional project link |
 | `BankAccountId` | `long?` | `bank_account` | Optional remittance bank account |
 | `CreditNoteItems` | `List<CreditNoteItem>?` | `credit_note_items` | Nested line items |
+| `ShowProjectName` | `bool?` | `show_project_name` | Writable on create and on draft updates; omitted once the credit note leaves draft; requires `Status` on update when set |
 | `ItemId` | `long?` | `id` (line items) | Required to update or delete existing line items |
 | `CategoryNominalCode` | `string?` | `category` (line items) | Category link on line items |
 | `RefundedValue` | `decimal?` | `refunded_value` | Read-only |

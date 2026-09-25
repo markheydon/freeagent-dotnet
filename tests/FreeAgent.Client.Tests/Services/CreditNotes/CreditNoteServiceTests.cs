@@ -313,6 +313,234 @@ public class CreditNoteServiceTests
     }
 
     [Fact]
+    public async Task CreateCreditNoteAsync_IncludesShowProjectNameWhenSet()
+    {
+        string? postedJson = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            postedJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "credit_note": {
+                    "url": "https://api.freeagent.com/v2/credit_notes/3",
+                    "status": "Draft"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CreditNotesService(client);
+
+        await service.CreateCreditNoteAsync(new CreditNote
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 0,
+            ShowProjectName = true,
+            CreditNoteItems =
+            [
+                new CreditNoteItem
+                {
+                    Description = "Refund",
+                    ItemType = InvoiceItemType.Hours,
+                    Quantity = 1,
+                    Price = -100
+                }
+            ]
+        });
+
+        Assert.NotNull(postedJson);
+        Assert.Contains("\"show_project_name\":true", postedJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task UpdateCreditNoteAsync_NonDraft_DoesNotIncludeShowProjectName()
+    {
+        string? postedJson = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            postedJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "credit_note": {
+                    "url": "https://api.freeagent.com/v2/credit_notes/5",
+                    "status": "Open"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CreditNotesService(client);
+
+        await service.UpdateCreditNoteAsync(5, new CreditNote
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 0,
+            Status = CreditNoteStatus.Open,
+            ShowProjectName = true,
+            Comments = "Updated"
+        }, new CreditNoteUpdateOptions { OmitLineItems = true });
+
+        Assert.NotNull(postedJson);
+        Assert.DoesNotContain("\"show_project_name\"", postedJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task UpdateCreditNoteAsync_ShowProjectNameWithoutStatus_Throws()
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CreditNotesService(client);
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => service.UpdateCreditNoteAsync(5, new CreditNote
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 0,
+            ShowProjectName = true,
+            Comments = "Updated"
+        }, new CreditNoteUpdateOptions { OmitLineItems = true }));
+
+        Assert.Equal("creditNote", exception.ParamName);
+    }
+
+    [Fact]
+    public async Task UpdateCreditNoteAsync_Draft_IncludesShowProjectNameWhenSet()
+    {
+        string? postedJson = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            postedJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "credit_note": {
+                    "url": "https://api.freeagent.com/v2/credit_notes/5",
+                    "status": "Draft"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CreditNotesService(client);
+
+        await service.UpdateCreditNoteAsync(5, new CreditNote
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 0,
+            Status = CreditNoteStatus.Draft,
+            ShowProjectName = true,
+            Comments = "Updated"
+        }, new CreditNoteUpdateOptions { OmitLineItems = true });
+
+        Assert.NotNull(postedJson);
+        Assert.Contains("\"show_project_name\":true", postedJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task UpdateCreditNoteAsync_Draft_IncludesShowProjectNameFalseWhenSet()
+    {
+        string? postedJson = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            postedJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "credit_note": {
+                    "url": "https://api.freeagent.com/v2/credit_notes/5",
+                    "status": "Draft"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CreditNotesService(client);
+
+        await service.UpdateCreditNoteAsync(5, new CreditNote
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 0,
+            Status = CreditNoteStatus.Draft,
+            ShowProjectName = false,
+            Comments = "Updated"
+        }, new CreditNoteUpdateOptions { OmitLineItems = true });
+
+        Assert.NotNull(postedJson);
+        Assert.Contains("\"show_project_name\":false", postedJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task CreateCreditNoteAsync_IncludesShowProjectNameFalseWhenSet()
+    {
+        string? postedJson = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            postedJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "credit_note": {
+                    "url": "https://api.freeagent.com/v2/credit_notes/3",
+                    "status": "Draft"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CreditNotesService(client);
+
+        await service.CreateCreditNoteAsync(new CreditNote
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 0,
+            ShowProjectName = false,
+            CreditNoteItems =
+            [
+                new CreditNoteItem
+                {
+                    Description = "Refund",
+                    ItemType = InvoiceItemType.Hours,
+                    Quantity = 1,
+                    Price = -100
+                }
+            ]
+        });
+
+        Assert.NotNull(postedJson);
+        Assert.Contains("\"show_project_name\":false", postedJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task UpdateCreditNoteAsync_PostsItemUpdateAndDestroy()
     {
         string? postedJson = null;

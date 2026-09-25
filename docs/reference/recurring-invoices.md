@@ -110,6 +110,7 @@ Read model combining invoice attributes with scheduling fields:
 | `Project`, `ProjectId` | | Optional project link |
 | `InvoiceItems` | `List<InvoiceItem>?` | Line items (typically on GET by id) |
 | `PaymentMethods` | `InvoicePaymentMethods?` | Online payment flags |
+| `ShowProjectName` | `bool?` | Read-only today; when create/update are added, apply the same draft-only write rules as invoices (gate on `RecurringStatus` `Draft`) |
 
 See also shared invoice read fields (`Reference`, `DatedOn`, `Currency`, `NetValue`, `TotalValue`, and others) on the type.
 

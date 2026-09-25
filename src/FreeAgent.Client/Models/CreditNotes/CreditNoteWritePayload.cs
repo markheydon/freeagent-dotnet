@@ -81,7 +81,8 @@ internal sealed class CreditNoteWritePayload
         CreditNote creditNote,
         FreeAgentEnvironment environment,
         bool omitLineItems = false,
-        LinkedResourceWriteOptions linkOptions = default)
+        LinkedResourceWriteOptions linkOptions = default,
+        bool includeShowProjectName = false)
     {
         ArgumentNullException.ThrowIfNull(creditNote);
 
@@ -122,7 +123,7 @@ internal sealed class CreditNoteWritePayload
                 creditNote.BankAccountLinkId,
                 linkOptions.OmitBankAccount),
             OmitHeader = creditNote.OmitHeader,
-            ShowProjectName = creditNote.ShowProjectName,
+            ShowProjectName = includeShowProjectName ? creditNote.ShowProjectName : null,
             EcStatus = creditNote.EcStatus,
             PlaceOfSupply = creditNote.PlaceOfSupply,
             CreditNoteItems = items

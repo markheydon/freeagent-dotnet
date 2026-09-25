@@ -104,7 +104,8 @@ internal sealed class InvoiceWritePayload
         Invoice invoice,
         FreeAgentEnvironment environment,
         bool omitLineItems = false,
-        LinkedResourceWriteOptions linkOptions = default)
+        LinkedResourceWriteOptions linkOptions = default,
+        bool includeShowProjectName = false)
     {
         ArgumentNullException.ThrowIfNull(invoice);
 
@@ -151,7 +152,7 @@ internal sealed class InvoiceWritePayload
                 invoice.BankAccountLinkId,
                 linkOptions.OmitBankAccount),
             OmitHeader = invoice.OmitHeader,
-            ShowProjectName = invoice.ShowProjectName,
+            ShowProjectName = includeShowProjectName ? invoice.ShowProjectName : null,
             AlwaysShowBicAndIban = invoice.AlwaysShowBicAndIban,
             EcStatus = invoice.EcStatus,
             PlaceOfSupply = invoice.PlaceOfSupply,

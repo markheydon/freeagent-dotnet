@@ -222,6 +222,9 @@ public sealed class RecurringInvoice : IFreeAgentResource
 
     /// <summary>
     /// Whether to display the project name in the Other Information section.
+    /// Read-only today. When create/update operations are added to the SDK, apply the same
+    /// draft-only write rules as <see cref="Invoices.Invoice.ShowProjectName"/> (gate on
+    /// <see cref="RecurringStatus"/> <c>Draft</c>).
     /// </summary>
     [JsonPropertyName("show_project_name")]
     public bool? ShowProjectName { get; set; }
