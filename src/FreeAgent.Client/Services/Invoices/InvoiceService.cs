@@ -433,7 +433,7 @@ public sealed class InvoiceService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(invoiceId);
 
-        var response = await _requestClient.PutAsync<CreditNoteResponse>(
+        var response = await _requestClient.PutAsync<Models.CreditNotes.CreditNoteResponse>(
             $"invoices/{invoiceId}/transitions/convert_to_credit_note",
             EmptyJsonContent,
             cancellationToken);

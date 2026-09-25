@@ -6,6 +6,9 @@ namespace FreeAgent.Client.Models.Invoices;
 /// <summary>
 /// Response envelope when an invoice is converted to a credit note.
 /// </summary>
+/// <remarks>
+/// Prefer <see cref="CreditNotes.CreditNoteResponse"/> for new code. This type remains for backwards compatibility.
+/// </remarks>
 public sealed class CreditNoteResponse
 {
     /// <summary>

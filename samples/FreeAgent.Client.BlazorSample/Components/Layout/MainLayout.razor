@@ -145,6 +145,15 @@
                 </MudNavLink>
             </MudNavGroup>
 
+            <MudNavGroup Title="Credit notes" Icon="@Icons.Material.Filled.Reply" Expanded="@IsCreditNotesRoute">
+                <MudNavLink Href="/credit-notes" Icon="@Icons.Material.Filled.AllInclusive">
+                    Credit notes list
+                </MudNavLink>
+                <MudNavLink Href="/credit-notes/detail" Icon="@Icons.Material.Filled.EditNote">
+                    Credit note CRUD
+                </MudNavLink>
+            </MudNavGroup>
+
             <MudNavGroup Title="Projects and time" Icon="@Icons.Material.Filled.Work" Expanded="@IsProjectsRoute">
                 <MudNavLink Href="/projects" Icon="@Icons.Material.Filled.AllInclusive">
                     Projects list
@@ -278,6 +287,10 @@
     private bool IsRecurringInvoicesRoute =>
         CurrentPath.Equals("recurring-invoices", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("recurring-invoices/", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsCreditNotesRoute =>
+        CurrentPath.Equals("credit-notes", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("credit-notes/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsProjectsRoute =>
         CurrentPath.Equals("projects", StringComparison.OrdinalIgnoreCase)

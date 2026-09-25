@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Notes;
@@ -134,6 +135,54 @@ internal static class LinkedResourceHydration
         }
 
         estimate.AttachProject(response.Project);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateBillingContactAsync(
+        CreditNote creditNote,
+        IFreeAgentRequestClient requestClient,
+        bool includeContact,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(creditNote);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeContact || creditNote.Contact is not null || creditNote.ContactId is not long contactId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<ContactResponse>($"contacts/{contactId}", cancellationToken);
+
+        if (response.Contact is null)
+        {
+            throw new FreeAgentApiException("Contact data missing from API response");
+        }
+
+        creditNote.AttachContact(response.Contact);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateProjectAsync(
+        CreditNote creditNote,
+        IFreeAgentRequestClient requestClient,
+        bool includeProject,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(creditNote);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeProject || creditNote.Project is not null || creditNote.ProjectId is not long projectId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<ProjectResponse>($"projects/{projectId}", cancellationToken);
+
+        if (response.Project is null)
+        {
+            throw new FreeAgentApiException("Project data missing from API response");
+        }
+
+        creditNote.AttachProject(response.Project);
     }
 
     public static async System.Threading.Tasks.Task HydrateBillingContactAsync(

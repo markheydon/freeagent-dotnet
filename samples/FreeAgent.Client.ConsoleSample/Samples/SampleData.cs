@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Notes;
@@ -186,6 +187,22 @@ internal sealed class SampleData
         if (page.Items.Count == 0)
         {
             SampleContext.Skip("no estimates found in sandbox account");
+        }
+
+        return page.Items[0];
+    }
+
+    /// <summary>
+    /// Returns the first credit note from the credit notes list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A credit note.</returns>
+    public async Task<CreditNote> GetFirstCreditNoteAsync(CancellationToken cancellationToken = default)
+    {
+        var page = await _context.Client.CreditNotes.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+        if (page.Items.Count == 0)
+        {
+            SampleContext.Skip("no credit notes found in sandbox account");
         }
 
         return page.Items[0];

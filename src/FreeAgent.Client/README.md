@@ -10,7 +10,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - Rate limiting and bounded retries for transient failures.
 - Typed exception model (`FreeAgentApiException`, `FreeAgentRateLimitException`, …).
 - Pagination (single-page and auto-pagination).
-- Company, Contacts, Categories, Users, Projects, Invoices, Estimates, Recurring invoices, Tasks, Timeslips, Notes, and Email addresses API support.
+- Company, Contacts, Categories, Users, Projects, Invoices, Estimates, Recurring invoices, Credit notes, Tasks, Timeslips, Notes, and Email addresses API support.
 - `CurrencyCode` enum for documented ISO 4217 codes (reference type; not a REST resource).
 - Targets .NET 8.0 and .NET 10.0.
 - Fully async/await with XML documentation.
@@ -112,6 +112,14 @@ using FreeAgent.Client.Models.RecurringInvoices;
 var recurringPage = await client.RecurringInvoices.ListAsync(
     view: RecurringInvoiceViews.Active,
     contactId: 42);
+
+// List credit notes with nested line items
+using FreeAgent.Client.Models.CreditNotes;
+
+var creditNotesPage = await client.CreditNotes.ListAsync(
+    view: CreditNoteViews.Open,
+    contactId: 42,
+    nestedCreditNoteItems: true);
 
 // Add a note to a contact
 using FreeAgent.Client.Models.Notes;
