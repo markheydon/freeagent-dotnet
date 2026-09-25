@@ -49,6 +49,23 @@ public class InvoiceModelSerializationTests
     }
 
     [Fact]
+    public void DeserializeInvoice_MapsRecurringInvoiceUriLinkWithoutExpandingNestedObject()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/invoices/9",
+              "recurring_invoice": "https://api.freeagent.com/v2/recurring_invoices/123"
+            }
+            """;
+
+        var invoice = JsonSerializer.Deserialize<Invoice>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(invoice);
+        Assert.Equal(123, invoice!.RecurringInvoiceId);
+        Assert.Null(invoice.RecurringInvoice);
+    }
+
+    [Fact]
     public void DeserializeInvoiceItem_MapsItemIdFromUrlWhenIdOmitted()
     {
         const string json = """

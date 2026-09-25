@@ -80,6 +80,25 @@ public class RecurringInvoiceServiceTests
     }
 
     [Fact]
+    public async Task ListAsync_IncludesContactReferenceFilter()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Contains("contact=https%3A%2F%2Fapi.freeagent.com%2Fv2%2Fcontacts%2F3", request.RequestUri!.Query, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{ "recurring_invoices": [] }""")
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new RecurringInvoiceService(client);
+
+        await service.ListAsync(contact: ContactReference.Parse("https://api.freeagent.com/v2/contacts/3"));
+    }
+
+    [Fact]
     public async Task ListAsync_ContactAndContactId_Throws()
     {
         using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
@@ -160,6 +179,21 @@ public class RecurringInvoiceServiceTests
         Assert.Equal(new DateOnly(2012, 5, 16), recurringInvoice.RecurringEndDate);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public async Task GetRecurringInvoiceAsync_InvalidId_Throws(long recurringInvoiceId)
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new RecurringInvoiceService(client);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.GetRecurringInvoiceAsync(recurringInvoiceId));
+    }
+
     [Fact]
     public async Task GetRecurringInvoiceAsync_MissingPayload_Throws()
     {
@@ -173,6 +207,76 @@ public class RecurringInvoiceServiceTests
         var service = new RecurringInvoiceService(client);
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetRecurringInvoiceAsync(1));
+    }
+
+    [Fact]
+    public async Task GetRecurringInvoiceAsync_WithoutHydration_MakesSingleRequest()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.EndsWith("/recurring_invoices/5", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "recurring_invoice": {
+                    "url": "https://api.freeagent.com/v2/recurring_invoices/5",
+                    "contact": "https://api.freeagent.com/v2/contacts/2",
+                    "project": "https://api.freeagent.com/v2/projects/3"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new RecurringInvoiceService(client);
+
+        var recurringInvoice = await service.GetRecurringInvoiceAsync(5);
+
+        Assert.Equal(2, recurringInvoice.ContactId);
+        Assert.Equal(3, recurringInvoice.ProjectId);
+        Assert.Null(recurringInvoice.Contact);
+        Assert.Null(recurringInvoice.Project);
+    }
+
+    [Fact]
+    public async Task GetRecurringInvoiceAsync_SkipsHydrationWhenLinkedResourcesAlreadyExpanded()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.EndsWith("/recurring_invoices/5", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "recurring_invoice": {
+                    "url": "https://api.freeagent.com/v2/recurring_invoices/5",
+                    "contact": {
+                      "url": "https://api.freeagent.com/v2/contacts/2",
+                      "organisation_name": "Example Ltd"
+                    },
+                    "project": {
+                      "url": "https://api.freeagent.com/v2/projects/3",
+                      "name": "Example project"
+                    }
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new RecurringInvoiceService(client);
+
+        var recurringInvoice = await service.GetRecurringInvoiceAsync(
+            5,
+            new RecurringInvoiceGetOptions { IncludeContact = true, IncludeProject = true });
+
+        Assert.Equal("Example Ltd", recurringInvoice.Contact?.OrganisationName);
+        Assert.Equal("Example project", recurringInvoice.Project?.Name);
     }
 
     [Fact]
