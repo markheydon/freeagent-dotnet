@@ -120,7 +120,8 @@ jobs:
 
       - name: Skip sandbox smoke
         if: steps.policy.outputs.mode == 'skip'
-        run: echo "Skipping console smoke: FREEAGENT_REFRESH_TOKEN not configured"
+        run: |
+          echo "Skipping console smoke - FREEAGENT_REFRESH_TOKEN not configured"
 
       - name: Refresh sandbox access token
         if: steps.policy.outputs.mode == 'run'
