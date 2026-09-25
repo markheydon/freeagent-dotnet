@@ -106,7 +106,13 @@ Canon `Paid` invoices are seeded as sent/open only; recording bank payments is o
 
 ### Known smoke failures (tracked separately)
 
-The **Console Sample Smoke** job may still fail on `--run-all` examples tracked in open issues:
+The **Console Sample Smoke** job may still fail on tracked open issues:
+
+**Turpinverse seed (`--seed-turpinverse`):**
+
+- [#143](https://github.com/markheydon/freeagent-dotnet/issues/143) — invoice upsert returns `"show_project_name is locked and cannot be changed"` (blocks `--run-all` from starting)
+
+**Console sample examples (`--run-all`):**
 
 - [#139](https://github.com/markheydon/freeagent-dotnet/issues/139) — invoice "mark as scheduled" sample uses an invalid starting state
 
