@@ -254,7 +254,10 @@ public sealed class InvoiceService
 
         var content = FreeAgentJsonSerializer.CreateContent(new InvoiceRequest
         {
-            Invoice = InvoiceWritePayload.FromInvoice(invoice, _requestClient.Environment)
+            Invoice = InvoiceWritePayload.FromInvoice(
+                invoice,
+                _requestClient.Environment,
+                includeShowProjectName: true)
         });
 
         var response = await _requestClient.PostAsync<InvoiceResponse>("invoices", content, cancellationToken);
@@ -298,6 +301,10 @@ public sealed class InvoiceService
     /// <param name="options">Optional update behaviour</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated invoice</returns>
+    /// <remarks>
+    /// <see cref="Invoice.ShowProjectName"/> is not sent on update. FreeAgent locks
+    /// <c>show_project_name</c> once an invoice leaves draft; set it on create instead.
+    /// </remarks>
     public async Task<Invoice> UpdateInvoiceAsync(
         long invoiceId,
         Invoice invoice,

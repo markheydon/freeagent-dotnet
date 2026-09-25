@@ -599,6 +599,89 @@ public class InvoiceServiceTests
     }
 
     [Fact]
+    public async Task UpdateInvoiceAsync_DoesNotIncludeShowProjectName()
+    {
+        string? postedJson = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            postedJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/4",
+                    "comments": "Updated"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await service.UpdateInvoiceAsync(4, new Invoice
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 14,
+            ShowProjectName = true,
+            Comments = "Updated"
+        }, new InvoiceUpdateOptions { OmitLineItems = true });
+
+        Assert.NotNull(postedJson);
+        Assert.DoesNotContain("\"show_project_name\"", postedJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task CreateInvoiceAsync_IncludesShowProjectNameWhenSet()
+    {
+        string? postedJson = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            postedJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/3",
+                    "status": "Draft"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await service.CreateInvoiceAsync(new Invoice
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 14,
+            ShowProjectName = true,
+            InvoiceItems =
+            [
+                new InvoiceItem
+                {
+                    Description = "Consulting",
+                    ItemType = InvoiceItemType.Hours,
+                    Quantity = 2,
+                    Price = 100
+                }
+            ]
+        });
+
+        Assert.NotNull(postedJson);
+        Assert.Contains("\"show_project_name\":true", postedJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task DeleteInvoiceAsync_DeletesEndpoint()
     {
         var handler = new QueueHttpMessageHandler(request =>

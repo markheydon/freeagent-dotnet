@@ -182,6 +182,53 @@ public class InvoiceModelSerializationTests
     }
 
     [Fact]
+    public void WritePayload_IncludeShowProjectName_SerialisesShowProjectName()
+    {
+        var invoice = new Invoice
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 14,
+            ShowProjectName = true
+        };
+
+        var payload = InvoiceWritePayload.FromInvoice(
+            invoice,
+            FreeAgentEnvironment.Production,
+            includeShowProjectName: true);
+
+        Assert.True(payload.ShowProjectName);
+
+        var json = JsonSerializer.Serialize(
+            new InvoiceRequest { Invoice = payload },
+            FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"show_project_name\":true", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_ExcludeShowProjectName_OmitsShowProjectName()
+    {
+        var invoice = new Invoice
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 14,
+            ShowProjectName = true
+        };
+
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
+
+        Assert.Null(payload.ShowProjectName);
+
+        var json = JsonSerializer.Serialize(
+            new InvoiceRequest { Invoice = payload },
+            FreeAgentJsonSerializer.Options);
+
+        Assert.DoesNotContain("\"show_project_name\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void WritePayload_OmitLineItems_ExcludesLineItems()
     {
         var invoice = new Invoice
