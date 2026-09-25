@@ -108,8 +108,8 @@ using FreeAgent.Client.Models.CreditNoteReconciliations;
 var created = await client.CreditNoteReconciliations.CreateCreditNoteReconciliationAsync(
     CreateCreditNoteReconciliationRequest.Create(
         grossValue: 100m,
-        invoice: client.Urls.Invoice(1),
-        creditNote: client.Urls.CreditNote(2),
+        invoiceId: 1,
+        creditNoteId: 2,
         datedOn: new DateOnly(2024, 3, 18)));
 ```
 
@@ -184,7 +184,7 @@ Key properties:
 
 ## Write requests
 
-`CreateCreditNoteReconciliationRequest.Create(...)` requires `grossValue`, `invoice`, and `creditNote`. Use `client.Urls.Invoice(id)` and `client.Urls.CreditNote(id)` to build references.
+`CreateCreditNoteReconciliationRequest.Create(...)` requires `grossValue`, `invoiceId`, and `creditNoteId`.
 
 `UpdateCreditNoteReconciliationRequest.Create(...)` accepts optional fields; only supplied values are serialised.
 

@@ -12,10 +12,12 @@ namespace FreeAgent.Client.Models.CreditNotes;
 internal sealed class CreditNoteWritePayload
 {
     [JsonPropertyName("contact")]
-    public ContactReference? Contact { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ContactReference>))]
+    public WriteLink<ContactReference>? Contact { get; set; }
 
     [JsonPropertyName("project")]
-    public ProjectReference? Project { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ProjectReference>))]
+    public WriteLink<ProjectReference>? Project { get; set; }
 
     [JsonPropertyName("property")]
     public string? Property { get; set; }
@@ -57,7 +59,8 @@ internal sealed class CreditNoteWritePayload
     public string? PoReference { get; set; }
 
     [JsonPropertyName("bank_account")]
-    public BankAccountReference? BankAccount { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<BankAccountReference>))]
+    public WriteLink<BankAccountReference>? BankAccount { get; set; }
 
     [JsonPropertyName("omit_header")]
     public bool? OmitHeader { get; set; }
@@ -77,7 +80,8 @@ internal sealed class CreditNoteWritePayload
     public static CreditNoteWritePayload FromCreditNote(
         CreditNote creditNote,
         FreeAgentEnvironment environment,
-        bool omitLineItems = false)
+        bool omitLineItems = false,
+        LinkedResourceWriteOptions linkOptions = default)
     {
         ArgumentNullException.ThrowIfNull(creditNote);
 
@@ -89,8 +93,16 @@ internal sealed class CreditNoteWritePayload
 
         return new CreditNoteWritePayload
         {
-            Contact = LinkedResourceWriteMapper.ToContactReference(environment, creditNote.ContactId),
-            Project = LinkedResourceWriteMapper.ToProjectReference(environment, creditNote.ProjectId),
+            Contact = LinkedResourceWriteMapper.ResolveContactReference(
+                environment,
+                creditNote.ContactIdBacking,
+                creditNote.ContactLinkId,
+                linkOptions.OmitContact),
+            Project = LinkedResourceWriteMapper.ResolveProjectReference(
+                environment,
+                creditNote.ProjectIdBacking,
+                creditNote.ProjectLinkId,
+                linkOptions.OmitProject),
             Property = creditNote.PropertyUri,
             Reference = creditNote.Reference,
             DatedOn = creditNote.DatedOn,
@@ -104,7 +116,11 @@ internal sealed class CreditNoteWritePayload
             ClientContactName = creditNote.ClientContactName,
             PaymentTerms = creditNote.PaymentTerms,
             PoReference = creditNote.PoReference,
-            BankAccount = LinkedResourceWriteMapper.ToBankAccountReference(environment, creditNote.BankAccountId),
+            BankAccount = LinkedResourceWriteMapper.ResolveBankAccountReference(
+                environment,
+                creditNote.BankAccountIdBacking,
+                creditNote.BankAccountLinkId,
+                linkOptions.OmitBankAccount),
             OmitHeader = creditNote.OmitHeader,
             ShowProjectName = creditNote.ShowProjectName,
             EcStatus = creditNote.EcStatus,

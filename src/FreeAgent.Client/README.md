@@ -91,7 +91,7 @@ using FreeAgent.Client.Models.Timeslips;
 
 await client.Timeslips.CreateTimeslipAsync(new Timeslip
 {
-    ProjectTaskId = projectTaskId,
+    ProjectTaskId = taskId,
     ProjectId = projectId,
     UserId = 1,
     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),

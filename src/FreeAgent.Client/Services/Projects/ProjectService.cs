@@ -209,16 +209,24 @@ public sealed class ProjectService
     /// </summary>
     /// <param name="projectId">Project identifier from the resource URL</param>
     /// <param name="project">Project attributes to update</param>
+    /// <param name="options">Optional update behaviour</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated project</returns>
-    public async Task<Project> UpdateProjectAsync(long projectId, Project project, CancellationToken cancellationToken = default)
+    public async Task<Project> UpdateProjectAsync(
+        long projectId,
+        Project project,
+        ProjectUpdateOptions? options = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(projectId);
         ArgumentNullException.ThrowIfNull(project);
 
         var content = FreeAgentJsonSerializer.CreateContent(new ProjectRequest
         {
-            Project = ProjectWritePayload.FromProject(project, _requestClient.Environment)
+            Project = ProjectWritePayload.FromProject(
+                project,
+                _requestClient.Environment,
+                LinkedResourceWriteOptions.FromProjectUpdate(options))
         });
         var response = await _requestClient.PutAsync<ProjectResponse>($"projects/{projectId}", content, cancellationToken);
 

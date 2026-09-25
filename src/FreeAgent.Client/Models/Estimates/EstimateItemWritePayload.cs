@@ -43,7 +43,8 @@ internal sealed class EstimateItemWritePayload
     public string? SecondSalesTaxStatus { get; set; }
 
     [JsonPropertyName("category")]
-    public CategoryReference? Category { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<CategoryReference>))]
+    public WriteLink<CategoryReference>? Category { get; set; }
 
     [JsonPropertyName("id")]
     public long? Id { get; set; }
@@ -67,7 +68,10 @@ internal sealed class EstimateItemWritePayload
             SecondSalesTaxRate = item.SecondSalesTaxRate,
             SalesTaxStatus = item.SalesTaxStatus,
             SecondSalesTaxStatus = item.SecondSalesTaxStatus,
-            Category = LinkedResourceWriteMapper.ToCategoryReference(environment, item.CategoryNominalCode),
+            Category = LinkedResourceWriteMapper.ResolveCategoryReference(
+                environment,
+                item.CategoryNominalCodeBacking,
+                item.CategoryLinkNominalCode),
             Id = item.ItemId,
             Destroy = item.Destroy
         };

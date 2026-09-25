@@ -155,6 +155,11 @@ public sealed class EstimateItem
     [JsonIgnore]
     public int? Destroy { get; set; }
 
+    internal SettableLinkValue CategoryNominalCodeBacking => _categoryNominalCode;
+
+    internal string? CategoryLinkNominalCode =>
+        CategoryLink?.Uri is string uri ? CategoryReference.ExtractNominalCode(uri) : null;
+
     private long? TryParseItemIdFromUrl() =>
         !string.IsNullOrWhiteSpace(Url) && FreeAgentResourceId.TryParse(Url, out var id) ? id : null;
 }

@@ -52,6 +52,10 @@ public class Project : IFreeAgentResource
     [JsonPropertyName("contact_name")]
     public string? ContactName { get; set; }
 
+    internal SettableLinkId ContactIdBacking => _contactId;
+
+    internal long? ContactLinkId => ContactLink?.Id;
+
     /// <summary>
     /// Attaches a hydrated billing contact to this project.
     /// </summary>

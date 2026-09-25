@@ -294,7 +294,8 @@ public sealed class CreditNotesService
             CreditNote = CreditNoteWritePayload.FromCreditNote(
                 creditNote,
                 _requestClient.Environment,
-                options?.OmitLineItems == true)
+                options?.OmitLineItems == true,
+                LinkedResourceWriteOptions.FromCreditNoteUpdate(options))
         });
 
         var response = await _requestClient.PutAsync<CreditNoteResponse>(

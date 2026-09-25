@@ -208,6 +208,9 @@ Prefix with `-` for descending order.
 | Property | Type | Purpose |
 |----------|------|---------|
 | `OmitLineItems` | `bool` | Exclude line items from the update payload |
+| `OmitContact` | `bool` | Exclude the contact link from the update payload |
+| `OmitProject` | `bool` | Exclude the project link from the update payload |
+| `OmitBankAccount` | `bool` | Exclude the bank account link from the update payload |
 
 ## Credit note model
 

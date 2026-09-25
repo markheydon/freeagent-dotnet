@@ -11,10 +11,12 @@ namespace FreeAgent.Client.Models.Invoices;
 internal sealed class InvoiceWritePayload
 {
     [JsonPropertyName("contact")]
-    public ContactReference? Contact { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ContactReference>))]
+    public WriteLink<ContactReference>? Contact { get; set; }
 
     [JsonPropertyName("project")]
-    public ProjectReference? Project { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ProjectReference>))]
+    public WriteLink<ProjectReference>? Project { get; set; }
 
     [JsonPropertyName("property")]
     public string? Property { get; set; }
@@ -74,7 +76,8 @@ internal sealed class InvoiceWritePayload
     public string? PoReference { get; set; }
 
     [JsonPropertyName("bank_account")]
-    public BankAccountReference? BankAccount { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<BankAccountReference>))]
+    public WriteLink<BankAccountReference>? BankAccount { get; set; }
 
     [JsonPropertyName("omit_header")]
     public bool? OmitHeader { get; set; }
@@ -100,7 +103,8 @@ internal sealed class InvoiceWritePayload
     public static InvoiceWritePayload FromInvoice(
         Invoice invoice,
         FreeAgentEnvironment environment,
-        bool omitLineItems = false)
+        bool omitLineItems = false,
+        LinkedResourceWriteOptions linkOptions = default)
     {
         ArgumentNullException.ThrowIfNull(invoice);
 
@@ -112,8 +116,16 @@ internal sealed class InvoiceWritePayload
 
         return new InvoiceWritePayload
         {
-            Contact = LinkedResourceWriteMapper.ToContactReference(environment, invoice.ContactId),
-            Project = LinkedResourceWriteMapper.ToProjectReference(environment, invoice.ProjectId),
+            Contact = LinkedResourceWriteMapper.ResolveContactReference(
+                environment,
+                invoice.ContactIdBacking,
+                invoice.ContactLinkId,
+                linkOptions.OmitContact),
+            Project = LinkedResourceWriteMapper.ResolveProjectReference(
+                environment,
+                invoice.ProjectIdBacking,
+                invoice.ProjectLinkId,
+                linkOptions.OmitProject),
             Property = invoice.PropertyUri,
             IncludeTimeslips = invoice.IncludeTimeslips,
             IncludeExpenses = invoice.IncludeExpenses,
@@ -133,7 +145,11 @@ internal sealed class InvoiceWritePayload
             ClientContactName = invoice.ClientContactName,
             PaymentTerms = invoice.PaymentTerms,
             PoReference = invoice.PoReference,
-            BankAccount = LinkedResourceWriteMapper.ToBankAccountReference(environment, invoice.BankAccountId),
+            BankAccount = LinkedResourceWriteMapper.ResolveBankAccountReference(
+                environment,
+                invoice.BankAccountIdBacking,
+                invoice.BankAccountLinkId,
+                linkOptions.OmitBankAccount),
             OmitHeader = invoice.OmitHeader,
             ShowProjectName = invoice.ShowProjectName,
             AlwaysShowBicAndIban = invoice.AlwaysShowBicAndIban,

@@ -84,7 +84,10 @@ internal sealed class ProjectSamples(SampleContext context) : IConsoleSampleProv
         var created = await CreateSampleProjectAsync(cancellationToken);
         created.Name = $"{created.Name} (updated)";
 
-        var updated = await context.Client.Projects.UpdateProjectAsync(created.ResourceId, created, cancellationToken);
+        var updated = await context.Client.Projects.UpdateProjectAsync(
+            created.ResourceId,
+            created,
+            cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader("Updated project name");
         SampleOutput.WriteField("Id", updated.ResourceId);

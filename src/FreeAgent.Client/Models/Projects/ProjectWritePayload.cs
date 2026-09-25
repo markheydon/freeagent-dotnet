@@ -11,7 +11,8 @@ namespace FreeAgent.Client.Models.Projects;
 internal sealed class ProjectWritePayload
 {
     [JsonPropertyName("contact")]
-    public ContactReference? Contact { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ContactReference>))]
+    public WriteLink<ContactReference>? Contact { get; set; }
 
     [JsonPropertyName("name")]
     public string? Name { get; set; }
@@ -55,13 +56,20 @@ internal sealed class ProjectWritePayload
     [JsonPropertyName("include_unbilled_time_in_profitability")]
     public bool? IncludeUnbilledTimeInProfitability { get; set; }
 
-    public static ProjectWritePayload FromProject(Project project, FreeAgentEnvironment environment)
+    public static ProjectWritePayload FromProject(
+        Project project,
+        FreeAgentEnvironment environment,
+        LinkedResourceWriteOptions linkOptions = default)
     {
         ArgumentNullException.ThrowIfNull(project);
 
         return new ProjectWritePayload
         {
-            Contact = LinkedResourceWriteMapper.ToContactReference(environment, project.ContactId),
+            Contact = LinkedResourceWriteMapper.ResolveContactReference(
+                environment,
+                project.ContactIdBacking,
+                project.ContactLinkId,
+                linkOptions.OmitContact),
             Name = project.Name,
             Status = project.Status,
             ContractPoReference = project.ContractPoReference,

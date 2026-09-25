@@ -147,6 +147,18 @@ public class Timeslip : IFreeAgentResource
     [JsonPropertyName("updated_at")]
     public DateTimeOffset? UpdatedAt { get; set; }
 
+    internal SettableLinkId ProjectTaskIdBacking => _projectTaskId;
+
+    internal long? ProjectTaskLinkId => ProjectTaskLink?.Id;
+
+    internal SettableLinkId ProjectIdBacking => _projectId;
+
+    internal long? ProjectLinkId => ProjectLink?.Id;
+
+    internal SettableLinkId UserIdBacking => _userId;
+
+    internal long? UserLinkId => UserLink?.Id;
+
     /// <summary>
     /// Attaches a hydrated task to this timeslip.
     /// </summary>

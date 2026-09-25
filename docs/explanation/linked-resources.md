@@ -142,16 +142,25 @@ var invoice = await client.Invoices.CreateInvoiceAsync(new Invoice
 });
 ```
 
-When updating an invoice, estimate, or credit note retrieved from the API, the SDK round-trips existing link ids from the read model. To update scalar fields without sending line items, pass `OmitLineItems = true` on the update options:
+When updating an invoice, estimate, or credit note retrieved from the API, the SDK round-trips existing link ids from the read model. Set a link id to `null` to clear it on the wire. To update scalar fields without re-sending linked resources or line items, use update options:
 
 ```csharp
 await client.Invoices.UpdateInvoiceAsync(
     invoiceId,
     invoice,
-    new InvoiceUpdateOptions { OmitLineItems = true });
+    new InvoiceUpdateOptions
+    {
+        OmitLineItems = true,
+        OmitProject = true
+    });
+
+await client.Projects.UpdateProjectAsync(
+    projectId,
+    project,
+    new ProjectUpdateOptions { OmitContact = true });
 ```
 
-`EstimateUpdateOptions` and `CreditNoteUpdateOptions` expose the same `OmitLineItems` flag.
+`EstimateUpdateOptions` and `CreditNoteUpdateOptions` expose the same `OmitLineItems`, `OmitContact`, and `OmitProject` flags. `InvoiceUpdateOptions` and `CreditNoteUpdateOptions` also support `OmitBankAccount`.
 
 Line item updates require `InvoiceItem.ItemId`. The SDK maps this from the wire `id` attribute or from a line-item `url` when present.
 

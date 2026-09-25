@@ -42,13 +42,16 @@ internal sealed class InvoiceItemWritePayload
     public string? SecondSalesTaxStatus { get; set; }
 
     [JsonPropertyName("stock_item")]
-    public StockItemReference? StockItem { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<StockItemReference>))]
+    public WriteLink<StockItemReference>? StockItem { get; set; }
 
     [JsonPropertyName("category")]
-    public CategoryReference? Category { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<CategoryReference>))]
+    public WriteLink<CategoryReference>? Category { get; set; }
 
     [JsonPropertyName("project")]
-    public ProjectReference? Project { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ProjectReference>))]
+    public WriteLink<ProjectReference>? Project { get; set; }
 
     [JsonPropertyName("id")]
     public long? Id { get; set; }
@@ -72,9 +75,18 @@ internal sealed class InvoiceItemWritePayload
             SecondSalesTaxRate = item.SecondSalesTaxRate,
             SalesTaxStatus = item.SalesTaxStatus,
             SecondSalesTaxStatus = item.SecondSalesTaxStatus,
-            StockItem = LinkedResourceWriteMapper.ToStockItemReference(environment, item.StockItemId),
-            Category = LinkedResourceWriteMapper.ToCategoryReference(environment, item.CategoryNominalCode),
-            Project = LinkedResourceWriteMapper.ToProjectReference(environment, item.ProjectId),
+            StockItem = LinkedResourceWriteMapper.ResolveStockItemReference(
+                environment,
+                item.StockItemIdBacking,
+                item.StockItemLinkId),
+            Category = LinkedResourceWriteMapper.ResolveCategoryReference(
+                environment,
+                item.CategoryNominalCodeBacking,
+                item.CategoryLinkNominalCode),
+            Project = LinkedResourceWriteMapper.ResolveProjectReference(
+                environment,
+                item.ProjectIdBacking,
+                item.ProjectLinkId),
             Id = item.ItemId,
             Destroy = item.Destroy
         };

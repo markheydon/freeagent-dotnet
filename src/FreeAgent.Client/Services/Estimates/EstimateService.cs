@@ -316,7 +316,8 @@ public sealed class EstimateService
             Estimate = EstimateWritePayload.FromEstimate(
                 estimate,
                 _requestClient.Environment,
-                options?.OmitLineItems == true)
+                options?.OmitLineItems == true,
+                LinkedResourceWriteOptions.FromEstimateUpdate(options))
         });
 
         var response = await _requestClient.PutAsync<EstimateResponse>($"estimates/{estimateId}", content, cancellationToken);

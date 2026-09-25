@@ -312,7 +312,8 @@ public sealed class InvoiceService
             Invoice = InvoiceWritePayload.FromInvoice(
                 invoice,
                 _requestClient.Environment,
-                options?.OmitLineItems == true)
+                options?.OmitLineItems == true,
+                LinkedResourceWriteOptions.FromInvoiceUpdate(options))
         });
 
         var response = await _requestClient.PutAsync<InvoiceResponse>($"invoices/{invoiceId}", content, cancellationToken);

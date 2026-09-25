@@ -272,6 +272,8 @@ Company-level default text shown on all estimates.
 | Property | Type | Purpose |
 |----------|------|---------|
 | `OmitLineItems` | `bool` | Exclude line items from the update payload |
+| `OmitContact` | `bool` | Exclude the contact link from the update payload |
+| `OmitProject` | `bool` | Exclude the project link from the update payload |
 
 ## Estimate model
 

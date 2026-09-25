@@ -400,6 +400,18 @@ public sealed class Invoice : IFreeAgentResource
     [JsonPropertyName("updated_at")]
     public DateTimeOffset? UpdatedAt { get; set; }
 
+    internal SettableLinkId ContactIdBacking => _contactId;
+
+    internal long? ContactLinkId => ContactLink?.Id;
+
+    internal SettableLinkId ProjectIdBacking => _projectId;
+
+    internal long? ProjectLinkId => ProjectLink?.Id;
+
+    internal SettableLinkId BankAccountIdBacking => _bankAccountId;
+
+    internal long? BankAccountLinkId => BankAccountLink?.Id;
+
     /// <summary>
     /// Attaches a hydrated contact to this invoice.
     /// </summary>

@@ -128,18 +128,23 @@ Set `project.ContactId` to assign a billing contact on create.
 ### UpdateProjectAsync
 
 ```csharp
-Task<Project> UpdateProjectAsync(long projectId, Project project, CancellationToken cancellationToken = default)
+Task<Project> UpdateProjectAsync(
+    long projectId,
+    Project project,
+    ProjectUpdateOptions? options = null,
+    CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
 | `projectId` | `long` | Yes | - | path `:id` |
 | `project` | `Project` | Yes | - | `project` envelope |
+| `options` | `ProjectUpdateOptions?` | No | `null` | - |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `PUT /v2/projects/:id`
 
-On update, the SDK round-trips `ContactId` from the read model when present.
+On update, the SDK round-trips `ContactId` from the read model when present. Set `ContactId = null` to clear the billing contact. Pass `new ProjectUpdateOptions { OmitContact = true }` to update other fields without sending the contact link.
 
 ---
 
@@ -176,6 +181,12 @@ Task DeleteProjectAsync(long projectId, CancellationToken cancellationToken = de
 | Property | Type | Purpose |
 |----------|------|---------|
 | `IncludeContact` | `bool` | Fetch billing contact when only a URI is returned |
+
+## ProjectUpdateOptions
+
+| Property | Type | Purpose |
+|----------|------|---------|
+| `OmitContact` | `bool` | Exclude the billing contact link from the update payload |
 
 ## Project model
 

@@ -190,6 +190,14 @@ public sealed class Estimate : IFreeAgentResource
     [JsonPropertyName("updated_at")]
     public DateTimeOffset? UpdatedAt { get; set; }
 
+    internal SettableLinkId ContactIdBacking => _contactId;
+
+    internal long? ContactLinkId => ContactLink?.Id;
+
+    internal SettableLinkId ProjectIdBacking => _projectId;
+
+    internal long? ProjectLinkId => ProjectLink?.Id;
+
     /// <summary>
     /// Attaches a hydrated contact to this estimate.
     /// </summary>

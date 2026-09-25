@@ -11,13 +11,16 @@ namespace FreeAgent.Client.Models.Timeslips;
 internal sealed class TimeslipWritePayload
 {
     [JsonPropertyName("task")]
-    public ProjectTaskReference? ProjectTask { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ProjectTaskReference>))]
+    public WriteLink<ProjectTaskReference>? ProjectTask { get; set; }
 
     [JsonPropertyName("user")]
-    public UserReference? User { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<UserReference>))]
+    public WriteLink<UserReference>? User { get; set; }
 
     [JsonPropertyName("project")]
-    public ProjectReference? Project { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ProjectReference>))]
+    public WriteLink<ProjectReference>? Project { get; set; }
 
     [JsonPropertyName("dated_on")]
     public DateOnly? DatedOn { get; set; }
@@ -35,9 +38,18 @@ internal sealed class TimeslipWritePayload
 
         return new TimeslipWritePayload
         {
-            ProjectTask = LinkedResourceWriteMapper.ToProjectTaskReference(environment, timeslip.ProjectTaskId),
-            User = LinkedResourceWriteMapper.ToUserReference(environment, timeslip.UserId),
-            Project = LinkedResourceWriteMapper.ToProjectReference(environment, timeslip.ProjectId),
+            ProjectTask = LinkedResourceWriteMapper.ResolveProjectTaskReference(
+                environment,
+                timeslip.ProjectTaskIdBacking,
+                timeslip.ProjectTaskLinkId),
+            User = LinkedResourceWriteMapper.ResolveUserReference(
+                environment,
+                timeslip.UserIdBacking,
+                timeslip.UserLinkId),
+            Project = LinkedResourceWriteMapper.ResolveProjectReference(
+                environment,
+                timeslip.ProjectIdBacking,
+                timeslip.ProjectLinkId),
             DatedOn = timeslip.DatedOn,
             Hours = timeslip.Hours,
             Comment = timeslip.Comment

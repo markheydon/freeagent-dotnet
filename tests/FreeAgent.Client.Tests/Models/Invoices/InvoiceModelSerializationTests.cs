@@ -104,6 +104,66 @@ public class InvoiceModelSerializationTests
     }
 
     [Fact]
+    public void WritePayload_ClearProjectId_SerialisesNullProject()
+    {
+        var invoice = JsonSerializer.Deserialize<Invoice>("""
+            {
+              "url": "https://api.freeagent.com/v2/invoices/1",
+              "contact": "https://api.freeagent.com/v2/contacts/8",
+              "project": "https://api.freeagent.com/v2/projects/5"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+        invoice.ProjectId = null;
+
+        var json = JsonSerializer.Serialize(
+            InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production),
+            FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"project\":null", json, StringComparison.Ordinal);
+        Assert.Contains("\"contact\":\"https://api.freeagent.com/v2/contacts/8\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_OmitProject_ExcludesProjectFromPayload()
+    {
+        var invoice = JsonSerializer.Deserialize<Invoice>("""
+            {
+              "url": "https://api.freeagent.com/v2/invoices/1",
+              "contact": "https://api.freeagent.com/v2/contacts/8",
+              "project": "https://api.freeagent.com/v2/projects/5"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+
+        var json = JsonSerializer.Serialize(
+            InvoiceWritePayload.FromInvoice(
+                invoice,
+                FreeAgentEnvironment.Production,
+                linkOptions: new LinkedResourceWriteOptions(OmitProject: true)),
+            FreeAgentJsonSerializer.Options);
+
+        Assert.DoesNotContain("\"project\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"contact\":\"https://api.freeagent.com/v2/contacts/8\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_SetCategoryNominalCode_OverridesRoundTrippedCategory()
+    {
+        var item = JsonSerializer.Deserialize<InvoiceItem>("""
+            {
+              "description": "Consulting",
+              "category": "https://api.freeagent.com/v2/categories/001"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+        item.CategoryNominalCode = "002";
+
+        var json = JsonSerializer.Serialize(
+            InvoiceItemWritePayload.FromInvoiceItem(item, FreeAgentEnvironment.Production),
+            FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("categories/002", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void WritePayload_SetContactId_OverridesRoundTrippedContact()
     {
         var invoice = JsonSerializer.Deserialize<Invoice>("""

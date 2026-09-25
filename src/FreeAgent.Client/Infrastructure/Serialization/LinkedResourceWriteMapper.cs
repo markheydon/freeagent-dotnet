@@ -36,4 +36,166 @@ internal static class LinkedResourceWriteMapper
 
     public static CreditNoteReference? ToCreditNoteReference(FreeAgentEnvironment environment, long? creditNoteId) =>
         creditNoteId is long id ? CreditNoteReference.ForEnvironment(environment, id) : null;
+
+    public static WriteLink<ContactReference>? ResolveContactReference(
+        FreeAgentEnvironment environment,
+        in SettableLinkId backing,
+        long? linkId,
+        bool omit = false)
+    {
+        if (omit)
+        {
+            return null;
+        }
+
+        if (backing.IsExplicitlySet)
+        {
+            return backing.Get(fromLink: null) is long id
+                ? new WriteLink<ContactReference> { Value = ContactReference.ForEnvironment(environment, id) }
+                : new WriteLink<ContactReference> { IsCleared = true };
+        }
+
+        return linkId is long roundTripped
+            ? new WriteLink<ContactReference> { Value = ContactReference.ForEnvironment(environment, roundTripped) }
+            : null;
+    }
+
+    public static WriteLink<ProjectReference>? ResolveProjectReference(
+        FreeAgentEnvironment environment,
+        in SettableLinkId backing,
+        long? linkId,
+        bool omit = false)
+    {
+        if (omit)
+        {
+            return null;
+        }
+
+        if (backing.IsExplicitlySet)
+        {
+            return backing.Get(fromLink: null) is long id
+                ? new WriteLink<ProjectReference> { Value = ProjectReference.ForEnvironment(environment, id) }
+                : new WriteLink<ProjectReference> { IsCleared = true };
+        }
+
+        return linkId is long roundTripped
+            ? new WriteLink<ProjectReference> { Value = ProjectReference.ForEnvironment(environment, roundTripped) }
+            : null;
+    }
+
+    public static WriteLink<ProjectTaskReference>? ResolveProjectTaskReference(
+        FreeAgentEnvironment environment,
+        in SettableLinkId backing,
+        long? linkId,
+        bool omit = false)
+    {
+        if (omit)
+        {
+            return null;
+        }
+
+        if (backing.IsExplicitlySet)
+        {
+            return backing.Get(fromLink: null) is long id
+                ? new WriteLink<ProjectTaskReference> { Value = ProjectTaskReference.ForEnvironment(environment, id) }
+                : new WriteLink<ProjectTaskReference> { IsCleared = true };
+        }
+
+        return linkId is long roundTripped
+            ? new WriteLink<ProjectTaskReference> { Value = ProjectTaskReference.ForEnvironment(environment, roundTripped) }
+            : null;
+    }
+
+    public static WriteLink<UserReference>? ResolveUserReference(
+        FreeAgentEnvironment environment,
+        in SettableLinkId backing,
+        long? linkId,
+        bool omit = false)
+    {
+        if (omit)
+        {
+            return null;
+        }
+
+        if (backing.IsExplicitlySet)
+        {
+            return backing.Get(fromLink: null) is long id
+                ? new WriteLink<UserReference> { Value = UserReference.ForEnvironment(environment, id) }
+                : new WriteLink<UserReference> { IsCleared = true };
+        }
+
+        return linkId is long roundTripped
+            ? new WriteLink<UserReference> { Value = UserReference.ForEnvironment(environment, roundTripped) }
+            : null;
+    }
+
+    public static WriteLink<BankAccountReference>? ResolveBankAccountReference(
+        FreeAgentEnvironment environment,
+        in SettableLinkId backing,
+        long? linkId,
+        bool omit = false)
+    {
+        if (omit)
+        {
+            return null;
+        }
+
+        if (backing.IsExplicitlySet)
+        {
+            return backing.Get(fromLink: null) is long id
+                ? new WriteLink<BankAccountReference> { Value = BankAccountReference.ForEnvironment(environment, id) }
+                : new WriteLink<BankAccountReference> { IsCleared = true };
+        }
+
+        return linkId is long roundTripped
+            ? new WriteLink<BankAccountReference> { Value = BankAccountReference.ForEnvironment(environment, roundTripped) }
+            : null;
+    }
+
+    public static WriteLink<StockItemReference>? ResolveStockItemReference(
+        FreeAgentEnvironment environment,
+        in SettableLinkId backing,
+        long? linkId,
+        bool omit = false)
+    {
+        if (omit)
+        {
+            return null;
+        }
+
+        if (backing.IsExplicitlySet)
+        {
+            return backing.Get(fromLink: null) is long id
+                ? new WriteLink<StockItemReference> { Value = StockItemReference.ForEnvironment(environment, id) }
+                : new WriteLink<StockItemReference> { IsCleared = true };
+        }
+
+        return linkId is long roundTripped
+            ? new WriteLink<StockItemReference> { Value = StockItemReference.ForEnvironment(environment, roundTripped) }
+            : null;
+    }
+
+    public static WriteLink<CategoryReference>? ResolveCategoryReference(
+        FreeAgentEnvironment environment,
+        in SettableLinkValue backing,
+        string? linkNominalCode,
+        bool omit = false)
+    {
+        if (omit)
+        {
+            return null;
+        }
+
+        if (backing.IsExplicitlySet)
+        {
+            var code = backing.Get(fromLink: null);
+            return string.IsNullOrWhiteSpace(code)
+                ? new WriteLink<CategoryReference> { IsCleared = true }
+                : new WriteLink<CategoryReference> { Value = CategoryReference.ForEnvironment(environment, code) };
+        }
+
+        return string.IsNullOrWhiteSpace(linkNominalCode)
+            ? null
+            : new WriteLink<CategoryReference> { Value = CategoryReference.ForEnvironment(environment, linkNominalCode) };
+    }
 }

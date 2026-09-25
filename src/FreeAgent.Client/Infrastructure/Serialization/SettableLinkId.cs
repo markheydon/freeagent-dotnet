@@ -10,6 +10,11 @@ internal struct SettableLinkId
     private bool _isSet;
 
     /// <summary>
+    /// Whether the link identifier was explicitly assigned (including null to clear).
+    /// </summary>
+    public bool IsExplicitlySet => _isSet;
+
+    /// <summary>
     /// Returns the explicitly assigned value when set; otherwise the identifier from the wire link.
     /// </summary>
     /// <param name="fromLink">Identifier parsed from the deserialised link field.</param>

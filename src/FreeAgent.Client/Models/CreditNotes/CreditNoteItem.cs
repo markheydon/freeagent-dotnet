@@ -185,6 +185,19 @@ public sealed class CreditNoteItem
     [JsonIgnore]
     public int? Destroy { get; set; }
 
+    internal SettableLinkId StockItemIdBacking => _stockItemId;
+
+    internal long? StockItemLinkId => StockItemLink?.Id;
+
+    internal SettableLinkValue CategoryNominalCodeBacking => _categoryNominalCode;
+
+    internal string? CategoryLinkNominalCode =>
+        CategoryLink?.Uri is string uri ? CategoryReference.ExtractNominalCode(uri) : null;
+
+    internal SettableLinkId ProjectIdBacking => _projectId;
+
+    internal long? ProjectLinkId => ProjectLink?.Id;
+
     private long? TryParseItemIdFromUrl() =>
         !string.IsNullOrWhiteSpace(Url) && FreeAgentResourceId.TryParse(Url, out var id) ? id : null;
 }

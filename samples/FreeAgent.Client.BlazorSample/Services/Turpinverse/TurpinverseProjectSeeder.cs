@@ -102,7 +102,10 @@ public sealed class TurpinverseProjectSeeder
 
         var current = await client.Projects.GetProjectAsync(projectId, cancellationToken);
         MergeWritableFields(current, desired);
-        var updated = await client.Projects.UpdateProjectAsync(projectId, current, cancellationToken);
+        var updated = await client.Projects.UpdateProjectAsync(
+            projectId,
+            current,
+            cancellationToken: cancellationToken);
         existingProjects[contractReference] = updated;
         return new TurpinverseProjectSeedResult(updated, ProjectSeedAction.Updated);
     }
