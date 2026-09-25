@@ -248,6 +248,9 @@ public sealed class InvoiceService
     /// <param name="invoice">Invoice attributes to create</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created invoice</returns>
+    /// <remarks>
+    /// <see cref="Invoice.ShowProjectName"/> is included in the create payload when set.
+    /// </remarks>
     public async Task<Invoice> CreateInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(invoice);
@@ -302,8 +305,9 @@ public sealed class InvoiceService
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated invoice</returns>
     /// <remarks>
-    /// <see cref="Invoice.ShowProjectName"/> is not sent on update. FreeAgent locks
-    /// <c>show_project_name</c> once an invoice leaves draft; set it on create instead.
+    /// <see cref="Invoice.ShowProjectName"/> is sent on update only when
+    /// <see cref="Invoice.Status"/> is <see cref="InvoiceStatus.Draft"/>. FreeAgent locks
+    /// <c>show_project_name</c> once an invoice leaves draft.
     /// </remarks>
     public async Task<Invoice> UpdateInvoiceAsync(
         long invoiceId,
@@ -320,7 +324,8 @@ public sealed class InvoiceService
                 invoice,
                 _requestClient.Environment,
                 options?.OmitLineItems == true,
-                LinkedResourceWriteOptions.FromInvoiceUpdate(options))
+                LinkedResourceWriteOptions.FromInvoiceUpdate(options),
+                includeShowProjectName: invoice.Status == InvoiceStatus.Draft)
         });
 
         var response = await _requestClient.PutAsync<InvoiceResponse>($"invoices/{invoiceId}", content, cancellationToken);

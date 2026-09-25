@@ -220,6 +220,7 @@ public sealed class CreditNote : IFreeAgentResource
 
     /// <summary>
     /// Whether to display the project name in the Other Information section.
+    /// Writable on create and on draft updates; omitted once the credit note leaves draft.
     /// </summary>
     [JsonPropertyName("show_project_name")]
     public bool? ShowProjectName { get; set; }

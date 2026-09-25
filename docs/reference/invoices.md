@@ -139,7 +139,7 @@ Task<Invoice> UpdateInvoiceAsync(
 
 **HTTP:** `PUT /v2/invoices/:id`
 
-Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new InvoiceUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items. `ShowProjectName` is not sent on update — FreeAgent locks `show_project_name` once an invoice leaves draft; set it on create instead.
+Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new InvoiceUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items. `ShowProjectName` is sent on update only when `Status` is `Draft` — FreeAgent locks `show_project_name` once an invoice leaves draft.
 
 ---
 
@@ -275,7 +275,7 @@ Key properties:
 | `ProjectId` | `long?` | `project` | Optional project link |
 | `BankAccountId` | `long?` | `bank_account` | Optional remittance bank account |
 | `InvoiceItems` | `List<InvoiceItem>?` | `invoice_items` | Nested line items |
-| `ShowProjectName` | `bool?` | `show_project_name` | Writable on create; not sent on update (FreeAgent locks it once the invoice leaves draft) |
+| `ShowProjectName` | `bool?` | `show_project_name` | Writable on create and on draft updates; omitted once the invoice leaves draft |
 | `ItemId` | `long?` | `id` (line items) | Required to update or delete existing line items |
 | `CategoryNominalCode` | `string?` | `category` (line items) | Category link on line items |
 | `Url` | `string` | `url` | |

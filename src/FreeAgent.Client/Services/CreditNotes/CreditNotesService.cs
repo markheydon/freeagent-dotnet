@@ -251,6 +251,9 @@ public sealed class CreditNotesService
     /// <param name="creditNote">Credit note attributes to create</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created credit note</returns>
+    /// <remarks>
+    /// <see cref="CreditNote.ShowProjectName"/> is included in the create payload when set.
+    /// </remarks>
     public async Task<CreditNote> CreateCreditNoteAsync(
         CreditNote creditNote,
         CancellationToken cancellationToken = default)
@@ -259,7 +262,10 @@ public sealed class CreditNotesService
 
         var content = FreeAgentJsonSerializer.CreateContent(new CreditNoteRequest
         {
-            CreditNote = CreditNoteWritePayload.FromCreditNote(creditNote, _requestClient.Environment)
+            CreditNote = CreditNoteWritePayload.FromCreditNote(
+                creditNote,
+                _requestClient.Environment,
+                includeShowProjectName: true)
         });
 
         var response = await _requestClient.PostAsync<CreditNoteResponse>("credit_notes", content, cancellationToken);
@@ -280,6 +286,11 @@ public sealed class CreditNotesService
     /// <param name="options">Optional update behaviour</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated credit note</returns>
+    /// <remarks>
+    /// <see cref="CreditNote.ShowProjectName"/> is sent on update only when
+    /// <see cref="CreditNote.Status"/> is <see cref="CreditNoteStatus.Draft"/>. FreeAgent locks
+    /// <c>show_project_name</c> once a credit note leaves draft.
+    /// </remarks>
     public async Task<CreditNote> UpdateCreditNoteAsync(
         long creditNoteId,
         CreditNote creditNote,
@@ -295,7 +306,8 @@ public sealed class CreditNotesService
                 creditNote,
                 _requestClient.Environment,
                 options?.OmitLineItems == true,
-                LinkedResourceWriteOptions.FromCreditNoteUpdate(options))
+                LinkedResourceWriteOptions.FromCreditNoteUpdate(options),
+                includeShowProjectName: creditNote.Status == CreditNoteStatus.Draft)
         });
 
         var response = await _requestClient.PutAsync<CreditNoteResponse>(

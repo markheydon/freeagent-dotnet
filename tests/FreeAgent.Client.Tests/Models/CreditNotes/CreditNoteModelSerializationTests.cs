@@ -159,6 +159,78 @@ public class CreditNoteModelSerializationTests
     }
 
     [Fact]
+    public void WritePayload_IncludeShowProjectName_SerialisesShowProjectName()
+    {
+        var creditNote = new CreditNote
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 0,
+            ShowProjectName = true
+        };
+
+        var payload = CreditNoteWritePayload.FromCreditNote(
+            creditNote,
+            FreeAgentEnvironment.Production,
+            includeShowProjectName: true);
+
+        Assert.True(payload.ShowProjectName);
+
+        var json = JsonSerializer.Serialize(
+            new CreditNoteRequest { CreditNote = payload },
+            FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"show_project_name\":true", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_ExcludeShowProjectName_OmitsShowProjectName()
+    {
+        var creditNote = new CreditNote
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 0,
+            ShowProjectName = true
+        };
+
+        var payload = CreditNoteWritePayload.FromCreditNote(creditNote, FreeAgentEnvironment.Production);
+
+        Assert.Null(payload.ShowProjectName);
+
+        var json = JsonSerializer.Serialize(
+            new CreditNoteRequest { CreditNote = payload },
+            FreeAgentJsonSerializer.Options);
+
+        Assert.DoesNotContain("\"show_project_name\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_IncludeShowProjectName_SerialisesFalseShowProjectName()
+    {
+        var creditNote = new CreditNote
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 0,
+            ShowProjectName = false
+        };
+
+        var payload = CreditNoteWritePayload.FromCreditNote(
+            creditNote,
+            FreeAgentEnvironment.Production,
+            includeShowProjectName: true);
+
+        Assert.False(payload.ShowProjectName);
+
+        var json = JsonSerializer.Serialize(
+            new CreditNoteRequest { CreditNote = payload },
+            FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"show_project_name\":false", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void WritePayload_OmitLineItems_ExcludesLineItems()
     {
         var creditNote = new CreditNote

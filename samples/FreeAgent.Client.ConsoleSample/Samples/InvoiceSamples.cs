@@ -176,10 +176,9 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task MarkInvoiceAsScheduledAsync(CancellationToken cancellationToken)
     {
-        var draft = await CreateSchedulableSampleInvoiceAsync(cancellationToken);
-
         try
         {
+            var draft = await CreateSchedulableSampleInvoiceAsync(cancellationToken);
             var scheduled = await context.Client.Invoices.MarkInvoiceAsScheduledAsync(draft.ResourceId, cancellationToken);
 
             SampleOutput.WriteHeader("Marked invoice as scheduled");
@@ -433,12 +432,18 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
             return false;
         }
 
-        if (exception.RequestPath?.Contains("mark_as_scheduled", StringComparison.OrdinalIgnoreCase) == true)
+        if (exception.Message.Contains("cannot be marked as scheduled", StringComparison.OrdinalIgnoreCase))
         {
             return true;
         }
 
-        return exception.Message.Contains("cannot be marked as scheduled", StringComparison.OrdinalIgnoreCase);
+        if (exception.Message.Contains("email template", StringComparison.OrdinalIgnoreCase)
+            && exception.Message.Contains("send_new_invoice_emails", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return exception.RequestPath?.Contains("mark_as_scheduled", StringComparison.OrdinalIgnoreCase) == true;
     }
 
     private static string FormatInvoiceRow(Invoice invoice) =>
