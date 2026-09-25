@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
@@ -175,12 +176,20 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task MarkInvoiceAsScheduledAsync(CancellationToken cancellationToken)
     {
-        var draft = await CreateSampleDraftInvoiceAsync(cancellationToken);
-        var scheduled = await context.Client.Invoices.MarkInvoiceAsScheduledAsync(draft.ResourceId, cancellationToken);
+        try
+        {
+            var draft = await CreateSchedulableSampleInvoiceAsync(cancellationToken);
+            var scheduled = await context.Client.Invoices.MarkInvoiceAsScheduledAsync(draft.ResourceId, cancellationToken);
 
-        SampleOutput.WriteHeader("Marked invoice as scheduled");
-        SampleOutput.WriteField("Id", scheduled.ResourceId);
-        SampleOutput.WriteField("Status", scheduled.Status);
+            SampleOutput.WriteHeader("Marked invoice as scheduled");
+            SampleOutput.WriteField("Id", scheduled.ResourceId);
+            SampleOutput.WriteField("Status", scheduled.Status);
+        }
+        catch (FreeAgentApiException ex) when (IsInvoiceSchedulingPreconditionFailure(ex))
+        {
+            SampleContext.Skip(
+                "sandbox account cannot schedule invoice emails (invoice email template may be missing)");
+        }
     }
 
     [ConsoleSample(Name = "Mark invoice as draft", MutatesData = true)]
@@ -341,6 +350,38 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
             cancellationToken);
     }
 
+    private async Task<Invoice> CreateSchedulableSampleInvoiceAsync(CancellationToken cancellationToken)
+    {
+        var contact = await context.Data.GetFirstContactAsync(cancellationToken);
+        var nominalCode = await context.Data.GetFirstIncomeCategoryNominalCodeAsync(cancellationToken);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        var datedOn = today.AddDays(1);
+        var dueOn = datedOn.AddDays(14);
+
+        return await context.Client.Invoices.CreateInvoiceAsync(
+            new Invoice
+            {
+                ContactId = contact.ResourceId,
+                DatedOn = datedOn,
+                DueOn = dueOn,
+                PaymentTermsInDays = dueOn.DayNumber - datedOn.DayNumber,
+                Reference = $"Console scheduled sample {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
+                SendNewInvoiceEmails = true,
+                InvoiceItems =
+                [
+                    new InvoiceItem
+                    {
+                        Description = "Console scheduled sample line item",
+                        ItemType = InvoiceItemType.Services,
+                        Quantity = 1,
+                        Price = 100,
+                        CategoryNominalCode = nominalCode,
+                    }
+                ]
+            },
+            cancellationToken);
+    }
+
     private async Task<Invoice> CreateSentSampleInvoiceAsync(CancellationToken cancellationToken)
     {
         var draft = await CreateSampleDraftInvoiceAsync(cancellationToken);
@@ -379,6 +420,9 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
 
         return await context.Client.Invoices.MarkInvoiceAsSentAsync(draft.ResourceId, cancellationToken);
     }
+
+    private static bool IsInvoiceSchedulingPreconditionFailure(FreeAgentApiException exception) =>
+        exception.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.UnprocessableEntity;
 
     private static string FormatInvoiceRow(Invoice invoice) =>
         $"{invoice.ResourceId,8}  {invoice.Reference ?? "-",-20}  {invoice.Status,-12}  {invoice.ContactName ?? "-"}";
