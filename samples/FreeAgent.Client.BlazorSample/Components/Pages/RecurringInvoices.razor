@@ -1,0 +1,416 @@
+@page "/recurring-invoices"
+@using FreeAgent.Client.Models.RecurringInvoices
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Recurring invoices - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Recurring invoices endpoint"
+                         Title="Recurring invoices list"
+                         CallUnderTest="RecurringInvoiceService.ListAsync(...) / ListAutoPagingAsync(...)"
+                         Description="Load recurring invoice profiles from the live sandbox account. The API is read-only — inspect wire-to-model mapping per row, then open detail for a single GET."
+                         EndpointPath="/v2/recurring_invoices?page={page}&amp;per_page={perPage}&amp;view={view}"
+                         DocsUrl="https://dev.freeagent.com/docs/recurring_invoices" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load page 1, then use <strong>Inspect mapping</strong> on any row to see wire-to-model diagnostics.
+                        Use <strong>Open detail</strong> to test <code>GetRecurringInvoiceAsync</code>.
+                    </MudText>
+
+                    <MudGrid Spacing="2" Class="contacts-filter-grid">
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudSelect T="string"
+                                       @bind-Value="_view"
+                                       Label="View"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       FullWidth="true">
+                                <MudSelectItem Value="@string.Empty">(none)</MudSelectItem>
+                                <MudSelectItem Value="@RecurringInvoiceViews.Draft">draft</MudSelectItem>
+                                <MudSelectItem Value="@RecurringInvoiceViews.Active">active</MudSelectItem>
+                                <MudSelectItem Value="@RecurringInvoiceViews.Inactive">inactive</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudNumericField @bind-Value="_contactIdFilter"
+                                             Label="Contact ID filter"
+                                             Min="1"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3" lg="2">
+                            <MudNumericField @bind-Value="_perPage"
+                                             Label="Per page"
+                                             Min="1"
+                                             Max="100"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                                       Disabled="_loading"
+                                       Class="contacts-load-button"
+                                       OnClick="LoadRecurringInvoicesAsync">
+                                @if (_loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Loading…</span>
+                                }
+                                else
+                                {
+                                    <span>Load page 1</span>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+
+                @if (_pageResult is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load page 1</strong> to fetch recurring invoices from FreeAgent.</MudText>
+                }
+
+                @if (_pageResult is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_pageResult.Items.Count profile@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
+                        </MudChip>
+                        @if (!string.IsNullOrWhiteSpace(_view))
+                        {
+                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                        }
+                        @if (_pageResult.Total > 0)
+                        {
+                            <MudChip T="string" Variant="Variant.Outlined">Total: @_pageResult.Total</MudChip>
+                        }
+                    </MudStack>
+
+                    @if (_pageResult.Items.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No recurring invoices returned. Create recurring profiles in the FreeAgent UI, then reload.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_recurringInvoiceRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Reference</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Frequency</MudTh>
+                                    <MudTh>Contact</MudTh>
+                                    <MudTh>Next recurs</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Reference">@ValueOrDash(context.Reference)</MudTd>
+                                    <MudTd DataLabel="Status">@context.Status</MudTd>
+                                    <MudTd DataLabel="Frequency">@context.Frequency</MudTd>
+                                    <MudTd DataLabel="Contact">@ValueOrDash(context.ContactName)</MudTd>
+                                    <MudTd DataLabel="Next recurs">@FormatDate(context.NextRecursOn)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectRecurringInvoiceAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetDetailHref(context.Id)">
+                                                Open detail
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedRecurringInvoice is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All RecurringInvoice model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected recurring invoice</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    ID: @_inspectedRecurringInvoice.ResourceId
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Reference</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedRecurringInvoice.Reference)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Frequency</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedRecurringInvoice.Frequency?.ToString())</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+
+                <MudExpansionPanels>
+                    <MudExpansionPanel Text="Developer probe: auto-pagination (ListAutoPagingAsync)">
+                        <MudStack Spacing="2">
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.AllInclusive"
+                                       Disabled="_loadingAll"
+                                       OnClick="LoadAllAsync">
+                                @if (_loadingAll)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Enumerating…</span>
+                                }
+                                else
+                                {
+                                    <span>Count all recurring invoices</span>
+                                }
+                            </MudButton>
+
+                            @if (_allRecurringInvoicesCount is not null)
+                            {
+                                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+                                    <code>ListAutoPagingAsync</code> yielded @_allRecurringInvoicesCount.Value recurring invoice@(_allRecurringInvoicesCount.Value == 1 ? string.Empty : "s").
+                                </MudAlert>
+                            }
+                        </MudStack>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private bool _loadingAll;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private PaginatedResponse<RecurringInvoice>? _pageResult;
+    private RecurringInvoice? _inspectedRecurringInvoice;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+    private int? _allRecurringInvoicesCount;
+    private string _view = string.Empty;
+    private long? _contactIdFilter;
+    private int _perPage = 25;
+
+    private IReadOnlyList<RecurringInvoiceRow> _recurringInvoiceRows => _pageResult?.Items
+        .Select(static (recurringInvoice, index) => new RecurringInvoiceRow(
+            index,
+            recurringInvoice.ResourceId,
+            recurringInvoice.Reference,
+            recurringInvoice.RecurringStatus?.ToString() ?? "-",
+            recurringInvoice.Frequency?.ToString() ?? "-",
+            recurringInvoice.ContactName,
+            recurringInvoice.NextRecursOn))
+        .ToList() ?? [];
+
+    private async Task LoadRecurringInvoicesAsync()
+    {
+        _pageResult = null;
+        _inspectedRecurringInvoice = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+        _allRecurringInvoicesCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var diagnosticsEndpoint = BuildDiagnosticsEndpoint();
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _pageResult = await client.RecurringInvoices.ListAsync(
+                page: 1,
+                perPage: _perPage,
+                view: string.IsNullOrWhiteSpace(_view) ? null : _view,
+                contactId: _contactIdFilter);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectRecurringInvoiceAsync(int index)
+    {
+        if (_pageResult is null || index < 0 || index >= _pageResult.Items.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedRecurringInvoice = _pageResult.Items[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "recurring_invoices", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedRecurringInvoice, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedRecurringInvoice, _wireApiResponse, envelopeProperty: "recurring_invoices");
+    }
+
+    private async Task LoadAllAsync()
+    {
+        _allRecurringInvoicesCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loadingAll = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var count = 0;
+            await foreach (var _ in client.RecurringInvoices.ListAutoPagingAsync(
+                               perPage: _perPage,
+                               view: string.IsNullOrWhiteSpace(_view) ? null : _view,
+                               contactId: _contactIdFilter))
+            {
+                count++;
+            }
+
+            _allRecurringInvoicesCount = count;
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                BuildDiagnosticsEndpoint());
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loadingAll = false;
+        }
+    }
+
+    private string BuildDiagnosticsEndpoint()
+    {
+        var query = new List<string>
+        {
+            "page=1",
+            $"per_page={_perPage}"
+        };
+
+        if (!string.IsNullOrWhiteSpace(_view))
+        {
+            query.Add($"view={_view}");
+        }
+
+        if (_contactIdFilter is > 0)
+        {
+            query.Add($"contact={Uri.EscapeDataString(ContactReference.ForEnvironment(TokenStore.ConnectedEnvironment, _contactIdFilter.Value).Uri)}");
+        }
+
+        return $"recurring_invoices?{string.Join('&', query)}";
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string FormatDate(DateOnly? value) =>
+        value is null ? "-" : value.Value.ToString("yyyy-MM-dd");
+
+    private static string GetDetailHref(long id) => $"/recurring-invoices/detail?id={id}";
+
+    private sealed record RecurringInvoiceRow(
+        int Index,
+        long Id,
+        string? Reference,
+        string Status,
+        string Frequency,
+        string? ContactName,
+        DateOnly? NextRecursOn);
+}

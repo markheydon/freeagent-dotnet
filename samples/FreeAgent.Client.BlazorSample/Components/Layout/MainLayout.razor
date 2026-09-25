@@ -136,6 +136,15 @@
                 </MudNavLink>
             </MudNavGroup>
 
+            <MudNavGroup Title="Recurring invoices" Icon="@Icons.Material.Filled.Autorenew" Expanded="@IsRecurringInvoicesRoute">
+                <MudNavLink Href="/recurring-invoices" Icon="@Icons.Material.Filled.AllInclusive">
+                    Recurring invoices list
+                </MudNavLink>
+                <MudNavLink Href="/recurring-invoices/detail" Icon="@Icons.Material.Filled.Visibility">
+                    Recurring invoice detail
+                </MudNavLink>
+            </MudNavGroup>
+
             <MudNavGroup Title="Projects and time" Icon="@Icons.Material.Filled.Work" Expanded="@IsProjectsRoute">
                 <MudNavLink Href="/projects" Icon="@Icons.Material.Filled.AllInclusive">
                     Projects list
@@ -265,6 +274,10 @@
     private bool IsEstimatesRoute =>
         CurrentPath.Equals("estimates", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("estimates/", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsRecurringInvoicesRoute =>
+        CurrentPath.Equals("recurring-invoices", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("recurring-invoices/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsProjectsRoute =>
         CurrentPath.Equals("projects", StringComparison.OrdinalIgnoreCase)

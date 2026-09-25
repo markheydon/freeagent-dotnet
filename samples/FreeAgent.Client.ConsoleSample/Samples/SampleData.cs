@@ -3,6 +3,7 @@ using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Notes;
 using FreeAgent.Client.Models.Projects;
+using FreeAgent.Client.Models.RecurringInvoices;
 using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Timeslips;
 using FreeAgent.Client.Models.Users;
@@ -185,6 +186,22 @@ internal sealed class SampleData
         if (page.Items.Count == 0)
         {
             SampleContext.Skip("no estimates found in sandbox account");
+        }
+
+        return page.Items[0];
+    }
+
+    /// <summary>
+    /// Returns the first recurring invoice from the recurring invoices list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A recurring invoice.</returns>
+    public async Task<RecurringInvoice> GetFirstRecurringInvoiceAsync(CancellationToken cancellationToken = default)
+    {
+        var page = await _context.Client.RecurringInvoices.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+        if (page.Items.Count == 0)
+        {
+            SampleContext.Skip("no recurring invoices found in sandbox account");
         }
 
         return page.Items[0];
