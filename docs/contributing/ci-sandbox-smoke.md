@@ -6,7 +6,7 @@ nav_order: 3
 
 # CI sandbox smoke
 
-The **Console Sample Smoke** job in [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) runs `samples/FreeAgent.Client.ConsoleSample` with `--run-all` against the FreeAgent **sandbox** API.
+The **Console Sample Smoke** job in [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) runs `samples/FreeAgent.Client.ConsoleSample` with `--seed-turpinverse --run-all` against the FreeAgent **sandbox** API.
 
 Default CI (`verify`, `build-and-test`) uses mocked HTTP handlers only. Live sandbox smoke is an additional signal that the SDK still works against a real OAuth-protected API.
 
@@ -14,7 +14,7 @@ Default CI (`verify`, `build-and-test`) uses mocked HTTP handlers only. Live san
 
 `--run-all` is a **live integration harness**: it creates, updates, and deletes probe data in the connected sandbox account (invoices, contacts, notes, and similar). Use a dedicated CI sandbox identity (recommended below), not a production account.
 
-The console sample refuses `--run-all` when the resolved environment is not sandbox. See [#136](https://github.com/markheydon/freeagent-dotnet/issues/136) for the write-guard contract.
+The console sample refuses `--run-all` and `--seed-turpinverse` when the resolved environment is not sandbox. See [#136](https://github.com/markheydon/freeagent-dotnet/issues/136) for the write-guard contract.
 
 ## What you need
 
@@ -58,7 +58,7 @@ http://127.0.0.1:8765/callback
 
    ```bash
    export FREEAGENT_REFRESH_TOKEN="<refresh-token-from-step-2>"
-   dotnet run -- --run-all
+   dotnet run -- --seed-turpinverse --run-all
    ```
 
 ## Configure GitHub repository secrets
@@ -94,7 +94,24 @@ Before `--run-all`, the job:
 
 1. Refreshes the access token via [`scripts/ci/refresh-freeagent-access-token.sh`](../../scripts/ci/refresh-freeagent-access-token.sh)
 2. Registers the access token with GitHub Actions log masking (`::add-mask::`) before passing it to the smoke step — repository secrets are masked automatically, but step outputs are not
-3. Runs the console sample smoke suite with the fresh access token
+3. Seeds Turpinverse canon data with `--seed-turpinverse`, then runs the console sample smoke suite with `--run-all` using the fresh access token
+
+Seeding upserts contacts, projects, tasks, sales documents, notes, and timeslips by stable keys. It is idempotent but does not remove stale sandbox records — delete unwanted probe data manually when refreshing a CI sandbox.
+
+Turpinverse canon is pinned by commit SHA in the console sample `appsettings.json` (`Turpinverse:CanonRef`) so CI does not drift when upstream `main` changes. Bump the SHA deliberately when adopting new canon fixtures.
+
+The seed step adds many API calls before smoke (list + upsert per canon item, with 600 ms pacing). The job timeout is 25 minutes, which should remain sufficient; watch the first CI run after enabling seed.
+
+Canon `Paid` invoices are seeded as sent/open only; recording bank payments is out of scope for the Turpinverse fixtures.
+
+### Known smoke failures (tracked separately)
+
+The **Console Sample Smoke** job may still fail on `--run-all` examples tracked in open issues:
+
+- [#138](https://github.com/markheydon/freeagent-dotnet/issues/138) — estimate create returns `"status is not valid"` (blocks Estimates examples and Turpinverse quote seeding)
+- [#139](https://github.com/markheydon/freeagent-dotnet/issues/139) — invoice "mark as scheduled" sample uses an invalid starting state
+
+These are pre-existing console sample/SDK workflow bugs, not regressions from the Turpinverse seed orchestrator itself.
 
 If FreeAgent returns a new refresh token during that exchange, update the `FREEAGENT_REFRESH_TOKEN` repository secret manually (GitHub Actions cannot rotate secrets with the default `GITHUB_TOKEN`).
 

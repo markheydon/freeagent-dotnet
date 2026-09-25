@@ -1,3 +1,5 @@
+using FreeAgent.Client.Samples.Shared.Seeding;
+
 namespace FreeAgent.Client.ConsoleSample;
 
 /// <summary>
@@ -6,12 +8,7 @@ namespace FreeAgent.Client.ConsoleSample;
 internal static class RunAllHttpClientOptions
 {
     /// <summary>
-    /// FreeAgent allows 120 requests per minute per user. Six hundred milliseconds between
-    /// outbound calls keeps a full smoke run under that ceiling with headroom.
+    /// Creates pacing options for non-interactive smoke and bulk seed runs.
     /// </summary>
-    public static FreeAgentHttpClientOptions Create() =>
-        new()
-        {
-            MinimumRequestSpacing = TimeSpan.FromMilliseconds(600),
-        };
+    public static FreeAgentHttpClientOptions Create() => SampleHttpClientPacing.CreateRunAllOptions();
 }

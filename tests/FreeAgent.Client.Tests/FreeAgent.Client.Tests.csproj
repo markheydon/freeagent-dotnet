@@ -27,6 +27,7 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
     <ProjectReference Include="..\..\samples\FreeAgent.Client.ConsoleSample\FreeAgent.Client.ConsoleSample.csproj" />
+    <ProjectReference Include="..\..\samples\FreeAgent.Client.Samples.Shared\FreeAgent.Client.Samples.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,10 +36,6 @@
 
   <ItemGroup>
     <Compile Include="..\..\samples\FreeAgent.Client.BlazorSample\Services\ModelWireDiagnostics.cs" Link="Sample\ModelWireDiagnostics.cs" />
-    <Compile Include="..\..\samples\FreeAgent.Client.BlazorSample\Services\Turpinverse\TurpinverseCanonClient.cs" Link="Sample\Turpinverse\TurpinverseCanonClient.cs" />
-    <Compile Include="..\..\samples\FreeAgent.Client.BlazorSample\Services\Turpinverse\TurpinverseCanonModels.cs" Link="Sample\Turpinverse\TurpinverseCanonModels.cs" />
-    <Compile Include="..\..\samples\FreeAgent.Client.BlazorSample\Services\Turpinverse\TurpinverseCanonOptions.cs" Link="Sample\Turpinverse\TurpinverseCanonOptions.cs" />
-    <Compile Include="..\..\samples\FreeAgent.Client.BlazorSample\Services\Turpinverse\TurpinverseContactMapper.cs" Link="Sample\Turpinverse\TurpinverseContactMapper.cs" />
   </ItemGroup>
 
 </Project>

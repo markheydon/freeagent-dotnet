@@ -1,0 +1,212 @@
+@page "/developer/turpinverse-seed"
+@using FreeAgent.Client.Samples.Shared.Turpinverse
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject NavigationManager NavigationManager
+@inject TurpinverseSeedOrchestrator TurpinverseSeedOrchestrator
+
+<PageTitle>Turpinverse seed - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Developer tooling"
+                         Title="Turpinverse bulk seed"
+                         CallUnderTest="TurpinverseSeedOrchestrator.SeedAllAsync(...)"
+                         Description="Seeds contacts, projects, tasks, sales documents, notes, and timeslips from upstream Turpinverse canon in dependency order. Idempotent upserts use stable keys such as email, contract reference, and turpinverse: references."
+                         EndpointPath="Multiple /v2 endpoints"
+                         DocsUrl="https://turpinverse.uk/" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-3">
+            This tooling page needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+
+    @if (TokenStore.IsConnected && !IsSandboxConnection)
+    {
+        <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Class="mb-3">
+            Sandbox-only tooling: your current OAuth session targets <strong>@ConnectedEnvironmentName</strong>.
+            Reconnect using the sandbox environment to seed Turpinverse data safely.
+        </MudAlert>
+    }
+
+    @if (_running)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="@IsProgressIndeterminate" Value="@ProgressValue" Class="mb-3" />
+    }
+
+    <MudGrid Spacing="3">
+        <MudItem xs="12" md="4">
+            <MudPaper Class="workbench-panel" Elevation="0">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h6">Seed workflow</MudText>
+
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Runs all supported Turpinverse seeders in order: contacts, projects, tasks, invoices, estimates, credit notes, notes, and timeslips.
+                        Per-resource probe pages still expose individual seed buttons for targeted runs.
+                    </MudText>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Disabled="@IsExecutionDisabled"
+                               StartIcon="@Icons.Material.Filled.Agriculture"
+                               OnClick="SeedAllAsync">
+                        @if (_running)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Seeding...</span>
+                        }
+                        else
+                        {
+                            <span>Seed all Turpinverse data</span>
+                        }
+                    </MudButton>
+
+                    @if (_runResult is not null)
+                    {
+                        <MudAlert Severity="@(_runResult.Succeeded ? Severity.Success : Severity.Warning)" Variant="Variant.Outlined">
+                            Completed in @_runResult.Elapsed.TotalSeconds.ToString("0.0")s —
+                            created @_runResult.TotalCreated, updated @_runResult.TotalUpdated, failures @_runResult.TotalFailures.
+                        </MudAlert>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(_error))
+                    {
+                        <ApiErrorDiagnostics ErrorMessage="@_error" />
+                    }
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="8">
+            <MudPaper Class="workbench-panel" Elevation="0">
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.h6">Stage results</MudText>
+
+                    @if (_stageResults.Count == 0 && !_running)
+                    {
+                        <MudText Typo="Typo.body2" Class="hero-copy">
+                            Run the bulk seed to populate your sandbox with Turpinverse canon data before probe pages or console <code>--run-all</code> smoke.
+                        </MudText>
+                    }
+
+                    @if (_stageResults.Count > 0)
+                    {
+                        <MudTable Items="@_stageResults" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh>Stage</MudTh>
+                                <MudTh>Created</MudTh>
+                                <MudTh>Updated</MudTh>
+                                <MudTh>Failures</MudTh>
+                                <MudTh>Status</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Stage">@FormatStage(context.Stage)</MudTd>
+                                <MudTd DataLabel="Created">@context.Created</MudTd>
+                                <MudTd DataLabel="Updated">@context.Updated</MudTd>
+                                <MudTd DataLabel="Failures">@context.Failures.Count</MudTd>
+                                <MudTd DataLabel="Status">
+                                    <MudChip T="string"
+                                             Variant="Variant.Filled"
+                                             Size="Size.Small"
+                                             Color="@(context.Succeeded ? Color.Success : Color.Warning)">
+                                        @(context.Succeeded ? "OK" : "Issues")
+                                    </MudChip>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+
+                        @foreach (var stage in _stageResults.Where(static stage => stage.Failures.Count > 0))
+                        {
+                            <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Dense="true">
+                                <strong>@FormatStage(stage.Stage):</strong>
+                                @string.Join("; ", stage.Failures)
+                            </MudAlert>
+                        }
+                    }
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private bool _running;
+    private string? _error;
+    private TurpinverseSeedRunResult? _runResult;
+    private readonly List<TurpinverseSeedStageResult> _stageResults = new();
+
+    private bool IsConnected => TokenStore.IsConnected;
+
+    private bool IsSandboxConnection =>
+        IsConnected && TokenStore.ConnectedEnvironment == FreeAgentEnvironment.Sandbox;
+
+    private bool IsExecutionDisabled => _running || !IsConnected || !IsSandboxConnection;
+
+    private string ConnectedEnvironmentName => TokenStore.ConnectedEnvironment.ToString();
+
+    private int TotalStageCount => TurpinverseSeedStageOrder.All.Count;
+
+    private bool IsProgressIndeterminate => _running && _stageResults.Count == 0;
+
+    private double ProgressValue =>
+        _stageResults.Count == 0 ? 0 : (_stageResults.Count / (double)TotalStageCount) * 100d;
+
+    private async Task SeedAllAsync()
+    {
+        if (IsExecutionDisabled)
+        {
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _running = true;
+        _error = null;
+        _runResult = null;
+        _stageResults.Clear();
+
+        try
+        {
+            using var client = OAuthService.CreatePacedFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var progress = new Progress<TurpinverseSeedStageProgress>(update =>
+            {
+                _stageResults.Add(update.Result);
+                _ = InvokeAsync(StateHasChanged);
+            });
+
+            _runResult = await TurpinverseSeedOrchestrator.SeedAllAsync(client, progress);
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    private static string FormatStage(TurpinverseSeedStage stage) => stage switch
+    {
+        TurpinverseSeedStage.Contacts => "Contacts",
+        TurpinverseSeedStage.Projects => "Projects",
+        TurpinverseSeedStage.Tasks => "Tasks",
+        TurpinverseSeedStage.Invoices => "Invoices",
+        TurpinverseSeedStage.Estimates => "Estimates",
+        TurpinverseSeedStage.CreditNotes => "Credit notes",
+        TurpinverseSeedStage.Notes => "Notes",
+        TurpinverseSeedStage.Timeslips => "Timeslips",
+        _ => stage.ToString(),
+    };
+}

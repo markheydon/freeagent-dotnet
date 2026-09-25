@@ -22,6 +22,7 @@ public class SandboxWriteGuardTests
             () => SandboxWriteGuard.EnsureRunAllAllowed(FreeAgentEnvironment.Production));
 
         Assert.Contains("sandbox", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("--seed-turpinverse", exception.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Production", exception.Message, StringComparison.Ordinal);
     }
 

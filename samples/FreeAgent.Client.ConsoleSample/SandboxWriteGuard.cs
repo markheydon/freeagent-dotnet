@@ -14,7 +14,7 @@ internal static class SandboxWriteGuard
     public const string AllowProductionWritesVariableName = "FREEAGENT_ALLOW_PRODUCTION_WRITES";
 
     /// <summary>
-    /// Ensures <c>--run-all</c> smoke runs target sandbox only.
+    /// Ensures non-interactive sandbox smoke and seed runs target sandbox only.
     /// </summary>
     /// <param name="environment">Resolved API environment.</param>
     /// <exception cref="InvalidOperationException">When the environment is not sandbox.</exception>
@@ -26,7 +26,7 @@ internal static class SandboxWriteGuard
         }
 
         throw new InvalidOperationException(
-            $"--run-all requires the sandbox environment; connected environment is {environment}. " +
+            $"--run-all and --seed-turpinverse require the sandbox environment; connected environment is {environment}. " +
             $"Set {SampleEnvironment.EnvironmentVariableName}=Sandbox or use the default console sample configuration.");
     }
 

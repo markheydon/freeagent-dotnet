@@ -1,4 +1,5 @@
-using FreeAgent.Client.BlazorSample.Services.Turpinverse;
+#if NET10_0
+using FreeAgent.Client.Samples.Shared.Turpinverse;
 using FreeAgent.Client.Models.Contacts;
 
 namespace FreeAgent.Client.Tests.Sample;
@@ -120,3 +121,5 @@ public class TurpinverseContactMapperTests
         Assert.Equal("Example Org (Backup Persona)", displayName);
     }
 }
+
+#endif
