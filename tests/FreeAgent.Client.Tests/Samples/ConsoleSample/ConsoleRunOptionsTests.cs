@@ -37,6 +37,24 @@ public class ConsoleRunOptionsTests
     {
         Assert.Throws<InvalidOperationException>(() => ConsoleRunOptions.Parse(["--category"]));
     }
+
+    [Fact]
+    public void Parse_BootstrapRefreshToken_SetsBootstrapRefreshToken()
+    {
+        var options = ConsoleRunOptions.Parse(["--bootstrap-refresh-token"]);
+
+        Assert.True(options.BootstrapRefreshToken);
+        Assert.False(options.RunAll);
+    }
+
+    [Fact]
+    public void Parse_BootstrapRefreshTokenWithRunAll_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => ConsoleRunOptions.Parse(["--bootstrap-refresh-token", "--run-all"]));
+
+        Assert.Contains("--run-all", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 #endif

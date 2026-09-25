@@ -25,6 +25,8 @@ For setup and usage questions, please use [GitHub Discussions](https://github.co
 
 See **[docs/contributing-setup.md](docs/contributing-setup.md)** for SDK installation, verifying `dotnet --list-sdks`, and building `FreeAgent.slnx`.
 
+For live sandbox smoke in GitHub Actions, see **[docs/contributing/ci-sandbox-smoke.md](docs/contributing/ci-sandbox-smoke.md)**.
+
 Requirements:
 
 - .NET 8.0 SDK and runtime (required to build and test the SDK `net8.0` target).
