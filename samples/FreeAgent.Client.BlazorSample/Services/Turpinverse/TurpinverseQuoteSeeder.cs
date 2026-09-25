@@ -108,7 +108,12 @@ public sealed class TurpinverseQuoteSeeder
             return new TurpinverseQuoteSeedResult(created, QuoteSeedAction.Created);
         }
 
-        var estimateId = existingMatch.GetResourceId();
+        if (!existingMatch.TryGetResourceId(out var estimateId))
+        {
+            throw new InvalidOperationException(
+                $"Existing estimate '{reference}' does not have a parseable resource URL.");
+        }
+
         var current = await client.Estimates.GetEstimateAsync(estimateId, cancellationToken);
         MergeWritableFields(current, desired);
         var updated = await client.Estimates.UpdateEstimateAsync(estimateId, current, cancellationToken);
@@ -210,12 +215,23 @@ public sealed class TurpinverseQuoteSeeder
         TurpinverseQuote canon,
         CancellationToken cancellationToken)
     {
-        var estimateId = estimate.GetResourceId();
+        if (!estimate.TryGetResourceId(out var estimateId))
+        {
+            throw new InvalidOperationException("Estimate does not have a parseable resource URL.");
+        }
+
         var targetStatus = TurpinverseQuoteMapper.MapStatus(canon.Status);
 
         if (estimate.Status == targetStatus)
         {
             return estimate;
+        }
+
+        if (targetStatus == EstimateStatus.Invoiced)
+        {
+            return estimate.Status == EstimateStatus.Invoiced
+                ? estimate
+                : await client.Estimates.ConvertToInvoiceAsync(estimateId, cancellationToken);
         }
 
         if (targetStatus == EstimateStatus.Draft)
@@ -264,26 +280,43 @@ public sealed class TurpinverseQuoteSeeder
             return;
         }
 
-        var sharedCount = Math.Min(currentItems.Count, desiredItems.Count);
-        for (var index = 0; index < sharedCount; index++)
+        var currentItemsByPosition = currentItems
+            .Where(static item => item.Position is not null)
+            .GroupBy(static item => item.Position!.Value)
+            .ToDictionary(static group => group.Key, static group => group.First());
+
+        foreach (var desiredItem in desiredItems)
         {
-            if (desiredItems[index].ItemId is null && currentItems[index].ItemId is long itemId)
+            if (desiredItem.ItemId is not null || desiredItem.Position is not decimal position)
             {
-                desiredItems[index].ItemId = itemId;
+                continue;
+            }
+
+            if (currentItemsByPosition.TryGetValue(position, out var currentItem)
+                && currentItem.ItemId is long itemId)
+            {
+                desiredItem.ItemId = itemId;
             }
         }
 
-        if (currentItems.Count <= desiredItems.Count)
-        {
-            return;
-        }
+        var desiredPositions = desiredItems
+            .Where(static item => item.Position is not null)
+            .Select(static item => item.Position!.Value)
+            .ToHashSet();
 
-        for (var index = desiredItems.Count; index < currentItems.Count; index++)
+        foreach (var currentItem in currentItems)
         {
-            if (currentItems[index].ItemId is long itemId)
+            if (currentItem.ItemId is not long itemId)
             {
-                desiredItems.Add(new EstimateItem { ItemId = itemId, Destroy = 1 });
+                continue;
             }
+
+            if (currentItem.Position is decimal position && desiredPositions.Contains(position))
+            {
+                continue;
+            }
+
+            desiredItems.Add(new EstimateItem { ItemId = itemId, Destroy = 1 });
         }
     }
 }

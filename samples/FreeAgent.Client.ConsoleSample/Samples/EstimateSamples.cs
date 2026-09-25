@@ -135,6 +135,27 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteField("Text", string.IsNullOrWhiteSpace(text) ? "(not set)" : text);
     }
 
+    [ConsoleSample(Name = "Duplicate probe estimate and delete", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task DuplicateProbeEstimateAndDeleteAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftEstimateAsync(cancellationToken);
+        var duplicate = await context.Client.Estimates.DuplicateEstimateAsync(draft.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Duplicated probe estimate");
+        SampleOutput.WriteField("Source ID", draft.ResourceId);
+        SampleOutput.WriteField("Duplicate ID", duplicate.ResourceId);
+        SampleOutput.WriteField("Status", duplicate.Status);
+        SampleOutput.WriteField("Reference", duplicate.Reference);
+
+        await context.Client.Estimates.DeleteEstimateAsync(duplicate.ResourceId, cancellationToken);
+        await context.Client.Estimates.DeleteEstimateAsync(draft.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted probe estimates");
+        SampleOutput.WriteField("Source ID", draft.ResourceId);
+        SampleOutput.WriteField("Duplicate ID", duplicate.ResourceId);
+    }
+
     private async Task<Estimate> CreateSampleDraftEstimateAsync(CancellationToken cancellationToken)
     {
         var contact = await context.Data.GetFirstContactAsync(cancellationToken);

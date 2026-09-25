@@ -231,7 +231,7 @@ Task<Estimate> ConvertToInvoiceAsync(long estimateId, CancellationToken cancella
 
 **HTTP:** `PUT /v2/estimates/:id/transitions/convert_to_invoice`
 
-Returns the updated estimate with an `invoice` link populated.
+Returns the updated estimate with an `invoice` link populated. When the transition response has no estimate body, the SDK fetches the estimate with `GET .../estimates/:id`.
 
 ---
 
@@ -280,6 +280,8 @@ Key properties:
 | `OmitBillingContactFromWrite` | `bool` | - | Exclude contact from update payload |
 | `OmitProjectFromWrite` | `bool` | - | Exclude project from update payload |
 | `OmitEstimateItemsFromWrite` | `bool` | - | Exclude line items from update payload |
+| `SalesTaxStatus` | `InvoiceSalesTaxStatus?` | `sales_tax_status` | Read-only on list/get responses; set per line item on create/update |
+| `SalesTaxValue` | `decimal?` | `sales_tax_value` | Read-only total from line items |
 | `Url` | `string` | `url` | |
 
 ## Errors

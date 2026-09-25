@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
@@ -502,17 +503,24 @@ public sealed class EstimateService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(estimateId);
 
-        var response = await _requestClient.PutAsync<EstimateResponse>(
-            $"estimates/{estimateId}/transitions/convert_to_invoice",
-            EmptyJsonContent,
-            cancellationToken);
-
-        if (response.Estimate is null)
+        try
         {
-            throw new FreeAgentApiException("Estimate data missing from API response");
+            var response = await _requestClient.PutAsync<EstimateResponse>(
+                $"estimates/{estimateId}/transitions/convert_to_invoice",
+                EmptyJsonContent,
+                cancellationToken);
+
+            if (response.Estimate is not null)
+            {
+                return response.Estimate;
+            }
+        }
+        catch (JsonException)
+        {
+            // Some environments return an empty transition body; fetch the updated estimate below.
         }
 
-        return response.Estimate;
+        return await GetEstimateAsync(estimateId, cancellationToken: cancellationToken);
     }
 
     /// <summary>

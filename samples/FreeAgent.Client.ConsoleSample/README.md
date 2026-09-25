@@ -100,7 +100,7 @@ dotnet run
 | Users | List users; get current user; get user by ID |
 | Email addresses | List email addresses |
 | Invoices | List invoices; stream all invoices via ListAutoPagingAsync; list invoices filtered by contact; list invoice timeline; get invoice by id; create draft invoice with one line item; update invoice comments; duplicate invoice; send invoice email (template); mark invoice as sent; mark invoice as scheduled; mark invoice as draft; mark invoice as cancelled; get invoice PDF; get default additional text; update default additional text; delete default additional text |
-| Estimates | List estimates; stream all estimates via ListAutoPagingAsync; list estimates filtered by contact; get estimate by id; create probe estimate and delete; mark estimate as sent; get estimate PDF; get default additional text |
+| Estimates | List estimates; stream all estimates via ListAutoPagingAsync; list estimates filtered by contact; get estimate by id; create probe estimate and delete; mark estimate as sent; duplicate probe estimate and delete; get estimate PDF; get default additional text |
 
 New SDK resource areas should add a matching `*Samples.cs` provider class under `Samples/`.
 

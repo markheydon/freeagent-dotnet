@@ -125,6 +125,24 @@ public class EstimateModelSerializationTests
     }
 
     [Fact]
+    public void DeserializeEstimate_MapsEstimateLevelSalesTaxStatus()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/estimates/3",
+              "sales_tax_status": "TAXABLE",
+              "sales_tax_value": "5.04"
+            }
+            """;
+
+        var estimate = JsonSerializer.Deserialize<Estimate>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(estimate);
+        Assert.Equal(InvoiceSalesTaxStatus.Taxable, estimate!.SalesTaxStatus);
+        Assert.Equal(5.04m, estimate.SalesTaxValue);
+    }
+
+    [Fact]
     public void EstimateReference_Parse_ReturnsTypedReference()
     {
         var reference = EstimateReference.Parse("https://api.freeagent.com/v2/estimates/99");
