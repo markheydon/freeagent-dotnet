@@ -18,6 +18,9 @@ internal sealed class EstimateWritePayload
     [JsonConverter(typeof(WriteLinkJsonConverter<ProjectReference>))]
     public WriteLink<ProjectReference>? Project { get; set; }
 
+    [JsonPropertyName("status")]
+    public EstimateStatus? Status { get; set; }
+
     [JsonPropertyName("estimate_type")]
     public EstimateType? EstimateType { get; set; }
 
@@ -55,7 +58,8 @@ internal sealed class EstimateWritePayload
         Estimate estimate,
         FreeAgentEnvironment environment,
         bool omitLineItems = false,
-        LinkedResourceWriteOptions linkOptions = default)
+        LinkedResourceWriteOptions linkOptions = default,
+        bool includeStatus = false)
     {
         ArgumentNullException.ThrowIfNull(estimate);
 
@@ -77,6 +81,7 @@ internal sealed class EstimateWritePayload
                 estimate.ProjectIdBacking,
                 estimate.ProjectLinkId,
                 linkOptions.OmitProject),
+            Status = includeStatus ? EstimateStatus.Draft : null,
             EstimateType = estimate.EstimateType,
             Reference = estimate.Reference,
             DatedOn = estimate.DatedOn,

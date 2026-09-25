@@ -275,13 +275,21 @@ public sealed class EstimateService
     /// <param name="estimate">Estimate attributes to create</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Created estimate</returns>
+    /// <remarks>
+    /// FreeAgent requires <c>status</c> on create. The SDK always sends <see cref="EstimateStatus.Draft"/>
+    /// regardless of <see cref="Estimate.Status"/> on the input model. Use transition methods to change
+    /// status after create.
+    /// </remarks>
     public async Task<Estimate> CreateEstimateAsync(Estimate estimate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(estimate);
 
         var content = FreeAgentJsonSerializer.CreateContent(new EstimateRequest
         {
-            Estimate = EstimateWritePayload.FromEstimate(estimate, _requestClient.Environment)
+            Estimate = EstimateWritePayload.FromEstimate(
+                estimate,
+                _requestClient.Environment,
+                includeStatus: true)
         });
 
         var response = await _requestClient.PostAsync<EstimateResponse>("estimates", content, cancellationToken);
