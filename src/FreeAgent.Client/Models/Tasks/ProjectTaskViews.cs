@@ -3,7 +3,7 @@ namespace FreeAgent.Client.Models.Tasks;
 /// <summary>
 /// View filter values for listing tasks.
 /// </summary>
-public static class TaskViews
+public static class ProjectTaskViews
 {
     /// <summary>All tasks (default).</summary>
     public const string All = "all";

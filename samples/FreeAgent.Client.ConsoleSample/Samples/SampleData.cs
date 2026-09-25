@@ -11,7 +11,6 @@ using FreeAgent.Client.Models.StockItems;
 using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Timeslips;
 using FreeAgent.Client.Models.Users;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
@@ -85,9 +84,9 @@ internal sealed class SampleData
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>A task.</returns>
-    public async Task<TaskModel> GetFirstTaskAsync(CancellationToken cancellationToken = default)
+    public async Task<ProjectTask> GetFirstTaskAsync(CancellationToken cancellationToken = default)
     {
-        var page = await _context.Client.Tasks.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+        var page = await _context.Client.ProjectTasks.ListAsync(perPage: 25, cancellationToken: cancellationToken);
         if (page.Items.Count == 0)
         {
             SampleContext.Skip("no tasks found in sandbox account");

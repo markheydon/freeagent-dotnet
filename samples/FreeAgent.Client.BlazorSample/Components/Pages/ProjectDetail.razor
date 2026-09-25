@@ -164,7 +164,7 @@
             {
                 _project = await client.Projects.GetProjectAsync(
                     _projectId.Value,
-                    new ProjectGetOptions { IncludeBillingContact = true });
+                    new ProjectGetOptions { IncludeContact = true });
                 _operationMessage = $"Loaded project {_projectId.Value}: {_project.Name}";
                 return $"projects/{_projectId}";
             },
@@ -304,7 +304,7 @@
                 _project = await client.Projects.CreateProjectAsync(new Project
                 {
                     Name = $"SDK probe project {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}",
-                    BillingContact = client.Urls.Contact(_contactId.Value),
+                    ContactId = _contactId.Value,
                     Status = ProjectStatus.Active,
                     Currency = CurrencyCode.GBP,
                     Budget = 0m,

@@ -104,7 +104,67 @@ public class InvoiceModelSerializationTests
     }
 
     [Fact]
-    public void WritePayload_OmitBillingContactFromWrite_ExcludesRoundTrippedContact()
+    public void WritePayload_ClearProjectId_SerialisesNullProject()
+    {
+        var invoice = JsonSerializer.Deserialize<Invoice>("""
+            {
+              "url": "https://api.freeagent.com/v2/invoices/1",
+              "contact": "https://api.freeagent.com/v2/contacts/8",
+              "project": "https://api.freeagent.com/v2/projects/5"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+        invoice.ProjectId = null;
+
+        var json = JsonSerializer.Serialize(
+            InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production),
+            FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"project\":null", json, StringComparison.Ordinal);
+        Assert.Contains("\"contact\":\"https://api.freeagent.com/v2/contacts/8\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_OmitProject_ExcludesProjectFromPayload()
+    {
+        var invoice = JsonSerializer.Deserialize<Invoice>("""
+            {
+              "url": "https://api.freeagent.com/v2/invoices/1",
+              "contact": "https://api.freeagent.com/v2/contacts/8",
+              "project": "https://api.freeagent.com/v2/projects/5"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+
+        var json = JsonSerializer.Serialize(
+            InvoiceWritePayload.FromInvoice(
+                invoice,
+                FreeAgentEnvironment.Production,
+                linkOptions: new LinkedResourceWriteOptions(OmitProject: true)),
+            FreeAgentJsonSerializer.Options);
+
+        Assert.DoesNotContain("\"project\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"contact\":\"https://api.freeagent.com/v2/contacts/8\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_SetCategoryNominalCode_OverridesRoundTrippedCategory()
+    {
+        var item = JsonSerializer.Deserialize<InvoiceItem>("""
+            {
+              "description": "Consulting",
+              "category": "https://api.freeagent.com/v2/categories/001"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+        item.CategoryNominalCode = "002";
+
+        var json = JsonSerializer.Serialize(
+            InvoiceItemWritePayload.FromInvoiceItem(item, FreeAgentEnvironment.Production),
+            FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("categories/002", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_SetContactId_OverridesRoundTrippedContact()
     {
         var invoice = JsonSerializer.Deserialize<Invoice>("""
             {
@@ -114,22 +174,21 @@ public class InvoiceModelSerializationTests
               "payment_terms_in_days": 14
             }
             """)!;
-        invoice.OmitBillingContactFromWrite = true;
+        invoice.ContactId = 3;
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
 
-        Assert.Null(payload.Contact);
+        Assert.Equal("https://api.freeagent.com/v2/contacts/3", payload.Contact!.Value.Uri);
     }
 
     [Fact]
-    public void WritePayload_OmitInvoiceItemsFromWrite_ExcludesLineItems()
+    public void WritePayload_OmitLineItems_ExcludesLineItems()
     {
         var invoice = new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
-            OmitInvoiceItemsFromWrite = true,
             InvoiceItems =
             [
                 new InvoiceItem
@@ -140,7 +199,7 @@ public class InvoiceModelSerializationTests
             ]
         };
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production, omitLineItems: true);
 
         Assert.Null(payload.InvoiceItems);
     }
@@ -150,7 +209,7 @@ public class InvoiceModelSerializationTests
     {
         var invoice = new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
             InvoiceItems =
@@ -164,7 +223,7 @@ public class InvoiceModelSerializationTests
             ]
         };
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"id\":42", json, StringComparison.Ordinal);
@@ -176,7 +235,7 @@ public class InvoiceModelSerializationTests
     {
         var invoice = new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
             InvoiceItems =
@@ -187,12 +246,12 @@ public class InvoiceModelSerializationTests
                     ItemType = InvoiceItemType.Hours,
                     Quantity = 2,
                     Price = 100,
-                    Category = CategoryReference.ForEnvironment(FreeAgentEnvironment.Production, "001")
+                    CategoryNominalCode = "001"
                 }
             ]
         };
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"contact\":\"https://api.freeagent.com/v2/contacts/2\"", json, StringComparison.Ordinal);
@@ -251,7 +310,7 @@ public class InvoiceModelSerializationTests
             }
             """, FreeAgentJsonSerializer.Options)!;
 
-        var payload = InvoiceItemWritePayload.FromInvoiceItem(item);
+        var payload = InvoiceItemWritePayload.FromInvoiceItem(item, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"stock_item\":\"https://api.freeagent.com/v2/stock_items/3\"", json, StringComparison.Ordinal);
@@ -262,7 +321,7 @@ public class InvoiceModelSerializationTests
     {
         var invoice = new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
             InvoiceItems =
@@ -273,12 +332,12 @@ public class InvoiceModelSerializationTests
                     ItemType = InvoiceItemType.Stock,
                     Quantity = 1,
                     Price = 10,
-                    StockItem = StockItemReference.Parse("https://api.freeagent.com/v2/stock_items/3")
+                    StockItemId = 3
                 }
             ]
         };
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"stock_item\":\"https://api.freeagent.com/v2/stock_items/3\"", json, StringComparison.Ordinal);
@@ -289,7 +348,7 @@ public class InvoiceModelSerializationTests
     {
         var invoice = new Invoice
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 14,
             InvoiceItems =
@@ -302,7 +361,7 @@ public class InvoiceModelSerializationTests
             ]
         };
 
-        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"id\":42", json, StringComparison.Ordinal);

@@ -31,8 +31,8 @@ Task<PaginatedResponse<Timeslip>> ListAsync(
     bool? nested = null,
     UserReference? user = null,
     long? userId = null,
-    TaskReference? task = null,
-    long? taskId = null,
+    ProjectTaskReference? projectTask = null,
+    long? projectTaskId = null,
     ProjectReference? project = null,
     long? projectId = null,
     CancellationToken cancellationToken = default)
@@ -49,8 +49,8 @@ Task<PaginatedResponse<Timeslip>> ListAsync(
 | `nested` | `bool?` | No | `null` | `nested` (`true` / `false`) |
 | `user` | `UserReference?` | No | `null` | `user` (URI) |
 | `userId` | `long?` | No | `null` | `user` (URI from `client.Urls.User(id)`) |
-| `task` | `TaskReference?` | No | `null` | `task` (URI) |
-| `taskId` | `long?` | No | `null` | `task` (URI from `client.Urls.Task(id)`) |
+| `projectTask` | `ProjectTaskReference?` | No | `null` | `task` (URI) |
+| `projectTaskId` | `long?` | No | `null` | `task` (URI from `client.Urls.ProjectTask(id)`) |
 | `project` | `ProjectReference?` | No | `null` | `project` (URI) |
 | `projectId` | `long?` | No | `null` | `project` (URI from `client.Urls.Project(id)`) |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
@@ -68,7 +68,7 @@ var page = await client.Timeslips.ListAsync(
     view: TimeslipViews.Unbilled,
     fromDate: new DateOnly(2024, 1, 1),
     toDate: new DateOnly(2024, 3, 31),
-    taskId: 42,
+    projectTaskId: 42,
     nested: true);
 ```
 
@@ -86,8 +86,8 @@ IAsyncEnumerable<Timeslip> ListAutoPagingAsync(
     bool? nested = null,
     UserReference? user = null,
     long? userId = null,
-    TaskReference? task = null,
-    long? taskId = null,
+    ProjectTaskReference? projectTask = null,
+    long? projectTaskId = null,
     ProjectReference? project = null,
     long? projectId = null,
     CancellationToken cancellationToken = default)
@@ -123,7 +123,7 @@ Task<Timeslip> GetTimeslipAsync(
 
 **HTTP:** `GET /v2/timeslips/:id`
 
-When `options.IncludeTask`, `IncludeProject`, or `IncludeUser` is `true`, the SDK fetches the linked resource if the response contains only a URI.
+When `options.IncludeProjectTask`, `IncludeProject`, or `IncludeUser` is `true`, the SDK fetches the linked resource if the response contains only a URI.
 
 **Sample:**
 
@@ -132,7 +132,7 @@ var timeslip = await client.Timeslips.GetTimeslipAsync(
     25,
     new TimeslipGetOptions
     {
-        IncludeTask = true,
+        IncludeProjectTask = true,
         IncludeProject = true,
         IncludeUser = true
     });
@@ -160,9 +160,9 @@ using FreeAgent.Client.Models.Timeslips;
 
 var timeslip = await client.Timeslips.CreateTimeslipAsync(new Timeslip
 {
-    LinkedTask = client.Urls.Task(1),
-    LinkedProject = client.Urls.Project(1),
-    LinkedUser = client.Urls.User(1),
+    ProjectTaskId = 1,
+    ProjectId = 1,
+    UserId = 1,
     DatedOn = new DateOnly(2024, 3, 18),
     Hours = 1.5m,
     Comment = "Planning session"
@@ -251,7 +251,7 @@ Task<Timeslip> StopTimerAsync(long timeslipId, CancellationToken cancellationTok
 
 | Property | Type | Purpose |
 |----------|------|---------|
-| `IncludeTask` | `bool` | Fetch linked task when only a URI is returned |
+| `IncludeProjectTask` | `bool` | Fetch linked task when only a URI is returned |
 | `IncludeProject` | `bool` | Fetch linked project when only a URI is returned |
 | `IncludeUser` | `bool` | Fetch linked user when only a URI is returned |
 
@@ -261,12 +261,12 @@ Key properties:
 
 | Property | Type | Wire name | Notes |
 |----------|------|-----------|-------|
-| `LinkedTask` | `TaskReference?` | `task` | Write only |
-| `LinkedProject` | `ProjectReference?` | `project` | Write only |
-| `LinkedUser` | `UserReference?` | `user` | Write only |
-| `TaskId` | `long?` | - | Parsed from `task` URI |
-| `ProjectId` | `long?` | - | Parsed from `project` URI |
-| `UserId` | `long?` | - | Parsed from `user` URI |
+| `ProjectTaskId` | `long?` | `task` | Read: parsed from URI; write: task id |
+| `ProjectId` | `long?` | `project` | Read: parsed from URI; write: project id |
+| `UserId` | `long?` | `user` | Read: parsed from URI; write: user id |
+| `ProjectTask` | `ProjectTask?` | `task` | Nested or hydrated task |
+| `Project` | `Project?` | `project` | Nested or hydrated project |
+| `User` | `User?` | `user` | Nested or hydrated user |
 | `DatedOn` | `DateOnly?` | `dated_on` | Required on create |
 | `Hours` | `decimal?` | `hours` | Required on create |
 | `Comment` | `string?` | `comment` | |
@@ -276,11 +276,11 @@ Key properties:
 | `UpdatedAt` | `DateTimeOffset?` | `updated_at` | Read-only |
 | `Url` | `string` | `url` | |
 
-## Reference types
+## Reference types (list filters and inbound URLs)
 
-Use `client.Urls` to build environment-correct URIs:
+Use `client.Urls` or `*Reference.Parse` for list filters and webhook URL parsing — not for create or update payloads:
 
-- `client.Urls.Task(id)` → `TaskReference`
+- `client.Urls.ProjectTask(id)` → `ProjectTaskReference`
 - `client.Urls.Project(id)` → `ProjectReference`
 - `client.Urls.User(id)` → `UserReference`
 - `client.Urls.Timeslip(id)` → `TimeslipReference`

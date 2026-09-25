@@ -254,7 +254,7 @@ public sealed class InvoiceService
 
         var content = FreeAgentJsonSerializer.CreateContent(new InvoiceRequest
         {
-            Invoice = InvoiceWritePayload.FromInvoice(invoice)
+            Invoice = InvoiceWritePayload.FromInvoice(invoice, _requestClient.Environment)
         });
 
         var response = await _requestClient.PostAsync<InvoiceResponse>("invoices", content, cancellationToken);
@@ -295,11 +295,13 @@ public sealed class InvoiceService
     /// </summary>
     /// <param name="invoiceId">Invoice identifier from the resource URL</param>
     /// <param name="invoice">Invoice attributes to update</param>
+    /// <param name="options">Optional update behaviour</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated invoice</returns>
     public async Task<Invoice> UpdateInvoiceAsync(
         long invoiceId,
         Invoice invoice,
+        InvoiceUpdateOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(invoiceId);
@@ -307,7 +309,11 @@ public sealed class InvoiceService
 
         var content = FreeAgentJsonSerializer.CreateContent(new InvoiceRequest
         {
-            Invoice = InvoiceWritePayload.FromInvoice(invoice)
+            Invoice = InvoiceWritePayload.FromInvoice(
+                invoice,
+                _requestClient.Environment,
+                options?.OmitLineItems == true,
+                LinkedResourceWriteOptions.FromInvoiceUpdate(options))
         });
 
         var response = await _requestClient.PutAsync<InvoiceResponse>($"invoices/{invoiceId}", content, cancellationToken);

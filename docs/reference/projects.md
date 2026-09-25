@@ -96,14 +96,14 @@ Task<Project> GetProjectAsync(
 
 **HTTP:** `GET /v2/projects/:id`
 
-When `options.IncludeBillingContact` is `true`, the SDK fetches the billing contact if the project response contains only a contact URI.
+When `options.IncludeContact` is `true`, the SDK fetches the billing contact if the project response contains only a contact URI.
 
 **Sample:**
 
 ```csharp
 var project = await client.Projects.GetProjectAsync(
     123,
-    new ProjectGetOptions { IncludeBillingContact = true });
+    new ProjectGetOptions { IncludeContact = true });
 ```
 
 ---
@@ -121,25 +121,30 @@ Task<Project> CreateProjectAsync(Project project, CancellationToken cancellation
 
 **HTTP:** `POST /v2/projects`
 
-Set `project.BillingContact` to assign a billing contact on create.
+Set `project.ContactId` to assign a billing contact on create.
 
 ---
 
 ### UpdateProjectAsync
 
 ```csharp
-Task<Project> UpdateProjectAsync(long projectId, Project project, CancellationToken cancellationToken = default)
+Task<Project> UpdateProjectAsync(
+    long projectId,
+    Project project,
+    ProjectUpdateOptions? options = null,
+    CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
 | `projectId` | `long` | Yes | - | path `:id` |
 | `project` | `Project` | Yes | - | `project` envelope |
+| `options` | `ProjectUpdateOptions?` | No | `null` | - |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `PUT /v2/projects/:id`
 
-When `BillingContact` is omitted on update, the SDK round-trips the existing contact link. Set `OmitBillingContactFromWrite` to `true` to exclude the contact from the payload.
+On update, the SDK round-trips `ContactId` from the read model when present. Set `ContactId = null` to clear the billing contact. Pass `new ProjectUpdateOptions { OmitContact = true }` to update other fields without sending the contact link.
 
 ---
 
@@ -175,7 +180,13 @@ Task DeleteProjectAsync(long projectId, CancellationToken cancellationToken = de
 
 | Property | Type | Purpose |
 |----------|------|---------|
-| `IncludeBillingContact` | `bool` | Fetch billing contact when only a URI is returned |
+| `IncludeContact` | `bool` | Fetch billing contact when only a URI is returned |
+
+## ProjectUpdateOptions
+
+| Property | Type | Purpose |
+|----------|------|---------|
+| `OmitContact` | `bool` | Exclude the billing contact link from the update payload |
 
 ## Project model
 
@@ -189,10 +200,9 @@ Key properties:
 | `Budget` | `decimal?` | `budget` | |
 | `BudgetUnits` | `ProjectBudgetUnits?` | `budget_units` | |
 | `BillingPeriod` | `ProjectBillingPeriod?` | `billing_period` | |
-| `ContactId` | `long?` | - | Parsed from `contact` URI |
+| `ContactId` | `long?` | `contact` | Read: parsed from URI; write: billing contact id |
 | `ContactName` | `string?` | `contact_name` | Denormalised display name |
 | `Contact` | `Contact?` | `contact` | Nested or hydrated contact |
-| `BillingContact` | `ContactReference?` | `contact` | Write payload |
 | `Url` | `string` | `url` | |
 
 ## Errors

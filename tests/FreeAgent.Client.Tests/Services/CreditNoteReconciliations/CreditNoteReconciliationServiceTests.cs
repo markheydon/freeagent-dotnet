@@ -390,10 +390,7 @@ public class CreditNoteReconciliationServiceTests
         var service = new CreditNoteReconciliationsService(client);
 
         var created = await service.CreateCreditNoteReconciliationAsync(
-            CreateCreditNoteReconciliationRequest.Create(
-                100m,
-                InvoiceReference.Parse("https://api.freeagent.com/v2/invoices/1"),
-                CreditNoteReference.Parse("https://api.freeagent.com/v2/credit_notes/2")));
+            CreateCreditNoteReconciliationRequest.Create(100m, invoiceId: 1, creditNoteId: 2));
 
         Assert.Equal(10, created.ResourceId);
         Assert.Equal(100m, created.GrossValue);
@@ -413,10 +410,7 @@ public class CreditNoteReconciliationServiceTests
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() =>
             service.CreateCreditNoteReconciliationAsync(
-                CreateCreditNoteReconciliationRequest.Create(
-                    1m,
-                    InvoiceReference.Parse("https://api.freeagent.com/v2/invoices/1"),
-                    CreditNoteReference.Parse("https://api.freeagent.com/v2/credit_notes/2"))));
+                CreateCreditNoteReconciliationRequest.Create(1m, invoiceId: 1, creditNoteId: 2)));
     }
 
     [Fact]

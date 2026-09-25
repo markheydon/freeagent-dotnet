@@ -290,7 +290,7 @@ public class CreditNoteServiceTests
 
         var created = await service.CreateCreditNoteAsync(new CreditNote
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 0,
             CreditNoteItems =

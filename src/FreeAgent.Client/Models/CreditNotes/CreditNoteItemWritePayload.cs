@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
@@ -42,13 +43,16 @@ internal sealed class CreditNoteItemWritePayload
     public string? SecondSalesTaxStatus { get; set; }
 
     [JsonPropertyName("stock_item")]
-    public StockItemReference? StockItem { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<StockItemReference>))]
+    public WriteLink<StockItemReference>? StockItem { get; set; }
 
     [JsonPropertyName("category")]
-    public CategoryReference? Category { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<CategoryReference>))]
+    public WriteLink<CategoryReference>? Category { get; set; }
 
     [JsonPropertyName("project")]
-    public ProjectReference? Project { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ProjectReference>))]
+    public WriteLink<ProjectReference>? Project { get; set; }
 
     [JsonPropertyName("id")]
     public long? Id { get; set; }
@@ -56,27 +60,9 @@ internal sealed class CreditNoteItemWritePayload
     [JsonPropertyName("_destroy")]
     public int? Destroy { get; set; }
 
-    public static CreditNoteItemWritePayload FromCreditNoteItem(CreditNoteItem item)
+    public static CreditNoteItemWritePayload FromCreditNoteItem(CreditNoteItem item, FreeAgentEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(item);
-
-        CategoryReference? category = item.Category;
-        if (category is null && item.CategoryLink?.Uri is string categoryUri)
-        {
-            category = CategoryReference.Parse(categoryUri);
-        }
-
-        ProjectReference? project = item.LinkedProject;
-        if (project is null && item.ProjectLink?.Uri is string projectUri)
-        {
-            project = ProjectReference.Parse(projectUri);
-        }
-
-        StockItemReference? stockItem = item.StockItem;
-        if (stockItem is null && item.StockItemLink?.Uri is string stockItemUri)
-        {
-            stockItem = StockItemReference.Parse(stockItemUri);
-        }
 
         return new CreditNoteItemWritePayload
         {
@@ -90,9 +76,18 @@ internal sealed class CreditNoteItemWritePayload
             SecondSalesTaxRate = item.SecondSalesTaxRate,
             SalesTaxStatus = item.SalesTaxStatus,
             SecondSalesTaxStatus = item.SecondSalesTaxStatus,
-            StockItem = stockItem,
-            Category = category,
-            Project = project,
+            StockItem = LinkedResourceWriteMapper.ResolveStockItemReference(
+                environment,
+                item.StockItemIdBacking,
+                item.StockItemLinkId),
+            Category = LinkedResourceWriteMapper.ResolveCategoryReference(
+                environment,
+                item.CategoryNominalCodeBacking,
+                item.CategoryLinkNominalCode),
+            Project = LinkedResourceWriteMapper.ResolveProjectReference(
+                environment,
+                item.ProjectIdBacking,
+                item.ProjectLinkId),
             Id = item.ItemId,
             Destroy = item.Destroy
         };

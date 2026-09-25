@@ -83,7 +83,7 @@
                                              FullWidth="true" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudNumericField @bind-Value="_taskIdFilter"
+                            <MudNumericField @bind-Value="_projectTaskIdFilter"
                                              Label="Task ID filter"
                                              Min="1"
                                              Variant="Variant.Outlined"
@@ -168,7 +168,7 @@
                                     <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
                                     <MudTd DataLabel="Date">@context.DatedOn</MudTd>
                                     <MudTd DataLabel="Hours">@context.Hours</MudTd>
-                                    <MudTd DataLabel="Task ID">@ValueOrDash(context.TaskId)</MudTd>
+                                    <MudTd DataLabel="Task ID">@ValueOrDash(context.ProjectTaskId)</MudTd>
                                     <MudTd DataLabel="Actions">
                                         <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
                                             <MudButton Variant="Variant.Filled"
@@ -225,7 +225,7 @@
     private DateTime? _toDate;
     private DateTime? _updatedSinceDate;
     private long? _userIdFilter;
-    private long? _taskIdFilter;
+    private long? _projectTaskIdFilter;
     private long? _projectIdFilter;
     private bool _nested;
     private int _perPage = 25;
@@ -236,7 +236,7 @@
             timeslip.ResourceId,
             timeslip.DatedOn?.ToString("yyyy-MM-dd") ?? "-",
             timeslip.Hours?.ToString() ?? "-",
-            timeslip.TaskId?.ToString()))
+            timeslip.ProjectTaskId?.ToString()))
         .ToList() ?? [];
 
     private async System.Threading.Tasks.Task LoadTimeslipsAsync()
@@ -273,7 +273,7 @@
                     : new DateTimeOffset(_updatedSinceDate.Value, TimeSpan.Zero),
                 nested: _nested ? true : null,
                 userId: _userIdFilter,
-                taskId: _taskIdFilter,
+                projectTaskId: _projectTaskIdFilter,
                 projectId: _projectIdFilter);
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
@@ -356,9 +356,9 @@
             query.Add($"user={Uri.EscapeDataString(UserReference.ForEnvironment(TokenStore.ConnectedEnvironment, _userIdFilter.Value).Uri)}");
         }
 
-        if (_taskIdFilter is > 0)
+        if (_projectTaskIdFilter is > 0)
         {
-            query.Add($"task={Uri.EscapeDataString(TaskReference.ForEnvironment(TokenStore.ConnectedEnvironment, _taskIdFilter.Value).Uri)}");
+            query.Add($"task={Uri.EscapeDataString(ProjectTaskReference.ForEnvironment(TokenStore.ConnectedEnvironment, _projectTaskIdFilter.Value).Uri)}");
         }
 
         if (_projectIdFilter is > 0)
@@ -373,5 +373,5 @@
 
     private static string GetCrudHref(long id) => $"/timeslips/detail?id={id}";
 
-    private sealed record TimeslipRow(int Index, long Id, string DatedOn, string Hours, string? TaskId);
+    private sealed record TimeslipRow(int Index, long Id, string DatedOn, string Hours, string? ProjectTaskId);
 }

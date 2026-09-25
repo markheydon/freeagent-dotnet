@@ -43,7 +43,7 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
         var task = await context.Data.GetFirstTaskAsync(cancellationToken);
         var page = await context.Client.Timeslips.ListAsync(
             perPage: 25,
-            taskId: task.ResourceId,
+            projectTaskId: task.ResourceId,
             cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader($"Timeslips for {task.Name} ({page.Items.Count})");
@@ -61,7 +61,7 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
             timeslip.ResourceId,
             new TimeslipGetOptions
             {
-                IncludeTask = true,
+                IncludeProjectTask = true,
                 IncludeProject = true,
                 IncludeUser = true
             },
@@ -71,7 +71,7 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteField("Id", detail.ResourceId);
         SampleOutput.WriteField("Date", detail.DatedOn);
         SampleOutput.WriteField("Hours", detail.Hours);
-        SampleOutput.WriteField("Task", detail.Task?.Name);
+        SampleOutput.WriteField("Task", detail.ProjectTask?.Name);
         SampleOutput.WriteField("Project", detail.Project?.Name);
         SampleOutput.WriteField("User", detail.User?.DisplayName);
         SampleOutput.WriteField("Billed on invoice", detail.BilledOnInvoiceId);
@@ -164,9 +164,9 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
 
         return new Timeslip
         {
-            LinkedTask = context.Client.Urls.Task(task.ResourceId),
-            LinkedProject = context.Client.Urls.Project(project.ResourceId),
-            LinkedUser = context.Client.Urls.User(user.ResourceId),
+            ProjectTaskId = task.ResourceId,
+            ProjectId = project.ResourceId,
+            UserId = user.ResourceId,
             DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
             Hours = 0.5m,
             Comment = $"Console probe timeslip {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}"

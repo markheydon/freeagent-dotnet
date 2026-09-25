@@ -86,8 +86,8 @@ public sealed class TurpinverseProjectSeeder
         CancellationToken cancellationToken,
         Dictionary<string, Project>? existingProjects = null)
     {
-        var contact = await ResolveOrganisationContactReferenceAsync(client, project.OrganisationId, cancellationToken);
-        var desired = TurpinverseProjectMapper.ToFreeAgentProject(project, contact);
+        var contactId = await ResolveOrganisationContactIdAsync(client, project.OrganisationId, cancellationToken);
+        var desired = TurpinverseProjectMapper.ToFreeAgentProject(project, contactId);
         var contractReference = TurpinverseProjectMapper.BuildContractReference(project.Id);
 
         existingProjects ??= await LoadExistingProjectsByContractReferenceAsync(client, cancellationToken);
@@ -102,12 +102,15 @@ public sealed class TurpinverseProjectSeeder
 
         var current = await client.Projects.GetProjectAsync(projectId, cancellationToken);
         MergeWritableFields(current, desired);
-        var updated = await client.Projects.UpdateProjectAsync(projectId, current, cancellationToken);
+        var updated = await client.Projects.UpdateProjectAsync(
+            projectId,
+            current,
+            cancellationToken: cancellationToken);
         existingProjects[contractReference] = updated;
         return new TurpinverseProjectSeedResult(updated, ProjectSeedAction.Updated);
     }
 
-    private async Task<ContactReference> ResolveOrganisationContactReferenceAsync(
+    private async Task<long> ResolveOrganisationContactIdAsync(
         FreeAgentClient client,
         string organisationId,
         CancellationToken cancellationToken)
@@ -124,7 +127,7 @@ public sealed class TurpinverseProjectSeeder
                 $"No FreeAgent contact exists for organisation '{organisation.TradingName}'. Seed contacts first from Contact CRUD.");
         }
 
-        return ContactReference.Parse(contact.Url);
+        return contact.ResourceId;
     }
 
     private static async Task<Dictionary<string, Project>> LoadExistingProjectsByContractReferenceAsync(
@@ -150,7 +153,7 @@ public sealed class TurpinverseProjectSeeder
     private static void MergeWritableFields(Project current, Project desired)
     {
         current.Name = desired.Name;
-        current.BillingContact = desired.BillingContact;
+        current.ContactId = desired.ContactId;
         current.Status = desired.Status;
         current.ContractPoReference = desired.ContractPoReference;
         current.Currency = desired.Currency;

@@ -27,13 +27,13 @@ As Invoices, Tasks, Timeslips, and Bills are implemented, each will carry multip
 Adopt **typed resource references**, **flat public read properties**, and **optional explicit hydration** on single-resource GET. This is protocol-level convenience only - no lazy-loading properties, no ORM, and no fetches of other resources to validate payloads.
 
 - **DEC-001**: Top-level resource models implement `IFreeAgentResource` (`Url` plus computed `ResourceId` from the URL, except `Company` which uses its documented `id` field).
-- **DEC-002**: **Write payloads** and **list filter parameters** use resource-specific reference types (`ContactReference`, `ProjectReference`, …) that serialise as URI strings.
+- **DEC-002**: **Write payloads** on public models use `long? *Id` (and `CategoryNominalCode` for category links). The SDK maps those to URI strings internally. **List filter parameters** and **inbound URL parsing** (for example webhooks) use resource-specific reference types (`ContactReference`, `ProjectReference`, …) that serialise as URI strings. Build reference URIs with `client.Urls` when filters or webhook handlers need them.
 - **DEC-003**: `ExpandableField<T>` is an **internal serialisation adapter** for wire fields that may be a URI string or nested object. It is not part of the public consumer API.
 - **DEC-004**: `FreeAgentClient` exposes `Environment` and `Urls` so callers build environment-correct URIs without hard-coding hosts.
 - **DEC-005**: Do not add per-resource one-off URI converters. Use the generic `ExpandableFieldJsonConverter<T>` and reference-type converters instead.
 - **DEC-006**: Service methods may accept `long` identifiers as sugar when the client can construct the URI from `Environment` (for example `contactId` on project list filters).
-- **DEC-007**: Public read models expose flat link properties: for example `Contact?`, `long? ContactId`, plus API denormalised display fields (`ContactName`). Writes use `ContactReference? BillingContact` (or equivalent per link).
-- **DEC-008**: Single-resource GET methods may accept `*GetOptions` with `Include*` flags that perform additional GETs when requested (default `false`). Example: `GetProjectAsync(id, new ProjectGetOptions { IncludeBillingContact = true })`.
+- **DEC-007**: Public read models expose flat link properties: for example `Contact?`, `long? ContactId`, plus API denormalised display fields (`ContactName`). Writes set `ContactId` (or equivalent `*Id` per link) on the same model — not `*Reference` properties and not `client.Urls` at the call site.
+- **DEC-008**: Single-resource GET methods may accept `*GetOptions` with `Include*` flags that perform additional GETs when requested (default `false`). Example: `GetProjectAsync(id, new ProjectGetOptions { IncludeContact = true })`.
 - **DEC-009**: List methods do not auto-hydrate linked resources (no N+1). Use denormalised API fields or documented `nested` query parameters when the wire response includes nested objects.
 
 ## Consequences
@@ -48,7 +48,7 @@ Adopt **typed resource references**, **flat public read properties**, and **opti
 
 ### Negative
 
-- **NEG-001**: Pre-GA breaking changes on `Project` link properties (`Contact` read vs `BillingContact` write).
+- **NEG-001**: Pre-GA breaking changes on link write ergonomics (`BillingContact` / `LinkedProject` reference properties replaced by `ContactId` / `ProjectId` on models).
 - **NEG-002**: Additional public types (`*Reference`, `*GetOptions`, `FreeAgentResourceUrls`) increase surface area.
 - **NEG-003**: `Company` uses `ResourceId` mapped from its serialised `id` field because the API already exposes company `id` on the wire.
 

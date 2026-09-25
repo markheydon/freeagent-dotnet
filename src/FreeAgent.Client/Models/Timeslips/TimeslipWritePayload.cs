@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Timeslips;
@@ -9,13 +11,16 @@ namespace FreeAgent.Client.Models.Timeslips;
 internal sealed class TimeslipWritePayload
 {
     [JsonPropertyName("task")]
-    public TaskReference? Task { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ProjectTaskReference>))]
+    public WriteLink<ProjectTaskReference>? ProjectTask { get; set; }
 
     [JsonPropertyName("user")]
-    public UserReference? User { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<UserReference>))]
+    public WriteLink<UserReference>? User { get; set; }
 
     [JsonPropertyName("project")]
-    public ProjectReference? Project { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<ProjectReference>))]
+    public WriteLink<ProjectReference>? Project { get; set; }
 
     [JsonPropertyName("dated_on")]
     public DateOnly? DatedOn { get; set; }
@@ -27,18 +32,24 @@ internal sealed class TimeslipWritePayload
     [JsonPropertyName("comment")]
     public string? Comment { get; set; }
 
-    public static TimeslipWritePayload FromTimeslip(Timeslip timeslip)
+    public static TimeslipWritePayload FromTimeslip(Timeslip timeslip, FreeAgentEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(timeslip);
 
         return new TimeslipWritePayload
         {
-            Task = timeslip.LinkedTask
-                ?? (timeslip.TaskLink?.Uri is string taskUri ? TaskReference.Parse(taskUri) : null),
-            User = timeslip.LinkedUser
-                ?? (timeslip.UserLink?.Uri is string userUri ? UserReference.Parse(userUri) : null),
-            Project = timeslip.LinkedProject
-                ?? (timeslip.ProjectLink?.Uri is string projectUri ? ProjectReference.Parse(projectUri) : null),
+            ProjectTask = LinkedResourceWriteMapper.ResolveProjectTaskReference(
+                environment,
+                timeslip.ProjectTaskIdBacking,
+                timeslip.ProjectTaskLinkId),
+            User = LinkedResourceWriteMapper.ResolveUserReference(
+                environment,
+                timeslip.UserIdBacking,
+                timeslip.UserLinkId),
+            Project = LinkedResourceWriteMapper.ResolveProjectReference(
+                environment,
+                timeslip.ProjectIdBacking,
+                timeslip.ProjectLinkId),
             DatedOn = timeslip.DatedOn,
             Hours = timeslip.Hours,
             Comment = timeslip.Comment

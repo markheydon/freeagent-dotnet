@@ -350,7 +350,7 @@
             {
                 _estimate = await client.Estimates.CreateEstimateAsync(new Estimate
                 {
-                    BillingContact = client.Urls.Contact(_contactId.Value),
+                    ContactId = _contactId.Value,
                     EstimateType = EstimateType.Quote,
                     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
                     Currency = CurrencyCode.GBP,
@@ -395,8 +395,10 @@
             {
                 var existing = _estimate ?? await client.Estimates.GetEstimateAsync(_estimateId.Value);
                 existing.Notes = $"{existing.Notes} (updated)".Trim();
-                existing.OmitEstimateItemsFromWrite = true;
-                _estimate = await client.Estimates.UpdateEstimateAsync(_estimateId.Value, existing);
+                _estimate = await client.Estimates.UpdateEstimateAsync(
+                    _estimateId.Value,
+                    existing,
+                    new EstimateUpdateOptions { OmitLineItems = true });
                 _operationMessage = $"Updated estimate {_estimateId.Value}.";
                 return $"estimates/{_estimateId}";
             },

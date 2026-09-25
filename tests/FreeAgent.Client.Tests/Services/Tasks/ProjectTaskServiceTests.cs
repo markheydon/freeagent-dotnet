@@ -6,12 +6,11 @@ using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Tests.TestSupport;
-using FreeAgentTaskStatus = FreeAgent.Client.Models.Tasks.TaskStatus;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
+using FreeAgentProjectTaskStatus = FreeAgent.Client.Models.Tasks.ProjectTaskStatus;
 
 namespace FreeAgent.Client.Tests.Services.Tasks;
 
-public class TaskServiceTests
+public class ProjectTaskServiceTests
 {
     [Fact]
     public async System.Threading.Tasks.Task ListAsync_ReturnsPaginatedResponse()
@@ -51,16 +50,16 @@ public class TaskServiceTests
         };
 
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 2, view: TaskViews.Active);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: ProjectTaskViews.Active);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);
         Assert.Equal(5, page.Total);
         Assert.True(page.HasNextPage);
         Assert.Equal("Alpha", page.Items[0].Name);
-        Assert.Equal(FreeAgentTaskStatus.Completed, page.Items[1].Status);
+        Assert.Equal(FreeAgentProjectTaskStatus.Completed, page.Items[1].Status);
     }
 
     [Fact]
@@ -79,7 +78,7 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
         await service.ListAsync(
             sort: "-updated_at",
@@ -104,14 +103,14 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
         await service.ListAsync(
             project: ProjectReference.Parse("https://api.freeagent.com/v2/projects/9"));
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task GetTaskAsync_ReturnsTask()
+    public async System.Threading.Tasks.Task GetProjectTaskAsync_ReturnsTask()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -133,17 +132,17 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        var task = await service.GetTaskAsync(42);
+        var task = await service.GetProjectTaskAsync(42);
 
         Assert.Equal("Probe Task", task.Name);
-        Assert.Equal(FreeAgentTaskStatus.Active, task.Status);
+        Assert.Equal(FreeAgentProjectTaskStatus.Active, task.Status);
         Assert.True(task.IsDeletable);
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task GetTaskAsync_WithIncludeProject_FetchesProject()
+    public async System.Threading.Tasks.Task GetProjectTaskAsync_WithIncludeProject_FetchesProject()
     {
         var requestCount = 0;
         HttpResponseMessage RouteRequest(HttpRequestMessage request)
@@ -187,11 +186,11 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        var task = await service.GetTaskAsync(
+        var task = await service.GetProjectTaskAsync(
             42,
-            new TaskGetOptions { IncludeProject = true });
+            new ProjectTaskGetOptions { IncludeProject = true });
 
         Assert.Equal(2, requestCount);
         Assert.Equal("Parent Project", task.Project!.Name);
@@ -207,7 +206,7 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
         var page = await service.ListAsync();
 
@@ -216,7 +215,7 @@ public class TaskServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task GetTaskAsync_WithIncludeProject_SkipsFetchWhenProjectAlreadyExpanded()
+    public async System.Threading.Tasks.Task GetProjectTaskAsync_WithIncludeProject_SkipsFetchWhenProjectAlreadyExpanded()
     {
         var requestCount = 0;
         var handler = new QueueHttpMessageHandler(request =>
@@ -241,18 +240,18 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        var task = await service.GetTaskAsync(
+        var task = await service.GetProjectTaskAsync(
             42,
-            new TaskGetOptions { IncludeProject = true });
+            new ProjectTaskGetOptions { IncludeProject = true });
 
         Assert.Equal(1, requestCount);
         Assert.Equal("Already Nested", task.Project!.Name);
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task CreateTaskAsync_ProjectReference_PostsTaskEnvelopeWithProjectQuery()
+    public async System.Threading.Tasks.Task CreateProjectTaskAsync_ProjectReference_PostsTaskEnvelopeWithProjectQuery()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -279,17 +278,17 @@ public class TaskServiceTests
             BaseAddress = new Uri("https://api.sandbox.freeagent.com/v2/")
         };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        var created = await service.CreateTaskAsync(
+        var created = await service.CreateProjectTaskAsync(
             ProjectReference.Parse("https://api.sandbox.freeagent.com/v2/projects/3"),
-            new TaskModel { Name = "Sandbox Task" });
+            new ProjectTask { Name = "Sandbox Task" });
 
         Assert.Equal("Sandbox Task", created.Name);
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task CreateTaskAsync_PostsTaskEnvelopeWithProjectQuery()
+    public async System.Threading.Tasks.Task CreateProjectTaskAsync_PostsTaskEnvelopeWithProjectQuery()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -320,21 +319,21 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        var created = await service.CreateTaskAsync(1, new TaskModel
+        var created = await service.CreateProjectTaskAsync(1, new ProjectTask
         {
             Name = "New Task",
             IsBillable = true,
-            Status = FreeAgentTaskStatus.Active
+            Status = FreeAgentProjectTaskStatus.Active
         });
 
         Assert.Equal("New Task", created.Name);
-        Assert.Equal(FreeAgentTaskStatus.Active, created.Status);
+        Assert.Equal(FreeAgentProjectTaskStatus.Active, created.Status);
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task UpdateTaskAsync_PutsTaskEnvelope()
+    public async System.Threading.Tasks.Task UpdateProjectTaskAsync_PutsTaskEnvelope()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -358,15 +357,15 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        var updated = await service.UpdateTaskAsync(42, new TaskModel { Name = "Renamed" });
+        var updated = await service.UpdateProjectTaskAsync(42, new ProjectTask { Name = "Renamed" });
 
         Assert.Equal("Renamed", updated.Name);
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task DeleteTaskAsync_SendsDelete()
+    public async System.Threading.Tasks.Task DeleteProjectTaskAsync_SendsDelete()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -377,9 +376,9 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        await service.DeleteTaskAsync(42);
+        await service.DeleteProjectTaskAsync(42);
     }
 
     [Fact]
@@ -392,7 +391,7 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListAsync());
     }
@@ -402,7 +401,7 @@ public class TaskServiceTests
     {
         using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
         await Assert.ThrowsAsync<ArgumentException>(() => service.ListAsync(
             project: ProjectReference.Parse("https://api.freeagent.com/v2/projects/1"),
@@ -410,7 +409,7 @@ public class TaskServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task GetTaskAsync_MissingTaskBranch_Throws()
+    public async System.Threading.Tasks.Task GetProjectTaskAsync_MissingTaskBranch_Throws()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -419,13 +418,13 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetTaskAsync(42));
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetProjectTaskAsync(42));
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task CreateTaskAsync_MissingTaskBranch_Throws()
+    public async System.Threading.Tasks.Task CreateProjectTaskAsync_MissingTaskBranch_Throws()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Created)
         {
@@ -434,13 +433,13 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateTaskAsync(1, new TaskModel { Name = "Example" }));
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateProjectTaskAsync(1, new ProjectTask { Name = "Example" }));
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task UpdateTaskAsync_MissingTaskBranch_Throws()
+    public async System.Threading.Tasks.Task UpdateProjectTaskAsync_MissingTaskBranch_Throws()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -449,9 +448,9 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.UpdateTaskAsync(42, new TaskModel { Name = "Example" }));
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.UpdateProjectTaskAsync(42, new ProjectTask { Name = "Example" }));
     }
 
     [Fact]
@@ -480,7 +479,7 @@ public class TaskServiceTests
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new TaskService(client);
+        var service = new ProjectTaskService(client);
 
         var names = new List<string>();
         await foreach (var task in service.ListAutoPagingAsync(perPage: 1))

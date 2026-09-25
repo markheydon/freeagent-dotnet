@@ -6,8 +6,8 @@ namespace FreeAgent.Client.Models.Tasks;
 /// <summary>
 /// Task status values returned by FreeAgent.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<TaskStatus>))]
-public enum TaskStatus
+[JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<ProjectTaskStatus>))]
+public enum ProjectTaskStatus
 {
     /// <summary>Active task (wire value: "Active").</summary>
     [JsonStringEnumMemberName("Active")]

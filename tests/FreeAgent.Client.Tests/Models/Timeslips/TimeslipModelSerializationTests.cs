@@ -63,8 +63,8 @@ public class TimeslipModelSerializationTests
 
         var timeslip = JsonSerializer.Deserialize<Timeslip>(json);
 
-        Assert.Equal(3, timeslip!.TaskId);
-        Assert.Null(timeslip.Task);
+        Assert.Equal(3, timeslip!.ProjectTaskId);
+        Assert.Null(timeslip.ProjectTask);
         Assert.Equal(4, timeslip.ProjectId);
         Assert.Null(timeslip.Project);
         Assert.Equal(2, timeslip.UserId);
@@ -95,7 +95,7 @@ public class TimeslipModelSerializationTests
 
         var timeslip = JsonSerializer.Deserialize<Timeslip>(json);
 
-        Assert.Equal("Nested Task", timeslip!.Task!.Name);
+        Assert.Equal("Nested Task", timeslip!.ProjectTask!.Name);
         Assert.Equal("Nested Project", timeslip.Project!.Name);
         Assert.Equal("Ada", timeslip.User!.FirstName);
     }
@@ -114,9 +114,9 @@ public class TimeslipModelSerializationTests
             }
             """)!;
 
-        var payload = TimeslipWritePayload.FromTimeslip(timeslip);
+        var payload = TimeslipWritePayload.FromTimeslip(timeslip, FreeAgentEnvironment.Production);
 
-        Assert.Equal("https://api.freeagent.com/v2/tasks/1", payload.Task!.Value.Uri);
+        Assert.Equal("https://api.freeagent.com/v2/tasks/1", payload.ProjectTask!.Value.Uri);
         Assert.Equal("https://api.freeagent.com/v2/projects/2", payload.Project!.Value.Uri);
         Assert.Equal("https://api.freeagent.com/v2/users/3", payload.User!.Value.Uri);
         Assert.Equal(1.5m, payload.Hours);
@@ -136,7 +136,7 @@ public class TimeslipModelSerializationTests
             }
             """)!;
 
-        var json = JsonSerializer.Serialize(TimeslipWritePayload.FromTimeslip(timeslip));
+        var json = JsonSerializer.Serialize(TimeslipWritePayload.FromTimeslip(timeslip, FreeAgentEnvironment.Production));
 
         Assert.DoesNotContain("billed_on_invoice", json, StringComparison.Ordinal);
     }

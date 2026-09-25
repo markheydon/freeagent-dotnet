@@ -12,8 +12,8 @@ internal static class TurpinverseInvoiceMapper
 
     public static Invoice ToFreeAgentInvoice(
         TurpinverseInvoice invoice,
-        ContactReference contact,
-        ProjectReference? project)
+        long contactId,
+        long? projectId)
     {
         ArgumentNullException.ThrowIfNull(invoice);
 
@@ -23,8 +23,8 @@ internal static class TurpinverseInvoiceMapper
 
         return new Invoice
         {
-            BillingContact = contact,
-            LinkedProject = project,
+            ContactId = contactId,
+            ProjectId = projectId,
             Reference = BuildReference(invoice.InvoiceId),
             PoReference = invoice.InvoiceNumber,
             DatedOn = datedOn,

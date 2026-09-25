@@ -136,7 +136,7 @@ public sealed class CreditNoteReconciliationsService
 
         var content = FreeAgentJsonSerializer.CreateContent(new CreditNoteReconciliationRequest
         {
-            CreditNoteReconciliation = CreditNoteReconciliationWritePayload.FromCreate(request)
+            CreditNoteReconciliation = CreditNoteReconciliationWritePayload.FromCreate(request, _requestClient.Environment)
         });
 
         var response = await _requestClient.PostAsync<CreditNoteReconciliationResponse>(
@@ -169,7 +169,7 @@ public sealed class CreditNoteReconciliationsService
 
         var content = FreeAgentJsonSerializer.CreateContent(new CreditNoteReconciliationRequest
         {
-            CreditNoteReconciliation = CreditNoteReconciliationWritePayload.FromUpdate(request)
+            CreditNoteReconciliation = CreditNoteReconciliationWritePayload.FromUpdate(request, _requestClient.Environment)
         });
 
         var response = await _requestClient.PutAsync<CreditNoteReconciliationResponse>(

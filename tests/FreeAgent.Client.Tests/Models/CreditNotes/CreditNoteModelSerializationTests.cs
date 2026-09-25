@@ -1,4 +1,5 @@
 using System.Text.Json;
+using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Invoices;
@@ -101,7 +102,7 @@ public class CreditNoteModelSerializationTests
             }
             """, FreeAgentJsonSerializer.Options)!;
 
-        var payload = CreditNoteItemWritePayload.FromCreditNoteItem(item);
+        var payload = CreditNoteItemWritePayload.FromCreditNoteItem(item, FreeAgentEnvironment.Production);
         var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"stock_item\":\"https://api.freeagent.com/v2/stock_items/3\"", json, StringComparison.Ordinal);
@@ -112,7 +113,7 @@ public class CreditNoteModelSerializationTests
     {
         var creditNote = new CreditNote
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 0,
             CreditNoteItems =
@@ -123,13 +124,13 @@ public class CreditNoteModelSerializationTests
                     ItemType = InvoiceItemType.Services,
                     Quantity = 1,
                     Price = -50,
-                    Category = CategoryReference.Parse("https://api.freeagent.com/v2/categories/001")
+                    CategoryNominalCode = "001"
                 }
             ]
         };
 
         var json = JsonSerializer.Serialize(
-            CreditNoteWritePayload.FromCreditNote(creditNote),
+            CreditNoteWritePayload.FromCreditNote(creditNote, FreeAgentEnvironment.Production),
             FreeAgentJsonSerializer.Options);
 
         Assert.Contains("\"contact\":\"https://api.freeagent.com/v2/contacts/2\"", json, StringComparison.Ordinal);
@@ -140,7 +141,7 @@ public class CreditNoteModelSerializationTests
     }
 
     [Fact]
-    public void WritePayload_OmitBillingContactFromWrite_ExcludesRoundTrippedContact()
+    public void WritePayload_SetContactId_OverridesRoundTrippedContact()
     {
         var creditNote = JsonSerializer.Deserialize<CreditNote>("""
             {
@@ -150,58 +151,21 @@ public class CreditNoteModelSerializationTests
               "payment_terms_in_days": 14
             }
             """)!;
-        creditNote.OmitBillingContactFromWrite = true;
+        creditNote.ContactId = 3;
 
-        var payload = CreditNoteWritePayload.FromCreditNote(creditNote);
+        var payload = CreditNoteWritePayload.FromCreditNote(creditNote, FreeAgentEnvironment.Production);
 
-        Assert.Null(payload.Contact);
+        Assert.Equal("https://api.freeagent.com/v2/contacts/3", payload.Contact!.Value.Uri);
     }
 
     [Fact]
-    public void WritePayload_OmitProjectFromWrite_ExcludesRoundTrippedProject()
-    {
-        var creditNote = JsonSerializer.Deserialize<CreditNote>("""
-            {
-              "url": "https://api.freeagent.com/v2/credit_notes/1",
-              "project": "https://api.freeagent.com/v2/projects/4",
-              "dated_on": "2024-03-18",
-              "payment_terms_in_days": 14
-            }
-            """)!;
-        creditNote.OmitProjectFromWrite = true;
-
-        var payload = CreditNoteWritePayload.FromCreditNote(creditNote);
-
-        Assert.Null(payload.Project);
-    }
-
-    [Fact]
-    public void WritePayload_OmitBankAccountFromWrite_ExcludesRoundTrippedBankAccount()
-    {
-        var creditNote = JsonSerializer.Deserialize<CreditNote>("""
-            {
-              "url": "https://api.freeagent.com/v2/credit_notes/1",
-              "bank_account": "https://api.freeagent.com/v2/bank_accounts/2",
-              "dated_on": "2024-03-18",
-              "payment_terms_in_days": 14
-            }
-            """)!;
-        creditNote.OmitBankAccountFromWrite = true;
-
-        var payload = CreditNoteWritePayload.FromCreditNote(creditNote);
-
-        Assert.Null(payload.BankAccount);
-    }
-
-    [Fact]
-    public void WritePayload_OmitCreditNoteItemsFromWrite_ExcludesLineItems()
+    public void WritePayload_OmitLineItems_ExcludesLineItems()
     {
         var creditNote = new CreditNote
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             PaymentTermsInDays = 0,
-            OmitCreditNoteItemsFromWrite = true,
             CreditNoteItems =
             [
                 new CreditNoteItem
@@ -212,7 +176,7 @@ public class CreditNoteModelSerializationTests
             ]
         };
 
-        var payload = CreditNoteWritePayload.FromCreditNote(creditNote);
+        var payload = CreditNoteWritePayload.FromCreditNote(creditNote, FreeAgentEnvironment.Production, omitLineItems: true);
 
         Assert.Null(payload.CreditNoteItems);
     }

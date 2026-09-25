@@ -90,7 +90,7 @@ public class TimeslipServiceTests
             updatedSince: DateTimeOffset.Parse("2017-05-22T09:00:00.000Z", CultureInfo.InvariantCulture),
             nested: true,
             userId: 2,
-            taskId: 3,
+            projectTaskId: 3,
             projectId: 4);
     }
 
@@ -170,9 +170,9 @@ public class TimeslipServiceTests
 
         var created = await service.CreateTimeslipAsync(new Timeslip
         {
-            LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-            LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-            LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+            ProjectTaskId = 1,
+            UserId = 1,
+            ProjectId = 1,
             DatedOn = new DateOnly(2011, 8, 15),
             Hours = 1.5m
         });
@@ -219,17 +219,17 @@ public class TimeslipServiceTests
         var created = await service.CreateTimeslipsAsync([
             new Timeslip
             {
-                LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+                ProjectTaskId = 1,
+                UserId = 1,
+                ProjectId = 1,
                 DatedOn = new DateOnly(2011, 8, 15),
                 Hours = 12.0m
             },
             new Timeslip
             {
-                LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+                ProjectTaskId = 1,
+                UserId = 1,
+                ProjectId = 1,
                 DatedOn = new DateOnly(2011, 8, 14),
                 Hours = 12.0m
             }
@@ -527,13 +527,13 @@ public class TimeslipServiceTests
             25,
             new TimeslipGetOptions
             {
-                IncludeTask = true,
+                IncludeProjectTask = true,
                 IncludeProject = true,
                 IncludeUser = true
             });
 
         Assert.Equal(4, requestCount);
-        Assert.Equal("Linked Task", timeslip.Task!.Name);
+        Assert.Equal("Linked Task", timeslip.ProjectTask!.Name);
         Assert.Equal("Linked Project", timeslip.Project!.Name);
         Assert.Equal("Ada", timeslip.User!.FirstName);
     }
@@ -578,13 +578,13 @@ public class TimeslipServiceTests
             25,
             new TimeslipGetOptions
             {
-                IncludeTask = true,
+                IncludeProjectTask = true,
                 IncludeProject = true,
                 IncludeUser = true
             });
 
         Assert.Equal(1, requestCount);
-        Assert.Equal("Already Nested Task", timeslip.Task!.Name);
+        Assert.Equal("Already Nested Task", timeslip.ProjectTask!.Name);
         Assert.Equal("Already Nested Project", timeslip.Project!.Name);
         Assert.Equal("Already", timeslip.User!.FirstName);
     }
@@ -602,15 +602,15 @@ public class TimeslipServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task ListAsync_TaskAndTaskId_Throws()
+    public async System.Threading.Tasks.Task ListAsync_ProjectTaskAndProjectTaskId_Throws()
     {
         using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new TimeslipService(client);
 
         await Assert.ThrowsAsync<ArgumentException>(() => service.ListAsync(
-            task: TaskReference.Parse("https://api.freeagent.com/v2/tasks/1"),
-            taskId: 2));
+            projectTask: ProjectTaskReference.Parse("https://api.freeagent.com/v2/tasks/1"),
+            projectTaskId: 2));
     }
 
     [Fact]
@@ -654,9 +654,9 @@ public class TimeslipServiceTests
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateTimeslipAsync(new Timeslip
         {
-            LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-            LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-            LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+            ProjectTaskId = 1,
+            UserId = 1,
+            ProjectId = 1,
             DatedOn = new DateOnly(2011, 8, 15),
             Hours = 1.5m
         }));
@@ -687,9 +687,9 @@ public class TimeslipServiceTests
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.CreateTimeslipsAsync([
             new Timeslip
             {
-                LinkedTask = TaskReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedUser = UserReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
-                LinkedProject = ProjectReference.ForEnvironment(FreeAgentEnvironment.Production, 1),
+                ProjectTaskId = 1,
+                UserId = 1,
+                ProjectId = 1,
                 DatedOn = new DateOnly(2011, 8, 15),
                 Hours = 1.5m
             }
@@ -742,7 +742,7 @@ public class TimeslipServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenLinkedTaskMissing()
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenTaskIdMissing()
     {
         var handler = new QueueHttpMessageHandler(
             _ => new HttpResponseMessage(HttpStatusCode.OK)
@@ -767,11 +767,11 @@ public class TimeslipServiceTests
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetTimeslipAsync(
             25,
-            new TimeslipGetOptions { IncludeTask = true }));
+            new TimeslipGetOptions { IncludeProjectTask = true }));
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenLinkedProjectMissing()
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenProjectIdMissing()
     {
         var handler = new QueueHttpMessageHandler(
             _ => new HttpResponseMessage(HttpStatusCode.OK)
@@ -800,7 +800,7 @@ public class TimeslipServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenLinkedUserMissing()
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_ThrowsWhenUserIdMissing()
     {
         var handler = new QueueHttpMessageHandler(
             _ => new HttpResponseMessage(HttpStatusCode.OK)

@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.CreditNoteReconciliations;
@@ -26,7 +28,9 @@ internal sealed class CreditNoteReconciliationWritePayload
     [JsonPropertyName("credit_note")]
     public CreditNoteReference? CreditNote { get; set; }
 
-    public static CreditNoteReconciliationWritePayload FromCreate(CreateCreditNoteReconciliationRequest request)
+    public static CreditNoteReconciliationWritePayload FromCreate(
+        CreateCreditNoteReconciliationRequest request,
+        FreeAgentEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -36,12 +40,14 @@ internal sealed class CreditNoteReconciliationWritePayload
             DatedOn = request.DatedOn,
             ExchangeRate = request.ExchangeRate,
             Currency = request.Currency,
-            Invoice = request.Invoice,
-            CreditNote = request.CreditNote
+            Invoice = LinkedResourceWriteMapper.ToInvoiceReference(environment, request.InvoiceId),
+            CreditNote = LinkedResourceWriteMapper.ToCreditNoteReference(environment, request.CreditNoteId)
         };
     }
 
-    public static CreditNoteReconciliationWritePayload FromUpdate(UpdateCreditNoteReconciliationRequest request)
+    public static CreditNoteReconciliationWritePayload FromUpdate(
+        UpdateCreditNoteReconciliationRequest request,
+        FreeAgentEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(request);
 
@@ -51,8 +57,8 @@ internal sealed class CreditNoteReconciliationWritePayload
             DatedOn = request.DatedOn,
             ExchangeRate = request.ExchangeRate,
             Currency = request.Currency,
-            Invoice = request.Invoice,
-            CreditNote = request.CreditNote
+            Invoice = LinkedResourceWriteMapper.ToInvoiceReference(environment, request.InvoiceId),
+            CreditNote = LinkedResourceWriteMapper.ToCreditNoteReference(environment, request.CreditNoteId)
         };
     }
 }

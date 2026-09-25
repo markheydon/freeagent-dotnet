@@ -259,7 +259,7 @@ public sealed class CreditNotesService
 
         var content = FreeAgentJsonSerializer.CreateContent(new CreditNoteRequest
         {
-            CreditNote = CreditNoteWritePayload.FromCreditNote(creditNote)
+            CreditNote = CreditNoteWritePayload.FromCreditNote(creditNote, _requestClient.Environment)
         });
 
         var response = await _requestClient.PostAsync<CreditNoteResponse>("credit_notes", content, cancellationToken);
@@ -277,11 +277,13 @@ public sealed class CreditNotesService
     /// </summary>
     /// <param name="creditNoteId">Credit note identifier from the resource URL</param>
     /// <param name="creditNote">Credit note attributes to update</param>
+    /// <param name="options">Optional update behaviour</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated credit note</returns>
     public async Task<CreditNote> UpdateCreditNoteAsync(
         long creditNoteId,
         CreditNote creditNote,
+        CreditNoteUpdateOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(creditNoteId);
@@ -289,7 +291,11 @@ public sealed class CreditNotesService
 
         var content = FreeAgentJsonSerializer.CreateContent(new CreditNoteRequest
         {
-            CreditNote = CreditNoteWritePayload.FromCreditNote(creditNote)
+            CreditNote = CreditNoteWritePayload.FromCreditNote(
+                creditNote,
+                _requestClient.Environment,
+                options?.OmitLineItems == true,
+                LinkedResourceWriteOptions.FromCreditNoteUpdate(options))
         });
 
         var response = await _requestClient.PutAsync<CreditNoteResponse>(

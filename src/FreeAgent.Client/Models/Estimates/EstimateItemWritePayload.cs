@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
@@ -42,7 +43,8 @@ internal sealed class EstimateItemWritePayload
     public string? SecondSalesTaxStatus { get; set; }
 
     [JsonPropertyName("category")]
-    public CategoryReference? Category { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<CategoryReference>))]
+    public WriteLink<CategoryReference>? Category { get; set; }
 
     [JsonPropertyName("id")]
     public long? Id { get; set; }
@@ -50,15 +52,9 @@ internal sealed class EstimateItemWritePayload
     [JsonPropertyName("_destroy")]
     public int? Destroy { get; set; }
 
-    public static EstimateItemWritePayload FromEstimateItem(EstimateItem item)
+    public static EstimateItemWritePayload FromEstimateItem(EstimateItem item, FreeAgentEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(item);
-
-        CategoryReference? category = item.Category;
-        if (category is null && item.CategoryLink?.Uri is string categoryUri)
-        {
-            category = CategoryReference.Parse(categoryUri);
-        }
 
         return new EstimateItemWritePayload
         {
@@ -72,7 +68,10 @@ internal sealed class EstimateItemWritePayload
             SecondSalesTaxRate = item.SecondSalesTaxRate,
             SalesTaxStatus = item.SalesTaxStatus,
             SecondSalesTaxStatus = item.SecondSalesTaxStatus,
-            Category = category,
+            Category = LinkedResourceWriteMapper.ResolveCategoryReference(
+                environment,
+                item.CategoryNominalCodeBacking,
+                item.CategoryLinkNominalCode),
             Id = item.ItemId,
             Destroy = item.Destroy
         };

@@ -46,11 +46,11 @@ Single-resource reads (`GetContactAsync`, `GetProjectAsync`, etc.) are unchanged
 
 ### Linked resource fields on Projects
 
-`Project.Contact` is now `Contact?` (read) for nested or hydrated billing contact data. Assign `BillingContact` (a `ContactReference`) when creating or updating - for example `client.Urls.Contact(contactId)` - rather than a raw URI string.
+`Project.Contact` is now `Contact?` (read) for nested or hydrated billing contact data. Set `ContactId` when creating or updating a project.
 
-Use `GetProjectAsync(id, new ProjectGetOptions { IncludeBillingContact = true })` when you need full contact fields such as `OrganisationName`. Use `ContactName` when a display label from a single HTTP call is enough.
+Use `GetProjectAsync(id, new ProjectGetOptions { IncludeContact = true })` when you need full contact fields such as `OrganisationName`. Use `ContactName` when a display label from a single HTTP call is enough.
 
-On update, the SDK round-trips the existing billing contact from the read model when `BillingContact` is not set. Set `OmitBillingContactFromWrite = true` on `Project` to exclude contact from the write payload.
+On update, the SDK round-trips `ContactId` from the read model. Linked resource writes across the SDK use `*Id` on models (and `CategoryNominalCode` for categories), not `*Reference` properties or `client.Urls` at the call site.
 
 Project list methods accept `ContactReference? contact` and `long? contactId` instead of `string? contact`. Supply only one contact filter parameter - specifying both throws `ArgumentException`.
 
@@ -59,6 +59,24 @@ Use `TryGetResourceId()` or `GetResourceId()` when a parsed identifier is requir
 Top-level resources implement `IFreeAgentResource` with a computed `ResourceId` property. Use `project.ResourceId` for display, or the extension methods when calling services.
 
 `ExpandableField<T>` is no longer part of the public API.
+
+### Project task naming consistency
+
+Task-related public API members now use the `ProjectTask` prefix to align with the `ProjectTask` model and avoid confusion with `System.Threading.Tasks.Task`:
+
+| Before | After |
+|---|---|
+| `client.Tasks` | `client.ProjectTasks` |
+| `TaskService` | `ProjectTaskService` |
+| `GetTaskAsync` / `CreateTaskAsync` / `UpdateTaskAsync` / `DeleteTaskAsync` | `GetProjectTaskAsync` / `CreateProjectTaskAsync` / `UpdateProjectTaskAsync` / `DeleteProjectTaskAsync` |
+| `TaskGetOptions` | `ProjectTaskGetOptions` |
+| `TaskReference` | `ProjectTaskReference` |
+| `client.Urls.Task(id)` | `client.Urls.ProjectTask(id)` |
+| `TaskStatus`, `TaskViews`, `TaskSortOptions`, `TaskBillingPeriod` | `ProjectTaskStatus`, `ProjectTaskViews`, `ProjectTaskSortOptions`, `ProjectTaskBillingPeriod` |
+| `Timeslip.Task` / `Timeslip.TaskId` | `Timeslip.ProjectTask` / `Timeslip.ProjectTaskId` |
+| `TimeslipGetOptions.IncludeTask` | `TimeslipGetOptions.IncludeProjectTask` |
+
+Wire JSON property names (`task`, `tasks`) are unchanged.
 
 ### Contacts list returns full `Contact` models
 

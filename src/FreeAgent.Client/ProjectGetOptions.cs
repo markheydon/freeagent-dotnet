@@ -8,5 +8,5 @@ public sealed class ProjectGetOptions
     /// <summary>
     /// When <see langword="true"/>, fetches the billing contact when the project response contains only a contact URI.
     /// </summary>
-    public bool IncludeBillingContact { get; init; }
+    public bool IncludeContact { get; init; }
 }

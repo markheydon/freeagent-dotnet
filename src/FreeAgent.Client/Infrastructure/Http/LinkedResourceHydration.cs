@@ -9,8 +9,6 @@ using FreeAgent.Client.Models.RecurringInvoices;
 using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Timeslips;
 using FreeAgent.Client.Models.Users;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
-
 namespace FreeAgent.Client.Infrastructure.Http;
 
 /// <summary>
@@ -18,16 +16,16 @@ namespace FreeAgent.Client.Infrastructure.Http;
 /// </summary>
 internal static class LinkedResourceHydration
 {
-    public static async System.Threading.Tasks.Task HydrateBillingContactAsync(
+    public static async System.Threading.Tasks.Task HydrateContactAsync(
         Project project,
         IFreeAgentRequestClient requestClient,
-        bool includeBillingContact,
+        bool includeContact,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(project);
         ArgumentNullException.ThrowIfNull(requestClient);
 
-        if (!includeBillingContact || project.Contact is not null || project.ContactId is not long contactId)
+        if (!includeContact || project.Contact is not null || project.ContactId is not long contactId)
         {
             return;
         }
@@ -235,7 +233,7 @@ internal static class LinkedResourceHydration
     }
 
     public static async System.Threading.Tasks.Task HydrateProjectAsync(
-        TaskModel task,
+        ProjectTask task,
         IFreeAgentRequestClient requestClient,
         bool includeProject,
         CancellationToken cancellationToken)
@@ -258,28 +256,28 @@ internal static class LinkedResourceHydration
         task.AttachProject(response.Project);
     }
 
-    public static async System.Threading.Tasks.Task HydrateTaskAsync(
+    public static async System.Threading.Tasks.Task HydrateProjectTaskAsync(
         Timeslip timeslip,
         IFreeAgentRequestClient requestClient,
-        bool includeTask,
+        bool includeProjectTask,
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(timeslip);
         ArgumentNullException.ThrowIfNull(requestClient);
 
-        if (!includeTask || timeslip.Task is not null || timeslip.TaskId is not long taskId)
+        if (!includeProjectTask || timeslip.ProjectTask is not null || timeslip.ProjectTaskId is not long projectTaskId)
         {
             return;
         }
 
-        var response = await requestClient.GetAsync<TaskResponse>($"tasks/{taskId}", cancellationToken);
+        var response = await requestClient.GetAsync<ProjectTaskResponse>($"tasks/{projectTaskId}", cancellationToken);
 
-        if (response.Task is null)
+        if (response.ProjectTask is null)
         {
             throw new FreeAgentApiException("Task data missing from API response");
         }
 
-        timeslip.AttachTask(response.Task);
+        timeslip.AttachProjectTask(response.ProjectTask);
     }
 
     public static async System.Threading.Tasks.Task HydrateProjectAsync(

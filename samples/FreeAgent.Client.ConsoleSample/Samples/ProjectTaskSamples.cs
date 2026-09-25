@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using TaskModel = FreeAgent.Client.Models.Tasks.Task;
-using TaskStatus = FreeAgent.Client.Models.Tasks.TaskStatus;
+using FreeAgent.Client.Models.Tasks;
+using ProjectTaskStatus = FreeAgent.Client.Models.Tasks.ProjectTaskStatus;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
@@ -8,13 +8,13 @@ namespace FreeAgent.Client.ConsoleSample.Samples;
 /// Tasks endpoint examples.
 /// </summary>
 [ConsoleSamples(Category = "Tasks")]
-internal sealed class TaskSamples(SampleContext context) : IConsoleSampleProvider
+internal sealed class ProjectTaskSamples(SampleContext context) : IConsoleSampleProvider
 {
     [ConsoleSample(Name = "List tasks")]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task ListTasksAsync(CancellationToken cancellationToken)
     {
-        var page = await context.Client.Tasks.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+        var page = await context.Client.ProjectTasks.ListAsync(perPage: 25, cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader($"Tasks (showing {page.Items.Count} of {page.Total})");
         SampleOutput.WriteRows(page.Items, task => $"{task.ResourceId,8}  {task.Name}  ({task.Status})");
@@ -25,7 +25,7 @@ internal sealed class TaskSamples(SampleContext context) : IConsoleSampleProvide
     private async Task ListTasksForProjectAsync(CancellationToken cancellationToken)
     {
         var project = await context.Data.GetRandomProjectAsync(cancellationToken);
-        var page = await context.Client.Tasks.ListAsync(
+        var page = await context.Client.ProjectTasks.ListAsync(
             perPage: 25,
             projectId: project.ResourceId,
             cancellationToken: cancellationToken);
@@ -39,7 +39,7 @@ internal sealed class TaskSamples(SampleContext context) : IConsoleSampleProvide
     private async Task GetTaskDetailAsync(CancellationToken cancellationToken)
     {
         var task = await context.Data.GetFirstTaskAsync(cancellationToken);
-        var detail = await context.Client.Tasks.GetTaskAsync(task.ResourceId, cancellationToken: cancellationToken);
+        var detail = await context.Client.ProjectTasks.GetProjectTaskAsync(task.ResourceId, cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader("Task detail");
         SampleOutput.WriteField("Id", detail.ResourceId);
@@ -58,7 +58,7 @@ internal sealed class TaskSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Id", created.ResourceId);
         SampleOutput.WriteField("Name", created.Name);
 
-        await context.Client.Tasks.DeleteTaskAsync(created.ResourceId, cancellationToken);
+        await context.Client.ProjectTasks.DeleteProjectTaskAsync(created.ResourceId, cancellationToken);
 
         SampleOutput.WriteHeader("Deleted probe task");
         SampleOutput.WriteField("Id", created.ResourceId);
@@ -71,28 +71,28 @@ internal sealed class TaskSamples(SampleContext context) : IConsoleSampleProvide
         var created = await CreateSampleTaskAsync(cancellationToken);
         created.Name = $"{created.Name} (updated)";
 
-        var updated = await context.Client.Tasks.UpdateTaskAsync(created.ResourceId, created, cancellationToken);
+        var updated = await context.Client.ProjectTasks.UpdateProjectTaskAsync(created.ResourceId, created, cancellationToken);
 
         SampleOutput.WriteHeader("Updated task name");
         SampleOutput.WriteField("Id", updated.ResourceId);
         SampleOutput.WriteField("Name", updated.Name);
 
-        await context.Client.Tasks.DeleteTaskAsync(updated.ResourceId, cancellationToken);
+        await context.Client.ProjectTasks.DeleteProjectTaskAsync(updated.ResourceId, cancellationToken);
     }
 
-    private async Task<TaskModel> CreateSampleTaskAsync(CancellationToken cancellationToken)
+    private async Task<ProjectTask> CreateSampleTaskAsync(CancellationToken cancellationToken)
     {
         var project = await context.Data.GetFirstProjectAsync(cancellationToken);
 
-        return await context.Client.Tasks.CreateTaskAsync(
+        return await context.Client.ProjectTasks.CreateProjectTaskAsync(
             project.ResourceId,
-            new TaskModel
+            new ProjectTask
             {
                 Name = $"Console probe task {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
                 IsBillable = true,
-                Status = TaskStatus.Active,
+                Status = ProjectTaskStatus.Active,
                 BillingRate = 0m,
-                BillingPeriod = Models.Tasks.TaskBillingPeriod.Hour
+                BillingPeriod = Models.Tasks.ProjectTaskBillingPeriod.Hour
             },
             cancellationToken);
     }

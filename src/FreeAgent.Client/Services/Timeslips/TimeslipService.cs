@@ -13,7 +13,7 @@ namespace FreeAgent.Client.Services.Timeslips;
 /// </summary>
 /// <remarks>
 /// Timeslips require <c>task</c>, <c>project</c>, and <c>user</c> on create.
-/// See also <see cref="Tasks.TaskService"/>, <see cref="Projects.ProjectService"/>, and <see cref="Users.UserService"/>.
+/// See also <see cref="Tasks.ProjectTaskService"/>, <see cref="Projects.ProjectService"/>, and <see cref="Users.UserService"/>.
 /// </remarks>
 public sealed class TimeslipService
 {
@@ -40,8 +40,8 @@ public sealed class TimeslipService
     /// <param name="nested">When <see langword="true"/>, return linked resources as nested JSON objects</param>
     /// <param name="user">Filter by user resource reference</param>
     /// <param name="userId">Filter by user identifier (equivalent to <c>client.Urls.User(userId)</c>)</param>
-    /// <param name="task">Filter by task resource reference</param>
-    /// <param name="taskId">Filter by task identifier (equivalent to <c>client.Urls.Task(taskId)</c>)</param>
+    /// <param name="projectTask">Filter by task resource reference</param>
+    /// <param name="projectTaskId">Filter by task identifier (equivalent to <c>client.Urls.ProjectTask(projectTaskId)</c>)</param>
     /// <param name="project">Filter by project resource reference</param>
     /// <param name="projectId">Filter by project identifier (equivalent to <c>client.Urls.Project(projectId)</c>)</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -56,8 +56,8 @@ public sealed class TimeslipService
         bool? nested = null,
         UserReference? user = null,
         long? userId = null,
-        TaskReference? task = null,
-        long? taskId = null,
+        ProjectTaskReference? projectTask = null,
+        long? projectTaskId = null,
         ProjectReference? project = null,
         long? projectId = null,
         CancellationToken cancellationToken = default)
@@ -111,7 +111,7 @@ public sealed class TimeslipService
             queryParameters.Add(new KeyValuePair<string, string>("user", userFilter));
         }
 
-        var taskFilter = ResolveTaskFilter(task, taskId);
+        var taskFilter = ResolveProjectTaskFilter(projectTask, projectTaskId);
         if (taskFilter is not null)
         {
             queryParameters.Add(new KeyValuePair<string, string>("task", taskFilter));
@@ -151,8 +151,8 @@ public sealed class TimeslipService
     /// <param name="nested">When <see langword="true"/>, return linked resources as nested JSON objects</param>
     /// <param name="user">Filter by user resource reference</param>
     /// <param name="userId">Filter by user identifier (equivalent to <c>client.Urls.User(userId)</c>)</param>
-    /// <param name="task">Filter by task resource reference</param>
-    /// <param name="taskId">Filter by task identifier (equivalent to <c>client.Urls.Task(taskId)</c>)</param>
+    /// <param name="projectTask">Filter by task resource reference</param>
+    /// <param name="projectTaskId">Filter by task identifier (equivalent to <c>client.Urls.ProjectTask(projectTaskId)</c>)</param>
     /// <param name="project">Filter by project resource reference</param>
     /// <param name="projectId">Filter by project identifier (equivalent to <c>client.Urls.Project(projectId)</c>)</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -166,8 +166,8 @@ public sealed class TimeslipService
         bool? nested = null,
         UserReference? user = null,
         long? userId = null,
-        TaskReference? task = null,
-        long? taskId = null,
+        ProjectTaskReference? projectTask = null,
+        long? projectTaskId = null,
         ProjectReference? project = null,
         long? projectId = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -185,9 +185,8 @@ public sealed class TimeslipService
                 updatedSince,
                 nested,
                 user,
-                userId,
-                task,
-                taskId,
+                userId, projectTask,
+                projectTaskId,
                 project,
                 projectId,
                 cancellationToken);
@@ -264,10 +263,10 @@ public sealed class TimeslipService
             throw new FreeAgentApiException("Timeslip data missing from API response");
         }
 
-        await LinkedResourceHydration.HydrateTaskAsync(
+        await LinkedResourceHydration.HydrateProjectTaskAsync(
             response.Timeslip,
             _requestClient,
-            options?.IncludeTask == true,
+            options?.IncludeProjectTask == true,
             cancellationToken);
 
         await LinkedResourceHydration.HydrateProjectAsync(
@@ -296,7 +295,7 @@ public sealed class TimeslipService
         ArgumentNullException.ThrowIfNull(timeslip);
 
         var content = FreeAgentJsonSerializer.CreateContent(
-            new TimeslipRequest { Timeslip = TimeslipWritePayload.FromTimeslip(timeslip) });
+            new TimeslipRequest { Timeslip = TimeslipWritePayload.FromTimeslip(timeslip, _requestClient.Environment) });
 
         var response = await _requestClient.PostAsync<TimeslipResponse>("timeslips", content, cancellationToken);
 
@@ -327,7 +326,7 @@ public sealed class TimeslipService
 
         var content = FreeAgentJsonSerializer.CreateContent(new TimeslipsBatchRequest
         {
-            Timeslips = timeslips.Select(TimeslipWritePayload.FromTimeslip).ToList()
+            Timeslips = timeslips.Select(t => TimeslipWritePayload.FromTimeslip(t, _requestClient.Environment)).ToList()
         });
 
         var response = await _requestClient.PostAsync<TimeslipsResponse>("timeslips", content, cancellationToken);
@@ -356,7 +355,7 @@ public sealed class TimeslipService
         ArgumentNullException.ThrowIfNull(timeslip);
 
         var content = FreeAgentJsonSerializer.CreateContent(
-            new TimeslipRequest { Timeslip = TimeslipWritePayload.FromTimeslip(timeslip) });
+            new TimeslipRequest { Timeslip = TimeslipWritePayload.FromTimeslip(timeslip, _requestClient.Environment) });
 
         var response = await _requestClient.PutAsync<TimeslipResponse>($"timeslips/{timeslipId}", content, cancellationToken);
 
@@ -442,25 +441,25 @@ public sealed class TimeslipService
         return UserReference.ForEnvironment(_requestClient.Environment, userId.Value).Uri;
     }
 
-    private string? ResolveTaskFilter(TaskReference? task, long? taskId)
+    private string? ResolveProjectTaskFilter(ProjectTaskReference? projectTask, long? projectTaskId)
     {
-        if (task is not null && taskId is not null)
+        if (projectTask is not null && projectTaskId is not null)
         {
-            throw new ArgumentException("Specify either task or taskId, not both.", nameof(task));
+            throw new ArgumentException("Specify either task or projectTaskId, not both.", nameof(projectTask));
         }
 
-        if (task is not null)
+        if (projectTask is not null)
         {
-            return task.Value.Uri;
+            return projectTask.Value.Uri;
         }
 
-        if (taskId is null)
+        if (projectTaskId is null)
         {
             return null;
         }
 
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(taskId.Value);
-        return TaskReference.ForEnvironment(_requestClient.Environment, taskId.Value).Uri;
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(projectTaskId.Value);
+        return ProjectTaskReference.ForEnvironment(_requestClient.Environment, projectTaskId.Value).Uri;
     }
 
     private string? ResolveProjectFilter(ProjectReference? project, long? projectId)

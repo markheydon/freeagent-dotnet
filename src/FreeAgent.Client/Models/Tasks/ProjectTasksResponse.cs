@@ -5,11 +5,11 @@ namespace FreeAgent.Client.Models.Tasks;
 /// <summary>
 /// Wrapper for task list API responses.
 /// </summary>
-public class TasksResponse
+public class ProjectTasksResponse
 {
     /// <summary>
     /// Task collection payload.
     /// </summary>
     [JsonPropertyName("tasks")]
-    public List<Task>? Tasks { get; set; }
+    public List<ProjectTask>? ProjectTasks { get; set; }
 }

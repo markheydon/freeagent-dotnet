@@ -60,7 +60,7 @@
                         <MudSelectItem Value="@CreateVariantSingle">CreateTimeslipAsync (single)</MudSelectItem>
                         <MudSelectItem Value="@CreateVariantBatch">CreateTimeslipsAsync (batch)</MudSelectItem>
                     </MudSelect>
-                    <MudNumericField @bind-Value="_taskId" Label="Task ID (create)" Min="1" />
+                    <MudNumericField @bind-Value="_projectTaskId" Label="Task ID (create)" Min="1" />
                     <MudNumericField @bind-Value="_projectId" Label="Project ID (create)" Min="1" />
                     <MudNumericField @bind-Value="_userId" Label="User ID (create)" Min="1" />
                     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
@@ -105,7 +105,7 @@
                                 <MudItem xs="12" sm="6">
                                     <MudPaper Class="probe-card" Elevation="0">
                                         <MudText Typo="Typo.caption">Task ID</MudText>
-                                        <MudText Typo="Typo.subtitle1">@(_timeslip.TaskId?.ToString() ?? "Not returned")</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_timeslip.ProjectTaskId?.ToString() ?? "Not returned")</MudText>
                                     </MudPaper>
                                 </MudItem>
                             </MudGrid>
@@ -131,7 +131,7 @@
     private Timeslip? _timeslip;
     private ModelProbeSnapshot? _probe;
     private long? _timeslipId;
-    private long? _taskId;
+    private long? _projectTaskId;
     private long? _projectId;
     private long? _userId;
     private string _createVariant = CreateVariantSingle;
@@ -160,7 +160,7 @@
                     _timeslipId.Value,
                     new TimeslipGetOptions
                     {
-                        IncludeTask = true,
+                        IncludeProjectTask = true,
                         IncludeProject = true,
                         IncludeUser = true
                     });
@@ -180,7 +180,7 @@
                 if (_timeslip.TryGetResourceId(out var assignedId))
                 {
                     _timeslipId = assignedId;
-                    _taskId = _timeslip.TaskId;
+                    _projectTaskId = _timeslip.ProjectTaskId;
                     _projectId = _timeslip.ProjectId;
                     _userId = _timeslip.UserId;
                     _operationMessage = result.Action == TimeslipSeedAction.Updated
@@ -196,7 +196,7 @@
 
     private async System.Threading.Tasks.Task CreateProbeTimeslipAsync()
     {
-        if (_taskId is null or < 1 || _projectId is null or < 1 || _userId is null or < 1)
+        if (_projectTaskId is null or < 1 || _projectId is null or < 1 || _userId is null or < 1)
         {
             _error = "Enter task, project, and user IDs before creating a probe timeslip.";
             return;
@@ -207,9 +207,9 @@
             {
                 var probe = new Timeslip
                 {
-                    LinkedTask = client.Urls.Task(_taskId.Value),
-                    LinkedProject = client.Urls.Project(_projectId.Value),
-                    LinkedUser = client.Urls.User(_userId.Value),
+                    ProjectTaskId = _projectTaskId.Value,
+                    ProjectId = _projectId.Value,
+                    UserId = _userId.Value,
                     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
                     Hours = 0.5m,
                     Comment = $"SDK probe timeslip {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}"

@@ -84,7 +84,7 @@ public class EstimateModelSerializationTests
     }
 
     [Fact]
-    public void WritePayload_OmitBillingContactFromWrite_ExcludesRoundTrippedContact()
+    public void WritePayload_SetContactId_OverridesRoundTrippedContact()
     {
         var estimate = JsonSerializer.Deserialize<Estimate>("""
             {
@@ -94,21 +94,20 @@ public class EstimateModelSerializationTests
               "reference": "EST-001"
             }
             """)!;
-        estimate.OmitBillingContactFromWrite = true;
+        estimate.ContactId = 3;
 
-        var payload = EstimateWritePayload.FromEstimate(estimate);
+        var payload = EstimateWritePayload.FromEstimate(estimate, FreeAgentEnvironment.Production);
 
-        Assert.Null(payload.Contact);
+        Assert.Equal("https://api.freeagent.com/v2/contacts/3", payload.Contact!.Value.Uri);
     }
 
     [Fact]
-    public void WritePayload_OmitEstimateItemsFromWrite_ExcludesLineItems()
+    public void WritePayload_OmitLineItems_ExcludesLineItems()
     {
         var estimate = new Estimate
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
-            OmitEstimateItemsFromWrite = true,
             EstimateItems =
             [
                 new EstimateItem
@@ -119,7 +118,7 @@ public class EstimateModelSerializationTests
             ]
         };
 
-        var payload = EstimateWritePayload.FromEstimate(estimate);
+        var payload = EstimateWritePayload.FromEstimate(estimate, FreeAgentEnvironment.Production, omitLineItems: true);
 
         Assert.Null(payload.EstimateItems);
     }

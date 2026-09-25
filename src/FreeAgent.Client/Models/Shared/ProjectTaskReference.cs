@@ -7,15 +7,15 @@ namespace FreeAgent.Client.Models.Shared;
 /// <summary>
 /// Typed reference to a FreeAgent task resource URI.
 /// </summary>
-[JsonConverter(typeof(TaskReferenceJsonConverter))]
-public readonly record struct TaskReference : IResourceReference
+[JsonConverter(typeof(ProjectTaskReferenceJsonConverter))]
+public readonly record struct ProjectTaskReference : IResourceReference
 {
     /// <summary>
     /// Initialises a task reference.
     /// </summary>
     /// <param name="uri">Task resource URI.</param>
     /// <param name="id">Task identifier.</param>
-    public TaskReference(string uri, long id)
+    public ProjectTaskReference(string uri, long id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(uri);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
@@ -34,13 +34,13 @@ public readonly record struct TaskReference : IResourceReference
     /// </summary>
     /// <param name="uri">Task resource URI.</param>
     /// <returns>Parsed task reference.</returns>
-    public static TaskReference Parse(string uri)
+    public static ProjectTaskReference Parse(string uri)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(uri);
         FreeAgentResourceId.ValidateResourceSegment(uri, "tasks");
 
         var id = FreeAgentResourceId.Parse(uri);
-        return new TaskReference(uri, id);
+        return new ProjectTaskReference(uri, id);
     }
 
     /// <summary>
@@ -49,17 +49,17 @@ public readonly record struct TaskReference : IResourceReference
     /// <param name="environment">Target API environment.</param>
     /// <param name="id">Task identifier.</param>
     /// <returns>Task reference.</returns>
-    public static TaskReference ForEnvironment(FreeAgentEnvironment environment, long id)
+    public static ProjectTaskReference ForEnvironment(FreeAgentEnvironment environment, long id)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(id);
 
         var uri = $"{FreeAgentEnvironmentEndpoints.GetApiBaseUrl(environment)}tasks/{id}";
-        return new TaskReference(uri, id);
+        return new ProjectTaskReference(uri, id);
     }
 
     /// <summary>
     /// Implicit conversion to the wire URI string.
     /// </summary>
     /// <param name="reference">Task reference.</param>
-    public static implicit operator string(TaskReference reference) => reference.Uri;
+    public static implicit operator string(ProjectTaskReference reference) => reference.Uri;
 }

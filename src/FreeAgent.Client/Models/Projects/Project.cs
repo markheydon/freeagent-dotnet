@@ -11,6 +11,8 @@ namespace FreeAgent.Client.Models.Projects;
 /// </summary>
 public class Project : IFreeAgentResource
 {
+    private SettableLinkId _contactId;
+
     /// <summary>
     /// Project resource URL.
     /// </summary>
@@ -29,38 +31,30 @@ public class Project : IFreeAgentResource
     internal ExpandableField<Contact>? ContactLink { get; set; }
 
     /// <summary>
-    /// Billing contact when returned nested on the wire or hydrated via <see cref="ProjectGetOptions.IncludeBillingContact"/>.
+    /// Billing contact when returned nested on the wire or hydrated via <see cref="ProjectGetOptions.IncludeContact"/>.
     /// </summary>
     [JsonIgnore]
     public Contact? Contact => ContactLink?.Value;
 
     /// <summary>
-    /// Billing contact identifier parsed from the project response.
+    /// Billing contact identifier for create and update requests. Populated after GET when the API returns a contact link.
     /// </summary>
     [JsonIgnore]
-    public long? ContactId => ContactLink?.Id;
-
-    /// <summary>
-    /// Billing contact to assign on create or update requests.
-    /// </summary>
-    /// <remarks>
-    /// When omitted on update, the SDK round-trips the existing contact link from the read model.
-    /// Set <see cref="OmitBillingContactFromWrite"/> to <see langword="true"/> to exclude contact from the write payload.
-    /// </remarks>
-    [JsonIgnore]
-    public ContactReference? BillingContact { get; set; }
-
-    /// <summary>
-    /// When <see langword="true"/>, create and update payloads exclude the billing contact even when a contact link exists on the model.
-    /// </summary>
-    [JsonIgnore]
-    public bool OmitBillingContactFromWrite { get; set; }
+    public long? ContactId
+    {
+        get => _contactId.Get(ContactLink?.Id);
+        set => _contactId.Set(value);
+    }
 
     /// <summary>
     /// Contact display name when the full contact is not included in the response.
     /// </summary>
     [JsonPropertyName("contact_name")]
     public string? ContactName { get; set; }
+
+    internal SettableLinkId ContactIdBacking => _contactId;
+
+    internal long? ContactLinkId => ContactLink?.Id;
 
     /// <summary>
     /// Attaches a hydrated billing contact to this project.

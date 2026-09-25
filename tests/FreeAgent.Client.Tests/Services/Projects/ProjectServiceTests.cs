@@ -141,7 +141,7 @@ public class ProjectServiceTests
     }
 
     [Fact]
-    public async Task GetProjectAsync_WithIncludeBillingContact_FetchesContact()
+    public async Task GetProjectAsync_WithIncludeContact_FetchesContact()
     {
         var requestCount = 0;
         HttpResponseMessage RouteRequest(HttpRequestMessage request)
@@ -190,7 +190,7 @@ public class ProjectServiceTests
 
         var project = await service.GetProjectAsync(
             42,
-            new ProjectGetOptions { IncludeBillingContact = true });
+            new ProjectGetOptions { IncludeContact = true });
 
         Assert.Equal(2, requestCount);
         Assert.Equal("Acme Trading Ltd", project.Contact!.OrganisationName);
@@ -198,7 +198,7 @@ public class ProjectServiceTests
     }
 
     [Fact]
-    public async Task GetProjectAsync_WithIncludeBillingContact_SkipsFetchWhenAlreadyNested()
+    public async Task GetProjectAsync_WithIncludeContact_SkipsFetchWhenAlreadyNested()
     {
         var requestCount = 0;
         var handler = new QueueHttpMessageHandler(request =>
@@ -227,7 +227,7 @@ public class ProjectServiceTests
 
         var project = await service.GetProjectAsync(
             42,
-            new ProjectGetOptions { IncludeBillingContact = true });
+            new ProjectGetOptions { IncludeContact = true });
 
         Assert.Equal(1, requestCount);
         Assert.Equal("Already Nested", project.Contact!.OrganisationName);
@@ -267,7 +267,7 @@ public class ProjectServiceTests
         var created = await service.CreateProjectAsync(new Project
         {
             Name = "New Project",
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/1"),
+            ContactId = 1,
             Status = ProjectStatus.Active,
             Currency = CurrencyCode.GBP,
             BudgetUnits = ProjectBudgetUnits.Hours

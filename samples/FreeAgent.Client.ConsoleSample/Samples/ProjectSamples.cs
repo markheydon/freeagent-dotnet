@@ -84,7 +84,10 @@ internal sealed class ProjectSamples(SampleContext context) : IConsoleSampleProv
         var created = await CreateSampleProjectAsync(cancellationToken);
         created.Name = $"{created.Name} (updated)";
 
-        var updated = await context.Client.Projects.UpdateProjectAsync(created.ResourceId, created, cancellationToken);
+        var updated = await context.Client.Projects.UpdateProjectAsync(
+            created.ResourceId,
+            created,
+            cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader("Updated project name");
         SampleOutput.WriteField("Id", updated.ResourceId);
@@ -101,7 +104,7 @@ internal sealed class ProjectSamples(SampleContext context) : IConsoleSampleProv
             new Project
             {
                 Name = $"Console probe project {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
-                BillingContact = ContactReference.ForEnvironment(context.Client.Environment, contact.ResourceId),
+                ContactId = contact.ResourceId,
                 Status = ProjectStatus.Active,
                 Currency = CurrencyCode.GBP,
                 Budget = 0m,

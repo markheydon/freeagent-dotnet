@@ -10,7 +10,7 @@ List, create, update, and delete tasks. Tasks belong to a project; create and li
 
 | | |
 |---|---|
-| **SDK service** | `client.Tasks` (`TaskService`) |
+| **SDK service** | `client.ProjectTasks` (`ProjectTaskService`) |
 | **FreeAgent docs** | [dev.freeagent.com/docs/tasks](https://dev.freeagent.com/docs/tasks) |
 | **Sample app** | `/tasks` (list), `/tasks/detail` (CRUD) |
 
@@ -21,7 +21,7 @@ Pagination patterns: see [Pagination](../how-to/pagination.md). Parent project l
 ### ListAsync
 
 ```csharp
-Task<PaginatedResponse<Task>> ListAsync(
+Task<PaginatedResponse<ProjectTask>> ListAsync(
     int page = 1,
     int perPage = 25,
     string? view = null,
@@ -52,8 +52,8 @@ Task<PaginatedResponse<Task>> ListAsync(
 ```csharp
 using FreeAgent.Client.Models.Tasks;
 
-var page = await client.Tasks.ListAsync(
-    view: TaskViews.Active,
+var page = await client.ProjectTasks.ListAsync(
+    view: ProjectTaskViews.Active,
     projectId: 42,
     updatedSince: new DateOnly(2024, 1, 1));
 ```
@@ -63,7 +63,7 @@ var page = await client.Tasks.ListAsync(
 ### ListAutoPagingAsync
 
 ```csharp
-IAsyncEnumerable<Task> ListAutoPagingAsync(
+IAsyncEnumerable<ProjectTask> ListAutoPagingAsync(
     int perPage = 25,
     string? view = null,
     string? sort = null,
@@ -77,21 +77,21 @@ Same query parameters as `ListAsync` except `page`.
 
 ---
 
-### GetTaskAsync
+### GetProjectTaskAsync
 
 ```csharp
-Task<Task> GetTaskAsync(long taskId, CancellationToken cancellationToken = default)
+Task<ProjectTask> GetProjectTaskAsync(long projectTaskId, CancellationToken cancellationToken = default)
 
-Task<Task> GetTaskAsync(
-    long taskId,
-    TaskGetOptions? options,
+Task<ProjectTask> GetProjectTaskAsync(
+    long projectTaskId,
+    ProjectTaskGetOptions? options,
     CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `taskId` | `long` | Yes | - | path `:id` |
-| `options` | `TaskGetOptions?` | No | `null` | - |
+| `projectTaskId` | `long` | Yes | - | path `:id` |
+| `options` | `ProjectTaskGetOptions?` | No | `null` | - |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/tasks/:id`
@@ -101,25 +101,25 @@ When `options.IncludeProject` is `true`, the SDK fetches the parent project if t
 **Sample:**
 
 ```csharp
-var task = await client.Tasks.GetTaskAsync(
+var task = await client.ProjectTasks.GetProjectTaskAsync(
     123,
-    new TaskGetOptions { IncludeProject = true });
+    new ProjectTaskGetOptions { IncludeProject = true });
 ```
 
 ---
 
-### CreateTaskAsync
+### CreateProjectTaskAsync
 
 ```csharp
-Task<Task> CreateTaskAsync(long projectId, Task task, CancellationToken cancellationToken = default)
+Task<ProjectTask> CreateProjectTaskAsync(long projectId, ProjectTask task, CancellationToken cancellationToken = default)
 
-Task<Task> CreateTaskAsync(ProjectReference project, Task task, CancellationToken cancellationToken = default)
+Task<ProjectTask> CreateProjectTaskAsync(ProjectReference project, ProjectTask task, CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
 | `projectId` / `project` | `long` / `ProjectReference` | Yes | - | `project` query param (URI) |
-| `task` | `Task` | Yes | - | `task` envelope |
+| `task` | `ProjectTask` | Yes | - | `task` envelope |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `POST /v2/tasks?project=:project`
@@ -129,86 +129,86 @@ The parent project is supplied as a query parameter, not in the request body.
 **Sample:**
 
 ```csharp
-var task = await client.Tasks.CreateTaskAsync(42, new Task
+var task = await client.ProjectTasks.CreateProjectTaskAsync(42, new ProjectTask
 {
     Name = "Planning",
     IsBillable = true,
-    Status = TaskStatus.Active
+    Status = ProjectTaskStatus.Active
 });
 ```
 
 ---
 
-### UpdateTaskAsync
+### UpdateProjectTaskAsync
 
 ```csharp
-Task<Task> UpdateTaskAsync(long taskId, Task task, CancellationToken cancellationToken = default)
+Task<ProjectTask> UpdateProjectTaskAsync(long projectTaskId, ProjectTask task, CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `taskId` | `long` | Yes | - | path `:id` |
-| `task` | `Task` | Yes | - | `task` envelope |
+| `projectTaskId` | `long` | Yes | - | path `:id` |
+| `task` | `ProjectTask` | Yes | - | `task` envelope |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `PUT /v2/tasks/:id`
 
 ---
 
-### DeleteTaskAsync
+### DeleteProjectTaskAsync
 
 ```csharp
-Task DeleteTaskAsync(long taskId, CancellationToken cancellationToken = default)
+Task DeleteProjectTaskAsync(long projectTaskId, CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `taskId` | `long` | Yes | - | path `:id` |
+| `projectTaskId` | `long` | Yes | - | path `:id` |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `DELETE /v2/tasks/:id`
 
 ## List filters
 
-### view (`TaskViews`)
+### view (`ProjectTaskViews`)
 
 | Constant | Wire value |
 |----------|------------|
-| `TaskViews.All` | `all` |
-| `TaskViews.Active` | `active` |
-| `TaskViews.Completed` | `completed` |
-| `TaskViews.Hidden` | `hidden` |
+| `ProjectTaskViews.All` | `all` |
+| `ProjectTaskViews.Active` | `active` |
+| `ProjectTaskViews.Completed` | `completed` |
+| `ProjectTaskViews.Hidden` | `hidden` |
 
 ### sort
 
 `name`, `project`, `billing_rate`, `created_at`, `updated_at` — prefix with `-` for descending.
 
-## TaskGetOptions
+## ProjectTaskGetOptions
 
 | Property | Type | Purpose |
 |----------|------|---------|
 | `IncludeProject` | `bool` | Fetch parent project when only a URI is returned |
 
-## Task model
+## ProjectTask model
 
 Key properties:
 
 | Property | Type | Wire name | Notes |
 |----------|------|-----------|-------|
 | `Name` | `string?` | `name` | Required on create |
-| `Status` | `TaskStatus?` | `status` | |
+| `Status` | `ProjectTaskStatus?` | `status` | |
 | `Currency` | `CurrencyCode?` | `currency` | Read-only (from project) |
 | `IsBillable` | `bool?` | `is_billable` | |
 | `BillingRate` | `decimal?` | `billing_rate` | |
-| `BillingPeriod` | `TaskBillingPeriod?` | `billing_period` | |
+| `BillingPeriod` | `ProjectTaskBillingPeriod?` | `billing_period` | |
 | `ProjectId` | `long?` | - | Parsed from `project` URI |
 | `Project` | `Project?` | `project` | Nested or hydrated project |
 | `IsDeletable` | `bool?` | `is_deletable` | Single GET only |
 | `Url` | `string` | `url` | |
 
-## TaskReference
+## ProjectTaskReference
 
-Use `client.Urls.Task(id)` or `TaskReference.ForEnvironment(environment, id)` to build environment-correct task URIs for downstream resources such as timeslips.
+Use `client.Urls.ProjectTask(id)` or `ProjectTaskReference.ForEnvironment(environment, id)` to build environment-correct task URIs for list filters and inbound URL parsing. For timeslip writes, set `Timeslip.ProjectTaskId` instead.
 
 ## Errors
 

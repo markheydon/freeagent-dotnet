@@ -11,7 +11,7 @@ namespace FreeAgent.Client.Services.Projects;
 /// Service for interacting with FreeAgent projects.
 /// </summary>
 /// <remarks>
-/// Tasks belong to projects. Use <see cref="Tasks.TaskService"/> for task list and CRUD operations scoped by <c>project</c>.
+/// Tasks belong to projects. Use <see cref="Tasks.ProjectTaskService"/> for task list and CRUD operations scoped by <c>project</c>.
 /// </remarks>
 public sealed class ProjectService
 {
@@ -171,10 +171,10 @@ public sealed class ProjectService
             throw new FreeAgentApiException("Project data missing from API response");
         }
 
-        await LinkedResourceHydration.HydrateBillingContactAsync(
+        await LinkedResourceHydration.HydrateContactAsync(
             response.Project,
             _requestClient,
-            options?.IncludeBillingContact == true,
+            options?.IncludeContact == true,
             cancellationToken);
 
         return response.Project;
@@ -190,7 +190,10 @@ public sealed class ProjectService
     {
         ArgumentNullException.ThrowIfNull(project);
 
-        var content = FreeAgentJsonSerializer.CreateContent(new ProjectRequest { Project = ProjectWritePayload.FromProject(project) });
+        var content = FreeAgentJsonSerializer.CreateContent(new ProjectRequest
+        {
+            Project = ProjectWritePayload.FromProject(project, _requestClient.Environment)
+        });
         var response = await _requestClient.PostAsync<ProjectResponse>("projects", content, cancellationToken);
 
         if (response.Project is null)
@@ -206,14 +209,25 @@ public sealed class ProjectService
     /// </summary>
     /// <param name="projectId">Project identifier from the resource URL</param>
     /// <param name="project">Project attributes to update</param>
+    /// <param name="options">Optional update behaviour</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Updated project</returns>
-    public async Task<Project> UpdateProjectAsync(long projectId, Project project, CancellationToken cancellationToken = default)
+    public async Task<Project> UpdateProjectAsync(
+        long projectId,
+        Project project,
+        ProjectUpdateOptions? options = null,
+        CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(projectId);
         ArgumentNullException.ThrowIfNull(project);
 
-        var content = FreeAgentJsonSerializer.CreateContent(new ProjectRequest { Project = ProjectWritePayload.FromProject(project) });
+        var content = FreeAgentJsonSerializer.CreateContent(new ProjectRequest
+        {
+            Project = ProjectWritePayload.FromProject(
+                project,
+                _requestClient.Environment,
+                LinkedResourceWriteOptions.FromProjectUpdate(options))
+        });
         var response = await _requestClient.PutAsync<ProjectResponse>($"projects/{projectId}", content, cancellationToken);
 
         if (response.Project is null)

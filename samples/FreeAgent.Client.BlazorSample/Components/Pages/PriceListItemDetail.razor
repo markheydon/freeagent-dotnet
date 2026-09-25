@@ -202,8 +202,6 @@
         await RunOperationAsync(
             async client =>
             {
-                var category = BuildCategoryReference(client);
-                var stockItem = BuildStockItemReference(client);
                 var existing = await client.PriceListItems.ListAsync(sort: PriceListItemSortOptions.Code);
                 var match = existing.FirstOrDefault(item => string.Equals(item.Code, ProbeCode, StringComparison.Ordinal));
 
@@ -216,8 +214,8 @@
                         Quantity = _quantity,
                         ItemType = _itemType,
                         VatStatus = _vatStatus,
-                        Category = category,
-                        StockItem = stockItem
+                        CategoryNominalCode = _categoryNominalCode,
+                        StockItemId = _itemType == InvoiceItemType.Stock ? _stockItemId : null
                     });
                     _priceListItemId = _item.ResourceId;
                     _operationMessage = $"Updated existing probe item {_item.ResourceId} (code {ProbeCode}).";
@@ -232,8 +230,8 @@
                         Price = _price,
                         ItemType = _itemType.Value,
                         VatStatus = _vatStatus,
-                        Category = category,
-                        StockItem = stockItem
+                        CategoryNominalCode = _categoryNominalCode,
+                        StockItemId = _itemType == InvoiceItemType.Stock ? _stockItemId : null
                     });
                     _priceListItemId = _item.ResourceId;
                     _operationMessage = $"Created probe item {_item.ResourceId} (code {ProbeCode}).";
@@ -267,8 +265,8 @@
                     Price = _price,
                     ItemType = _itemType,
                     VatStatus = _vatStatus,
-                    Category = BuildCategoryReference(client),
-                    StockItem = BuildStockItemReference(client)
+                    CategoryNominalCode = _categoryNominalCode,
+                    StockItemId = _itemType == InvoiceItemType.Stock ? _stockItemId : null
                 });
                 _operationMessage = $"Updated price list item {_item.ResourceId}.";
             },
@@ -346,9 +344,4 @@
 
     private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
 
-    private CategoryReference? BuildCategoryReference(FreeAgent.Client.FreeAgentClient client) =>
-        string.IsNullOrWhiteSpace(_categoryNominalCode) ? null : client.Urls.Category(_categoryNominalCode);
-
-    private StockItemReference? BuildStockItemReference(FreeAgent.Client.FreeAgentClient client) =>
-        _itemType == InvoiceItemType.Stock && _stockItemId is > 0 ? client.Urls.StockItem(_stockItemId.Value) : null;
 }

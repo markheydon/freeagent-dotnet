@@ -3,7 +3,7 @@ namespace FreeAgent.Client.Models.Tasks;
 /// <summary>
 /// Sort field values for listing tasks.
 /// </summary>
-public static class TaskSortOptions
+public static class ProjectTaskSortOptions
 {
     /// <summary>Sort by task name (default).</summary>
     public const string Name = "name";

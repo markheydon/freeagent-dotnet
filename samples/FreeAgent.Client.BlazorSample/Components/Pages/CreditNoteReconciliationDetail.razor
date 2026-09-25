@@ -183,10 +183,7 @@
         await RunOperationAsync(
             async client =>
             {
-                var request = CreateCreditNoteReconciliationRequest.Create(
-                    _grossValue!.Value,
-                    client.Urls.Invoice(_invoiceId!.Value),
-                    client.Urls.CreditNote(_creditNoteId!.Value),
+                var request = CreateCreditNoteReconciliationRequest.Create(_grossValue!.Value, invoiceId: _invoiceId!.Value, creditNoteId: _creditNoteId!.Value,
                     datedOn: _datedOn is null ? null : DateOnly.FromDateTime(_datedOn.Value));
 
                 _reconciliation = await client.CreditNoteReconciliations.CreateCreditNoteReconciliationAsync(request);
@@ -217,8 +214,8 @@
             {
                 var request = UpdateCreditNoteReconciliationRequest.Create(
                     grossValue: _grossValue,
-                    invoice: _invoiceId is > 0 ? client.Urls.Invoice(_invoiceId.Value) : null,
-                    creditNote: _creditNoteId is > 0 ? client.Urls.CreditNote(_creditNoteId.Value) : null,
+                    invoiceId: _invoiceId is > 0 ? _invoiceId.Value : null,
+                    creditNoteId: _creditNoteId is > 0 ? _creditNoteId.Value : null,
                     datedOn: _datedOn is null ? null : DateOnly.FromDateTime(_datedOn.Value));
 
                 _reconciliation = await client.CreditNoteReconciliations.UpdateCreditNoteReconciliationAsync(

@@ -14,6 +14,10 @@ namespace FreeAgent.Client.Models.CreditNotes;
 /// </summary>
 public sealed class CreditNote : IFreeAgentResource
 {
+    private SettableLinkId _contactId;
+    private SettableLinkId _projectId;
+    private SettableLinkId _bankAccountId;
+
     /// <summary>
     /// Credit note resource URL.
     /// </summary>
@@ -50,22 +54,14 @@ public sealed class CreditNote : IFreeAgentResource
     public Contact? Contact => ContactLink?.Value;
 
     /// <summary>
-    /// Contact identifier parsed from the credit note response.
+    /// Contact identifier for create and update requests. Populated after GET when the API returns a contact link.
     /// </summary>
     [JsonIgnore]
-    public long? ContactId => ContactLink?.Id;
-
-    /// <summary>
-    /// Contact to assign on create or update requests.
-    /// </summary>
-    [JsonIgnore]
-    public ContactReference? BillingContact { get; set; }
-
-    /// <summary>
-    /// When <see langword="true"/>, create and update payloads exclude the contact even when a contact link exists on the model.
-    /// </summary>
-    [JsonIgnore]
-    public bool OmitBillingContactFromWrite { get; set; }
+    public long? ContactId
+    {
+        get => _contactId.Get(ContactLink?.Id);
+        set => _contactId.Set(value);
+    }
 
     /// <summary>
     /// Display name of the contact for this credit note.
@@ -87,34 +83,14 @@ public sealed class CreditNote : IFreeAgentResource
     public Project? Project => ProjectLink?.Value;
 
     /// <summary>
-    /// Project identifier parsed from the credit note response.
+    /// Project identifier for create and update requests. Populated after GET when the API returns a project link.
     /// </summary>
     [JsonIgnore]
-    public long? ProjectId => ProjectLink?.Id;
-
-    /// <summary>
-    /// Project to assign on create or update requests.
-    /// </summary>
-    [JsonIgnore]
-    public ProjectReference? LinkedProject { get; set; }
-
-    /// <summary>
-    /// When <see langword="true"/>, create and update payloads exclude the project even when a project link exists on the model.
-    /// </summary>
-    [JsonIgnore]
-    public bool OmitProjectFromWrite { get; set; }
-
-    /// <summary>
-    /// When <see langword="true"/>, create and update payloads exclude the bank account even when a bank account link exists on the model.
-    /// </summary>
-    [JsonIgnore]
-    public bool OmitBankAccountFromWrite { get; set; }
-
-    /// <summary>
-    /// When <see langword="true"/>, create and update payloads exclude credit note line items even when items exist on the model.
-    /// </summary>
-    [JsonIgnore]
-    public bool OmitCreditNoteItemsFromWrite { get; set; }
+    public long? ProjectId
+    {
+        get => _projectId.Get(ProjectLink?.Id);
+        set => _projectId.Set(value);
+    }
 
     /// <summary>
     /// Property URI for landlord companies.
@@ -227,16 +203,14 @@ public sealed class CreditNote : IFreeAgentResource
     public BankAccount? BankAccount => BankAccountLink?.Value;
 
     /// <summary>
-    /// Bank account identifier parsed from the credit note response.
+    /// Bank account identifier for create and update requests. Populated after GET when the API returns a bank account link.
     /// </summary>
     [JsonIgnore]
-    public long? BankAccountId => BankAccountLink?.Id;
-
-    /// <summary>
-    /// Bank account to assign on create or update requests.
-    /// </summary>
-    [JsonIgnore]
-    public BankAccountReference? RemittanceBankAccount { get; set; }
+    public long? BankAccountId
+    {
+        get => _bankAccountId.Get(BankAccountLink?.Id);
+        set => _bankAccountId.Set(value);
+    }
 
     /// <summary>
     /// Whether to omit the logo and company address on the credit note.
@@ -352,6 +326,18 @@ public sealed class CreditNote : IFreeAgentResource
     /// </summary>
     [JsonPropertyName("updated_at")]
     public DateTimeOffset? UpdatedAt { get; set; }
+
+    internal SettableLinkId ContactIdBacking => _contactId;
+
+    internal long? ContactLinkId => ContactLink?.Id;
+
+    internal SettableLinkId ProjectIdBacking => _projectId;
+
+    internal long? ProjectLinkId => ProjectLink?.Id;
+
+    internal SettableLinkId BankAccountIdBacking => _bankAccountId;
+
+    internal long? BankAccountLinkId => BankAccountLink?.Id;
 
     /// <summary>
     /// Attaches a hydrated contact to this credit note.

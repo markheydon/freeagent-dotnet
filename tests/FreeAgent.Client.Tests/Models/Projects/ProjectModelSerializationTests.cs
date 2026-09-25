@@ -1,4 +1,6 @@
 using System.Text.Json;
+using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
 
@@ -99,19 +101,19 @@ public class ProjectModelSerializationTests
     }
 
     [Fact]
-    public void WritePayload_UsesBillingContact()
+    public void WritePayload_UsesContactId()
     {
         var payload = ProjectWritePayload.FromProject(new Project
         {
-            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/3"),
+            ContactId = 3,
             Name = "Example"
-        });
+        }, FreeAgentEnvironment.Production);
 
         Assert.Equal("https://api.freeagent.com/v2/contacts/3", payload.Contact!.Value.Uri);
     }
 
     [Fact]
-    public void WritePayload_FallsBackToContactLinkWhenBillingContactMissing()
+    public void WritePayload_FallsBackToContactLinkWhenContactIdMissing()
     {
         var project = JsonSerializer.Deserialize<Project>("""
             {
@@ -121,13 +123,13 @@ public class ProjectModelSerializationTests
             }
             """)!;
 
-        var payload = ProjectWritePayload.FromProject(project);
+        var payload = ProjectWritePayload.FromProject(project, FreeAgentEnvironment.Production);
 
         Assert.Equal("https://api.freeagent.com/v2/contacts/8", payload.Contact!.Value.Uri);
     }
 
     [Fact]
-    public void WritePayload_OmitBillingContactFromWrite_ExcludesRoundTrippedContact()
+    public void WritePayload_SetContactId_OverridesRoundTrippedContact()
     {
         var project = JsonSerializer.Deserialize<Project>("""
             {
@@ -136,11 +138,51 @@ public class ProjectModelSerializationTests
               "name": "Example"
             }
             """)!;
-        project.OmitBillingContactFromWrite = true;
+        project.ContactId = 3;
 
-        var payload = ProjectWritePayload.FromProject(project);
+        var payload = ProjectWritePayload.FromProject(project, FreeAgentEnvironment.Production);
 
-        Assert.Null(payload.Contact);
+        Assert.Equal("https://api.freeagent.com/v2/contacts/3", payload.Contact!.Value.Uri);
+    }
+
+    [Fact]
+    public void WritePayload_OmitContact_ExcludesContactFromPayload()
+    {
+        var project = JsonSerializer.Deserialize<Project>("""
+            {
+              "url": "https://api.freeagent.com/v2/projects/1",
+              "contact": "https://api.freeagent.com/v2/contacts/8",
+              "name": "Example"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+
+        var json = JsonSerializer.Serialize(
+            ProjectWritePayload.FromProject(
+                project,
+                FreeAgentEnvironment.Production,
+                new LinkedResourceWriteOptions(OmitContact: true)),
+            FreeAgentJsonSerializer.Options);
+
+        Assert.DoesNotContain("\"contact\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_ClearContactId_SerialisesNullContact()
+    {
+        var project = JsonSerializer.Deserialize<Project>("""
+            {
+              "url": "https://api.freeagent.com/v2/projects/1",
+              "contact": "https://api.freeagent.com/v2/contacts/8",
+              "name": "Example"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+        project.ContactId = null;
+
+        var json = JsonSerializer.Serialize(
+            ProjectWritePayload.FromProject(project, FreeAgentEnvironment.Production),
+            FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"contact\":null", json, StringComparison.Ordinal);
     }
 
     [Fact]
