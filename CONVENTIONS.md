@@ -4,7 +4,7 @@
 
 
 **Project:** FreeAgent.NET
-**Last updated:** 24 September 2026
+**Last updated:** 25 September 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.
@@ -33,12 +33,16 @@ src/
 	│   ├── Company/                     # Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers
 	│   ├── Contacts/                    # Contact models and response wrappers
 	│   ├── CreditNotes/                 # Credit note models and write payloads
+	│   ├── CreditNoteReconciliations/   # Credit note reconciliation models and write payloads
 	│   ├── EmailAddresses/              # Email addresses response wrapper
+	│   ├── Estimates/                   # Estimate models, line items, transitions, response wrappers
 	│   ├── Invoices/                    # Invoice models, line items, transitions, response wrappers
 	│   ├── Notes/                       # Note models and response wrappers
+	│   ├── PriceListItems/              # Price list item models and write payloads
 	│   ├── Projects/                    # Project models, views, sort options, response wrappers
 	│   ├── RecurringInvoices/           # Recurring invoice models and response wrappers
 	│   ├── Shared/                      # Cross-resource primitives (ContactReference, ProjectReference, CurrencyCode)
+	│   ├── StockItems/                  # Stock item models and response wrappers
 	│   ├── Tasks/                       # Task models and response wrappers
 	│   ├── Timeslips/                   # Timeslip models and response wrappers
 	│   └── Users/                       # User models and response wrappers
@@ -48,16 +52,26 @@ src/
 		│   └── CompanyService.cs
 		├── Contacts/
 		│   └── ContactService.cs
+		├── CreditNotes/
+		│   └── CreditNotesService.cs
+		├── CreditNoteReconciliations/
+		│   └── CreditNoteReconciliationsService.cs
 		├── EmailAddresses/
 		│   └── EmailAddressesService.cs
+		├── Estimates/
+		│   └── EstimateService.cs
 		├── Invoices/
 		│   └── InvoiceService.cs
-		├── RecurringInvoices/
-		│   └── RecurringInvoiceService.cs
 		├── Notes/
 		│   └── NoteService.cs
+		├── PriceListItems/
+		│   └── PriceListItemsService.cs
 		├── Projects/
 		│   └── ProjectService.cs
+		├── RecurringInvoices/
+		│   └── RecurringInvoiceService.cs
+		├── StockItems/
+		│   └── StockItemsService.cs
 		├── Tasks/
 		│   └── TaskService.cs
 		├── Timeslips/
@@ -76,7 +90,11 @@ tests/
 	├── Models/
 	│   ├── Categories/
 	│   ├── Contacts/
+	│   ├── CreditNotes/
+	│   ├── CreditNoteReconciliations/
+	│   ├── Estimates/
 	│   ├── Invoices/
+	│   ├── PriceListItems/
 	│   ├── RecurringInvoices/
 	│   ├── Notes/
 	│   ├── Projects/
@@ -90,11 +108,16 @@ tests/
 	│   ├── Categories/
 	│   ├── Company/
 	│   ├── Contacts/
+	│   ├── CreditNotes/
+	│   ├── CreditNoteReconciliations/
 	│   ├── EmailAddresses/
+	│   ├── Estimates/
 	│   ├── Invoices/
-	│   ├── RecurringInvoices/
 	│   ├── Notes/
+	│   ├── PriceListItems/
 	│   ├── Projects/
+	│   ├── RecurringInvoices/
+	│   ├── StockItems/
 	│   ├── Tasks/
 	│   ├── Timeslips/
 	│   └── Users/
@@ -106,8 +129,8 @@ tests/
 - `FreeAgent.Client.Infrastructure.Authentication` - OAuth types
 - `FreeAgent.Client.Infrastructure.Configuration` - FreeAgentEnvironment, FreeAgentEnvironmentEndpoints
 - `FreeAgent.Client.Infrastructure.Http` - HTTP client, exceptions, pagination helpers
-- `FreeAgent.Client.Models.[Resource]` - resource models (BankAccounts, Categories, Company, Contacts, CreditNotes, EmailAddresses, Invoices, Notes, Projects, RecurringInvoices, Shared, Tasks, Timeslips, Users)
-- `FreeAgent.Client.Services.[Resource]` - resource services (Categories, Company, Contacts, EmailAddresses, Invoices, Notes, Projects, Tasks, Timeslips, Users)
+- `FreeAgent.Client.Models.[Resource]` - resource models (BankAccounts, Categories, Company, Contacts, CreditNotes, CreditNoteReconciliations, EmailAddresses, Estimates, Invoices, Notes, PriceListItems, Projects, RecurringInvoices, Shared, StockItems, Tasks, Timeslips, Users)
+- `FreeAgent.Client.Services.[Resource]` - resource services (Categories, Company, Contacts, CreditNotes, CreditNoteReconciliations, EmailAddresses, Estimates, Invoices, Notes, PriceListItems, Projects, RecurringInvoices, StockItems, Tasks, Timeslips, Users)
 
 **Key naming rules (unchanged):**
 - Service: [Resource]Service (CompanyService, ContactService)
@@ -178,6 +201,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
+| 25 September 2026 | Refresh project-structure tree for Sales cluster services, models, and tests | Goals review documentation drift after #64 |
 | 24 September 2026 | Refresh project-structure tree for Invoices, Tasks, Timeslips, Notes, and stub link models | Goals review documentation drift |
 | 21 September 2026 | Refresh project-structure tree for all implemented resources and tests layout | Goals review sample-sync and docs drift |
 | 21 September 2026 | Adopt Stripe.NET-aligned `ListAsync` / `ListAutoPagingAsync` naming for collection reads | ADR-0012 |

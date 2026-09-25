@@ -88,6 +88,44 @@ internal sealed class CreditNoteReconciliationSamples(SampleContext context) : I
         Console.WriteLine($"  Deleted reconciliation {created.ResourceId}.");
     }
 
+    [ConsoleSample(Name = "Update credit note reconciliation", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateCreditNoteReconciliationAsync(CancellationToken cancellationToken)
+    {
+        var invoice = await context.Data.GetFirstInvoiceAsync(cancellationToken);
+        var creditNote = await context.Data.GetFirstCreditNoteAsync(cancellationToken);
+        var grossValue = ResolveProbeGrossValue(invoice.TotalValue, creditNote.TotalValue);
+
+        var created = await context.Client.CreditNoteReconciliations.CreateCreditNoteReconciliationAsync(
+            CreateCreditNoteReconciliationRequest.Create(
+                grossValue,
+                context.Client.Urls.Invoice(invoice.ResourceId),
+                context.Client.Urls.CreditNote(creditNote.ResourceId),
+                datedOn: DateOnly.FromDateTime(DateTime.UtcNow)),
+            cancellationToken);
+
+        var updatedGrossValue = grossValue > 1m ? grossValue - 1m : grossValue;
+        var updated = await context.Client.CreditNoteReconciliations.UpdateCreditNoteReconciliationAsync(
+            created.ResourceId,
+            UpdateCreditNoteReconciliationRequest.Create(
+                grossValue: updatedGrossValue,
+                datedOn: DateOnly.FromDateTime(DateTime.UtcNow)),
+            cancellationToken);
+
+        SampleOutput.WriteHeader("Updated credit note reconciliation");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+        SampleOutput.WriteField("Original gross value", grossValue);
+        SampleOutput.WriteField("Updated gross value", updated.GrossValue);
+        SampleOutput.WriteField("Dated on", updated.DatedOn);
+
+        await context.Client.CreditNoteReconciliations.DeleteCreditNoteReconciliationAsync(
+            created.ResourceId,
+            cancellationToken);
+
+        Console.WriteLine();
+        Console.WriteLine($"  Deleted reconciliation {created.ResourceId}.");
+    }
+
     private static string FormatReconciliationRow(CreditNoteReconciliation reconciliation) =>
         $"{reconciliation.ResourceId,8}  gross={reconciliation.GrossValue,8}  invoice={reconciliation.InvoiceId,6}  credit_note={reconciliation.CreditNoteId,6}  dated={reconciliation.DatedOn?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "—"}";
 

@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Estimates;
+using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
@@ -135,6 +136,207 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteField("Text", string.IsNullOrWhiteSpace(text) ? "(not set)" : text);
     }
 
+    [ConsoleSample(Name = "Update estimate comments")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateEstimateCommentsAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftEstimateAsync(cancellationToken);
+        draft.Notes = "Updated by console sample";
+        draft.OmitEstimateItemsFromWrite = true;
+
+        var updated = await context.Client.Estimates.UpdateEstimateAsync(draft.ResourceId, draft, cancellationToken);
+
+        SampleOutput.WriteHeader("Updated estimate comments");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+        SampleOutput.WriteField("Notes", updated.Notes);
+    }
+
+    [ConsoleSample(Name = "Mark estimate as draft")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task MarkEstimateAsDraftAsync(CancellationToken cancellationToken)
+    {
+        var sent = await CreateSentSampleEstimateAsync(cancellationToken);
+        var draft = await context.Client.Estimates.MarkEstimateAsDraftAsync(sent.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Marked estimate as draft");
+        SampleOutput.WriteField("Id", draft.ResourceId);
+        SampleOutput.WriteField("Status", draft.Status);
+    }
+
+    [ConsoleSample(Name = "Mark estimate as approved")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task MarkEstimateAsApprovedAsync(CancellationToken cancellationToken)
+    {
+        var sent = await CreateSentSampleEstimateAsync(cancellationToken);
+        var approved = await context.Client.Estimates.MarkEstimateAsApprovedAsync(sent.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Marked estimate as approved");
+        SampleOutput.WriteField("Id", approved.ResourceId);
+        SampleOutput.WriteField("Status", approved.Status);
+    }
+
+    [ConsoleSample(Name = "Mark estimate as rejected")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task MarkEstimateAsRejectedAsync(CancellationToken cancellationToken)
+    {
+        var sent = await CreateSentSampleEstimateAsync(cancellationToken);
+        var rejected = await context.Client.Estimates.MarkEstimateAsRejectedAsync(sent.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Marked estimate as rejected");
+        SampleOutput.WriteField("Id", rejected.ResourceId);
+        SampleOutput.WriteField("Status", rejected.Status);
+    }
+
+    [ConsoleSample(Name = "Send estimate email (template)")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task SendEstimateEmailAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftEstimateAsync(cancellationToken);
+        await context.Client.Estimates.SendEstimateEmailAsync(
+            draft.ResourceId,
+            new SendEstimateEmailRequest
+            {
+                Email = new EstimateEmailDetails { UseTemplate = true }
+            },
+            cancellationToken);
+
+        SampleOutput.WriteHeader("Sent estimate email");
+        SampleOutput.WriteField("Estimate ID", draft.ResourceId);
+        SampleOutput.WriteField("Template", true);
+    }
+
+    [ConsoleSample(Name = "Create estimate item")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task CreateEstimateItemAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftEstimateAsync(cancellationToken);
+        var item = await context.Client.Estimates.CreateEstimateItemAsync(
+            draft.ResourceId,
+            new EstimateItem
+            {
+                Description = "Console sample additional line item",
+                ItemType = EstimateItemType.Services,
+                Quantity = 1,
+                Price = 50,
+                SalesTaxRate = 20,
+                SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+            },
+            cancellationToken);
+
+        SampleOutput.WriteHeader("Created estimate item");
+        SampleOutput.WriteField("Estimate ID", draft.ResourceId);
+        SampleOutput.WriteField("Item ID", item.ItemId);
+        SampleOutput.WriteField("Description", item.Description);
+    }
+
+    [ConsoleSample(Name = "Update estimate item")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateEstimateItemAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftEstimateAsync(cancellationToken);
+        var item = await context.Client.Estimates.CreateEstimateItemAsync(
+            draft.ResourceId,
+            new EstimateItem
+            {
+                Description = "Console sample line item to update",
+                ItemType = EstimateItemType.Services,
+                Quantity = 1,
+                Price = 25,
+                SalesTaxRate = 20,
+                SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+            },
+            cancellationToken);
+
+        if (item.ItemId is not > 0)
+        {
+            SampleContext.Skip("created estimate item has no ID");
+        }
+
+        var updatedItem = await context.Client.Estimates.UpdateEstimateItemAsync(
+            item.ItemId.Value,
+            new EstimateItem
+            {
+                Description = "Console sample line item (updated)",
+                ItemType = EstimateItemType.Services,
+                Quantity = 2,
+                Price = 100,
+                SalesTaxRate = 20,
+                SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+            },
+            cancellationToken);
+
+        SampleOutput.WriteHeader("Updated estimate item");
+        SampleOutput.WriteField("Estimate ID", draft.ResourceId);
+        SampleOutput.WriteField("Item ID", updatedItem.ItemId);
+        SampleOutput.WriteField("Description", updatedItem.Description);
+        SampleOutput.WriteField("Quantity", updatedItem.Quantity);
+    }
+
+    [ConsoleSample(Name = "Delete estimate item", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task DeleteEstimateItemAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftEstimateAsync(cancellationToken);
+        var item = await context.Client.Estimates.CreateEstimateItemAsync(
+            draft.ResourceId,
+            new EstimateItem
+            {
+                Description = "Console sample item to delete",
+                ItemType = EstimateItemType.Services,
+                Quantity = 1,
+                Price = 25,
+                SalesTaxRate = 20,
+                SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+            },
+            cancellationToken);
+
+        if (item.ItemId is not > 0)
+        {
+            SampleContext.Skip("created estimate item has no ID");
+        }
+
+        await context.Client.Estimates.DeleteEstimateItemAsync(item.ItemId.Value, cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted estimate item");
+        SampleOutput.WriteField("Estimate ID", draft.ResourceId);
+        SampleOutput.WriteField("Deleted item ID", item.ItemId);
+    }
+
+    [ConsoleSample(Name = "Update default additional text")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateDefaultAdditionalTextAsync(CancellationToken cancellationToken)
+    {
+        var text = await context.Client.Estimates.UpdateDefaultAdditionalTextAsync(
+            "Valid for 30 days (console sample update).",
+            cancellationToken);
+
+        SampleOutput.WriteHeader("Updated default additional text");
+        SampleOutput.WriteField("Text", text);
+    }
+
+    [ConsoleSample(Name = "Delete default additional text")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task DeleteDefaultAdditionalTextAsync(CancellationToken cancellationToken)
+    {
+        await context.Client.Estimates.DeleteDefaultAdditionalTextAsync(cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted default additional text");
+        SampleOutput.WriteField("Result", "Deleted");
+    }
+
+    [ConsoleSample(Name = "Convert estimate to invoice", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task ConvertEstimateToInvoiceAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftEstimateAsync(cancellationToken);
+        var converted = await context.Client.Estimates.ConvertToInvoiceAsync(draft.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Converted estimate to invoice");
+        SampleOutput.WriteField("Estimate ID", draft.ResourceId);
+        SampleOutput.WriteField("Invoice ID", converted.InvoiceId);
+        SampleOutput.WriteField("Status", converted.Status);
+    }
+
     [ConsoleSample(Name = "Duplicate probe estimate and delete", ExcludeFromRunAll = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DuplicateProbeEstimateAndDeleteAsync(CancellationToken cancellationToken)
@@ -182,6 +384,12 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
                 ]
             },
             cancellationToken);
+    }
+
+    private async Task<Estimate> CreateSentSampleEstimateAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftEstimateAsync(cancellationToken);
+        return await context.Client.Estimates.MarkEstimateAsSentAsync(draft.ResourceId, cancellationToken);
     }
 
     private static string FormatEstimateRow(Estimate estimate) =>
