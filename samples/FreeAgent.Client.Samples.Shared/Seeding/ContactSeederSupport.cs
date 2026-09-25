@@ -1,7 +1,7 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Contacts;
 
-namespace FreeAgent.Client.BlazorSample.Services;
+namespace FreeAgent.Client.Samples.Shared.Seeding;
 
 /// <summary>
 /// Outcome of a sample contact seed operation.

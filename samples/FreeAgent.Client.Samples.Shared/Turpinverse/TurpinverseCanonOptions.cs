@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Configuration for loading Turpinverse canon JSON from GitHub.

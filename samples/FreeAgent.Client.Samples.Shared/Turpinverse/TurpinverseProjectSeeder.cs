@@ -3,7 +3,7 @@ using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Seeds FreeAgent projects from upstream Turpinverse project canon.

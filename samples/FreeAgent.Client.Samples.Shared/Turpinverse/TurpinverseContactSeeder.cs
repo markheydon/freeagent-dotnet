@@ -1,7 +1,7 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Contacts;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Seeds FreeAgent contacts from upstream Turpinverse organisation canon.

@@ -13,5 +13,6 @@
   <Folder Name="/samples/">
     <Project Path="samples/FreeAgent.Client.ConsoleSample/FreeAgent.Client.ConsoleSample.csproj" />
     <Project Path="samples/FreeAgent.Client.BlazorSample/FreeAgent.Client.BlazorSample.csproj" />
+    <Project Path="samples/FreeAgent.Client.Samples.Shared/FreeAgent.Client.Samples.Shared.csproj" />
   </Folder>
 </Solution>

@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Loads Turpinverse canon JSON files from the upstream GitHub repository on demand.

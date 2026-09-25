@@ -2,7 +2,7 @@ using FreeAgent.Client;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Tasks;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Seeds FreeAgent tasks under Turpinverse canon projects.

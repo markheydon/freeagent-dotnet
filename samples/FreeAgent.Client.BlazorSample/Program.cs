@@ -1,7 +1,7 @@
 using FreeAgent.Client;
 using FreeAgent.Client.BlazorSample.Components;
 using FreeAgent.Client.BlazorSample.Services;
-using FreeAgent.Client.BlazorSample.Services.Turpinverse;
+using FreeAgent.Client.Samples.Shared.Turpinverse;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -23,22 +23,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<TokenStore>();
 builder.Services.AddSingleton<OAuthService>();
 builder.Services.AddSingleton<ConnectedCompanyContext>();
-builder.Services.Configure<TurpinverseCanonOptions>(
-    builder.Configuration.GetSection(TurpinverseCanonOptions.SectionName));
-builder.Services.AddHttpClient<TurpinverseCanonClient>();
-builder.Services.AddSingleton<TurpinverseContactCatalog>();
-builder.Services.AddSingleton<TurpinverseContactSeeder>();
-builder.Services.AddSingleton<TurpinverseProjectCatalog>();
-builder.Services.AddSingleton<TurpinverseProjectSeeder>();
-builder.Services.AddSingleton<TurpinverseInvoiceCatalog>();
-builder.Services.AddSingleton<TurpinverseInvoiceSeeder>();
-builder.Services.AddSingleton<TurpinverseQuoteCatalog>();
-builder.Services.AddSingleton<TurpinverseQuoteSeeder>();
-builder.Services.AddSingleton<TurpinverseCreditNoteCatalog>();
-builder.Services.AddSingleton<TurpinverseCreditNoteSeeder>();
-builder.Services.AddSingleton<TurpinverseTaskSeeder>();
-builder.Services.AddSingleton<TurpinverseTimeslipSeeder>();
-builder.Services.AddSingleton<TurpinverseNoteSeeder>();
+builder.Services.AddTurpinverseSeedServices(builder.Configuration);
 builder.Services.AddSingleton<SampleContactSeeder>();
 builder.Services.AddHttpClient<ApiDiagnosticsService>();
 

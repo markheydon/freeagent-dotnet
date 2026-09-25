@@ -1,7 +1,7 @@
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Maps Turpinverse invoice canon entries to FreeAgent invoice payloads.

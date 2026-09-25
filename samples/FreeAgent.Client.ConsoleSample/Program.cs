@@ -1,6 +1,7 @@
 using FreeAgent.Client;
 using FreeAgent.Client.ConsoleSample;
 using FreeAgent.Client.ConsoleSample.Samples;
+using FreeAgent.Client.Samples.Shared.Turpinverse;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -28,7 +29,7 @@ catch (InvalidOperationException ex)
 
 var allowProductionWrites = SandboxWriteGuard.ResolveAllowProductionWrites(runOptions.AllowProductionWrites);
 
-if (runOptions.RunAll)
+if (runOptions.RunAll || runOptions.SeedTurpinverse)
 {
     try
     {
@@ -57,7 +58,10 @@ Console.WriteLine();
 OAuthTokenResponse token;
 try
 {
-    token = await AuthBootstrap.AuthenticateAsync(settings, oauthClient, runOptions.RunAll);
+    token = await AuthBootstrap.AuthenticateAsync(
+        settings,
+        oauthClient,
+        runAll: runOptions.RunAll || runOptions.SeedTurpinverse);
 }
 catch (Exception ex)
 {
@@ -81,10 +85,13 @@ if (runOptions.BootstrapRefreshToken)
 
 var builder = Host.CreateApplicationBuilder(args);
 
+builder.Services.AddTurpinverseSeedServices(builder.Configuration);
+
 builder.Services.AddSingleton(token);
 builder.Services.AddSingleton(_ =>
 {
-    var options = runOptions.RunAll ? RunAllHttpClientOptions.Create() : null;
+    var usePacing = runOptions.RunAll || runOptions.SeedTurpinverse;
+    var options = usePacing ? RunAllHttpClientOptions.Create() : null;
     return new FreeAgentClient(oauthClient, token, environment, options);
 });
 builder.Services.AddSingleton(new SampleRuntimeContext(environment, allowProductionWrites));
@@ -94,6 +101,25 @@ builder.Services.AddConsoleSamples();
 using var host = builder.Build();
 
 using var scope = host.Services.CreateScope();
+
+if (runOptions.SeedTurpinverse)
+{
+    var client = scope.ServiceProvider.GetRequiredService<FreeAgentClient>();
+    var orchestrator = scope.ServiceProvider.GetRequiredService<TurpinverseSeedOrchestrator>();
+    var seedResult = await orchestrator.SeedAllAsync(client);
+    TurpinverseSeedReporter.WriteSummary(seedResult);
+
+    if (!seedResult.Succeeded)
+    {
+        return 1;
+    }
+
+    if (!runOptions.RunAll)
+    {
+        return 0;
+    }
+}
+
 var runner = scope.ServiceProvider.GetRequiredService<ConsoleSampleRunner>();
 
 if (runOptions.RunAll)

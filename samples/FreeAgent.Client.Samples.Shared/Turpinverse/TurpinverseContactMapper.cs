@@ -1,6 +1,6 @@
 using FreeAgent.Client.Models.Contacts;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 internal static class TurpinverseContactMapper
 {

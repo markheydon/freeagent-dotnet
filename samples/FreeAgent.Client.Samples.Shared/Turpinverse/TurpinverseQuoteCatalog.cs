@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Loads Turpinverse quote canon from the upstream GitHub repository.

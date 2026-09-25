@@ -3,7 +3,7 @@ using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.Notes;
 using FreeAgent.Client.Models.Projects;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Seeds FreeAgent notes on Turpinverse contacts and projects for probe coverage.

@@ -1,7 +1,7 @@
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Maps Turpinverse project canon entries to FreeAgent project payloads.

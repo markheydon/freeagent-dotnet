@@ -4,7 +4,7 @@ using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Seeds FreeAgent estimates from upstream Turpinverse quote canon.

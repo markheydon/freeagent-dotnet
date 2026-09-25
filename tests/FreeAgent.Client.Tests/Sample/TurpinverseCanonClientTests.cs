@@ -1,5 +1,6 @@
+#if NET10_0
 using System.Net;
-using FreeAgent.Client.BlazorSample.Services.Turpinverse;
+using FreeAgent.Client.Samples.Shared.Turpinverse;
 using Microsoft.Extensions.Options;
 
 namespace FreeAgent.Client.Tests.Sample;
@@ -79,3 +80,5 @@ public class TurpinverseCanonClientTests
             Task.FromResult(_responder(request));
     }
 }
+
+#endif

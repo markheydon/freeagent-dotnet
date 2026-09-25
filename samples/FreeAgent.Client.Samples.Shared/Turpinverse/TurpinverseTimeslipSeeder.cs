@@ -3,7 +3,7 @@ using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Timeslips;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Seeds FreeAgent timeslips against Turpinverse canon tasks.

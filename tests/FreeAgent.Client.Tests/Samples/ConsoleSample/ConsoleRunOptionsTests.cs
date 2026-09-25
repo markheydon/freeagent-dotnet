@@ -73,6 +73,42 @@ public class ConsoleRunOptionsTests
 
         Assert.Contains("--run-all", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public void Parse_SeedTurpinverse_SetsSeedTurpinverse()
+    {
+        var options = ConsoleRunOptions.Parse(["--seed-turpinverse"]);
+
+        Assert.True(options.SeedTurpinverse);
+        Assert.False(options.RunAll);
+    }
+
+    [Fact]
+    public void Parse_SeedTurpinverseWithRunAll_SetsBothFlags()
+    {
+        var options = ConsoleRunOptions.Parse(["--seed-turpinverse", "--run-all"]);
+
+        Assert.True(options.SeedTurpinverse);
+        Assert.True(options.RunAll);
+    }
+
+    [Fact]
+    public void Parse_SeedTurpinverseWithBootstrapRefreshToken_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => ConsoleRunOptions.Parse(["--seed-turpinverse", "--bootstrap-refresh-token"]));
+
+        Assert.Contains("--bootstrap-refresh-token", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Parse_SeedTurpinverseWithAllowProductionWrites_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => ConsoleRunOptions.Parse(["--seed-turpinverse", "--allow-production-writes"]));
+
+        Assert.Contains("--allow-production-writes", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 #endif

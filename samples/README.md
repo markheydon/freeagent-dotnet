@@ -4,14 +4,15 @@ Samples for trying the `FreeAgent.Client` SDK against the FreeAgent API.
 
 | Sample | Purpose | SDK source |
 |--------|---------|------------|
-| [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Real-world console reference and live integration harness - DI, interactive menu, `--run-all` sandbox smoke (mutates data) | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
+| [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Real-world console reference and live integration harness - DI, interactive menu, `--seed-turpinverse`, `--run-all` sandbox smoke (mutates data) | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
 | [FreeAgent.Client.BlazorSample](FreeAgent.Client.BlazorSample/) | Blazor Server workbench for exercising SDK endpoints interactively | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
+| [FreeAgent.Client.Samples.Shared](FreeAgent.Client.Samples.Shared/) | Turpinverse canon loaders, seeders, and bulk seed orchestrator shared by both samples | Local project only (not published) |
 
 ---
 
 ## Console sample (real-world reference)
 
-See [FreeAgent.Client.ConsoleSample/README.md](FreeAgent.Client.ConsoleSample/README.md) for the interactive example menu, read-only vs mutating examples, `--run-all` smoke testing, and CI token setup.
+See [FreeAgent.Client.ConsoleSample/README.md](FreeAgent.Client.ConsoleSample/README.md) for the interactive example menu, read-only vs mutating examples, `--seed-turpinverse`, `--run-all` smoke testing, and CI token setup.
 
 ---
 
@@ -127,11 +128,23 @@ Contributors adding endpoints should follow [`docs/contributing/sample-probe-pag
 
 ## Sandbox Rate-Limit Diagnostics
 
-The sample app provides a dedicated developer tooling page for live rate-limit diagnostics:
+The sample app provides developer tooling pages under **Developer Tools** in the navigation drawer:
 
-- **Route:** `/sandbox/rate-limit-test` (visible only when running the sample app)
-- **Purpose:** Allows developers to test and observe FreeAgent API rate-limiting behaviour in real time, without affecting production data.
-- **Sandbox-only:** This page is restricted to sandbox OAuth sessions. Attempting to use it with a production connection will show an error.
+| Route | Purpose |
+|-------|---------|
+| `/developer/turpinverse-seed` | Bulk seed all Turpinverse canon data (contacts through timeslips) in dependency order. Sandbox-only. |
+| `/sandbox/rate-limit-test` | Live rate-limit diagnostics against `GET /v2/company`. Sandbox-only. |
+
+### Turpinverse bulk seed
+
+- **Route:** `/developer/turpinverse-seed`
+- **Purpose:** One-click sandbox population before probe pages or console `--run-all` smoke.
+- **Sandbox-only:** Restricted to sandbox OAuth sessions, matching the console `--seed-turpinverse` guard.
+- **Idempotent upsert:** Matches existing records by stable keys; does not delete stale sandbox data.
+
+Per-resource CRUD probe pages still expose individual Turpinverse seed buttons for targeted runs.
+
+### Rate-limit test
 - **X-RateLimit-Test header:** Optionally sends the `X-RateLimit-Test: true` header, which triggers test-mode rate-limiting in the FreeAgent sandbox API. This enables safe, repeatable limit testing without impacting real usage quotas.
 - **Not an SDK endpoint:** This is a sample-app-only diagnostics tool. It does not expose new SDK surface or production API features.
 

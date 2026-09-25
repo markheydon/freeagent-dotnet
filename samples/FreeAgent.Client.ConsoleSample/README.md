@@ -2,7 +2,7 @@
 
 A real-world console reference and **live integration test harness** for the FreeAgent .NET SDK. It demonstrates typical integration patterns — OAuth, dependency injection, and typed API calls — through an interactive menu of examples grouped by resource area.
 
-Many examples **create, update, or delete** data in the connected FreeAgent account. The app prints the target environment on startup and enforces sandbox-only writes for `--run-all` smoke runs.
+Many examples **create, update, or delete** data in the connected FreeAgent account. The app prints the target environment on startup and enforces sandbox-only writes for `--run-all` and `--seed-turpinverse` runs.
 
 Use the [Blazor sample](../FreeAgent.Client.BlazorSample/) when you need wire-to-model probe pages. Use this console sample when you want to see **how the SDK feels in a normal .NET app**.
 
@@ -146,7 +146,29 @@ On any platform, if the local listener cannot start (port in use, permissions, r
 
 ---
 
-## 4. Run all examples (smoke test)
+## 4. Seed Turpinverse canon data
+
+Use `--seed-turpinverse` to populate your sandbox with the full Turpinverse fixture set (contacts, projects, tasks, invoices, estimates, credit notes, notes, and timeslips) in dependency order. Seeding is **idempotent**: existing records are matched by stable keys (email, contract reference, `turpinverse:` references) and updated when canon changes.
+
+**Sandbox only** — the flag refuses to run when `FREEAGENT_ENVIRONMENT` is not `Sandbox`, matching the `--run-all` write guard.
+
+Non-interactive authentication uses the same tokens as `--run-all` (`FREEAGENT_REFRESH_TOKEN` or `FREEAGENT_ACCESS_TOKEN`).
+
+```bash
+dotnet run --project samples/FreeAgent.Client.ConsoleSample -- --seed-turpinverse
+```
+
+Seed before a smoke run in one invocation:
+
+```bash
+dotnet run --project samples/FreeAgent.Client.ConsoleSample -- --seed-turpinverse --run-all
+```
+
+The Blazor workbench exposes the same orchestrator under **Developer Tools → Turpinverse seed** (`/developer/turpinverse-seed`). Individual CRUD probe pages still offer per-resource seed buttons for targeted runs.
+
+---
+
+## 5. Run all examples (smoke test)
 
 Use `--run-all` to execute every registered example without the interactive menu. Output follows a `dotnet test`-style report with pass, fail, and skip counts.
 
@@ -198,7 +220,7 @@ Examples marked `ExcludeFromRunAll` (such as **Stream all contacts**) appear in 
 
 ### CI integration
 
-The repository CI workflow runs `--run-all` when `FREEAGENT_REFRESH_TOKEN` is configured. Configure these GitHub secrets:
+The repository CI workflow runs `--seed-turpinverse --run-all` when `FREEAGENT_REFRESH_TOKEN` is configured. Configure these GitHub secrets:
 
 - `FREEAGENT_CLIENT_ID`
 - `FREEAGENT_CLIENT_SECRET`

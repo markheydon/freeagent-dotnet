@@ -212,6 +212,9 @@
             </MudNavGroup>
 
             <MudNavGroup Title="Developer Tools" Icon="@Icons.Material.Filled.Handyman" Expanded="@IsDeveloperToolsRoute">
+                <MudNavLink Href="/developer/turpinverse-seed" Icon="@Icons.Material.Filled.Agriculture">
+                    Turpinverse seed
+                </MudNavLink>
                 <MudNavLink Href="/sandbox/rate-limit-test" Icon="@Icons.Material.Filled.Speed">
                     Sandbox Rate-Limit Test
                 </MudNavLink>
@@ -336,7 +339,8 @@
         || CurrentPath.StartsWith("users/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsDeveloperToolsRoute =>
-        CurrentPath.StartsWith("sandbox/", StringComparison.OrdinalIgnoreCase);
+        CurrentPath.StartsWith("sandbox/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("developer/", StringComparison.OrdinalIgnoreCase);
 
     private void HandleLocationChanged(object? sender, LocationChangedEventArgs e)
     {

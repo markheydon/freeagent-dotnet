@@ -2,7 +2,7 @@ using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Maps Turpinverse credit note canon entries to FreeAgent credit note payloads.

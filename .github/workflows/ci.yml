@@ -136,4 +136,4 @@ jobs:
           FREEAGENT_CLIENT_ID: ${{ secrets.FREEAGENT_CLIENT_ID }}
           FREEAGENT_CLIENT_SECRET: ${{ secrets.FREEAGENT_CLIENT_SECRET }}
           FREEAGENT_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
-        run: dotnet run --project samples/FreeAgent.Client.ConsoleSample --configuration Release -- --run-all
+        run: dotnet run --project samples/FreeAgent.Client.ConsoleSample --configuration Release -- --seed-turpinverse --run-all

@@ -17,6 +17,11 @@ internal sealed class ConsoleRunOptions
     public bool BootstrapRefreshToken { get; init; }
 
     /// <summary>
+    /// When <see langword="true"/>, seeds all supported Turpinverse canon data before exiting or running <see cref="RunAll"/>.
+    /// </summary>
+    public bool SeedTurpinverse { get; init; }
+
+    /// <summary>
     /// When <see langword="true"/>, interactive mutating examples may run on non-sandbox environments.
     /// Ignored for <see cref="RunAll"/>.
     /// </summary>
@@ -32,6 +37,7 @@ internal sealed class ConsoleRunOptions
         var runAll = false;
         var bootstrapRefreshToken = false;
         var allowProductionWrites = false;
+        var seedTurpinverse = false;
         string? categoryFilter = null;
 
         for (var i = 0; i < args.Length; i++)
@@ -56,6 +62,12 @@ internal sealed class ConsoleRunOptions
                 continue;
             }
 
+            if (arg is "--seed-turpinverse")
+            {
+                seedTurpinverse = true;
+                continue;
+            }
+
             if (arg is "--category" or "-c")
             {
                 if (i + 1 >= args.Length || string.IsNullOrWhiteSpace(args[i + 1]))
@@ -77,9 +89,19 @@ internal sealed class ConsoleRunOptions
             throw new InvalidOperationException("--bootstrap-refresh-token cannot be combined with --run-all.");
         }
 
+        if (bootstrapRefreshToken && seedTurpinverse)
+        {
+            throw new InvalidOperationException("--bootstrap-refresh-token cannot be combined with --seed-turpinverse.");
+        }
+
         if (allowProductionWrites && runAll)
         {
             throw new InvalidOperationException("--allow-production-writes cannot be combined with --run-all.");
+        }
+
+        if (allowProductionWrites && seedTurpinverse)
+        {
+            throw new InvalidOperationException("--allow-production-writes cannot be combined with --seed-turpinverse.");
         }
 
         return new ConsoleRunOptions
@@ -87,6 +109,7 @@ internal sealed class ConsoleRunOptions
             RunAll = runAll,
             BootstrapRefreshToken = bootstrapRefreshToken,
             AllowProductionWrites = allowProductionWrites,
+            SeedTurpinverse = seedTurpinverse,
             CategoryFilter = categoryFilter,
         };
     }

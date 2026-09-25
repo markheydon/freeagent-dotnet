@@ -3,7 +3,7 @@ using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Shared;
 
-namespace FreeAgent.Client.BlazorSample.Services.Turpinverse;
+namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
 /// Seeds FreeAgent credit notes from upstream Turpinverse credit note canon.

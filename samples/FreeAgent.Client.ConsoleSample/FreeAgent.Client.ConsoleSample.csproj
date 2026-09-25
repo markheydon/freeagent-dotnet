@@ -25,6 +25,10 @@
     <ProjectReference Include="..\..\src\FreeAgent.Client\FreeAgent.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FreeAgent.Client.Samples.Shared\FreeAgent.Client.Samples.Shared.csproj" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(UseLocalFreeAgentClient)' != 'true'">
     <PackageReference Include="FreeAgent.Client" />
   </ItemGroup>
