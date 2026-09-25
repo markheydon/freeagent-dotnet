@@ -15,16 +15,43 @@ catch (InvalidOperationException ex)
     return 1;
 }
 
+FreeAgentEnvironment environment;
+try
+{
+    environment = SampleEnvironment.Resolve();
+}
+catch (InvalidOperationException ex)
+{
+    Console.Error.WriteLine(ex.Message);
+    return 1;
+}
+
+var allowProductionWrites = SandboxWriteGuard.ResolveAllowProductionWrites(runOptions.AllowProductionWrites);
+
+if (runOptions.RunAll)
+{
+    try
+    {
+        SandboxWriteGuard.EnsureRunAllAllowed(environment);
+    }
+    catch (InvalidOperationException ex)
+    {
+        Console.Error.WriteLine(ex.Message);
+        return 1;
+    }
+}
+
 var settings = AppSettings.Load();
 
 using var oauthClient = new FreeAgentOAuthClient(
     settings.ClientId,
     settings.ClientSecret,
     settings.RedirectUri,
-    AuthBootstrap.DefaultEnvironment);
+    environment);
 
 Console.WriteLine("FreeAgent.Client console sample");
-Console.WriteLine($"Environment: {AuthBootstrap.DefaultEnvironment}");
+Console.WriteLine($"Environment: {environment}");
+ConsoleSampleStartup.WriteEnvironmentNotice(environment, allowProductionWrites);
 Console.WriteLine();
 
 OAuthTokenResponse token;
@@ -58,8 +85,9 @@ builder.Services.AddSingleton(token);
 builder.Services.AddSingleton(_ =>
 {
     var options = runOptions.RunAll ? RunAllHttpClientOptions.Create() : null;
-    return new FreeAgentClient(oauthClient, token, AuthBootstrap.DefaultEnvironment, options);
+    return new FreeAgentClient(oauthClient, token, environment, options);
 });
+builder.Services.AddSingleton(new SampleRuntimeContext(environment, allowProductionWrites));
 builder.Services.AddSingleton<SampleContext>();
 builder.Services.AddConsoleSamples();
 

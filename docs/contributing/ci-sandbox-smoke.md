@@ -10,6 +10,12 @@ The **Console Sample Smoke** job in [`.github/workflows/ci.yml`](../../.github/w
 
 Default CI (`verify`, `build-and-test`) uses mocked HTTP handlers only. Live sandbox smoke is an additional signal that the SDK still works against a real OAuth-protected API.
 
+## Data mutations
+
+`--run-all` is a **live integration harness**: it creates, updates, and deletes probe data in the connected sandbox account (invoices, contacts, notes, and similar). Use a dedicated CI sandbox identity (recommended below), not a production account.
+
+The console sample refuses `--run-all` when the resolved environment is not sandbox. See [#136](https://github.com/markheydon/freeagent-dotnet/issues/136) for the write-guard contract.
+
 ## What you need
 
 | Item | Purpose |

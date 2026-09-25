@@ -58,7 +58,7 @@ internal sealed class CreditNoteReconciliationSamples(SampleContext context) : I
         SampleOutput.WriteField("Credit note reference", detail.CreditNote?.Reference);
     }
 
-    [ConsoleSample(Name = "Create probe credit note reconciliation and delete", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create probe credit note reconciliation and delete", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeCreditNoteReconciliationAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -85,7 +85,7 @@ internal sealed class CreditNoteReconciliationSamples(SampleContext context) : I
         Console.WriteLine($"  Deleted reconciliation {created.ResourceId}.");
     }
 
-    [ConsoleSample(Name = "Update credit note reconciliation", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Update credit note reconciliation", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateCreditNoteReconciliationAsync(CancellationToken cancellationToken)
     {

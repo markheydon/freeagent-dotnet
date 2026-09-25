@@ -17,6 +17,12 @@ internal sealed class ConsoleRunOptions
     public bool BootstrapRefreshToken { get; init; }
 
     /// <summary>
+    /// When <see langword="true"/>, interactive mutating examples may run on non-sandbox environments.
+    /// Ignored for <see cref="RunAll"/>.
+    /// </summary>
+    public bool AllowProductionWrites { get; init; }
+
+    /// <summary>
     /// Parses command-line arguments for console sample options.
     /// </summary>
     /// <param name="args">Application arguments.</param>
@@ -25,6 +31,7 @@ internal sealed class ConsoleRunOptions
     {
         var runAll = false;
         var bootstrapRefreshToken = false;
+        var allowProductionWrites = false;
         string? categoryFilter = null;
 
         for (var i = 0; i < args.Length; i++)
@@ -40,6 +47,12 @@ internal sealed class ConsoleRunOptions
             if (arg is "--bootstrap-refresh-token" or "-b")
             {
                 bootstrapRefreshToken = true;
+                continue;
+            }
+
+            if (arg is "--allow-production-writes")
+            {
+                allowProductionWrites = true;
                 continue;
             }
 
@@ -64,10 +77,16 @@ internal sealed class ConsoleRunOptions
             throw new InvalidOperationException("--bootstrap-refresh-token cannot be combined with --run-all.");
         }
 
+        if (allowProductionWrites && runAll)
+        {
+            throw new InvalidOperationException("--allow-production-writes cannot be combined with --run-all.");
+        }
+
         return new ConsoleRunOptions
         {
             RunAll = runAll,
             BootstrapRefreshToken = bootstrapRefreshToken,
+            AllowProductionWrites = allowProductionWrites,
             CategoryFilter = categoryFilter,
         };
     }

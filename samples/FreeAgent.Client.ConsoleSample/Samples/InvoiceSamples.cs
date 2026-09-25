@@ -91,7 +91,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Total", detail.TotalValue);
     }
 
-    [ConsoleSample(Name = "Create draft invoice with one line item")]
+    [ConsoleSample(Name = "Create draft invoice with one line item", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateDraftInvoiceAsync(CancellationToken cancellationToken)
     {
@@ -105,7 +105,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Line items", created.InvoiceItems?.Count ?? 0);
     }
 
-    [ConsoleSample(Name = "Update invoice comments")]
+    [ConsoleSample(Name = "Update invoice comments", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateInvoiceCommentsAsync(CancellationToken cancellationToken)
     {
@@ -123,7 +123,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Comments", updated.Comments);
     }
 
-    [ConsoleSample(Name = "Duplicate invoice")]
+    [ConsoleSample(Name = "Duplicate invoice", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DuplicateInvoiceAsync(CancellationToken cancellationToken)
     {
@@ -136,7 +136,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Status", duplicate.Status);
     }
 
-    [ConsoleSample(Name = "Send invoice email (template)")]
+    [ConsoleSample(Name = "Send invoice email (template)", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task SendInvoiceEmailAsync(CancellationToken cancellationToken)
     {
@@ -158,7 +158,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Template", true);
     }
 
-    [ConsoleSample(Name = "Mark invoice as sent")]
+    [ConsoleSample(Name = "Mark invoice as sent", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task MarkInvoiceAsSentAsync(CancellationToken cancellationToken)
     {
@@ -171,7 +171,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Status", sent.Status);
     }
 
-    [ConsoleSample(Name = "Mark invoice as scheduled")]
+    [ConsoleSample(Name = "Mark invoice as scheduled", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task MarkInvoiceAsScheduledAsync(CancellationToken cancellationToken)
     {
@@ -183,7 +183,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Status", scheduled.Status);
     }
 
-    [ConsoleSample(Name = "Mark invoice as draft")]
+    [ConsoleSample(Name = "Mark invoice as draft", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task MarkInvoiceAsDraftAsync(CancellationToken cancellationToken)
     {
@@ -195,7 +195,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Status", draft.Status);
     }
 
-    [ConsoleSample(Name = "Mark invoice as cancelled")]
+    [ConsoleSample(Name = "Mark invoice as cancelled", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task MarkInvoiceAsCancelledAsync(CancellationToken cancellationToken)
     {
@@ -232,7 +232,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Text", string.IsNullOrWhiteSpace(text) ? "(not set)" : text);
     }
 
-    [ConsoleSample(Name = "Update default additional text")]
+    [ConsoleSample(Name = "Update default additional text", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateDefaultAdditionalTextAsync(CancellationToken cancellationToken)
     {
@@ -244,7 +244,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Text", text);
     }
 
-    [ConsoleSample(Name = "Delete default additional text")]
+    [ConsoleSample(Name = "Delete default additional text", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DeleteDefaultAdditionalTextAsync(CancellationToken cancellationToken)
     {
@@ -254,7 +254,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Result", "Deleted");
     }
 
-    [ConsoleSample(Name = "Delete invoice", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Delete invoice", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DeleteInvoiceAsync(CancellationToken cancellationToken)
     {
@@ -265,7 +265,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Id", draft.ResourceId);
     }
 
-    [ConsoleSample(Name = "Take direct debit payment", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Take direct debit payment", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task TakeDirectDebitPaymentAsync(CancellationToken cancellationToken)
     {
@@ -276,7 +276,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Invoice ID", invoice.ResourceId);
     }
 
-    [ConsoleSample(Name = "Convert invoice to credit note", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Convert invoice to credit note", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task ConvertToCreditNoteAsync(CancellationToken cancellationToken)
     {

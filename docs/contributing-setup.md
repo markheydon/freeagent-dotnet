@@ -75,7 +75,7 @@ The Blazor sample requires .NET 10 and FreeAgent OAuth credentials. See [samples
 
 ## CI sandbox smoke
 
-To enable live API smoke on `main`, configure GitHub Actions secrets using [CI sandbox smoke](contributing/ci-sandbox-smoke.md).
+To enable live API smoke on `main`, configure GitHub Actions secrets using [CI sandbox smoke](contributing/ci-sandbox-smoke.md). The smoke suite performs live writes in sandbox via `--run-all`.
 
 When adding or retrofitting SDK endpoints, build sample probe pages per [Sample probe pages](contributing/sample-probe-pages.md). Use **Company** and **Contacts** as references.
 

@@ -60,7 +60,7 @@ internal sealed class ContactSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Status", detail.Status);
     }
 
-    [ConsoleSample(Name = "Create probe contact and delete", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create probe contact and delete", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeContactAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -76,7 +76,7 @@ internal sealed class ContactSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Update contact organisation name")]
+    [ConsoleSample(Name = "Update contact organisation name", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateContactOrganisationNameAsync(CancellationToken cancellationToken)
     {

@@ -77,7 +77,7 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteField("Billed on invoice", detail.BilledOnInvoiceId);
     }
 
-    [ConsoleSample(Name = "Create probe timeslip and delete", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create probe timeslip and delete", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeTimeslipAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -93,7 +93,7 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Create probe timeslips batch and delete", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create probe timeslips batch and delete", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeTimeslipsBatchAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -118,7 +118,7 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteField("Count", created.Count);
     }
 
-    [ConsoleSample(Name = "Update timeslip hours")]
+    [ConsoleSample(Name = "Update timeslip hours", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateTimeslipHoursAsync(CancellationToken cancellationToken)
     {
@@ -134,7 +134,7 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
         await context.Client.Timeslips.DeleteTimeslipAsync(updated.ResourceId, cancellationToken);
     }
 
-    [ConsoleSample(Name = "Start and stop timeslip timer", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Start and stop timeslip timer", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task StartAndStopTimeslipTimerAsync(CancellationToken cancellationToken)
     {

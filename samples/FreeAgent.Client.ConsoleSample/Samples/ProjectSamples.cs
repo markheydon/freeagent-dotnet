@@ -61,7 +61,7 @@ internal sealed class ProjectSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteRows(page.Items, project => $"{project.ResourceId,8}  {project.Name}");
     }
 
-    [ConsoleSample(Name = "Create probe project and delete", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create probe project and delete", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeProjectAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -77,7 +77,7 @@ internal sealed class ProjectSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Update project name")]
+    [ConsoleSample(Name = "Update project name", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateProjectNameAsync(CancellationToken cancellationToken)
     {

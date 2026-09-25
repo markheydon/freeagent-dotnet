@@ -37,7 +37,7 @@ internal sealed class PriceListItemSamples(SampleContext context) : IConsoleSamp
         SampleOutput.WriteField("VAT status", detail.VatStatus);
     }
 
-    [ConsoleSample(Name = "Update price list item description")]
+    [ConsoleSample(Name = "Update price list item description", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdatePriceListItemDescriptionAsync(CancellationToken cancellationToken)
     {
@@ -53,7 +53,7 @@ internal sealed class PriceListItemSamples(SampleContext context) : IConsoleSamp
         SampleOutput.WriteField("Description", updated.Description);
     }
 
-    [ConsoleSample(Name = "Create probe price list item and delete")]
+    [ConsoleSample(Name = "Create probe price list item and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbePriceListItemAsync(CancellationToken cancellationToken)
     {
