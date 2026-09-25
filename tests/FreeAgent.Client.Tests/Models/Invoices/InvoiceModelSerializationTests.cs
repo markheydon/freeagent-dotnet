@@ -202,6 +202,89 @@ public class InvoiceModelSerializationTests
     }
 
     [Fact]
+    public void DeserializeInvoiceItem_MapsStockItemUriLink()
+    {
+        const string json = """
+            {
+              "description": "Widget",
+              "item_type": "Stock",
+              "stock_item": "https://api.freeagent.com/v2/stock_items/3"
+            }
+            """;
+
+        var item = JsonSerializer.Deserialize<InvoiceItem>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(item);
+        Assert.Equal(3, item!.StockItemId);
+        Assert.Null(item.StockItemResource);
+    }
+
+    [Fact]
+    public void DeserializeInvoiceItem_MapsNestedStockItemWithoutExpandingUri()
+    {
+        const string json = """
+            {
+              "description": "Widget",
+              "item_type": "Stock",
+              "stock_item": {
+                "url": "https://api.freeagent.com/v2/stock_items/5",
+                "description": "Widget stock"
+              }
+            }
+            """;
+
+        var item = JsonSerializer.Deserialize<InvoiceItem>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(item);
+        Assert.Equal(5, item!.StockItemId);
+        Assert.Equal("Widget stock", item.StockItemResource?.Description);
+    }
+
+    [Fact]
+    public void WritePayload_RoundTripsStockItemFromUriLink()
+    {
+        var item = JsonSerializer.Deserialize<InvoiceItem>("""
+            {
+              "description": "Widget",
+              "item_type": "Stock",
+              "stock_item": "https://api.freeagent.com/v2/stock_items/3"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+
+        var payload = InvoiceItemWritePayload.FromInvoiceItem(item);
+        var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"stock_item\":\"https://api.freeagent.com/v2/stock_items/3\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void SerializeCreatePayload_IncludesStockItemReference()
+    {
+        var invoice = new Invoice
+        {
+            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 14,
+            InvoiceItems =
+            [
+                new InvoiceItem
+                {
+                    Description = "Widget",
+                    ItemType = InvoiceItemType.Stock,
+                    Quantity = 1,
+                    Price = 10,
+                    StockItem = StockItemReference.Parse("https://api.freeagent.com/v2/stock_items/3")
+                }
+            ]
+        };
+
+        var payload = InvoiceWritePayload.FromInvoice(invoice);
+        var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"stock_item\":\"https://api.freeagent.com/v2/stock_items/3\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SerializeUpdatePayload_IncludesDestroyFlag()
     {
         var invoice = new Invoice

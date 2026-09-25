@@ -1,6 +1,7 @@
 @page "/price-list-items/detail"
 @using FreeAgent.Client.Models.Invoices
 @using FreeAgent.Client.Models.PriceListItems
+@using FreeAgent.Client.Models.Shared
 @using FreeAgent.Client.BlazorSample.Services
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
@@ -77,6 +78,19 @@
                             <MudSelectItem Value="@status">@status</MudSelectItem>
                         }
                     </MudSelect>
+                    <MudTextField @bind-Value="_categoryNominalCode"
+                                  Label="Category nominal code (optional)"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  FullWidth="true" />
+                    @if (_itemType == InvoiceItemType.Stock)
+                    {
+                        <MudNumericField @bind-Value="_stockItemId"
+                                         Label="Stock item ID (required for Stock type)"
+                                         Min="1"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense" />
+                    }
                     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _priceListItemId is null or < 1"
                                    StartIcon="@Icons.Material.Filled.CloudDownload"
@@ -133,6 +147,8 @@
     private decimal _price = 9.99m;
     private InvoiceItemType? _itemType = InvoiceItemType.Products;
     private PriceListItemVatStatus? _vatStatus = PriceListItemVatStatus.Standard;
+    private string? _categoryNominalCode;
+    private long? _stockItemId;
 
     protected override void OnParametersSet()
     {
@@ -161,6 +177,8 @@
             async client =>
             {
                 _item = await client.PriceListItems.GetPriceListItemAsync(_priceListItemId.Value);
+                _categoryNominalCode = _item.CategoryNominalCode;
+                _stockItemId = _item.StockItemId;
                 _operationMessage = $"Loaded price list item {_item.ResourceId}.";
             },
             $"price_list_items/{_priceListItemId}",
@@ -175,9 +193,17 @@
             return;
         }
 
+        if (_itemType == InvoiceItemType.Stock && _stockItemId is null or < 1)
+        {
+            _error = "Enter a stock item ID when the item type is Stock.";
+            return;
+        }
+
         await RunOperationAsync(
             async client =>
             {
+                var category = BuildCategoryReference(client);
+                var stockItem = BuildStockItemReference(client);
                 var existing = await client.PriceListItems.ListAsync(sort: PriceListItemSortOptions.Code);
                 var match = existing.FirstOrDefault(item => string.Equals(item.Code, ProbeCode, StringComparison.Ordinal));
 
@@ -189,7 +215,9 @@
                         Price = _price,
                         Quantity = _quantity,
                         ItemType = _itemType,
-                        VatStatus = _vatStatus
+                        VatStatus = _vatStatus,
+                        Category = category,
+                        StockItem = stockItem
                     });
                     _priceListItemId = _item.ResourceId;
                     _operationMessage = $"Updated existing probe item {_item.ResourceId} (code {ProbeCode}).";
@@ -203,7 +231,9 @@
                         Quantity = _quantity,
                         Price = _price,
                         ItemType = _itemType.Value,
-                        VatStatus = _vatStatus
+                        VatStatus = _vatStatus,
+                        Category = category,
+                        StockItem = stockItem
                     });
                     _priceListItemId = _item.ResourceId;
                     _operationMessage = $"Created probe item {_item.ResourceId} (code {ProbeCode}).";
@@ -220,6 +250,12 @@
             return;
         }
 
+        if (_itemType == InvoiceItemType.Stock && _stockItemId is null or < 1)
+        {
+            _error = "Enter a stock item ID when the item type is Stock.";
+            return;
+        }
+
         await RunOperationAsync(
             async client =>
             {
@@ -230,7 +266,9 @@
                     Quantity = _quantity,
                     Price = _price,
                     ItemType = _itemType,
-                    VatStatus = _vatStatus
+                    VatStatus = _vatStatus,
+                    Category = BuildCategoryReference(client),
+                    StockItem = BuildStockItemReference(client)
                 });
                 _operationMessage = $"Updated price list item {_item.ResourceId}.";
             },
@@ -307,4 +345,10 @@
     }
 
     private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+
+    private CategoryReference? BuildCategoryReference(FreeAgent.Client.FreeAgentClient client) =>
+        string.IsNullOrWhiteSpace(_categoryNominalCode) ? null : client.Urls.Category(_categoryNominalCode);
+
+    private StockItemReference? BuildStockItemReference(FreeAgent.Client.FreeAgentClient client) =>
+        _itemType == InvoiceItemType.Stock && _stockItemId is > 0 ? client.Urls.StockItem(_stockItemId.Value) : null;
 }

@@ -37,6 +37,22 @@ internal sealed class PriceListItemSamples(SampleContext context) : IConsoleSamp
         SampleOutput.WriteField("VAT status", detail.VatStatus);
     }
 
+    [ConsoleSample(Name = "Update price list item description")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdatePriceListItemDescriptionAsync(CancellationToken cancellationToken)
+    {
+        var item = await context.Data.GetFirstPriceListItemAsync(cancellationToken);
+        var updated = await context.Client.PriceListItems.UpdatePriceListItemAsync(item.ResourceId, new UpdatePriceListItemRequest
+        {
+            Description = $"{item.Description} (console sample touch)"
+        }, cancellationToken);
+
+        SampleOutput.WriteHeader("Updated price list item");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+        SampleOutput.WriteField("Code", updated.Code);
+        SampleOutput.WriteField("Description", updated.Description);
+    }
+
     [ConsoleSample(Name = "Create probe price list item and delete")]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbePriceListItemAsync(CancellationToken cancellationToken)

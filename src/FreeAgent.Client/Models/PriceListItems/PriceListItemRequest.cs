@@ -5,11 +5,12 @@ namespace FreeAgent.Client.Models.PriceListItems;
 /// <summary>
 /// Wrapper for price list item write API requests.
 /// </summary>
-internal sealed class PriceListItemRequest
+/// <typeparam name="T">Create or update payload type.</typeparam>
+internal sealed class PriceListItemRequest<T>
 {
     /// <summary>
     /// Price list item payload.
     /// </summary>
     [JsonPropertyName("price_list_item")]
-    public object? PriceListItem { get; set; }
+    public T PriceListItem { get; set; } = default!;
 }

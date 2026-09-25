@@ -222,6 +222,19 @@ public class PriceListItemsServiceTests
     }
 
     [Fact]
+    public async Task GetPriceListItemAsync_MissingPayload_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("{}")
+        });
+
+        var service = CreateService(handler);
+
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetPriceListItemAsync(17));
+    }
+
+    [Fact]
     public async Task ListAsync_MissingPayload_Throws()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)

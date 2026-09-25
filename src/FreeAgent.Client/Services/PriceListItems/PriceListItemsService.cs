@@ -85,7 +85,7 @@ public sealed class PriceListItemsService
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var content = FreeAgentJsonSerializer.CreateContent(new PriceListItemRequest { PriceListItem = request });
+        var content = FreeAgentJsonSerializer.CreateContent(new PriceListItemRequest<CreatePriceListItemRequest> { PriceListItem = request });
         var response = await _requestClient.PostAsync<PriceListItemResponse>("price_list_items", content, cancellationToken);
 
         if (response.PriceListItem is null)
@@ -111,7 +111,7 @@ public sealed class PriceListItemsService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(priceListItemId);
         ArgumentNullException.ThrowIfNull(request);
 
-        var content = FreeAgentJsonSerializer.CreateContent(new PriceListItemRequest { PriceListItem = request });
+        var content = FreeAgentJsonSerializer.CreateContent(new PriceListItemRequest<UpdatePriceListItemRequest> { PriceListItem = request });
         var response = await _requestClient.PutAsync<PriceListItemResponse>(
             $"price_list_items/{priceListItemId}",
             content,

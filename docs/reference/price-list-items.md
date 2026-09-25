@@ -97,6 +97,8 @@ Task DeletePriceListItemAsync(long priceListItemId, CancellationToken cancellati
 
 **HTTP:** `DELETE /v2/price_list_items/:id`
 
+The official FreeAgent docs show a singular `price_list_item` path for delete; the plural path matches list, get, create, and update.
+
 ---
 
 ## Models
@@ -114,9 +116,9 @@ Task DeletePriceListItemAsync(long priceListItemId, CancellationToken cancellati
 | `SalesTaxRate` | `decimal?` | `sales_tax_rate` |
 | `SecondSalesTaxRate` | `decimal?` | `second_sales_tax_rate` |
 | `CategoryNominalCode` | `string?` | `category` (URI) |
+| `Category` | `Category?` | nested `category` |
 | `StockItemId` | `long?` | `stock_item` (URI) |
-| `LinkedCategory` | `CategoryReference?` | write-only |
-| `LinkedStockItem` | `StockItemReference?` | write-only |
+| `StockItemResource` | `StockItem?` | nested `stock_item` |
 
 ### CreatePriceListItemRequest / UpdatePriceListItemRequest
 

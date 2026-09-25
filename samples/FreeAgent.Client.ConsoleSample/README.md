@@ -105,7 +105,7 @@ dotnet run
 | Credit notes | List credit notes; stream all credit notes via ListAutoPagingAsync; list credit notes filtered by contact; get credit note by id; create probe credit note and delete; mark credit note as sent; get credit note PDF; send credit note email (template) |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; create probe credit note reconciliation and delete |
 | Stock items | List stock items; get stock item detail |
-| Price list items | List price list items; get price list item detail; create probe price list item and delete |
+| Price list items | List price list items; get price list item detail; update price list item description; create probe price list item and delete |
 
 New SDK resource areas should add a matching `*Samples.cs` provider class under `Samples/`.
 

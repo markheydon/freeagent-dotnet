@@ -98,12 +98,6 @@ public sealed class PriceListItem : IFreeAgentResource
     public Category? Category => CategoryLink?.Value;
 
     /// <summary>
-    /// Income category to assign on create or update requests.
-    /// </summary>
-    [JsonIgnore]
-    public CategoryReference? LinkedCategory { get; set; }
-
-    /// <summary>
     /// Wire representation of the stock item link.
     /// </summary>
     [JsonPropertyName("stock_item")]
@@ -121,12 +115,6 @@ public sealed class PriceListItem : IFreeAgentResource
     /// </summary>
     [JsonIgnore]
     public StockItem? StockItemResource => StockItemLink?.Value;
-
-    /// <summary>
-    /// Stock item to assign on create or update requests.
-    /// </summary>
-    [JsonIgnore]
-    public StockItemReference? LinkedStockItem { get; set; }
 
     /// <summary>
     /// Creation timestamp (UTC).
