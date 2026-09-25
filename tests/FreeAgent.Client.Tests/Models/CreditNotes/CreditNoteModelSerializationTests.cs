@@ -121,4 +121,64 @@ public class CreditNoteModelSerializationTests
 
         Assert.Null(payload.Contact);
     }
+
+    [Fact]
+    public void WritePayload_OmitProjectFromWrite_ExcludesRoundTrippedProject()
+    {
+        var creditNote = JsonSerializer.Deserialize<CreditNote>("""
+            {
+              "url": "https://api.freeagent.com/v2/credit_notes/1",
+              "project": "https://api.freeagent.com/v2/projects/4",
+              "dated_on": "2024-03-18",
+              "payment_terms_in_days": 14
+            }
+            """)!;
+        creditNote.OmitProjectFromWrite = true;
+
+        var payload = CreditNoteWritePayload.FromCreditNote(creditNote);
+
+        Assert.Null(payload.Project);
+    }
+
+    [Fact]
+    public void WritePayload_OmitBankAccountFromWrite_ExcludesRoundTrippedBankAccount()
+    {
+        var creditNote = JsonSerializer.Deserialize<CreditNote>("""
+            {
+              "url": "https://api.freeagent.com/v2/credit_notes/1",
+              "bank_account": "https://api.freeagent.com/v2/bank_accounts/2",
+              "dated_on": "2024-03-18",
+              "payment_terms_in_days": 14
+            }
+            """)!;
+        creditNote.OmitBankAccountFromWrite = true;
+
+        var payload = CreditNoteWritePayload.FromCreditNote(creditNote);
+
+        Assert.Null(payload.BankAccount);
+    }
+
+    [Fact]
+    public void WritePayload_OmitCreditNoteItemsFromWrite_ExcludesLineItems()
+    {
+        var creditNote = new CreditNote
+        {
+            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 0,
+            OmitCreditNoteItemsFromWrite = true,
+            CreditNoteItems =
+            [
+                new CreditNoteItem
+                {
+                    ItemId = 42,
+                    Description = "Refund"
+                }
+            ]
+        };
+
+        var payload = CreditNoteWritePayload.FromCreditNote(creditNote);
+
+        Assert.Null(payload.CreditNoteItems);
+    }
 }

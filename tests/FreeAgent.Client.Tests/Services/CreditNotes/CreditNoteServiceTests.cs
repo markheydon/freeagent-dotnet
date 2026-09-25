@@ -121,7 +121,7 @@ public class CreditNoteServiceTests
     public async Task ListAutoPagingAsync_YieldsAllPages()
     {
         var page = 0;
-        var handler = new QueueHttpMessageHandler(request =>
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
         {
             page++;
             var response = new HttpResponseMessage(HttpStatusCode.OK)
@@ -149,7 +149,9 @@ public class CreditNoteServiceTests
             }
 
             return response;
-        });
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond);
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
@@ -207,6 +209,29 @@ public class CreditNoteServiceTests
         var service = new CreditNotesService(client);
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetCreditNoteAsync(1));
+    }
+
+    [Fact]
+    public async Task GetCreditNotePdfAsync_InvalidBase64_Throws()
+    {
+        var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("""
+            {
+              "pdf": {
+                "content": "not-valid-base64!!!"
+              }
+            }
+            """)
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CreditNotesService(client);
+
+        var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetCreditNotePdfAsync(7));
+
+        Assert.Contains("base64", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -391,7 +416,7 @@ public class CreditNoteServiceTests
     public async Task MarkCreditNoteAsSentAsync_CallsTransitionThenGet()
     {
         var requests = new List<HttpRequestMessage>();
-        var handler = new QueueHttpMessageHandler(request =>
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
         {
             requests.Add(request);
             if (request.Method == HttpMethod.Put)
@@ -411,7 +436,9 @@ public class CreditNoteServiceTests
                 }
                 """)
             };
-        });
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond);
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
@@ -426,7 +453,7 @@ public class CreditNoteServiceTests
     [Fact]
     public async Task MarkCreditNoteAsDraftAsync_CallsTransitionThenGet()
     {
-        var handler = new QueueHttpMessageHandler(request =>
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
         {
             if (request.Method == HttpMethod.Put)
             {
@@ -445,7 +472,9 @@ public class CreditNoteServiceTests
                 }
                 """)
             };
-        });
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond);
 
         using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
@@ -469,5 +498,87 @@ public class CreditNoteServiceTests
         await Assert.ThrowsAsync<ArgumentException>(() => service.ListAsync(
             contact: ContactReference.Parse("https://api.freeagent.com/v2/contacts/1"),
             contactId: 1));
+    }
+
+    [Fact]
+    public async Task ListAsync_ProjectAndProjectIdBothSpecified_Throws()
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CreditNotesService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.ListAsync(
+            project: ProjectReference.Parse("https://api.freeagent.com/v2/projects/1"),
+            projectId: 1));
+    }
+
+    [Fact]
+    public async Task GetCreditNoteAsync_WithHydration_FetchesLinkedResources()
+    {
+        var calls = new List<string>();
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
+        {
+            calls.Add(request.RequestUri!.AbsolutePath);
+            if (request.RequestUri.AbsolutePath.EndsWith("/credit_notes/42", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "credit_note": {
+                        "url": "https://api.freeagent.com/v2/credit_notes/42",
+                        "contact": "https://api.freeagent.com/v2/contacts/2",
+                        "project": "https://api.freeagent.com/v2/projects/3"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            if (request.RequestUri.AbsolutePath.EndsWith("/contacts/2", StringComparison.Ordinal))
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "contact": {
+                        "url": "https://api.freeagent.com/v2/contacts/2",
+                        "organisation_name": "Example Ltd"
+                      }
+                    }
+                    """)
+                };
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "project": {
+                    "url": "https://api.freeagent.com/v2/projects/3",
+                    "name": "Example project"
+                  }
+                }
+                """)
+            };
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond, respond);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CreditNotesService(client);
+
+        var creditNote = await service.GetCreditNoteAsync(
+            42,
+            new CreditNoteGetOptions { IncludeContact = true, IncludeProject = true });
+
+        Assert.Equal("Example Ltd", creditNote.Contact?.OrganisationName);
+        Assert.Equal("Example project", creditNote.Project?.Name);
+        Assert.Contains(calls, path => path.Contains("/contacts/2", StringComparison.Ordinal));
+        Assert.Contains(calls, path => path.Contains("/projects/3", StringComparison.Ordinal));
     }
 }
