@@ -1,0 +1,135 @@
+using System.Text.Json;
+using FreeAgent.Client.Infrastructure.Serialization;
+using FreeAgent.Client.Models.Estimates;
+using FreeAgent.Client.Models.Invoices;
+using FreeAgent.Client.Models.Shared;
+
+namespace FreeAgent.Client.Tests.Models.Estimates;
+
+public class EstimateModelSerializationTests
+{
+    [Fact]
+    public void DeserializeEstimate_MapsStatusDatesAndEnums()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/estimates/3",
+              "status": "Approved",
+              "estimate_type": "Quote",
+              "contact": "https://api.freeagent.com/v2/contacts/2",
+              "dated_on": "2011-08-29",
+              "ec_status": "EC Goods",
+              "created_at": "2011-08-29T00:00:00Z",
+              "updated_at": "2011-08-29T00:00:00Z",
+              "estimate_items": [
+                {
+                  "description": "Development",
+                  "item_type": "Hours",
+                  "price": "100.0",
+                  "quantity": "2.0",
+                  "sales_tax_status": "TAXABLE",
+                  "category": "https://api.freeagent.com/v2/categories/001"
+                }
+              ]
+            }
+            """;
+
+        var estimate = JsonSerializer.Deserialize<Estimate>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(estimate);
+        Assert.Equal(3, estimate!.ResourceId);
+        Assert.Equal(EstimateStatus.Approved, estimate.Status);
+        Assert.Equal(EstimateType.Quote, estimate.EstimateType);
+        Assert.Equal(new DateOnly(2011, 8, 29), estimate.DatedOn);
+        Assert.Equal(EstimateEcStatus.EcGoods, estimate.EcStatus);
+        Assert.Equal(2, estimate.ContactId);
+        Assert.Single(estimate.EstimateItems!);
+        Assert.Equal(EstimateItemType.Hours, estimate.EstimateItems![0].ItemType);
+        Assert.Equal(InvoiceSalesTaxStatus.Taxable, estimate.EstimateItems[0].SalesTaxStatus);
+        Assert.Equal("001", estimate.EstimateItems[0].CategoryNominalCode);
+    }
+
+    [Fact]
+    public void DeserializeEstimateItem_MapsNoUnitItemType()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/estimate_items/5",
+              "description": "Flat fee",
+              "item_type": "-no unit-",
+              "price": "500.0"
+            }
+            """;
+
+        var item = JsonSerializer.Deserialize<EstimateItem>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(item);
+        Assert.Equal(EstimateItemType.NoUnit, item!.ItemType);
+    }
+
+    [Fact]
+    public void DeserializeEstimateItem_MapsCommentsItemType()
+    {
+        const string json = """
+            {
+              "description": "Note line",
+              "item_type": "Comments"
+            }
+            """;
+
+        var item = JsonSerializer.Deserialize<EstimateItem>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(item);
+        Assert.Equal(EstimateItemType.Comments, item!.ItemType);
+    }
+
+    [Fact]
+    public void WritePayload_OmitBillingContactFromWrite_ExcludesRoundTrippedContact()
+    {
+        var estimate = JsonSerializer.Deserialize<Estimate>("""
+            {
+              "url": "https://api.freeagent.com/v2/estimates/1",
+              "contact": "https://api.freeagent.com/v2/contacts/8",
+              "dated_on": "2024-03-18",
+              "reference": "EST-001"
+            }
+            """)!;
+        estimate.OmitBillingContactFromWrite = true;
+
+        var payload = EstimateWritePayload.FromEstimate(estimate);
+
+        Assert.Null(payload.Contact);
+    }
+
+    [Fact]
+    public void WritePayload_OmitEstimateItemsFromWrite_ExcludesLineItems()
+    {
+        var estimate = new Estimate
+        {
+            BillingContact = ContactReference.Parse("https://api.freeagent.com/v2/contacts/2"),
+            DatedOn = new DateOnly(2024, 3, 18),
+            OmitEstimateItemsFromWrite = true,
+            EstimateItems =
+            [
+                new EstimateItem
+                {
+                    ItemId = 42,
+                    Description = "Development"
+                }
+            ]
+        };
+
+        var payload = EstimateWritePayload.FromEstimate(estimate);
+
+        Assert.Null(payload.EstimateItems);
+    }
+
+    [Fact]
+    public void EstimateReference_Parse_ReturnsTypedReference()
+    {
+        var reference = EstimateReference.Parse("https://api.freeagent.com/v2/estimates/99");
+
+        Assert.Equal(99, reference.Id);
+        Assert.Equal("https://api.freeagent.com/v2/estimates/99", reference.Uri);
+    }
+}

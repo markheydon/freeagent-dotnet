@@ -127,6 +127,15 @@
                 </MudNavLink>
             </MudNavGroup>
 
+            <MudNavGroup Title="Estimates" Icon="@Icons.Material.Filled.Description" Expanded="@IsEstimatesRoute">
+                <MudNavLink Href="/estimates" Icon="@Icons.Material.Filled.AllInclusive">
+                    Estimates list
+                </MudNavLink>
+                <MudNavLink Href="/estimates/detail" Icon="@Icons.Material.Filled.EditNote">
+                    Estimate CRUD
+                </MudNavLink>
+            </MudNavGroup>
+
             <MudNavGroup Title="Projects and time" Icon="@Icons.Material.Filled.Work" Expanded="@IsProjectsRoute">
                 <MudNavLink Href="/projects" Icon="@Icons.Material.Filled.AllInclusive">
                     Projects list
@@ -252,6 +261,10 @@
     private bool IsInvoicesRoute =>
         CurrentPath.Equals("invoices", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("invoices/", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsEstimatesRoute =>
+        CurrentPath.Equals("estimates", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("estimates/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsProjectsRoute =>
         CurrentPath.Equals("projects", StringComparison.OrdinalIgnoreCase)

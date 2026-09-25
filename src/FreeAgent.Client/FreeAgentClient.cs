@@ -3,6 +3,7 @@ using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
 using FreeAgent.Client.Services.EmailAddresses;
+using FreeAgent.Client.Services.Estimates;
 using FreeAgent.Client.Services.Invoices;
 using FreeAgent.Client.Services.Notes;
 using FreeAgent.Client.Services.Projects;
@@ -71,6 +72,11 @@ public sealed class FreeAgentClient : IDisposable
     public InvoiceService Invoices { get; }
 
     /// <summary>
+    /// Estimates API service.
+    /// </summary>
+    public EstimateService Estimates { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -137,6 +143,7 @@ public sealed class FreeAgentClient : IDisposable
         Timeslips = new TimeslipService(_httpClient);
         Notes = new NoteService(_httpClient);
         Invoices = new InvoiceService(_httpClient);
+        Estimates = new EstimateService(_httpClient);
     }
 
     /// <summary>

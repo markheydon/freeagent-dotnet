@@ -1,0 +1,785 @@
+@page "/estimates/detail"
+@using FreeAgent.Client.Models.Estimates
+@using FreeAgent.Client.Models.Invoices
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services
+@using FreeAgent.Client.BlazorSample.Services.Turpinverse
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject TurpinverseQuoteSeeder TurpinverseQuoteSeeder
+@inject NavigationManager NavigationManager
+
+<PageTitle>Estimate detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Estimates endpoint"
+                         Title="Get, create, update, delete, and transition estimates"
+                         CallUnderTest="EstimateService.GetEstimateAsync / CreateEstimateAsync / UpdateEstimateAsync / DeleteEstimateAsync / GetEstimatePdfAsync / MarkEstimateAsSentAsync / MarkEstimateAsDraftAsync / MarkEstimateAsApprovedAsync / MarkEstimateAsRejectedAsync / DuplicateEstimateAsync / SendEstimateEmailAsync / ConvertToInvoiceAsync / CreateEstimateItemAsync / UpdateEstimateItemAsync / DeleteEstimateItemAsync / GetDefaultAdditionalTextAsync / UpdateDefaultAdditionalTextAsync / DeleteDefaultAdditionalTextAsync"
+                         Description="Exercises single-estimate CRUD, status transitions, line items, duplication, PDF download, and email sending. Shows wire-to-model diagnostics after each mutation."
+                         EndpointPath="/v2/estimates/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/estimates" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick an estimate ID from the <MudLink Href="/estimates">estimates list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Seed Turpinverse canon quotes after seeding contacts and projects.
+                        Each Turpinverse seed upserts on <code>reference</code> values prefixed with <code>turpinverse:</code>.
+                    </MudText>
+                    <MudNumericField @bind-Value="_estimateId" Label="Estimate ID" Min="1" />
+                    <MudNumericField @bind-Value="_contactId"
+                                     Label="Billing contact ID (create only)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+                    <MudNumericField @bind-Value="_estimateItemId"
+                                     Label="Estimate item ID (update/delete)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetEstimateAsync">Get estimate</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateHighwayCommissionDraftAsync">Create Highway Commission draft</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateAllTurpinverseQuotesAsync">Create all Turpinverse quotes</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _contactId is null or < 1"
+                                   OnClick="CreateProbeEstimateAsync">Create probe estimate</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _estimateId is null or < 1"
+                                   OnClick="UpdateEstimateAsync">Update notes</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _estimateId is null or < 1"
+                                   OnClick="DeleteEstimateAsync">Delete estimate</MudButton>
+                    </MudStack>
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _estimateId is null or < 1"
+                                   OnClick="MarkAsSentAsync">Mark as sent</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _estimateId is null or < 1"
+                                   OnClick="MarkAsDraftAsync">Mark as draft</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Success" Disabled="_loading || _estimateId is null or < 1"
+                                   OnClick="MarkAsApprovedAsync">Mark as approved</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _estimateId is null or < 1"
+                                   OnClick="MarkAsRejectedAsync">Mark as rejected</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading || _estimateId is null or < 1"
+                                   OnClick="DuplicateEstimateAsync">Duplicate estimate</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _estimateId is null or < 1"
+                                   OnClick="SendEmailWithTemplateAsync">Send email (template)</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading || _estimateId is null or < 1"
+                                   OnClick="GetEstimatePdfAsync">Get PDF</MudButton>
+                    </MudStack>
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _estimateId is null or < 1"
+                                   OnClick="CreateEstimateItemAsync">Create estimate item</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _estimateItemId is null or < 1"
+                                   OnClick="UpdateEstimateItemAsync">Update estimate item</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _estimateItemId is null or < 1"
+                                   OnClick="DeleteEstimateItemAsync">Delete estimate item</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading"
+                                   OnClick="GetDefaultAdditionalTextAsync">Get default additional text</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading"
+                                   OnClick="UpdateDefaultAdditionalTextAsync">Update default additional text</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading"
+                                   OnClick="DeleteDefaultAdditionalTextAsync">Delete default additional text</MudButton>
+                    </MudStack>
+
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+                        Converting an estimate to an invoice is irreversible in FreeAgent. The estimate status becomes <code>Invoiced</code>.
+                    </MudAlert>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _estimateId is null or < 1"
+                               OnClick="ConvertToInvoiceAsync">Convert to invoice</MudButton>
+                </MudStack>
+
+                @if (_probe is not null && _estimate is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Estimate model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_estimate.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_estimate.Status?.ToString())</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Reference</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_estimate.Reference)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Contact</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_estimate.ClientContactName ?? _estimate.Contact?.OrganisationName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Dated on</MudText>
+                                        <MudText Typo="Typo.subtitle1">@FormatDate(_estimate.DatedOn)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Net value</MudText>
+                                        <MudText Typo="Typo.subtitle1">@FormatAmount(_estimate.NetValue)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load estimate diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? EstimateIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private Estimate? _estimate;
+    private ModelProbeSnapshot? _probe;
+    private long? _estimateId;
+    private long? _contactId;
+    private long? _estimateItemId;
+
+    protected override void OnParametersSet()
+    {
+        if (EstimateIdFromQuery is > 0 && _estimateId != EstimateIdFromQuery)
+        {
+            _estimateId = EstimateIdFromQuery;
+            _operationMessage = $"Estimate ID {_estimateId} loaded from URL. Press Get estimate to fetch diagnostics.";
+        }
+    }
+
+    private async Task GetEstimateAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            _error = "Enter an estimate ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _estimate = await client.Estimates.GetEstimateAsync(
+                    _estimateId.Value,
+                    new EstimateGetOptions { IncludeContact = true, IncludeProject = true });
+                _operationMessage = $"Loaded estimate {_estimateId.Value}: {ValueOrFallback(_estimate.Reference)}";
+                return $"estimates/{_estimateId}";
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task CreateHighwayCommissionDraftAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await TurpinverseQuoteSeeder.CreateHighwayCommissionDraftAsync(client);
+                _estimate = result.Estimate;
+                if (_estimate.TryGetResourceId(out var assignedId))
+                {
+                    _estimateId = assignedId;
+                    _operationMessage = result.Action == QuoteSeedAction.Updated
+                        ? $"Updated Highway Commission draft (estimate {assignedId}) from current Turpinverse canon."
+                        : $"Created Highway Commission draft as estimate {assignedId}.";
+                    return $"estimates/{assignedId}";
+                }
+
+                _estimateId = null;
+                _operationMessage = "Created Highway Commission draft but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task CreateAllTurpinverseQuotesAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var result = await TurpinverseQuoteSeeder.CreateAllQuotesAsync(client);
+            var lastTouched = result.Updated.Count > 0
+                ? result.Updated[^1]
+                : result.Created.Count > 0
+                    ? result.Created[^1]
+                    : null;
+
+            if (lastTouched is not null)
+            {
+                _estimate = lastTouched;
+
+                if (_estimate.TryGetResourceId(out var assignedId))
+                {
+                    _estimateId = assignedId;
+
+                    _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                        token.AccessToken,
+                        TokenStore.ConnectedEnvironment,
+                        $"estimates/{assignedId}");
+
+                    _probe = ModelWireDiagnostics.Build(_estimate, _wireApiResponse, "estimate");
+                }
+                else
+                {
+                    _estimateId = null;
+                }
+            }
+            else
+            {
+                _estimate = null;
+                _estimateId = null;
+            }
+
+            var summaryParts = new List<string>();
+            if (result.Created.Count > 0)
+            {
+                summaryParts.Add($"created {result.Created.Count}");
+            }
+
+            if (result.Updated.Count > 0)
+            {
+                summaryParts.Add($"updated {result.Updated.Count}");
+            }
+
+            if (result.Failures.Count > 0)
+            {
+                summaryParts.Add($"failed {result.Failures.Count}");
+            }
+
+            _operationMessage = summaryParts.Count == 0
+                ? "No Turpinverse quotes were created or updated."
+                : $"Turpinverse quote sync complete: {string.Join(", ", summaryParts)}.";
+
+            if (result.Failures.Count > 0)
+            {
+                var failureSummary = string.Join(
+                    "; ",
+                    result.Failures.Select(static failure => $"{failure.QuoteNumber}: {failure.Message}"));
+                _error = $"Some quotes could not be seeded: {failureSummary}";
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CreateProbeEstimateAsync()
+    {
+        if (_contactId is null or < 1)
+        {
+            _error = "Enter a billing contact ID before creating a probe estimate.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _estimate = await client.Estimates.CreateEstimateAsync(new Estimate
+                {
+                    BillingContact = client.Urls.Contact(_contactId.Value),
+                    EstimateType = EstimateType.Quote,
+                    DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+                    Currency = CurrencyCode.GBP,
+                    Reference = $"probe-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+                    EstimateItems =
+                    [
+                        new EstimateItem
+                        {
+                            Description = "SDK probe line item",
+                            ItemType = EstimateItemType.Hours,
+                            Quantity = 1,
+                            Price = 100m,
+                            SalesTaxRate = 20m,
+                            SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+                        }
+                    ]
+                });
+
+                if (_estimate.TryGetResourceId(out var assignedId))
+                {
+                    _estimateId = assignedId;
+                    _operationMessage = $"Created probe estimate {assignedId}.";
+                    return $"estimates/{assignedId}";
+                }
+
+                _estimateId = null;
+                _operationMessage = "Created probe estimate but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task UpdateEstimateAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _estimate ?? await client.Estimates.GetEstimateAsync(_estimateId.Value);
+                existing.Notes = $"{existing.Notes} (updated)".Trim();
+                existing.OmitEstimateItemsFromWrite = true;
+                _estimate = await client.Estimates.UpdateEstimateAsync(_estimateId.Value, existing);
+                _operationMessage = $"Updated estimate {_estimateId.Value}.";
+                return $"estimates/{_estimateId}";
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task DeleteEstimateAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _estimateId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Estimates.DeleteEstimateAsync(deletedId);
+                _estimate = null;
+                _probe = null;
+                _operationMessage = $"Deleted estimate {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task MarkAsSentAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _estimate = await client.Estimates.MarkEstimateAsSentAsync(_estimateId.Value);
+                _operationMessage = $"Marked estimate {_estimateId.Value} as sent.";
+                return $"estimates/{_estimateId}";
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task MarkAsDraftAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _estimate = await client.Estimates.MarkEstimateAsDraftAsync(_estimateId.Value);
+                _operationMessage = $"Marked estimate {_estimateId.Value} as draft.";
+                return $"estimates/{_estimateId}";
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task MarkAsApprovedAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _estimate = await client.Estimates.MarkEstimateAsApprovedAsync(_estimateId.Value);
+                _operationMessage = $"Marked estimate {_estimateId.Value} as approved.";
+                return $"estimates/{_estimateId}";
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task MarkAsRejectedAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _estimate = await client.Estimates.MarkEstimateAsRejectedAsync(_estimateId.Value);
+                _operationMessage = $"Marked estimate {_estimateId.Value} as rejected.";
+                return $"estimates/{_estimateId}";
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task DuplicateEstimateAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _estimate = await client.Estimates.DuplicateEstimateAsync(_estimateId.Value);
+                if (_estimate.TryGetResourceId(out var duplicatedId))
+                {
+                    _estimateId = duplicatedId;
+                    _operationMessage = $"Duplicated estimate to new ID {duplicatedId}.";
+                    return $"estimates/{duplicatedId}";
+                }
+
+                _operationMessage = "Duplicated estimate but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task SendEmailWithTemplateAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Estimates.SendEstimateEmailAsync(
+                    _estimateId.Value,
+                    new SendEstimateEmailRequest
+                    {
+                        Email = new EstimateEmailDetails { UseTemplate = true }
+                    });
+
+                _estimate = await client.Estimates.GetEstimateAsync(_estimateId.Value);
+                _operationMessage = $"Sent estimate {_estimateId.Value} using the default email template.";
+                return $"estimates/{_estimateId}";
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task GetEstimatePdfAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var pdfBytes = await client.Estimates.GetEstimatePdfAsync(_estimateId.Value);
+                _operationMessage = $"Downloaded PDF for estimate {_estimateId.Value} ({pdfBytes.Length} bytes).";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task ConvertToInvoiceAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _estimate = await client.Estimates.ConvertToInvoiceAsync(_estimateId.Value);
+                _operationMessage = _estimate.InvoiceId is long invoiceId
+                    ? $"Converted estimate {_estimateId.Value} to invoice {invoiceId}."
+                    : $"Converted estimate {_estimateId.Value} to an invoice.";
+                return $"estimates/{_estimateId}";
+            },
+            envelopeProperty: "estimate");
+    }
+
+    private async Task CreateEstimateItemAsync()
+    {
+        if (_estimateId is null or < 1)
+        {
+            _error = "Enter an estimate ID before creating a line item.";
+            return;
+        }
+
+        await RunItemOperationAsync(
+            async client =>
+            {
+                var item = await client.Estimates.CreateEstimateItemAsync(
+                    _estimateId.Value,
+                    new EstimateItem
+                    {
+                        Description = "SDK probe item",
+                        ItemType = EstimateItemType.Services,
+                        Quantity = 1,
+                        Price = 50m,
+                        SalesTaxRate = 20m,
+                        SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+                    });
+
+                if (item.ItemId is long itemId)
+                {
+                    _estimateItemId = itemId;
+                }
+
+                _estimate = await client.Estimates.GetEstimateAsync(_estimateId.Value);
+                _operationMessage = $"Created estimate item on estimate {_estimateId.Value}.";
+                return $"estimates/{_estimateId}";
+            });
+    }
+
+    private async Task UpdateEstimateItemAsync()
+    {
+        if (_estimateItemId is null or < 1)
+        {
+            _error = "Enter an estimate item ID to update.";
+            return;
+        }
+
+        await RunItemOperationAsync(
+            async client =>
+            {
+                var item = await client.Estimates.UpdateEstimateItemAsync(
+                    _estimateItemId.Value,
+                    new EstimateItem
+                    {
+                        Description = "SDK probe item (updated)",
+                        ItemType = EstimateItemType.Services,
+                        Quantity = 2,
+                        Price = 50m,
+                        SalesTaxRate = 20m,
+                        SalesTaxStatus = InvoiceSalesTaxStatus.Taxable
+                    });
+
+                if (item.ItemId is long itemId)
+                {
+                    _estimateItemId = itemId;
+                }
+
+                if (_estimateId is > 0)
+                {
+                    _estimate = await client.Estimates.GetEstimateAsync(_estimateId.Value);
+                    _operationMessage = $"Updated estimate item {_estimateItemId.Value}.";
+                    return $"estimates/{_estimateId}";
+                }
+
+                _operationMessage = $"Updated estimate item {_estimateItemId.Value}.";
+                return null;
+            });
+    }
+
+    private async Task DeleteEstimateItemAsync()
+    {
+        if (_estimateItemId is null or < 1)
+        {
+            _error = "Enter an estimate item ID to delete.";
+            return;
+        }
+
+        var deletedItemId = _estimateItemId.Value;
+
+        await RunItemOperationAsync(
+            async client =>
+            {
+                await client.Estimates.DeleteEstimateItemAsync(deletedItemId);
+                _estimateItemId = null;
+
+                if (_estimateId is > 0)
+                {
+                    _estimate = await client.Estimates.GetEstimateAsync(_estimateId.Value);
+                    _operationMessage = $"Deleted estimate item {deletedItemId} from estimate {_estimateId.Value}.";
+                    return $"estimates/{_estimateId}";
+                }
+
+                _operationMessage = $"Deleted estimate item {deletedItemId}.";
+                return null;
+            });
+    }
+
+    private async Task GetDefaultAdditionalTextAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var text = await client.Estimates.GetDefaultAdditionalTextAsync();
+                _operationMessage = string.IsNullOrWhiteSpace(text)
+                    ? "Default additional text is not set."
+                    : $"Default additional text: {text}";
+                return "estimates/default_additional_text";
+            },
+            envelopeProperty: "default_additional_text");
+    }
+
+    private async Task UpdateDefaultAdditionalTextAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var text = await client.Estimates.UpdateDefaultAdditionalTextAsync("Valid for 30 days (probe update).");
+                _operationMessage = $"Updated default additional text to: {text}";
+                return "estimates/default_additional_text";
+            },
+            envelopeProperty: "default_additional_text");
+    }
+
+    private async Task DeleteDefaultAdditionalTextAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Estimates.DeleteDefaultAdditionalTextAsync();
+                _operationMessage = "Deleted default additional text.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgentClient, Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _estimate is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_estimate, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task RunItemOperationAsync(Func<FreeAgentClient, Task<string?>> action)
+    {
+        await RunOperationAsync(action, envelopeProperty: "estimate");
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+
+    private static string FormatDate(DateOnly? value) =>
+        value is null ? "Not returned" : value.Value.ToString("yyyy-MM-dd");
+
+    private static string FormatAmount(decimal? value) =>
+        value is null ? "Not returned" : value.Value.ToString("0.00");
+}

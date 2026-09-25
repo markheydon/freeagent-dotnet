@@ -1,0 +1,461 @@
+@page "/estimates"
+@using FreeAgent.Client.Models.Estimates
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Estimates - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Estimates endpoint"
+                         Title="Estimates list"
+                         CallUnderTest="EstimateService.ListAsync(...) / ListAutoPagingAsync(...)"
+                         Description="Load estimates, inspect wire-to-model mapping for any row, then jump into Estimate CRUD to test get, update, transitions, and delete."
+                         EndpointPath="/v2/estimates?page={page}&per_page={perPage}&view={view}"
+                         DocsUrl="https://dev.freeagent.com/docs/estimates" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load page 1, then use <strong>Inspect mapping</strong> on any row to see wire-to-model diagnostics.
+                        Use <strong>Open in CRUD</strong> to test single-estimate operations.
+                    </MudText>
+
+                    <MudGrid Spacing="2" Class="contacts-filter-grid">
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudSelect T="string"
+                                       @bind-Value="_view"
+                                       Label="View"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       FullWidth="true">
+                                <MudSelectItem Value="@EstimateViews.Recent">recent</MudSelectItem>
+                                <MudSelectItem Value="@EstimateViews.Draft">draft</MudSelectItem>
+                                <MudSelectItem Value="@EstimateViews.NonDraft">non_draft</MudSelectItem>
+                                <MudSelectItem Value="@EstimateViews.Sent">sent</MudSelectItem>
+                                <MudSelectItem Value="@EstimateViews.Approved">approved</MudSelectItem>
+                                <MudSelectItem Value="@EstimateViews.Rejected">rejected</MudSelectItem>
+                                <MudSelectItem Value="@EstimateViews.Invoiced">invoiced</MudSelectItem>
+                                <MudSelectItem Value="@EstimateViews.All">all</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudNumericField @bind-Value="_contactIdFilter"
+                                             Label="Contact ID filter"
+                                             Min="1"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudNumericField @bind-Value="_projectIdFilter"
+                                             Label="Project ID filter"
+                                             Min="1"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudNumericField @bind-Value="_invoiceIdFilter"
+                                             Label="Invoice ID filter"
+                                             Min="1"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3" lg="2">
+                            <MudNumericField @bind-Value="_perPage"
+                                             Label="Per page"
+                                             Min="1"
+                                             Max="100"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3" lg="2">
+                            <MudSwitch @bind-Value="_nestedEstimateItems" Color="Color.Primary" Label="nested_estimate_items" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                                       Disabled="_loading"
+                                       Class="contacts-load-button"
+                                       OnClick="LoadEstimatesAsync">
+                                @if (_loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Loading…</span>
+                                }
+                                else
+                                {
+                                    <span>Load page 1</span>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+
+                @if (_pageResult is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load page 1</strong> to fetch estimates from FreeAgent.</MudText>
+                }
+
+                @if (_pageResult is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_pageResult.Items.Count estimate@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
+                        </MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                        @if (_pageResult.Total > 0)
+                        {
+                            <MudChip T="string" Variant="Variant.Outlined">Total: @_pageResult.Total</MudChip>
+                        }
+                    </MudStack>
+
+                    @if (_pageResult.Items.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No estimates returned for view <code>@_view</code>. Try <code>all</code>, or create a test estimate from
+                            <MudLink Href="/estimates/detail">Estimate CRUD</MudLink>.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_estimateRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Reference</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Contact</MudTh>
+                                    <MudTh>Net value</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Reference">@ValueOrDash(context.Reference)</MudTd>
+                                    <MudTd DataLabel="Status">@context.Status</MudTd>
+                                    <MudTd DataLabel="Contact">@ValueOrDash(context.ContactName)</MudTd>
+                                    <MudTd DataLabel="Net value">@FormatAmount(context.NetValue)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectEstimateAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetCrudHref(context.Id)">
+                                                Open in CRUD
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedEstimate is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Estimate model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected estimate</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    ID: @_inspectedEstimate.ResourceId
+                                </MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">
+                                    Row @(_inspectedIndex + 1) on page @_pageResult?.Page
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Reference</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedEstimate.Reference)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Contact</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrDash(_inspectedEstimate.ClientContactName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+
+                <MudExpansionPanels>
+                    <MudExpansionPanel Text="Developer probe: auto-pagination (ListAutoPagingAsync)">
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.body2" Class="hero-copy">
+                                Optional check that the async enumerator walks every page.
+                            </MudText>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.AllInclusive"
+                                       Disabled="_loadingAll"
+                                       OnClick="LoadAllAsync">
+                                @if (_loadingAll)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Enumerating…</span>
+                                }
+                                else
+                                {
+                                    <span>Count all estimates</span>
+                                }
+                            </MudButton>
+
+                            @if (_allEstimatesCount is not null)
+                            {
+                                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+                                    <code>ListAutoPagingAsync</code> yielded @_allEstimatesCount.Value estimate@(_allEstimatesCount.Value == 1 ? string.Empty : "s").
+                                </MudAlert>
+                            }
+                        </MudStack>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private bool _loadingAll;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private PaginatedResponse<Estimate>? _pageResult;
+    private Estimate? _inspectedEstimate;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+    private int? _allEstimatesCount;
+    private string _view = EstimateViews.Recent;
+    private long? _contactIdFilter;
+    private long? _projectIdFilter;
+    private long? _invoiceIdFilter;
+    private bool _nestedEstimateItems;
+    private int _perPage = 25;
+
+    private IReadOnlyList<EstimateRow> _estimateRows => _pageResult?.Items
+        .Select(static (estimate, index) => new EstimateRow(
+            index,
+            estimate.ResourceId,
+            estimate.Reference,
+            estimate.Status?.ToString() ?? "-",
+            estimate.ClientContactName,
+            estimate.NetValue))
+        .ToList() ?? [];
+
+    private async Task LoadEstimatesAsync()
+    {
+        _pageResult = null;
+        _inspectedEstimate = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+        _allEstimatesCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var diagnosticsEndpoint = BuildDiagnosticsEndpoint();
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _pageResult = await client.Estimates.ListAsync(
+                page: 1,
+                perPage: _perPage,
+                view: _view,
+                contactId: _contactIdFilter,
+                projectId: _projectIdFilter,
+                invoiceId: _invoiceIdFilter,
+                nestedEstimateItems: _nestedEstimateItems ? true : null);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectEstimateAsync(int index)
+    {
+        if (_pageResult is null || index < 0 || index >= _pageResult.Items.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedEstimate = _pageResult.Items[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "estimates", index, out var wireEstimate))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedEstimate, wireEstimate);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedEstimate, _wireApiResponse, envelopeProperty: "estimates");
+    }
+
+    private async Task LoadAllAsync()
+    {
+        _allEstimatesCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loadingAll = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var count = 0;
+            await foreach (var _ in client.Estimates.ListAutoPagingAsync(
+                               perPage: _perPage,
+                               view: _view,
+                               contactId: _contactIdFilter,
+                               projectId: _projectIdFilter,
+                               invoiceId: _invoiceIdFilter,
+                               nestedEstimateItems: _nestedEstimateItems ? true : null))
+            {
+                count++;
+            }
+
+            _allEstimatesCount = count;
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                BuildDiagnosticsEndpoint());
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loadingAll = false;
+        }
+    }
+
+    private string BuildDiagnosticsEndpoint()
+    {
+        var query = new List<string>
+        {
+            "page=1",
+            $"per_page={_perPage}",
+            $"view={_view}"
+        };
+
+        if (_contactIdFilter is > 0)
+        {
+            query.Add($"contact={Uri.EscapeDataString(ContactReference.ForEnvironment(TokenStore.ConnectedEnvironment, _contactIdFilter.Value).Uri)}");
+        }
+
+        if (_projectIdFilter is > 0)
+        {
+            query.Add($"project={Uri.EscapeDataString(ProjectReference.ForEnvironment(TokenStore.ConnectedEnvironment, _projectIdFilter.Value).Uri)}");
+        }
+
+        if (_invoiceIdFilter is > 0)
+        {
+            query.Add($"invoice={Uri.EscapeDataString(InvoiceReference.ForEnvironment(TokenStore.ConnectedEnvironment, _invoiceIdFilter.Value).Uri)}");
+        }
+
+        if (_nestedEstimateItems)
+        {
+            query.Add("nested_estimate_items=true");
+        }
+
+        return $"estimates?{string.Join('&', query)}";
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string FormatAmount(decimal? value) =>
+        value is null ? "-" : value.Value.ToString("0.00");
+
+    private static string GetCrudHref(long id) => $"/estimates/detail?id={id}";
+
+    private sealed record EstimateRow(
+        int Index,
+        long Id,
+        string? Reference,
+        string Status,
+        string? ContactName,
+        decimal? NetValue);
+}

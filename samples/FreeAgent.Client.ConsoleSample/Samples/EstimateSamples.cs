@@ -1,0 +1,168 @@
+using System.Diagnostics.CodeAnalysis;
+using FreeAgent.Client;
+using FreeAgent.Client.Models.Estimates;
+using FreeAgent.Client.Models.Shared;
+
+namespace FreeAgent.Client.ConsoleSample.Samples;
+
+/// <summary>
+/// Estimates endpoint examples.
+/// </summary>
+[ConsoleSamples(Category = "Estimates")]
+internal sealed class EstimateSamples(SampleContext context) : IConsoleSampleProvider
+{
+    [ConsoleSample(Name = "List estimates")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task ListEstimatesAsync(CancellationToken cancellationToken)
+    {
+        var page = await context.Client.Estimates.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+
+        SampleOutput.WriteHeader($"Estimates (showing {page.Items.Count} of {page.Total})");
+        SampleOutput.WriteRows(page.Items, FormatEstimateRow);
+
+        if (page.HasNextPage)
+        {
+            Console.WriteLine();
+            Console.WriteLine("  (First page only. Use ListAutoPagingAsync to stream all pages.)");
+        }
+    }
+
+    [ConsoleSample(Name = "Stream all estimates", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task StreamAllEstimatesAsync(CancellationToken cancellationToken)
+    {
+        var count = 0;
+        await foreach (var estimate in context.Client.Estimates.ListAutoPagingAsync(cancellationToken: cancellationToken))
+        {
+            count++;
+            if (count <= 5)
+            {
+                Console.WriteLine($"  {FormatEstimateRow(estimate)}");
+            }
+        }
+
+        SampleOutput.WriteHeader("Streamed estimates via ListAutoPagingAsync");
+        Console.WriteLine($"  Total estimates streamed: {count}");
+    }
+
+    [ConsoleSample(Name = "List estimates filtered by contact")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task ListEstimatesFilteredByContactAsync(CancellationToken cancellationToken)
+    {
+        var contact = await context.Data.GetFirstContactAsync(cancellationToken);
+        var page = await context.Client.Estimates.ListAsync(
+            perPage: 25,
+            contactId: contact.ResourceId,
+            cancellationToken: cancellationToken);
+
+        SampleOutput.WriteHeader($"Estimates for {contact.DisplayName} ({page.Items.Count})");
+        SampleOutput.WriteRows(page.Items, FormatEstimateRow);
+    }
+
+    [ConsoleSample(Name = "Get estimate by id")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task GetEstimateByIdAsync(CancellationToken cancellationToken)
+    {
+        var estimate = await context.Data.GetFirstEstimateAsync(cancellationToken);
+        var detail = await context.Client.Estimates.GetEstimateAsync(
+            estimate.ResourceId,
+            new EstimateGetOptions { IncludeContact = true, IncludeProject = true },
+            cancellationToken);
+
+        SampleOutput.WriteHeader("Estimate detail");
+        SampleOutput.WriteField("Id", detail.ResourceId);
+        SampleOutput.WriteField("Reference", detail.Reference);
+        SampleOutput.WriteField("Status", detail.Status);
+        SampleOutput.WriteField("Contact", detail.ClientContactName ?? detail.Contact?.OrganisationName);
+        SampleOutput.WriteField("Dated on", detail.DatedOn);
+        SampleOutput.WriteField("Net value", detail.NetValue);
+    }
+
+    [ConsoleSample(Name = "Create probe estimate and delete")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task CreateProbeEstimateAndDeleteAsync(CancellationToken cancellationToken)
+    {
+        var created = await CreateSampleDraftEstimateAsync(cancellationToken);
+
+        SampleOutput.WriteHeader("Created probe estimate");
+        SampleOutput.WriteField("Id", created.ResourceId);
+        SampleOutput.WriteField("Reference", created.Reference);
+        SampleOutput.WriteField("Status", created.Status);
+        SampleOutput.WriteField("Net value", created.NetValue);
+        SampleOutput.WriteField("Line items", created.EstimateItems?.Count ?? 0);
+
+        await context.Client.Estimates.DeleteEstimateAsync(created.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted probe estimate");
+        SampleOutput.WriteField("Id", created.ResourceId);
+    }
+
+    [ConsoleSample(Name = "Mark estimate as sent")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task MarkEstimateAsSentAsync(CancellationToken cancellationToken)
+    {
+        var draft = await CreateSampleDraftEstimateAsync(cancellationToken);
+        var sent = await context.Client.Estimates.MarkEstimateAsSentAsync(draft.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Marked estimate as sent");
+        SampleOutput.WriteField("Id", sent.ResourceId);
+        SampleOutput.WriteField("Reference", sent.Reference);
+        SampleOutput.WriteField("Status", sent.Status);
+    }
+
+    [ConsoleSample(Name = "Get estimate PDF", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task GetEstimatePdfAsync(CancellationToken cancellationToken)
+    {
+        var estimate = await context.Data.GetFirstEstimateAsync(cancellationToken);
+        var pdfBytes = await context.Client.Estimates.GetEstimatePdfAsync(estimate.ResourceId, cancellationToken);
+        var path = Path.Combine(Path.GetTempPath(), $"freeagent-estimate-{estimate.ResourceId}.pdf");
+        await File.WriteAllBytesAsync(path, pdfBytes, cancellationToken);
+
+        SampleOutput.WriteHeader("Estimate PDF");
+        SampleOutput.WriteField("Estimate ID", estimate.ResourceId);
+        SampleOutput.WriteField("PDF path", path);
+        SampleOutput.WriteField("Size (bytes)", pdfBytes.Length);
+    }
+
+    [ConsoleSample(Name = "Get default additional text")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task GetDefaultAdditionalTextAsync(CancellationToken cancellationToken)
+    {
+        var text = await context.Client.Estimates.GetDefaultAdditionalTextAsync(cancellationToken);
+
+        SampleOutput.WriteHeader("Default additional text");
+        SampleOutput.WriteField("Text", string.IsNullOrWhiteSpace(text) ? "(not set)" : text);
+    }
+
+    private async Task<Estimate> CreateSampleDraftEstimateAsync(CancellationToken cancellationToken)
+    {
+        var contact = await context.Data.GetFirstContactAsync(cancellationToken);
+        var nominalCode = await context.Data.GetFirstIncomeCategoryNominalCodeAsync(cancellationToken);
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        return await context.Client.Estimates.CreateEstimateAsync(
+            new Estimate
+            {
+                BillingContact = ContactReference.ForEnvironment(context.Client.Environment, contact.ResourceId),
+                DatedOn = today,
+                EstimateType = EstimateType.Estimate,
+                Reference = $"Console sample {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
+                EstimateItems =
+                [
+                    new EstimateItem
+                    {
+                        Description = "Console sample line item",
+                        ItemType = EstimateItemType.Services,
+                        Quantity = 1,
+                        Price = 100,
+                        Category = CategoryReference.ForEnvironment(context.Client.Environment, nominalCode),
+                    }
+                ]
+            },
+            cancellationToken);
+    }
+
+    private static string FormatEstimateRow(Estimate estimate) =>
+        $"{estimate.ResourceId,8}  {estimate.Reference ?? "-",-20}  {estimate.Status,-12}  {estimate.ClientContactName ?? estimate.Contact?.OrganisationName ?? "-"}";
+}
