@@ -1,3 +1,4 @@
+using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client;
@@ -101,4 +102,12 @@ public sealed class FreeAgentResourceUrls
     /// <returns>Credit note reference.</returns>
     public CreditNoteReference CreditNote(long creditNoteId) =>
         CreditNoteReference.ForEnvironment(_environment, creditNoteId);
+
+    /// <summary>
+    /// Creates a credit note reconciliation resource reference.
+    /// </summary>
+    /// <param name="creditNoteReconciliationId">Credit note reconciliation identifier.</param>
+    /// <returns>Credit note reconciliation reference.</returns>
+    public CreditNoteReconciliationReference CreditNoteReconciliation(long creditNoteReconciliationId) =>
+        CreditNoteReconciliationReference.ForEnvironment(_environment, creditNoteReconciliationId);
 }

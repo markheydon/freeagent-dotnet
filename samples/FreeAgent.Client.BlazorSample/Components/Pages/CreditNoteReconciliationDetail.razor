@@ -1,0 +1,325 @@
+@page "/credit-note-reconciliations/detail"
+@using FreeAgent.Client.Models.CreditNoteReconciliations
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Credit note reconciliation detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Credit note reconciliations endpoint"
+                         Title="Get, create, update, and delete credit note reconciliations"
+                         CallUnderTest="CreditNoteReconciliationsService.GetCreditNoteReconciliationAsync / CreateCreditNoteReconciliationAsync / UpdateCreditNoteReconciliationAsync / DeleteCreditNoteReconciliationAsync"
+                         Description="Exercises single-reconciliation CRUD operations and shows wire-to-model diagnostics."
+                         EndpointPath="/v2/credit_note_reconciliations/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/credit_note_reconciliations" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a reconciliation ID from the
+                        <MudLink Href="/credit-note-reconciliations">reconciliations list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Create requires invoice and credit note IDs.
+                    </MudText>
+                    <MudNumericField @bind-Value="_reconciliationId" Label="Reconciliation ID" Min="1" />
+                    <MudNumericField @bind-Value="_invoiceId" Label="Invoice ID (create/update)" Min="1" />
+                    <MudNumericField @bind-Value="_creditNoteId" Label="Credit note ID (create/update)" Min="1" />
+                    <MudNumericField @bind-Value="_grossValue" Label="Gross value" Min="0.01m" Format="F2" />
+                    <MudDatePicker @bind-Date="_datedOn" Label="Dated on" Clearable="true" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetReconciliationAsync">Get reconciliation</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || !CanCreate"
+                                   OnClick="CreateReconciliationAsync">Create reconciliation</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _reconciliationId is null or < 1"
+                                   OnClick="UpdateReconciliationAsync">Update reconciliation</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _reconciliationId is null or < 1"
+                                   OnClick="DeleteReconciliationAsync">Delete reconciliation</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _reconciliation is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All CreditNoteReconciliation model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_reconciliation.ResourceId</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Gross value</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_reconciliation.GrossValue?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Invoice ID</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_reconciliation.InvoiceId?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Credit note ID</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_reconciliation.CreditNoteId?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Dated on</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_reconciliation.DatedOn?.ToString("yyyy-MM-dd") ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load reconciliation diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? ReconciliationIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private CreditNoteReconciliation? _reconciliation;
+    private ModelProbeSnapshot? _probe;
+    private long? _reconciliationId;
+    private long? _invoiceId;
+    private long? _creditNoteId;
+    private decimal? _grossValue = 1m;
+    private DateTime? _datedOn;
+
+    private bool CanCreate =>
+        _invoiceId is > 0
+        && _creditNoteId is > 0
+        && _grossValue is > 0;
+
+    protected override void OnParametersSet()
+    {
+        if (ReconciliationIdFromQuery is > 0 && _reconciliationId != ReconciliationIdFromQuery)
+        {
+            _reconciliationId = ReconciliationIdFromQuery;
+            _operationMessage = $"Reconciliation ID {_reconciliationId} loaded from URL. Press Get reconciliation to fetch diagnostics.";
+        }
+    }
+
+    private async System.Threading.Tasks.Task GetReconciliationAsync()
+    {
+        if (_reconciliationId is null or < 1)
+        {
+            _error = "Enter a reconciliation ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _reconciliation = await client.CreditNoteReconciliations.GetCreditNoteReconciliationAsync(
+                    _reconciliationId.Value,
+                    new CreditNoteReconciliationGetOptions
+                    {
+                        IncludeInvoice = true,
+                        IncludeCreditNote = true
+                    });
+                _operationMessage = $"Loaded reconciliation {_reconciliationId.Value}.";
+                return $"credit_note_reconciliations/{_reconciliationId}";
+            },
+            envelopeProperty: "credit_note_reconciliation");
+    }
+
+    private async System.Threading.Tasks.Task CreateReconciliationAsync()
+    {
+        if (!CanCreate)
+        {
+            _error = "Enter invoice ID, credit note ID, and gross value before creating.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var request = CreateCreditNoteReconciliationRequest.Create(
+                    _grossValue!.Value,
+                    client.Urls.Invoice(_invoiceId!.Value),
+                    client.Urls.CreditNote(_creditNoteId!.Value),
+                    datedOn: _datedOn is null ? null : DateOnly.FromDateTime(_datedOn.Value));
+
+                _reconciliation = await client.CreditNoteReconciliations.CreateCreditNoteReconciliationAsync(request);
+
+                if (_reconciliation.TryGetResourceId(out var assignedId))
+                {
+                    _reconciliationId = assignedId;
+                    _operationMessage = $"Created reconciliation {assignedId}.";
+                    return $"credit_note_reconciliations/{assignedId}";
+                }
+
+                _reconciliationId = null;
+                _operationMessage = "Created reconciliation but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "credit_note_reconciliation");
+    }
+
+    private async System.Threading.Tasks.Task UpdateReconciliationAsync()
+    {
+        if (_reconciliationId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var request = UpdateCreditNoteReconciliationRequest.Create(
+                    grossValue: _grossValue,
+                    invoice: _invoiceId is > 0 ? client.Urls.Invoice(_invoiceId.Value) : null,
+                    creditNote: _creditNoteId is > 0 ? client.Urls.CreditNote(_creditNoteId.Value) : null,
+                    datedOn: _datedOn is null ? null : DateOnly.FromDateTime(_datedOn.Value));
+
+                _reconciliation = await client.CreditNoteReconciliations.UpdateCreditNoteReconciliationAsync(
+                    _reconciliationId.Value,
+                    request);
+                _operationMessage = $"Updated reconciliation {_reconciliationId.Value}.";
+                return $"credit_note_reconciliations/{_reconciliationId}";
+            },
+            envelopeProperty: "credit_note_reconciliation");
+    }
+
+    private async System.Threading.Tasks.Task DeleteReconciliationAsync()
+    {
+        if (_reconciliationId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _reconciliationId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.CreditNoteReconciliations.DeleteCreditNoteReconciliationAsync(deletedId);
+                _reconciliation = null;
+                _probe = null;
+                _operationMessage = $"Deleted reconciliation {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async System.Threading.Tasks.Task RunOperationAsync(
+        Func<FreeAgentClient, System.Threading.Tasks.Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (_reconciliation is not null)
+            {
+                SeedFormFromReconciliation();
+            }
+
+            if (fetchWirePayload && _reconciliation is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_reconciliation, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void SeedFormFromReconciliation()
+    {
+        if (_reconciliation is null)
+        {
+            return;
+        }
+
+        _grossValue = _reconciliation.GrossValue;
+        _invoiceId = _reconciliation.InvoiceId;
+        _creditNoteId = _reconciliation.CreditNoteId;
+        _datedOn = _reconciliation.DatedOn?.ToDateTime(TimeOnly.MinValue);
+    }
+}

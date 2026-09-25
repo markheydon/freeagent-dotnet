@@ -2,6 +2,7 @@ using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
+using FreeAgent.Client.Services.CreditNoteReconciliations;
 using FreeAgent.Client.Services.CreditNotes;
 using FreeAgent.Client.Services.EmailAddresses;
 using FreeAgent.Client.Services.Estimates;
@@ -89,6 +90,11 @@ public sealed class FreeAgentClient : IDisposable
     public CreditNotesService CreditNotes { get; }
 
     /// <summary>
+    /// Credit note reconciliations API service.
+    /// </summary>
+    public CreditNoteReconciliationsService CreditNoteReconciliations { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -158,6 +164,7 @@ public sealed class FreeAgentClient : IDisposable
         Estimates = new EstimateService(_httpClient);
         RecurringInvoices = new RecurringInvoiceService(_httpClient);
         CreditNotes = new CreditNotesService(_httpClient);
+        CreditNoteReconciliations = new CreditNoteReconciliationsService(_httpClient);
     }
 
     /// <summary>

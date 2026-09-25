@@ -24,6 +24,7 @@ For how resources relate to each other and a suggested implementation order, see
 | [Estimates](estimates.md) | `client.Estimates` | [Estimates](https://dev.freeagent.com/docs/estimates) |
 | [Recurring invoices](recurring-invoices.md) | `client.RecurringInvoices` | [Recurring invoices](https://dev.freeagent.com/docs/recurring_invoices) |
 | [Credit notes](credit-notes.md) | `client.CreditNotes` | [Credit notes](https://dev.freeagent.com/docs/credit_notes) |
+| [Credit note reconciliations](credit-note-reconciliations.md) | `client.CreditNoteReconciliations` | [Credit note reconciliations](https://dev.freeagent.com/docs/credit_note_reconciliations) |
 | [Tasks](tasks.md) | `client.Tasks` | [Tasks](https://dev.freeagent.com/docs/tasks) |
 | [Timeslips](timeslips.md) | `client.Timeslips` | [Timeslips](https://dev.freeagent.com/docs/timeslips) |
 | [Notes](notes.md) | `client.Notes` | [Notes](https://dev.freeagent.com/docs/notes) |

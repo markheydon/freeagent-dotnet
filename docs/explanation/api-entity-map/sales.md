@@ -63,7 +63,7 @@ Invoice items and credit note items are nested on their parent resource pages (n
 | Estimates | [Estimates](https://dev.freeagent.com/docs/estimates) | `client.Estimates` |
 | Recurring invoices | [Recurring invoices](https://dev.freeagent.com/docs/recurring_invoices) | `client.RecurringInvoices` |
 | Credit notes | [Credit notes](https://dev.freeagent.com/docs/credit_notes) | `client.CreditNotes` |
-| Credit note reconciliations | [Credit note reconciliations](https://dev.freeagent.com/docs/credit_note_reconciliations) | Not yet |
+| Credit note reconciliations | [Credit note reconciliations](https://dev.freeagent.com/docs/credit_note_reconciliations) | `client.CreditNoteReconciliations` |
 | Stock items | [Stock items](https://dev.freeagent.com/docs/stock_items) | Not yet |
 | Price list items | [Price list items](https://dev.freeagent.com/docs/price_list_items) | Not yet |
 
