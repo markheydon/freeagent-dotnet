@@ -173,7 +173,7 @@ The repository CI workflow runs `--run-all` when `FREEAGENT_REFRESH_TOKEN` is co
 - `FREEAGENT_CLIENT_SECRET`
 - `FREEAGENT_REFRESH_TOKEN`
 
-On pull requests, smoke is **skipped** when secrets are absent so forks and draft work stay unblocked. On `main` (and on the weekly schedule), smoke is **required** and fails when secrets are missing or the refresh token is invalid. The workflow refreshes the access token before each run and rotates `FREEAGENT_REFRESH_TOKEN` when FreeAgent returns a new value.
+On pull requests, smoke is **skipped** when secrets are absent so forks and draft work stay unblocked. On `main` (and on the weekly schedule), smoke is **required** and fails when secrets are missing or the refresh token is invalid. The workflow refreshes the access token before each run.
 
 ---
 
