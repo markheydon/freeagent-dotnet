@@ -91,13 +91,13 @@ dotnet run
 | Category | Examples |
 |----------|----------|
 | Company | Get company profile; list business categories; list tax timeline |
-| Contacts | List active contacts; stream all contacts; get contact detail |
-| Categories | List category sets; get category by nominal code |
-| Projects | List projects; list active projects; get project detail; list projects for contact |
-| Tasks | List tasks; list tasks for project; get task detail |
-| Timeslips | List timeslips; list unbilled timeslips; list timeslips for task; get timeslip detail |
-| Notes | List contact notes; list project notes; get note detail; create contact note; create project note; update note |
-| Users | List users; get current user; get user by ID |
+| Contacts | List active contacts; stream all contacts; get contact detail; create probe contact and delete; update contact organisation name |
+| Categories | List category sets; get category by nominal code; create/update income category and delete; create/update cost of sales category and delete; create/update admin expenses category and delete; create/update current asset category and delete; create/update liabilities category and delete; create/update equity category and delete |
+| Projects | List projects; list active projects; get project detail; list projects for contact; create probe project and delete; update project name |
+| Tasks | List tasks; list tasks for project; get task detail; create probe task and delete; update task name |
+| Timeslips | List timeslips; list unbilled timeslips; list timeslips for task; get timeslip detail; create probe timeslip and delete; create probe timeslips batch and delete; update timeslip hours; start and stop timeslip timer |
+| Notes | List contact notes; list project notes; get note detail; create contact note; create project note; update note; delete note |
+| Users | List users; get current user; get user by ID; create probe user and delete; update user last name; update current user opening mileage |
 | Email addresses | List email addresses |
 | Invoices | List invoices; stream all invoices via ListAutoPagingAsync; list invoices filtered by contact; list invoice timeline; get invoice by id; create draft invoice with one line item; update invoice comments; duplicate invoice; send invoice email (template); mark invoice as sent; mark invoice as scheduled; mark invoice as draft; mark invoice as cancelled; get invoice PDF; get default additional text; update default additional text; delete default additional text |
 | Estimates | List estimates; stream all estimates via ListAutoPagingAsync; list estimates filtered by contact; get estimate by id; create probe estimate and delete; mark estimate as sent; duplicate probe estimate and delete; get estimate PDF; get default additional text |

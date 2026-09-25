@@ -59,4 +59,48 @@ internal sealed class ContactSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Email", detail.Email);
         SampleOutput.WriteField("Status", detail.Status);
     }
+
+    [ConsoleSample(Name = "Create probe contact and delete", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task CreateProbeContactAndDeleteAsync(CancellationToken cancellationToken)
+    {
+        var created = await CreateSampleContactAsync(cancellationToken);
+
+        SampleOutput.WriteHeader("Created probe contact");
+        SampleOutput.WriteField("Id", created.ResourceId);
+        SampleOutput.WriteField("Organisation", created.OrganisationName);
+
+        await context.Client.Contacts.DeleteContactAsync(created.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted probe contact");
+        SampleOutput.WriteField("Id", created.ResourceId);
+    }
+
+    [ConsoleSample(Name = "Update contact organisation name")]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateContactOrganisationNameAsync(CancellationToken cancellationToken)
+    {
+        var created = await CreateSampleContactAsync(cancellationToken);
+        created.OrganisationName = $"{created.OrganisationName} (updated)";
+
+        var updated = await context.Client.Contacts.UpdateContactAsync(created.ResourceId, created, cancellationToken);
+
+        SampleOutput.WriteHeader("Updated contact organisation name");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+        SampleOutput.WriteField("Organisation", updated.OrganisationName);
+
+        await context.Client.Contacts.DeleteContactAsync(updated.ResourceId, cancellationToken);
+    }
+
+    private Task<Contact> CreateSampleContactAsync(CancellationToken cancellationToken)
+    {
+        return context.Client.Contacts.CreateContactAsync(
+            new Contact
+            {
+                OrganisationName = $"Console probe {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
+                ContactNameOnInvoices = true,
+                Status = ContactStatus.Active
+            },
+            cancellationToken);
+    }
 }
