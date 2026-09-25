@@ -102,6 +102,52 @@ public class EstimateModelSerializationTests
     }
 
     [Fact]
+    public void WritePayload_IncludeStatus_SerialisesStatus()
+    {
+        var estimate = new Estimate
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            EstimateType = EstimateType.Estimate
+        };
+
+        var payload = EstimateWritePayload.FromEstimate(
+            estimate,
+            FreeAgentEnvironment.Production,
+            includeStatus: true);
+
+        Assert.Equal(EstimateStatus.Draft, payload.Status);
+
+        var json = JsonSerializer.Serialize(
+            new EstimateRequest { Estimate = payload },
+            FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"status\":\"Draft\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_ExcludeStatus_OmitsStatus()
+    {
+        var estimate = new Estimate
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            Status = EstimateStatus.Sent,
+            EstimateType = EstimateType.Estimate
+        };
+
+        var payload = EstimateWritePayload.FromEstimate(estimate, FreeAgentEnvironment.Production);
+
+        Assert.Null(payload.Status);
+
+        var json = JsonSerializer.Serialize(
+            new EstimateRequest { Estimate = payload },
+            FreeAgentJsonSerializer.Options);
+
+        Assert.DoesNotContain("\"status\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void WritePayload_OmitLineItems_ExcludesLineItems()
     {
         var estimate = new Estimate

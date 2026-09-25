@@ -108,7 +108,6 @@ Canon `Paid` invoices are seeded as sent/open only; recording bank payments is o
 
 The **Console Sample Smoke** job may still fail on `--run-all` examples tracked in open issues:
 
-- [#138](https://github.com/markheydon/freeagent-dotnet/issues/138) — estimate create returns `"status is not valid"` (blocks Estimates examples and Turpinverse quote seeding)
 - [#139](https://github.com/markheydon/freeagent-dotnet/issues/139) — invoice "mark as scheduled" sample uses an invalid starting state
 
 These are pre-existing console sample/SDK workflow bugs, not regressions from the Turpinverse seed orchestrator itself.

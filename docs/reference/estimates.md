@@ -119,7 +119,7 @@ Task<Estimate> CreateEstimateAsync(Estimate estimate, CancellationToken cancella
 
 **HTTP:** `POST /v2/estimates`
 
-Required on create: `ContactId`, `DatedOn`, `EstimateType`, and at least one line item with `Description`.
+Required on create: `ContactId`, `DatedOn`, `EstimateType`, and at least one line item with `Description`. FreeAgent also requires `status` on create; the SDK sends `Draft` when `Status` is unset. Use transition methods to change status after create.
 
 ---
 
@@ -282,7 +282,7 @@ Key properties:
 | Property | Type | Wire name | Notes |
 |----------|------|-----------|-------|
 | `Reference` | `string?` | `reference` | |
-| `Status` | `EstimateStatus?` | `status` | |
+| `Status` | `EstimateStatus?` | `status` | Required on create (defaults to `Draft` when unset); not sent on update — use transition methods |
 | `EstimateType` | `EstimateType?` | `estimate_type` | Required on create |
 | `DatedOn` | `DateOnly?` | `dated_on` | Required on create |
 | `ContactId` | `long?` | `contact` | Required on create |

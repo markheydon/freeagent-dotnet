@@ -281,7 +281,10 @@ public sealed class EstimateService
 
         var content = FreeAgentJsonSerializer.CreateContent(new EstimateRequest
         {
-            Estimate = EstimateWritePayload.FromEstimate(estimate, _requestClient.Environment)
+            Estimate = EstimateWritePayload.FromEstimate(
+                estimate,
+                _requestClient.Environment,
+                includeStatus: true)
         });
 
         var response = await _requestClient.PostAsync<EstimateResponse>("estimates", content, cancellationToken);
