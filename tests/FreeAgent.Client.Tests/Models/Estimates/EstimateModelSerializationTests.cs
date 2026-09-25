@@ -126,6 +126,25 @@ public class EstimateModelSerializationTests
     }
 
     [Fact]
+    public void WritePayload_IncludeStatus_IgnoresCallerStatus()
+    {
+        var estimate = new Estimate
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            Status = EstimateStatus.Sent,
+            EstimateType = EstimateType.Estimate
+        };
+
+        var payload = EstimateWritePayload.FromEstimate(
+            estimate,
+            FreeAgentEnvironment.Production,
+            includeStatus: true);
+
+        Assert.Equal(EstimateStatus.Draft, payload.Status);
+    }
+
+    [Fact]
     public void WritePayload_ExcludeStatus_OmitsStatus()
     {
         var estimate = new Estimate

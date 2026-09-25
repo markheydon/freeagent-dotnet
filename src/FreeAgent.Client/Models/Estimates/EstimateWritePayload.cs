@@ -81,7 +81,7 @@ internal sealed class EstimateWritePayload
                 estimate.ProjectIdBacking,
                 estimate.ProjectLinkId,
                 linkOptions.OmitProject),
-            Status = includeStatus ? estimate.Status ?? EstimateStatus.Draft : null,
+            Status = includeStatus ? EstimateStatus.Draft : null,
             EstimateType = estimate.EstimateType,
             Reference = estimate.Reference,
             DatedOn = estimate.DatedOn,

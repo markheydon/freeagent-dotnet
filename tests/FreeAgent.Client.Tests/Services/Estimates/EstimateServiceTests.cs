@@ -230,7 +230,7 @@ public class EstimateServiceTests
     }
 
     [Fact]
-    public async Task CreateEstimateAsync_WhenStatusUnset_DefaultsToDraft()
+    public async Task CreateEstimateAsync_WhenStatusSet_SendsDraftRegardless()
     {
         string? postedJson = null;
         var handler = new QueueHttpMessageHandler(request =>
@@ -258,6 +258,7 @@ public class EstimateServiceTests
             ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
             EstimateType = EstimateType.Estimate,
+            Status = EstimateStatus.Sent,
             EstimateItems =
             [
                 new EstimateItem
@@ -272,52 +273,7 @@ public class EstimateServiceTests
 
         Assert.NotNull(postedJson);
         Assert.Contains("\"status\":\"Draft\"", postedJson, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task CreateEstimateAsync_WhenStatusSet_UsesCallerValue()
-    {
-        string? postedJson = null;
-        var handler = new QueueHttpMessageHandler(request =>
-        {
-            postedJson = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
-            return new HttpResponseMessage(HttpStatusCode.Created)
-            {
-                Content = new StringContent("""
-                {
-                  "estimate": {
-                    "url": "https://api.freeagent.com/v2/estimates/3",
-                    "status": "Draft"
-                  }
-                }
-                """)
-            };
-        });
-
-        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
-        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
-        var service = new EstimateService(client);
-
-        await service.CreateEstimateAsync(new Estimate
-        {
-            ContactId = 2,
-            DatedOn = new DateOnly(2024, 3, 18),
-            EstimateType = EstimateType.Estimate,
-            Status = EstimateStatus.Draft,
-            EstimateItems =
-            [
-                new EstimateItem
-                {
-                    Description = "Development",
-                    ItemType = EstimateItemType.Hours,
-                    Quantity = 1,
-                    Price = 100
-                }
-            ]
-        });
-
-        Assert.NotNull(postedJson);
-        Assert.Contains("\"status\":\"Draft\"", postedJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("\"status\":\"Sent\"", postedJson, StringComparison.Ordinal);
     }
 
     [Fact]
