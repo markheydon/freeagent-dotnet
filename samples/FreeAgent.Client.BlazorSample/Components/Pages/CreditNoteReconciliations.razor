@@ -1,0 +1,293 @@
+@page "/credit-note-reconciliations"
+@using FreeAgent.Client.Models.CreditNoteReconciliations
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Credit note reconciliations - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Credit note reconciliations endpoint"
+                         Title="Credit note reconciliations list"
+                         CallUnderTest="CreditNoteReconciliationsService.ListAsync(...)"
+                         Description="Load credit note reconciliations, inspect wire-to-model mapping for any row, then jump into CRUD to test get, create, update, and delete."
+                         EndpointPath="/v2/credit_note_reconciliations?updated_since={timestamp}&from_date={date}&to_date={date}"
+                         DocsUrl="https://dev.freeagent.com/docs/credit_note_reconciliations" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load all reconciliations or apply optional date filters. Use <strong>Inspect mapping</strong> on any row,
+                        or open <MudLink Href="/credit-note-reconciliations/detail">Credit note reconciliation CRUD</MudLink>.
+                    </MudText>
+
+                    <MudGrid Spacing="2" Class="contacts-filter-grid">
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudDatePicker @bind-Date="_updatedSinceDate"
+                                           Label="Updated since (UTC date)"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Clearable="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudDatePicker @bind-Date="_fromDate"
+                                           Label="From date"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Clearable="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudDatePicker @bind-Date="_toDate"
+                                           Label="To date"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Clearable="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                                       Disabled="_loading"
+                                       Class="contacts-load-button"
+                                       OnClick="LoadReconciliationsAsync">
+                                @if (_loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Loading…</span>
+                                }
+                                else
+                                {
+                                    <span>Load reconciliations</span>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+
+                @if (_reconciliations is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load reconciliations</strong> to fetch data from FreeAgent.</MudText>
+                }
+
+                @if (_reconciliations is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_reconciliations.Count reconciliation@(_reconciliations.Count == 1 ? string.Empty : "s")
+                        </MudChip>
+                    </MudStack>
+
+                    @if (_reconciliations.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No credit note reconciliations returned. Create one from
+                            <MudLink Href="/credit-note-reconciliations/detail">Credit note reconciliation CRUD</MudLink>
+                            when you have an invoice and credit note to link.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Gross value</MudTh>
+                                    <MudTh>Dated on</MudTh>
+                                    <MudTh>Invoice ID</MudTh>
+                                    <MudTh>Credit note ID</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Gross value">@ValueOrDash(context.GrossValue)</MudTd>
+                                    <MudTd DataLabel="Dated on">@ValueOrDash(context.DatedOn)</MudTd>
+                                    <MudTd DataLabel="Invoice ID">@ValueOrDash(context.InvoiceId)</MudTd>
+                                    <MudTd DataLabel="Credit note ID">@ValueOrDash(context.CreditNoteId)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectRowAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetCrudHref(context.Id)">
+                                                Open in CRUD
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedReconciliation is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All CreditNoteReconciliation model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected reconciliation</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    ID: @_inspectedReconciliation.ResourceId
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private DateTime? _updatedSinceDate;
+    private DateTime? _fromDate;
+    private DateTime? _toDate;
+    private IReadOnlyList<CreditNoteReconciliation>? _reconciliations;
+    private int? _inspectedIndex;
+    private CreditNoteReconciliation? _inspectedReconciliation;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private IReadOnlyList<ReconciliationRow> _rows = [];
+
+    private async System.Threading.Tasks.Task LoadReconciliationsAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _inspectedIndex = null;
+        _inspectedReconciliation = null;
+        _inspectedProbe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _reconciliations = await client.CreditNoteReconciliations.ListAsync(
+                updatedSince: _updatedSinceDate is null
+                    ? null
+                    : new DateTimeOffset(_updatedSinceDate.Value, TimeSpan.Zero),
+                fromDate: _fromDate is null ? null : DateOnly.FromDateTime(_fromDate.Value),
+                toDate: _toDate is null ? null : DateOnly.FromDateTime(_toDate.Value));
+
+            _rows = _reconciliations
+                .Select((reconciliation, index) => new ReconciliationRow(
+                    index,
+                    reconciliation.ResourceId,
+                    reconciliation.GrossValue?.ToString(),
+                    reconciliation.DatedOn?.ToString("yyyy-MM-dd"),
+                    reconciliation.InvoiceId?.ToString(),
+                    reconciliation.CreditNoteId?.ToString()))
+                .ToList();
+
+            var query = BuildQueryString();
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                string.IsNullOrEmpty(query) ? "credit_note_reconciliations" : $"credit_note_reconciliations?{query}");
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _reconciliations = null;
+            _rows = [];
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _reconciliations = null;
+            _rows = [];
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string BuildQueryString()
+    {
+        var parts = new List<string>();
+        if (_updatedSinceDate is not null)
+        {
+            var updatedSince = new DateTimeOffset(_updatedSinceDate.Value, TimeSpan.Zero);
+            parts.Add($"updated_since={Uri.EscapeDataString(updatedSince.ToString("o"))}");
+        }
+
+        if (_fromDate is not null)
+        {
+            parts.Add($"from_date={Uri.EscapeDataString(DateOnly.FromDateTime(_fromDate.Value).ToString("yyyy-MM-dd"))}");
+        }
+
+        if (_toDate is not null)
+        {
+            parts.Add($"to_date={Uri.EscapeDataString(DateOnly.FromDateTime(_toDate.Value).ToString("yyyy-MM-dd"))}");
+        }
+
+        return string.Join('&', parts);
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_reconciliations is null || index < 0 || index >= _reconciliations.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedReconciliation = _reconciliations[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "credit_note_reconciliations", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedReconciliation, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedReconciliation, _wireApiResponse, envelopeProperty: "credit_note_reconciliations");
+    }
+
+    private static string GetCrudHref(long id) => $"/credit-note-reconciliations/detail?id={id}";
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private sealed record ReconciliationRow(
+        int Index,
+        long Id,
+        string? GrossValue,
+        string? DatedOn,
+        string? InvoiceId,
+        string? CreditNoteId);
+}

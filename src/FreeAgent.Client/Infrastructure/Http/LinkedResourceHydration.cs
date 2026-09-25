@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.CreditNoteReconciliations;
 using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Invoices;
@@ -327,6 +328,54 @@ internal static class LinkedResourceHydration
         }
 
         timeslip.AttachUser(response.User);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateInvoiceAsync(
+        CreditNoteReconciliation reconciliation,
+        IFreeAgentRequestClient requestClient,
+        bool includeInvoice,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(reconciliation);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeInvoice || reconciliation.Invoice is not null || reconciliation.InvoiceId is not long invoiceId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<InvoiceResponse>($"invoices/{invoiceId}", cancellationToken);
+
+        if (response.Invoice is null)
+        {
+            throw new FreeAgentApiException("Invoice data missing from API response");
+        }
+
+        reconciliation.AttachInvoice(response.Invoice);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateCreditNoteAsync(
+        CreditNoteReconciliation reconciliation,
+        IFreeAgentRequestClient requestClient,
+        bool includeCreditNote,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(reconciliation);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeCreditNote || reconciliation.CreditNote is not null || reconciliation.CreditNoteId is not long creditNoteId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<Models.CreditNotes.CreditNoteResponse>($"credit_notes/{creditNoteId}", cancellationToken);
+
+        if (response.CreditNote is null)
+        {
+            throw new FreeAgentApiException("Credit note data missing from API response");
+        }
+
+        reconciliation.AttachCreditNote(response.CreditNote);
     }
 
     public static async System.Threading.Tasks.Task HydrateNoteParentAsync(

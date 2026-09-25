@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.CreditNoteReconciliations;
 using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Invoices;
@@ -206,6 +207,22 @@ internal sealed class SampleData
         }
 
         return page.Items[0];
+    }
+
+    /// <summary>
+    /// Returns the first credit note reconciliation from the reconciliations list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A credit note reconciliation.</returns>
+    public async Task<CreditNoteReconciliation> GetFirstCreditNoteReconciliationAsync(CancellationToken cancellationToken = default)
+    {
+        var reconciliations = await _context.Client.CreditNoteReconciliations.ListAsync(cancellationToken: cancellationToken);
+        if (reconciliations.Count == 0)
+        {
+            SampleContext.Skip("no credit note reconciliations found in sandbox account");
+        }
+
+        return reconciliations[0];
     }
 
     /// <summary>
