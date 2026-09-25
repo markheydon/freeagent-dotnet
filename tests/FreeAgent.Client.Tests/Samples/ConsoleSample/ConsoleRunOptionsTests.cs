@@ -55,6 +55,24 @@ public class ConsoleRunOptionsTests
 
         Assert.Contains("--run-all", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public void Parse_AllowProductionWrites_SetsAllowProductionWrites()
+    {
+        var options = ConsoleRunOptions.Parse(["--allow-production-writes"]);
+
+        Assert.True(options.AllowProductionWrites);
+        Assert.False(options.RunAll);
+    }
+
+    [Fact]
+    public void Parse_AllowProductionWritesWithRunAll_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => ConsoleRunOptions.Parse(["--allow-production-writes", "--run-all"]));
+
+        Assert.Contains("--run-all", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 #endif

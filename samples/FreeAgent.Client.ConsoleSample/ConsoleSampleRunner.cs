@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.RegularExpressions;
+using FreeAgent.Client;
 using FreeAgent.Client.ConsoleSample.Samples;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,6 +13,7 @@ internal sealed class ConsoleSampleRunner
 {
     private readonly IServiceProvider _serviceProvider;
     private readonly IEnumerable<IConsoleSampleProvider> _providers;
+    private readonly SampleRuntimeContext _runtime;
     private readonly List<ConsoleSampleEntry> _entries = [];
 
     /// <summary>
@@ -19,11 +21,42 @@ internal sealed class ConsoleSampleRunner
     /// </summary>
     /// <param name="serviceProvider">Application service provider.</param>
     /// <param name="providers">Attributed sample provider instances.</param>
-    public ConsoleSampleRunner(IServiceProvider serviceProvider, IEnumerable<IConsoleSampleProvider> providers)
+    /// <param name="runtime">Resolved environment and write-guard settings.</param>
+    public ConsoleSampleRunner(
+        IServiceProvider serviceProvider,
+        IEnumerable<IConsoleSampleProvider> providers,
+        SampleRuntimeContext runtime)
     {
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         _providers = providers ?? throw new ArgumentNullException(nameof(providers));
+        _runtime = runtime ?? throw new ArgumentNullException(nameof(runtime));
         DiscoverSamples();
+    }
+
+    /// <summary>
+    /// Whether any discovered example mutates API data.
+    /// </summary>
+    public bool HasMutatingExamples => _entries.Exists(e => e.MutatesData);
+
+    /// <summary>
+    /// Returns discovered examples for unit tests.
+    /// </summary>
+    internal IReadOnlyList<DiscoveredConsoleSample> GetDiscoveredSamples() =>
+        _entries
+            .Select(e => new DiscoveredConsoleSample(e.Category, e.Name, e.IncludeInRunAll, e.MutatesData))
+            .ToList();
+
+    /// <summary>
+    /// Invokes a discovered example by name for unit tests.
+    /// </summary>
+    /// <param name="name">Example display name.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    internal Task InvokeSampleByNameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var entry = _entries.FirstOrDefault(e => string.Equals(e.Name, name, StringComparison.Ordinal))
+            ?? throw new InvalidOperationException($"Sample '{name}' was not discovered.");
+
+        return RunEntryAsync(entry, cancellationToken);
     }
 
     /// <summary>
@@ -104,7 +137,7 @@ internal sealed class ConsoleSampleRunner
             await reporter.RunExampleAsync(
                 entry.Category,
                 entry.Name,
-                async ct => await entry.Action(_serviceProvider, ct),
+                ct => RunEntryAsync(entry, ct),
                 retryOnRateLimit: true,
                 cancellationToken);
         }
@@ -160,7 +193,7 @@ internal sealed class ConsoleSampleRunner
 
             try
             {
-                await selected.Action(_serviceProvider, cancellationToken);
+                await RunEntryAsync(selected, cancellationToken);
             }
             catch (SampleSkippedException ex)
             {
@@ -225,6 +258,7 @@ internal sealed class ConsoleSampleRunner
                     category,
                     name,
                     !methodAttribute.ExcludeFromRunAll,
+                    methodAttribute.MutatesData,
                     CreateAction(provider, method)));
             }
         }
@@ -273,6 +307,25 @@ internal sealed class ConsoleSampleRunner
         scope.GetService(providerType)
         ?? throw new InvalidOperationException($"Could not resolve sample provider {providerType.Name}.");
 
+    private async Task RunEntryAsync(ConsoleSampleEntry entry, CancellationToken cancellationToken)
+    {
+        if (entry.MutatesData)
+        {
+            SandboxWriteGuard.EnsureMutatingExampleAllowed(
+                _runtime.Environment,
+                _runtime.AllowProductionWrites);
+
+            if (_runtime.Environment != FreeAgentEnvironment.Sandbox && _runtime.AllowProductionWrites)
+            {
+                Console.WriteLine(
+                    "Warning: Production writes enabled — this example will modify live account data.");
+                Console.WriteLine();
+            }
+        }
+
+        await entry.Action(_serviceProvider, cancellationToken);
+    }
+
     private static string DeriveDisplayName(string methodName) =>
         DisplayNameRegex.Replace(methodName, "$1 $2").Trim();
 
@@ -282,5 +335,19 @@ internal sealed class ConsoleSampleRunner
         string Category,
         string Name,
         bool IncludeInRunAll,
+        bool MutatesData,
         Func<IServiceProvider, CancellationToken, Task> Action);
 }
+
+/// <summary>
+/// Discovered console sample metadata exposed for unit tests.
+/// </summary>
+/// <param name="Category">Example category.</param>
+/// <param name="Name">Example name.</param>
+/// <param name="IncludeInRunAll">Whether the example runs in <c>--run-all</c> mode.</param>
+/// <param name="MutatesData">Whether the example mutates API data.</param>
+internal sealed record DiscoveredConsoleSample(
+    string Category,
+    string Name,
+    bool IncludeInRunAll,
+    bool MutatesData);

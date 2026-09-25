@@ -4,14 +4,14 @@ Samples for trying the `FreeAgent.Client` SDK against the FreeAgent API.
 
 | Sample | Purpose | SDK source |
 |--------|---------|------------|
-| [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Real-world console reference - DI, interactive menu of SDK examples, `--run-all` smoke test | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
+| [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Real-world console reference and live integration harness - DI, interactive menu, `--run-all` sandbox smoke (mutates data) | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
 | [FreeAgent.Client.BlazorSample](FreeAgent.Client.BlazorSample/) | Blazor Server workbench for exercising SDK endpoints interactively | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
 
 ---
 
 ## Console sample (real-world reference)
 
-See [FreeAgent.Client.ConsoleSample/README.md](FreeAgent.Client.ConsoleSample/README.md) for the interactive example menu, `--run-all` smoke testing, and CI token setup.
+See [FreeAgent.Client.ConsoleSample/README.md](FreeAgent.Client.ConsoleSample/README.md) for the interactive example menu, read-only vs mutating examples, `--run-all` smoke testing, and CI token setup.
 
 ---
 

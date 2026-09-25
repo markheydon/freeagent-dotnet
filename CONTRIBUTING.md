@@ -25,7 +25,7 @@ For setup and usage questions, please use [GitHub Discussions](https://github.co
 
 See **[docs/contributing-setup.md](docs/contributing-setup.md)** for SDK installation, verifying `dotnet --list-sdks`, and building `FreeAgent.slnx`.
 
-For live sandbox smoke in GitHub Actions, see **[docs/contributing/ci-sandbox-smoke.md](docs/contributing/ci-sandbox-smoke.md)**.
+For live sandbox smoke in GitHub Actions, see **[docs/contributing/ci-sandbox-smoke.md](docs/contributing/ci-sandbox-smoke.md)**. The console sample `--run-all` smoke performs live writes in sandbox only.
 
 Requirements:
 

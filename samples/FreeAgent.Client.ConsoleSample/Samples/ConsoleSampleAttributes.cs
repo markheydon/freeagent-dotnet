@@ -32,6 +32,12 @@ internal sealed class ConsoleSampleAttribute : Attribute
     /// When <see langword="true"/>, the example is omitted from <c>--run-all</c> smoke runs.
     /// </summary>
     public bool ExcludeFromRunAll { get; set; }
+
+    /// <summary>
+    /// When <see langword="true"/>, the example creates, updates, or deletes API data.
+    /// Mutating examples require sandbox unless interactive production writes are explicitly enabled.
+    /// </summary>
+    public bool MutatesData { get; set; }
 }
 
 /// <summary>

@@ -5,5 +5,6 @@
     "RedirectUri": "http://127.0.0.1:8765/callback",
     "RefreshToken": "optional-for-run-all-smoke-test",
     "AccessToken": "optional-short-lived-non-interactive-runs"
-  }
+  },
+  "_comment": "Optional: FREEAGENT_ENVIRONMENT=Sandbox|Production, FREEAGENT_ALLOW_PRODUCTION_WRITES=true for interactive production writes"
 }

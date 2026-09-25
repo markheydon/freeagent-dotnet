@@ -47,7 +47,7 @@ internal sealed class UserSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Role", detail.Role);
     }
 
-    [ConsoleSample(Name = "Create probe user and delete", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create probe user and delete", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeUserAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -63,7 +63,7 @@ internal sealed class UserSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Update user last name")]
+    [ConsoleSample(Name = "Update user last name", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateUserLastNameAsync(CancellationToken cancellationToken)
     {
@@ -79,7 +79,7 @@ internal sealed class UserSamples(SampleContext context) : IConsoleSampleProvide
         await context.Client.Users.DeleteUserAsync(updated.ResourceId, cancellationToken);
     }
 
-    [ConsoleSample(Name = "Update current user opening mileage", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Update current user opening mileage", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateCurrentUserOpeningMileageAsync(CancellationToken cancellationToken)
     {

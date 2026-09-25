@@ -48,7 +48,7 @@ internal sealed class ProjectTaskSamples(SampleContext context) : IConsoleSample
         SampleOutput.WriteField("Billing rate", detail.BillingRate);
     }
 
-    [ConsoleSample(Name = "Create probe task and delete", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create probe task and delete", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeTaskAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -64,7 +64,7 @@ internal sealed class ProjectTaskSamples(SampleContext context) : IConsoleSample
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Update task name")]
+    [ConsoleSample(Name = "Update task name", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateTaskNameAsync(CancellationToken cancellationToken)
     {

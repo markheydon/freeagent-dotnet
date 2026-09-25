@@ -1,6 +1,8 @@
 # FreeAgent.Client console sample
 
-A real-world console reference for the FreeAgent .NET SDK. It demonstrates typical integration patterns — OAuth, dependency injection, and read-only API calls — through an interactive menu of examples grouped by resource area.
+A real-world console reference and **live integration test harness** for the FreeAgent .NET SDK. It demonstrates typical integration patterns — OAuth, dependency injection, and typed API calls — through an interactive menu of examples grouped by resource area.
+
+Many examples **create, update, or delete** data in the connected FreeAgent account. The app prints the target environment on startup and enforces sandbox-only writes for `--run-all` smoke runs.
 
 Use the [Blazor sample](../FreeAgent.Client.BlazorSample/) when you need wire-to-model probe pages. Use this console sample when you want to see **how the SDK feels in a normal .NET app**.
 
@@ -63,6 +65,12 @@ export FREEAGENT_CLIENT_SECRET="your-client-secret"
 export FREEAGENT_REDIRECT_URI="http://127.0.0.1:8765/callback"
 ```
 
+Optional environment override (defaults to sandbox):
+
+```bash
+export FREEAGENT_ENVIRONMENT="Sandbox"   # or Production for read-only interactive runs
+```
+
 ---
 
 ## 3. Run the interactive menu
@@ -86,26 +94,47 @@ dotnet run
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
+### Read-only vs mutating examples
+
+Each example is classified in code via `MutatesData` on `[ConsoleSample]`:
+
+| Classification | Behaviour |
+|----------------|-----------|
+| Read-only | List, get, and stream operations — safe on any environment |
+| Mutating | Create, update, delete, and state transitions — require **sandbox** by default |
+
+On **production**, mutating examples are skipped unless you explicitly opt in:
+
+```bash
+dotnet run -- --allow-production-writes
+# or
+export FREEAGENT_ALLOW_PRODUCTION_WRITES=true
+```
+
+This escape hatch applies to the **interactive menu only**. `--run-all` and CI smoke always require sandbox and refuse production environments.
+
 ### Example catalogue
+
+Examples marked **(mutates)** write to the connected account.
 
 | Category | Examples |
 |----------|----------|
 | Company | Get company profile; list business categories; list tax timeline |
-| Contacts | List active contacts; stream all contacts; get contact detail; create probe contact and delete; update contact organisation name |
-| Categories | List category sets; get category by nominal code; create/update income category and delete; create/update cost of sales category and delete; create/update admin expenses category and delete; create/update current asset category and delete; create/update liabilities category and delete; create/update equity category and delete |
-| Projects | List projects; list active projects; get project detail; list projects for contact; create probe project and delete; update project name |
-| Tasks | List tasks; list tasks for project; get task detail; create probe task and delete; update task name |
-| Timeslips | List timeslips; list unbilled timeslips; list timeslips for task; get timeslip detail; create probe timeslip and delete; create probe timeslips batch and delete; update timeslip hours; start and stop timeslip timer |
-| Notes | List contact notes; list project notes; get note detail; create contact note; create project note; update note; delete note |
-| Users | List users; get current user; get user by ID; create probe user and delete; update user last name; update current user opening mileage |
+| Contacts | List active contacts; stream all contacts; get contact detail; **(mutates)** create probe contact and delete; **(mutates)** update contact organisation name |
+| Categories | List category sets; get category by nominal code; **(mutates)** create/update income category and delete; **(mutates)** create/update cost of sales category and delete; **(mutates)** create/update admin expenses category and delete; **(mutates)** create/update current asset category and delete; **(mutates)** create/update liabilities category and delete; **(mutates)** create/update equity category and delete |
+| Projects | List projects; list active projects; get project detail; list projects for contact; **(mutates)** create probe project and delete; **(mutates)** update project name |
+| Tasks | List tasks; list tasks for project; get task detail; **(mutates)** create probe task and delete; **(mutates)** update task name |
+| Timeslips | List timeslips; list unbilled timeslips; list timeslips for task; get timeslip detail; **(mutates)** create probe timeslip and delete; **(mutates)** create probe timeslips batch and delete; **(mutates)** update timeslip hours; **(mutates)** start and stop timeslip timer |
+| Notes | List contact notes; list project notes; get note detail; **(mutates)** create contact note; **(mutates)** create project note; **(mutates)** update note; **(mutates)** delete note |
+| Users | List users; get current user; get user by ID; **(mutates)** create probe user and delete; **(mutates)** update user last name; **(mutates)** update current user opening mileage |
 | Email addresses | List email addresses |
-| Invoices | List invoices; stream all invoices via ListAutoPagingAsync; list invoices filtered by contact; list invoice timeline; get invoice by id; create draft invoice with one line item; update invoice comments; duplicate invoice; send invoice email (template); mark invoice as sent; mark invoice as scheduled; mark invoice as draft; mark invoice as cancelled; get invoice PDF; get default additional text; update default additional text; delete default additional text |
-| Estimates | List estimates; stream all estimates via ListAutoPagingAsync; list estimates filtered by contact; get estimate by id; create probe estimate and delete; update estimate comments; mark estimate as sent; mark estimate as draft; mark estimate as approved; mark estimate as rejected; send estimate email (template); create estimate item; update estimate item; delete estimate item; duplicate probe estimate and delete; convert estimate to invoice; get estimate PDF; get estimate default additional text; update estimate default additional text; delete estimate default additional text |
+| Invoices | List invoices; stream all invoices via ListAutoPagingAsync; list invoices filtered by contact; list invoice timeline; get invoice by id; **(mutates)** create draft invoice with one line item; **(mutates)** update invoice comments; **(mutates)** duplicate invoice; **(mutates)** send invoice email (template); **(mutates)** mark invoice as sent/scheduled/draft/cancelled; get invoice PDF; get default additional text; **(mutates)** update/delete default additional text |
+| Estimates | List estimates; stream all estimates via ListAutoPagingAsync; list estimates filtered by contact; get estimate by id; **(mutates)** create probe estimate and delete; **(mutates)** update estimate comments; **(mutates)** mark estimate as sent/draft/approved/rejected; **(mutates)** send estimate email (template); **(mutates)** create/update/delete estimate item; **(mutates)** duplicate probe estimate and delete; **(mutates)** convert estimate to invoice; get estimate PDF; get estimate default additional text; **(mutates)** update/delete estimate default additional text |
 | Recurring invoices | List recurring invoices; stream all recurring invoices via ListAutoPagingAsync; list recurring invoices filtered by contact; get recurring invoice by id |
-| Credit notes | List credit notes; stream all credit notes via ListAutoPagingAsync; list credit notes filtered by contact; get credit note by id; create probe credit note and delete; update credit note comments; mark credit note as sent; mark credit note as draft; get credit note PDF; send credit note email (template) |
-| Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; create probe credit note reconciliation and delete; update credit note reconciliation |
+| Credit notes | List credit notes; stream all credit notes via ListAutoPagingAsync; list credit notes filtered by contact; get credit note by id; **(mutates)** create probe credit note and delete; **(mutates)** update credit note comments; **(mutates)** mark credit note as sent/draft; get credit note PDF; **(mutates)** send credit note email (template) |
+| Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
 | Stock items | List stock items; get stock item detail |
-| Price list items | List price list items; get price list item detail; update price list item description; create probe price list item and delete |
+| Price list items | List price list items; get price list item detail; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |
 
 New SDK resource areas should add a matching `*Samples.cs` provider class under `Samples/`.
 
@@ -120,6 +149,8 @@ On any platform, if the local listener cannot start (port in use, permissions, r
 ## 4. Run all examples (smoke test)
 
 Use `--run-all` to execute every registered example without the interactive menu. Output follows a `dotnet test`-style report with pass, fail, and skip counts.
+
+**`--run-all` performs live writes** (create, update, delete) against the connected sandbox account. It refuses to run when `FREEAGENT_ENVIRONMENT` is not `Sandbox`. There is no production escape hatch for smoke runs.
 
 `--run-all` enables request pacing (600 ms between API calls) and a single rate-limit retry per example so the full batch stays within FreeAgent's 120 requests per minute limit.
 

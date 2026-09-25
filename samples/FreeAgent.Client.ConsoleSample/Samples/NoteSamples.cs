@@ -50,7 +50,7 @@ internal sealed class NoteSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Project ID", detail.ProjectId);
     }
 
-    [ConsoleSample(Name = "Create contact note")]
+    [ConsoleSample(Name = "Create contact note", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateContactNoteAsync(CancellationToken cancellationToken)
     {
@@ -65,7 +65,7 @@ internal sealed class NoteSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Content", created.Content);
     }
 
-    [ConsoleSample(Name = "Create project note")]
+    [ConsoleSample(Name = "Create project note", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProjectNoteAsync(CancellationToken cancellationToken)
     {
@@ -80,7 +80,7 @@ internal sealed class NoteSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Content", created.Content);
     }
 
-    [ConsoleSample(Name = "Update note")]
+    [ConsoleSample(Name = "Update note", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateNoteAsync(CancellationToken cancellationToken)
     {
@@ -95,7 +95,7 @@ internal sealed class NoteSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Content", updated.Content);
     }
 
-    [ConsoleSample(Name = "Delete note", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Delete note", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DeleteNoteAsync(CancellationToken cancellationToken)
     {

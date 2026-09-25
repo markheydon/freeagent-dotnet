@@ -79,7 +79,7 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
         SampleOutput.WriteField("Total value", detail.TotalValue);
     }
 
-    [ConsoleSample(Name = "Create probe credit note and delete")]
+    [ConsoleSample(Name = "Create probe credit note and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeCreditNoteAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -98,7 +98,7 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Mark credit note as sent")]
+    [ConsoleSample(Name = "Mark credit note as sent", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task MarkCreditNoteAsSentAsync(CancellationToken cancellationToken)
     {
@@ -119,7 +119,7 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
         }
     }
 
-    [ConsoleSample(Name = "Update credit note comments")]
+    [ConsoleSample(Name = "Update credit note comments", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateCreditNoteCommentsAsync(CancellationToken cancellationToken)
     {
@@ -144,7 +144,7 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
         }
     }
 
-    [ConsoleSample(Name = "Mark credit note as draft")]
+    [ConsoleSample(Name = "Mark credit note as draft", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task MarkCreditNoteAsDraftAsync(CancellationToken cancellationToken)
     {
@@ -179,7 +179,7 @@ internal sealed class CreditNoteSamples(SampleContext context) : IConsoleSampleP
         SampleOutput.WriteField("Size (bytes)", pdfBytes.Length);
     }
 
-    [ConsoleSample(Name = "Send credit note email (template)", ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Send credit note email (template)", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task SendCreditNoteEmailAsync(CancellationToken cancellationToken)
     {
