@@ -17,7 +17,8 @@ $repoRoot = Split-Path -Parent $PSScriptRoot
 $rootForMount = $repoRoot -replace '\\', '/'
 $docsDir = Join-Path $repoRoot "docs"
 $sitePath = Join-Path $docsDir "_site"
-$jekyllImage = "docker.io/jekyll/jekyll:4"
+# Ruby 3.3 matches GitHub Pages; jekyll/jekyll:4 ships Ruby 3.4, which breaks Jekyll 3.10.
+$jekyllImage = "docker.io/library/ruby:3.3-bookworm"
 $nginxImage = "docker.io/library/nginx:alpine"
 $serveContainerName = "freeagent-docs-serve"
 $previewContainerName = "freeagent-docs-preview"

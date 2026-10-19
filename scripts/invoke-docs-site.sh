@@ -74,7 +74,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 DOCS_DIR="$REPO_ROOT/docs"
 SITE_PATH="$DOCS_DIR/_site"
-JEKYLL_IMAGE="docker.io/jekyll/jekyll:4"
+# Ruby 3.3 matches GitHub Pages; jekyll/jekyll:4 ships Ruby 3.4, which breaks Jekyll 3.10.
+JEKYLL_IMAGE="docker.io/library/ruby:3.3-bookworm"
 NGINX_IMAGE="docker.io/library/nginx:alpine"
 
 resolve_runtime() {
