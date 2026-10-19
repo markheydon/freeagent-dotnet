@@ -63,7 +63,9 @@ On Windows (PowerShell):
 .\scripts\Invoke-DocsSite.ps1 build
 ```
 
-The first run downloads the `jekyll/jekyll` image and installs gems into `docs/vendor/` (gitignored). If the port is in use or Ctrl+C does not stop the server, run `./scripts/invoke-docs-site.sh stop`.
+The first run downloads the `ruby:3.3-bookworm` image and installs gems into `docs/vendor/` (gitignored). If the port is in use or Ctrl+C does not stop the server, run `./scripts/invoke-docs-site.sh stop`.
+
+Production publishes via the [Deploy documentation site](../../.github/workflows/docs-pages.yml) workflow (GitHub Actions). In repository settings, **Pages → Build and deployment → Source** must be **GitHub Actions**, not the legacy `/docs` Jekyll builder.
 
 ## Related links
 
