@@ -29,3 +29,10 @@ aux_links:
     - "https://www.nuget.org/packages/FreeAgent.Client/"
 
 footer_content: "Copyright &copy; Mark Heydon. Distributed under the <a href=\"https://github.com/markheydon/freeagent-dotnet/blob/main/LICENSE\">MIT licence</a>."
+
+plugins:
+  - jekyll-relative-links
+
+relative_links:
+  enabled: true
+  collections: true
