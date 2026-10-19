@@ -141,21 +141,29 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
     private async Task SendInvoiceEmailAsync(CancellationToken cancellationToken)
     {
         var draft = await CreateSampleDraftInvoiceAsync(cancellationToken);
-        await context.Client.Invoices.SendInvoiceEmailAsync(
-            draft.ResourceId,
-            new SendInvoiceEmailRequest
-            {
-                Email = new InvoiceEmailDetails
+        try
+        {
+            await context.Client.Invoices.SendInvoiceEmailAsync(
+                draft.ResourceId,
+                new SendInvoiceEmailRequest
                 {
-                    UseTemplate = true,
-                    Body = "Please find your invoice attached.",
-                }
-            },
-            cancellationToken);
+                    Email = new InvoiceEmailDetails
+                    {
+                        UseTemplate = true,
+                        Body = "Please find your invoice attached.",
+                    }
+                },
+                cancellationToken);
 
-        SampleOutput.WriteHeader("Sent invoice email");
-        SampleOutput.WriteField("Invoice ID", draft.ResourceId);
-        SampleOutput.WriteField("Template", true);
+            SampleOutput.WriteHeader("Sent invoice email");
+            SampleOutput.WriteField("Invoice ID", draft.ResourceId);
+            SampleOutput.WriteField("Template", true);
+        }
+        catch (FreeAgentApiException ex) when (InvoiceEmailSendPrecondition.IsFailure(ex))
+        {
+            SampleContext.Skip(
+                "sandbox invoice email trial allowance exhausted (FreeAgent free-trial email limit)");
+        }
     }
 
     [ConsoleSample(Name = "Mark invoice as sent", MutatesData = true)]
