@@ -11,7 +11,7 @@ Documentation in this folder is for **developers using the `FreeAgent.Client` Nu
 
 Published site: [markheydon.me.uk/freeagent-dotnet](https://markheydon.me.uk/freeagent-dotnet/)
 
-Internal engineering policy lives in the repository root (`GOALS.md`, `SCOPE.md`, `CONVENTIONS.md`) and in [`plan/`](../plan/). Architectural decisions are in [`adr/`](../adr/).
+Internal engineering policy lives in the repository root ([`GOALS.md`](https://github.com/markheydon/freeagent-dotnet/blob/main/GOALS.md), [`SCOPE.md`](https://github.com/markheydon/freeagent-dotnet/blob/main/SCOPE.md), [`CONVENTIONS.md`](https://github.com/markheydon/freeagent-dotnet/blob/main/CONVENTIONS.md)) and in [`plan/`](https://github.com/markheydon/freeagent-dotnet/tree/main/plan). Architectural decisions are in [`adr/`](https://github.com/markheydon/freeagent-dotnet/tree/main/adr).
 
 ## Documentation map
 
@@ -69,7 +69,7 @@ Production publishes via the [Deploy documentation site](../../.github/workflows
 
 ## Related links
 
-- [README](../README.md) - repository overview and quick start
-- [VERSIONING.md](../VERSIONING.md) - prerelease policy
-- [SUPPORT.md](../SUPPORT.md) - help and issue routing
+- [README](https://github.com/markheydon/freeagent-dotnet/blob/main/README.md) - repository overview and quick start
+- [VERSIONING.md](https://github.com/markheydon/freeagent-dotnet/blob/main/VERSIONING.md) - prerelease policy
+- [SUPPORT.md](https://github.com/markheydon/freeagent-dotnet/blob/main/SUPPORT.md) - help and issue routing
 - [FreeAgent API documentation](https://dev.freeagent.com/docs)
