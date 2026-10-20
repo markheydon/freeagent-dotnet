@@ -96,6 +96,14 @@ public sealed class FreeAgentResourceUrls
         RecurringInvoiceReference.ForEnvironment(_environment, recurringInvoiceId);
 
     /// <summary>
+    /// Creates a bill resource reference.
+    /// </summary>
+    /// <param name="billId">Bill identifier.</param>
+    /// <returns>Bill reference.</returns>
+    public BillReference Bill(long billId) =>
+        BillReference.ForEnvironment(_environment, billId);
+
+    /// <summary>
     /// Creates a credit note resource reference.
     /// </summary>
     /// <param name="creditNoteId">Credit note identifier.</param>

@@ -1,3 +1,4 @@
+using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.CreditNoteReconciliations;
 using FreeAgent.Client.Models.CreditNotes;
@@ -134,6 +135,54 @@ internal static class LinkedResourceHydration
         }
 
         estimate.AttachProject(response.Project);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateBillingContactAsync(
+        Bill bill,
+        IFreeAgentRequestClient requestClient,
+        bool includeContact,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(bill);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeContact || bill.Contact is not null || bill.ContactId is not long contactId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<ContactResponse>($"contacts/{contactId}", cancellationToken);
+
+        if (response.Contact is null)
+        {
+            throw new FreeAgentApiException("Contact data missing from API response");
+        }
+
+        bill.AttachContact(response.Contact);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateProjectAsync(
+        Bill bill,
+        IFreeAgentRequestClient requestClient,
+        bool includeProject,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(bill);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeProject || bill.Project is not null || bill.ProjectId is not long projectId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<ProjectResponse>($"projects/{projectId}", cancellationToken);
+
+        if (response.Project is null)
+        {
+            throw new FreeAgentApiException("Project data missing from API response");
+        }
+
+        bill.AttachProject(response.Project);
     }
 
     public static async System.Threading.Tasks.Task HydrateBillingContactAsync(

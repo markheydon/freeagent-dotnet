@@ -15,6 +15,7 @@ public sealed class TurpinverseSeedOrchestrator
     private readonly TurpinverseInvoiceSeeder _invoiceSeeder;
     private readonly TurpinverseQuoteSeeder _quoteSeeder;
     private readonly TurpinverseCreditNoteSeeder _creditNoteSeeder;
+    private readonly TurpinverseBillSeeder _billSeeder;
     private readonly TurpinverseNoteSeeder _noteSeeder;
     private readonly TurpinverseTimeslipSeeder _timeslipSeeder;
 
@@ -26,6 +27,7 @@ public sealed class TurpinverseSeedOrchestrator
         TurpinverseInvoiceSeeder invoiceSeeder,
         TurpinverseQuoteSeeder quoteSeeder,
         TurpinverseCreditNoteSeeder creditNoteSeeder,
+        TurpinverseBillSeeder billSeeder,
         TurpinverseNoteSeeder noteSeeder,
         TurpinverseTimeslipSeeder timeslipSeeder)
     {
@@ -36,6 +38,7 @@ public sealed class TurpinverseSeedOrchestrator
         _invoiceSeeder = invoiceSeeder ?? throw new ArgumentNullException(nameof(invoiceSeeder));
         _quoteSeeder = quoteSeeder ?? throw new ArgumentNullException(nameof(quoteSeeder));
         _creditNoteSeeder = creditNoteSeeder ?? throw new ArgumentNullException(nameof(creditNoteSeeder));
+        _billSeeder = billSeeder ?? throw new ArgumentNullException(nameof(billSeeder));
         _noteSeeder = noteSeeder ?? throw new ArgumentNullException(nameof(noteSeeder));
         _timeslipSeeder = timeslipSeeder ?? throw new ArgumentNullException(nameof(timeslipSeeder));
     }
@@ -100,6 +103,9 @@ public sealed class TurpinverseSeedOrchestrator
                 static result => (result.Created.Count, result.Updated.Count, result.Failures.Select(static failure => failure.Message))),
             TurpinverseSeedStage.CreditNotes => await ExecuteBulkStageAsync(
                 () => _creditNoteSeeder.CreateAllCreditNotesAsync(client, refreshCanon: false, cancellationToken),
+                static result => (result.Created.Count, result.Updated.Count, result.Failures.Select(static failure => failure.Message))),
+            TurpinverseSeedStage.Bills => await ExecuteBulkStageAsync(
+                () => _billSeeder.CreateAllBillsAsync(client, refreshCanon: false, cancellationToken),
                 static result => (result.Created.Count, result.Updated.Count, result.Failures.Select(static failure => failure.Message))),
             TurpinverseSeedStage.Notes => await ExecuteNotesStageAsync(client, cancellationToken),
             TurpinverseSeedStage.Timeslips => await ExecuteTimeslipsStageAsync(client, cancellationToken),

@@ -1,3 +1,4 @@
+using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.CreditNoteReconciliations;
 using FreeAgent.Client.Models.CreditNotes;
@@ -208,6 +209,44 @@ internal sealed class SampleData
         }
 
         return page.Items[0];
+    }
+
+    /// <summary>
+    /// Returns the first bill from the bills list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A bill.</returns>
+    public async Task<Bill> GetFirstBillAsync(CancellationToken cancellationToken = default)
+    {
+        var page = await _context.Client.Bills.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+        if (page.Items.Count == 0)
+        {
+            SampleContext.Skip("no bills found in sandbox account");
+        }
+
+        return page.Items[0];
+    }
+
+    /// <summary>
+    /// Returns the nominal code of the first admin expenses category.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An admin expenses category nominal code.</returns>
+    public async Task<string> GetFirstAdminExpensesCategoryNominalCodeAsync(CancellationToken cancellationToken = default)
+    {
+        var sets = await _context.Client.Categories.ListAsync(cancellationToken: cancellationToken);
+        if (sets.AdminExpensesCategories.Count == 0)
+        {
+            SampleContext.Skip("no admin expenses categories found in sandbox account");
+        }
+
+        var nominalCode = sets.AdminExpensesCategories[0].NominalCode;
+        if (string.IsNullOrWhiteSpace(nominalCode))
+        {
+            SampleContext.Skip("first admin expenses category has no nominal code");
+        }
+
+        return nominalCode;
     }
 
     /// <summary>

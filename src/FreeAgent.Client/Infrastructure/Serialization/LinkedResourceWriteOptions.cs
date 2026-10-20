@@ -6,7 +6,8 @@ namespace FreeAgent.Client.Infrastructure.Serialization;
 internal readonly record struct LinkedResourceWriteOptions(
     bool OmitContact = false,
     bool OmitProject = false,
-    bool OmitBankAccount = false)
+    bool OmitBankAccount = false,
+    bool OmitRebillToProject = false)
 {
     public static LinkedResourceWriteOptions FromInvoiceUpdate(InvoiceUpdateOptions? options) =>
         options is null
@@ -35,4 +36,12 @@ internal readonly record struct LinkedResourceWriteOptions(
         options is null
             ? default
             : new LinkedResourceWriteOptions(OmitContact: options.OmitContact);
+
+    public static LinkedResourceWriteOptions FromBillUpdate(BillUpdateOptions? options) =>
+        options is null
+            ? default
+            : new LinkedResourceWriteOptions(
+                OmitContact: options.OmitContact,
+                OmitProject: options.OmitProject,
+                OmitRebillToProject: options.OmitRebillToProject);
 }

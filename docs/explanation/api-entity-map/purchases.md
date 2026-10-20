@@ -55,7 +55,7 @@ Hire purchases are created via the Bills API and exposed as a read-only resource
 
 | Resource | Official docs | SDK |
 |----------|---------------|-----|
-| Bills | [Bills](https://dev.freeagent.com/docs/bills) | Not yet |
+| Bills | [Bills](https://dev.freeagent.com/docs/bills) | `client.Bills` |
 | Expenses | [Expenses](https://dev.freeagent.com/docs/expenses) | Not yet |
 | Hire purchases | [Hire purchases](https://dev.freeagent.com/docs/hire_purchases) | Not yet |
 | Attachments | [Attachments](https://dev.freeagent.com/docs/attachments) | Not yet |

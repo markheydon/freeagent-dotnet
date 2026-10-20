@@ -26,6 +26,7 @@ public class TurpinverseSeedOrchestratorTests
         var invoiceCatalog = new TurpinverseInvoiceCatalog(canonClient);
         var quoteCatalog = new TurpinverseQuoteCatalog(canonClient);
         var creditNoteCatalog = new TurpinverseCreditNoteCatalog(canonClient);
+        var billCatalog = new TurpinverseBillCatalog(canonClient);
 
         return new TurpinverseSeedOrchestrator(
             new TurpinverseCanonCoordinator(
@@ -34,7 +35,8 @@ public class TurpinverseSeedOrchestratorTests
                 projectCatalog,
                 invoiceCatalog,
                 quoteCatalog,
-                creditNoteCatalog),
+                creditNoteCatalog,
+                billCatalog),
             new TurpinverseContactSeeder(contactCatalog),
             new TurpinverseProjectSeeder(projectCatalog, contactCatalog),
             taskSeeder,
@@ -51,6 +53,11 @@ public class TurpinverseSeedOrchestratorTests
             new TurpinverseCreditNoteSeeder(
                 creditNoteCatalog,
                 contactCatalog,
+                companyDates),
+            new TurpinverseBillSeeder(
+                billCatalog,
+                contactCatalog,
+                projectCatalog,
                 companyDates),
             new TurpinverseNoteSeeder(contactCatalog, projectCatalog),
             new TurpinverseTimeslipSeeder(taskSeeder));
