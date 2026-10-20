@@ -61,6 +61,14 @@ Explanation type determines which URI fields are required (payment, invoice rece
 
 ## Key URI fields
 
+### Bank feed
+
+| Field | Target | Required? |
+|-------|--------|-----------|
+| `bank_account` | Bank account | Yes (required on create in API docs; present on read responses) |
+
+Use `BankFeed.BankAccountId` on read models; the SDK parses the `bank_account` URI from list and GET responses.
+
 ### Bank transaction
 
 | Field | Target | Required? |
