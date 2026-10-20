@@ -3,6 +3,7 @@ using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.CreditNoteReconciliations;
 using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Estimates;
+using FreeAgent.Client.Models.Expenses;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Notes;
 using FreeAgent.Client.Models.PriceListItems;
@@ -222,6 +223,22 @@ internal sealed class SampleData
         if (page.Items.Count == 0)
         {
             SampleContext.Skip("no bills found in sandbox account");
+        }
+
+        return page.Items[0];
+    }
+
+    /// <summary>
+    /// Returns the first expense from a list call.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An expense.</returns>
+    public async Task<Expense> GetFirstExpenseAsync(CancellationToken cancellationToken = default)
+    {
+        var page = await _context.Client.Expenses.ListAsync(perPage: 25, cancellationToken: cancellationToken);
+        if (page.Items.Count == 0)
+        {
+            SampleContext.Skip("no expenses found in sandbox account");
         }
 
         return page.Items[0];

@@ -198,4 +198,49 @@ internal static class LinkedResourceWriteMapper
             ? null
             : new WriteLink<CategoryReference> { Value = CategoryReference.ForEnvironment(environment, linkNominalCode) };
     }
+
+    public static ExpenseCategoryWriteValue? ResolveExpenseCategoryWrite(
+        FreeAgentEnvironment environment,
+        bool? isMileageExplicit,
+        bool isMileageFromLink,
+        in SettableLinkValue categoryBacking,
+        string? linkNominalCode)
+    {
+        if (isMileageExplicit == true)
+        {
+            return ExpenseCategoryWriteValue.Mileage();
+        }
+
+        if (categoryBacking.IsExplicitlySet)
+        {
+            var code = categoryBacking.Get(fromLink: null);
+            if (!string.IsNullOrWhiteSpace(code))
+            {
+                return ExpenseCategoryWriteValue.ForCategory(CategoryReference.ForEnvironment(environment, code));
+            }
+
+            if (isMileageExplicit != false && isMileageFromLink)
+            {
+                return ExpenseCategoryWriteValue.Mileage();
+            }
+
+            return null;
+        }
+
+        if (isMileageExplicit == false)
+        {
+            return string.IsNullOrWhiteSpace(linkNominalCode)
+                ? null
+                : ExpenseCategoryWriteValue.ForCategory(CategoryReference.ForEnvironment(environment, linkNominalCode));
+        }
+
+        if (isMileageFromLink)
+        {
+            return ExpenseCategoryWriteValue.Mileage();
+        }
+
+        return string.IsNullOrWhiteSpace(linkNominalCode)
+            ? null
+            : ExpenseCategoryWriteValue.ForCategory(CategoryReference.ForEnvironment(environment, linkNominalCode));
+    }
 }
