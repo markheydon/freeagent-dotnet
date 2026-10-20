@@ -167,6 +167,12 @@
                 <MudNavLink Href="/bills/detail" Icon="@Icons.Material.Filled.EditNote">
                     Bill CRUD
                 </MudNavLink>
+                <MudNavLink Href="/hire-purchases" Icon="@Icons.Material.Filled.AllInclusive">
+                    Hire purchases list
+                </MudNavLink>
+                <MudNavLink Href="/hire-purchases/detail" Icon="@Icons.Material.Filled.Visibility">
+                    Hire purchase detail
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Expenses" Icon="@Icons.Material.Filled.Receipt" Expanded="@IsExpensesRoute">
@@ -338,7 +344,9 @@
 
     private bool IsBillsRoute =>
         CurrentPath.Equals("bills", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.StartsWith("bills/", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.StartsWith("bills/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("hire-purchases", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("hire-purchases/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsExpensesRoute =>
         CurrentPath.Equals("expenses", StringComparison.OrdinalIgnoreCase)

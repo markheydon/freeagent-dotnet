@@ -26,6 +26,7 @@ For how resources relate to each other and a suggested implementation order, see
 | [Credit notes](credit-notes.md) | `client.CreditNotes` | [Credit notes](https://dev.freeagent.com/docs/credit_notes) |
 | [Credit note reconciliations](credit-note-reconciliations.md) | `client.CreditNoteReconciliations` | [Credit note reconciliations](https://dev.freeagent.com/docs/credit_note_reconciliations) |
 | [Bills](bills.md) | `client.Bills` | [Bills](https://dev.freeagent.com/docs/bills) |
+| [Hire purchases](hire-purchases.md) | `client.HirePurchases` | [Hire purchases](https://dev.freeagent.com/docs/hire_purchases) |
 | [Expenses](expenses.md) | `client.Expenses` | [Expenses](https://dev.freeagent.com/docs/expenses) |
 | [Stock items](stock-items.md) | `client.StockItems` | [Stock items](https://dev.freeagent.com/docs/stock_items) |
 | [Price list items](price-list-items.md) | `client.PriceListItems` | [Price list items](https://dev.freeagent.com/docs/price_list_items) |
