@@ -129,11 +129,11 @@ Resources in other clusters that point **to** invoices:
 
 ## SDK sequencing note
 
-**Invoices** need only [Contacts](foundations.md) on create. [Categories](foundations.md) and [Projects](projects-and-time.md) are implemented for optional line-item `category` URIs and invoice `project` links. [Bank accounts](banking.md) remain optional until the Banking cluster is implemented (`BankAccountReference` supports remittance URIs on writes). Credit notes and reconciliations logically follow invoices.
+**Invoices** need only [Contacts](foundations.md) on create. [Categories](foundations.md), [Projects](projects-and-time.md), credit notes, reconciliations, stock items, and price list items are implemented. [Bank accounts](banking.md) remain optional until the Banking cluster is implemented (`BankAccountReference` supports remittance URIs on writes).
 
 ## Sales cluster SDK patterns
 
-Invoices establishes patterns that sibling Sales stories should reuse:
+Invoices establishes patterns used across the Sales cluster:
 
 | Pattern | SDK surface | Sibling resources |
 |---------|-------------|-------------------|

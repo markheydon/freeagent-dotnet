@@ -4,7 +4,7 @@
 
 
 **Project:** FreeAgent.NET
-**Last updated:** 25 September 2026
+**Last updated:** 20 October 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.
@@ -21,14 +21,16 @@ src/
 	├── FreeAgentClient.cs               # Main consumer entry point
 	├── FreeAgentResourceUrls.cs         # Environment-correct resource URI builders
 	├── PaginatedResponse.cs             # Public pagination result type
-	├── *GetOptions.cs                   # Single-GET hydration options (Projects, Invoices, Estimates, RecurringInvoices, Tasks, Timeslips, Notes)
+	├── *GetOptions.cs                   # Single-GET hydration options (Bills, CreditNotes, CreditNoteReconciliations, Estimates, Expenses, Invoices, Notes, Projects, RecurringInvoices, Tasks, Timeslips)
 	├── Infrastructure/                  # Internal plumbing - not part of the public API surface
 	│   ├── Authentication/              # OAuth token exchange/refresh client and models
 	│   ├── Configuration/               # Environment enum and URL mapping
 	│   ├── Http/                        # HTTP transport, rate limiting, API exceptions, pagination helpers
 	│   └── Serialization/               # JSON converters and TFM compatibility
 	├── Models/                          # Resource-grouped strongly typed models
+	│   ├── Attachments/                 # Attachment models and response wrappers
 	│   ├── BankAccounts/                # Bank account stub models for invoice links
+	│   ├── Bills/                       # Bill models, line items, response wrappers
 	│   ├── Categories/                  # Category models, operation-variant requests, nominal-code validation
 	│   ├── Company/                     # Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers
 	│   ├── Contacts/                    # Contact models and response wrappers
@@ -36,6 +38,8 @@ src/
 	│   ├── CreditNoteReconciliations/   # Credit note reconciliation models and write payloads
 	│   ├── EmailAddresses/              # Email addresses response wrapper
 	│   ├── Estimates/                   # Estimate models, line items, transitions, response wrappers
+	│   ├── Expenses/                    # Expense models, mileage settings, response wrappers
+	│   ├── HirePurchases/               # Hire purchase models and response wrappers
 	│   ├── Invoices/                    # Invoice models, line items, transitions, response wrappers
 	│   ├── Notes/                       # Note models and response wrappers
 	│   ├── PriceListItems/              # Price list item models and write payloads
@@ -47,6 +51,10 @@ src/
 	│   ├── Timeslips/                   # Timeslip models and response wrappers
 	│   └── Users/                       # User models and response wrappers
 	└── Services/                        # Resource-oriented service classes
+		├── Attachments/
+		│   └── AttachmentsService.cs
+		├── Bills/
+		│   └── BillService.cs
 		├── Categories/                  # CategoryService and category write/response mappers
 		├── Company/
 		│   └── CompanyService.cs
@@ -60,6 +68,10 @@ src/
 		│   └── EmailAddressesService.cs
 		├── Estimates/
 		│   └── EstimateService.cs
+		├── Expenses/
+		│   └── ExpenseService.cs
+		├── HirePurchases/
+		│   └── HirePurchasesService.cs
 		├── Invoices/
 		│   └── InvoiceService.cs
 		├── Notes/
@@ -88,11 +100,15 @@ tests/
 	│   ├── Http/
 	│   └── Serialization/
 	├── Models/
+	│   ├── Attachments/
+	│   ├── Bills/
 	│   ├── Categories/
 	│   ├── Contacts/
 	│   ├── CreditNotes/
 	│   ├── CreditNoteReconciliations/
 	│   ├── Estimates/
+	│   ├── Expenses/
+	│   ├── HirePurchases/
 	│   ├── Invoices/
 	│   ├── PriceListItems/
 	│   ├── RecurringInvoices/
@@ -105,6 +121,8 @@ tests/
 	├── Sample/                          # Sample-app helper tests (Turpinverse, wire diagnostics)
 	├── Samples/                         # Console sample helper tests
 	├── Services/
+	│   ├── Attachments/
+	│   ├── Bills/
 	│   ├── Categories/
 	│   ├── Company/
 	│   ├── Contacts/
@@ -112,6 +130,8 @@ tests/
 	│   ├── CreditNoteReconciliations/
 	│   ├── EmailAddresses/
 	│   ├── Estimates/
+	│   ├── Expenses/
+	│   ├── HirePurchases/
 	│   ├── Invoices/
 	│   ├── Notes/
 	│   ├── PriceListItems/
@@ -129,8 +149,8 @@ tests/
 - `FreeAgent.Client.Infrastructure.Authentication` - OAuth types
 - `FreeAgent.Client.Infrastructure.Configuration` - FreeAgentEnvironment, FreeAgentEnvironmentEndpoints
 - `FreeAgent.Client.Infrastructure.Http` - HTTP client, exceptions, pagination helpers
-- `FreeAgent.Client.Models.[Resource]` - resource models (BankAccounts, Categories, Company, Contacts, CreditNotes, CreditNoteReconciliations, EmailAddresses, Estimates, Invoices, Notes, PriceListItems, Projects, RecurringInvoices, Shared, StockItems, Tasks, Timeslips, Users)
-- `FreeAgent.Client.Services.[Resource]` - resource services (Categories, Company, Contacts, CreditNotes, CreditNoteReconciliations, EmailAddresses, Estimates, Invoices, Notes, PriceListItems, Projects, RecurringInvoices, StockItems, Tasks, Timeslips, Users)
+- `FreeAgent.Client.Models.[Resource]` - resource models (Attachments, BankAccounts, Bills, Categories, Company, Contacts, CreditNotes, CreditNoteReconciliations, EmailAddresses, Estimates, Expenses, HirePurchases, Invoices, Notes, PriceListItems, Projects, RecurringInvoices, Shared, StockItems, Tasks, Timeslips, Users)
+- `FreeAgent.Client.Services.[Resource]` - resource services (Attachments, Bills, Categories, Company, Contacts, CreditNotes, CreditNoteReconciliations, EmailAddresses, Estimates, Expenses, HirePurchases, Invoices, Notes, PriceListItems, Projects, RecurringInvoices, StockItems, Tasks, Timeslips, Users)
 
 **Key naming rules (unchanged):**
 - Service: [Resource]Service (CompanyService, ContactService)
