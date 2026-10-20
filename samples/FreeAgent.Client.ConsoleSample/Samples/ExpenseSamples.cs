@@ -186,6 +186,7 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
             Mileage = 12m,
             VehicleType = ExpenseVehicleType.Car,
             EngineType = ExpenseEngineType.Petrol,
+            EngineSize = "Up to 1400cc",
             Description = $"SDK probe mileage {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}"
         };
 
