@@ -57,7 +57,7 @@ flowchart LR
 |---------|------|----------------|
 | Foundations | [Foundations](api-entity-map/foundations.md) | Company, contacts, users, categories |
 | Projects and time | [Projects and time](api-entity-map/projects-and-time.md) | Projects, tasks, timeslips, notes |
-| Sales | [Sales](api-entity-map/sales.md) | Invoices, estimates, recurring invoices, credit notes, stock items |
+| Sales | [Sales](api-entity-map/sales.md) | Invoices, estimates, recurring invoices, credit notes, credit note reconciliations, stock items, price list items |
 | Purchases | [Purchases](api-entity-map/purchases.md) | Bills, expenses, hire purchases, attachments |
 | Banking | [Banking](api-entity-map/banking.md) | Bank accounts, transactions, explanations, feeds |
 | Assets and journals | [Assets and journals](api-entity-map/assets-and-journals.md) | Capital assets, journal sets, properties, payroll |
@@ -73,7 +73,7 @@ Layers describe **dependency pressure**, not a mandatory backlog. A resource in 
 |-------|-----------|-----------|
 | **0 - Done** | Company, Contacts, Categories, Users, Email addresses, OAuth helpers | Company context, contacts, chart-of-accounts categories, and users are referenced across many resources |
 | **2 - Done** | Projects, Tasks, Timeslips, Notes | Client work structure: projects require `contact`; tasks require `project`; timeslips require `task`, `project`, and `user`; notes hang off contacts or projects |
-| **3 - Done** | Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Stock items, Price list items | Invoices require only `contact` on create; `project`, `bank_account`, and item `category` URIs are optional. Stock and price-list items are catalogue reads used on sales lines |
+| **3 - Done** | Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Stock items, Price list items | Invoices require only `contact` on create; `project`, `bank_account`, and item `category` URIs are optional. Stock items are catalogue list/get reads; price list items are full CRUD catalogue entries used on sales lines |
 | **4 - Done** | Bills, Expenses, Hire purchases, Attachments | Bills require `contact`; expenses require `user` and `category`. Hire purchases are read-only and created via Bills. Attachments are fetched by identifier |
 | **5 - Banking** | Bank accounts, Bank transactions, Bank transaction explanations | Explanations link back to invoices, bills, contacts, projects, users, and stock |
 | **6 - Assets and books** | Capital assets, Journal sets, Properties, Payroll | Heavier accounting surface; properties are landlord-only |

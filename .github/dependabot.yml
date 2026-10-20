@@ -13,6 +13,8 @@ updates:
       - markheydon
     labels:
       - type/chore
+      - status/in-review
+      - priority/medium
     groups:
       tests:
         patterns:
@@ -49,6 +51,8 @@ updates:
       - markheydon
     labels:
       - type/chore
+      - status/in-review
+      - priority/medium
     groups:
       bundler:
         patterns:
@@ -69,6 +73,8 @@ updates:
       - markheydon
     labels:
       - type/chore
+      - status/in-review
+      - priority/medium
     groups:
       github-actions:
         patterns:
