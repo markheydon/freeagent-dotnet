@@ -12,6 +12,7 @@ Use this checklist when adding a new endpoint or retrofitting an existing entity
 ## 2. Plan First, Then Implement
 
 - Consult the [API entity map](../docs/explanation/api-entity-map.md) before choosing the next resource - it shows documented URI dependencies and suggested implementation layers.
+- For issue and PR types and parent links, see [Backlog shape in this repository](LABEL_STRATEGY.md#backlog-shape-in-this-repository) in `plan/LABEL_STRATEGY.md`.
 - Start with a concise implementation plan before editing code.
 - Include an explicit contract check against `plan/API_TYPE_MAPPING_POLICY.md`.
 - Include a drift check against `plan/API_TO_SDK_ALIGNMENT.md`.

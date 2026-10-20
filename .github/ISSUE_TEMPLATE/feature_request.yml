@@ -6,7 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Use this template for user-facing features or meaningful enhancements.
+        Creates a **type/story** issue with title prefix `[Story]` — one SDK capability or deliverable.
+        For a whole API cluster tracker (`type/feature`), use an existing parent issue or ask a maintainer; this template does not create `type/feature`.
         Keep scope tight and link each request to project goals where possible.
   - type: textarea
     id: summary

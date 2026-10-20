@@ -6,7 +6,8 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please describe the work as a story so it can be triaged and planned consistently.
+        Creates a **type/story** issue for planning, samples, harness, or admin work (user-story format encouraged).
+        For a new SDK API resource or capability, prefer the Feature request template instead.
         Link relevant goals from GOALS.md and keep scope explicit.
   - type: textarea
     id: summary

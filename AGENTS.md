@@ -118,11 +118,17 @@ Route work by task type, not by custom agent runtime:
 
 ## Issue Formatting
 
+Backlog hierarchy (milestone → cluster feature → resource story) is defined in [plan/LABEL_STRATEGY.md](plan/LABEL_STRATEGY.md#backlog-shape-in-this-repository). Follow it when creating or linking issues and pull requests.
+
 When creating or suggesting GitHub Issues, use:
 
-- `.github/ISSUE_TEMPLATE/feature_request.yml` for user-facing features and enhancements.
+- `.github/ISSUE_TEMPLATE/feature_request.yml` for a **single-deliverable** SDK capability (`type/story`, `[Story]` title)—not a whole API cluster tracker.
+- `.github/ISSUE_TEMPLATE/story_request.yml` for planning, samples, harness, or admin work (`type/story`).
 - `.github/ISSUE_TEMPLATE/chore_request.yml` for maintenance, tooling, docs, and governance.
-- `.github/ISSUE_TEMPLATE/story_request.yml` for planning and admin stories.
+
+Cluster-level `type/feature` trackers (for example `[Feature] Implement Purchases cluster`) are created at planning time; there is no issue template for them.
+
+Endpoint implementation: use or create **`type/story`** `[Story] Implement <Resource> resource`, link **Parent** to the cluster `type/feature` when one exists, and close the story from the PR (`Closes #NNN`).
 
 For all issue types:
 

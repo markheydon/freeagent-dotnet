@@ -146,18 +146,17 @@ Open a **draft** PR for human review when implementation and validation are comp
 
 Follow [CONTRIBUTING.md](../../CONTRIBUTING.md), [`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md), and [plan/LABEL_STRATEGY.md](../../plan/LABEL_STRATEGY.md).
 
-1. **Branch** — feature branch from `main` (for example `feature/<resource>-resource`).
+1. **Branch** — branch from `main` (for example `feature/<resource>-resource`). The `feature/` prefix is git convention only; it does not imply `type/feature`.
 2. **Commit** — only when the user has asked you to commit, or as part of an explicit end-to-end implement-endpoint run that includes PR creation. Keep commits focused on the endpoint work.
 3. **Push** — `git push -u origin HEAD`.
 4. **Title** — `[Story] Implement <Resource> resource (#issue)` when a tracking issue exists; otherwise `[Story] Implement <Resource> resource`. Use the issue's `type/*` label prefix when it differs (for example `[Chore]`).
-5. **Labels** — match the tracking issue where possible: `type/story`, `status/in-review`, and the issue's `priority/*` label.
-6. **Body** — use the PR template:
-   - Summary: what changed and why (SDK + tests + sample sync + docs)
-   - Type of change: SDK feature / story (not documentation-only unless docs-only)
-   - Checklist: tick all items after Step 8 passes
-   - Goals impact: note G1/G2 relevance when applicable
-   - Breaking changes: call out any retrofit breaking API changes
-   - Related issues: `Closes #NNN` for the implementation issue; link parent/epic issues when useful
+5. **Labels** — match the tracking issue being closed: usually `type/story`, plus `status/in-review`, and the issue's `priority/*` label.
+6. **Body** — use [`.github/PULL_REQUEST_TEMPLATE.md`](../../.github/PULL_REQUEST_TEMPLATE.md) and [solo-dev-board PR policy](https://github.com/markheydon/solo-dev-board/blob/main/plan/PULL_REQUEST_POLICY.md):
+   - **Summary**: what changed and why (SDK + tests + sample sync + docs); note G1/G2 when relevant
+   - **Type of Change**: tick the applicable checkboxes (SDK work is not documentation-only)
+   - **Checklist**: tick all items after Step 8 passes
+   - **Related Issues**: `Closes #NNN` for the `type/story` implementation issue; **Related** link to the parent feature cluster (`type/feature`, for example `#65`) without `Closes` unless closing the cluster tracker
+   - Call out breaking retrofit API changes in the summary when applicable
 7. **Create** — `gh pr create --draft` with the title, labels, and body above.
 
 Return the PR URL when done.
@@ -172,3 +171,4 @@ Return the PR URL when done.
 - `plan/API_TO_SDK_ALIGNMENT.md`
 - `CONVENTIONS.md`
 - `AGENTS.md`
+- `plan/LABEL_STRATEGY.md` — [Backlog shape in this repository](../../plan/LABEL_STRATEGY.md#backlog-shape-in-this-repository)
