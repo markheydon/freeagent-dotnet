@@ -253,10 +253,17 @@ internal sealed class SampleData
     /// <returns>An attachment identifier.</returns>
     public async Task<long> GetFirstAttachmentIdAsync(CancellationToken cancellationToken = default)
     {
+        const int maxExpensesToScan = 500;
+        var scanned = 0;
         await foreach (var expense in _context.Client.Expenses.ListAutoPagingAsync(
                            perPage: 100,
                            cancellationToken: cancellationToken))
         {
+            if (scanned++ >= maxExpensesToScan)
+            {
+                break;
+            }
+
             var detail = await _context.Client.Expenses.GetExpenseAsync(
                 expense.ResourceId,
                 cancellationToken: cancellationToken);
@@ -276,7 +283,7 @@ internal sealed class SampleData
             }
         }
 
-        SampleContext.Skip("no expenses with attachments found in sandbox account");
+        SampleContext.Skip($"no expenses with attachments found in the first {maxExpensesToScan} expenses");
         return 0;
     }
 

@@ -127,14 +127,21 @@
         }
     }
 
+    private const int MaxExpensesToScanForAttachment = 500;
+
     private async System.Threading.Tasks.Task ResolveFromExpenseAsync()
     {
         await RunOperationAsync(
             async client =>
             {
-                var page = await client.Expenses.ListAsync(perPage: 100);
-                foreach (var expense in page.Items)
+                var scanned = 0;
+                await foreach (var expense in client.Expenses.ListAutoPagingAsync(perPage: 100))
                 {
+                    if (scanned++ >= MaxExpensesToScanForAttachment)
+                    {
+                        break;
+                    }
+
                     var detail = await client.Expenses.GetExpenseAsync(expense.ResourceId);
                     if (detail.Attachment?.Url is null)
                     {
@@ -146,7 +153,7 @@
                         var reference = AttachmentReference.Parse(detail.Attachment.Url);
                         _attachmentId = reference.Id;
                         _operationMessage =
-                            $"Resolved attachment {reference.Id} from expense {detail.ResourceId}. Press Get attachment to fetch metadata.";
+                            $"Resolved attachment {reference.Id} from expense {detail.ResourceId} (scanned {scanned} expense(s)). Press Get attachment to fetch metadata.";
                         return null;
                     }
                     catch (ArgumentException)
@@ -155,7 +162,8 @@
                     }
                 }
 
-                throw new InvalidOperationException("No expenses with attachments were found in the sandbox account.");
+                throw new InvalidOperationException(
+                    $"No expenses with attachments were found in the first {MaxExpensesToScanForAttachment} expenses.");
             },
             fetchWirePayload: false);
     }

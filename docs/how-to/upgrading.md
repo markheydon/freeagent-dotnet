@@ -84,6 +84,10 @@ Contact list methods now return `Contact` instead of the removed `ContactSummary
 
 When creating or updating contacts, read-only API fields (`url`, balances, mandate state, timestamps) are ignored during serialisation. You can still round-trip a `Contact` retrieved from the API without sending those fields back.
 
+## Additive API changes
+
+- **Attachments:** `client.Attachments` (`GetAttachmentAsync`, `DeleteAttachmentAsync`) — see [Attachments reference](../reference/attachments.md).
+
 ## Stable releases
 
 Stable `1.0.0` will follow the criteria in [VERSIONING.md](../../VERSIONING.md). Until then, treat every upgrade as potentially breaking.
