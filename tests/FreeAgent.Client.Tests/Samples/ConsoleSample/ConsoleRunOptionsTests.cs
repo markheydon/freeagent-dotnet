@@ -109,6 +109,51 @@ public class ConsoleRunOptionsTests
 
         Assert.Contains("--allow-production-writes", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
+
+    [Fact]
+    public void Parse_VerifyLinkedResources_SetsVerifyLinkedResources()
+    {
+        var options = ConsoleRunOptions.Parse(["--verify-linked-resources"]);
+
+        Assert.True(options.VerifyLinkedResources);
+        Assert.False(options.RunAll);
+    }
+
+    [Fact]
+    public void Parse_VerifyLinkedResourcesWithRunAll_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => ConsoleRunOptions.Parse(["--verify-linked-resources", "--run-all"]));
+
+        Assert.Contains("--run-all", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Parse_VerifyLinkedResourcesWithSeedTurpinverse_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => ConsoleRunOptions.Parse(["--verify-linked-resources", "--seed-turpinverse"]));
+
+        Assert.Contains("--seed-turpinverse", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Parse_VerifyLinkedResourcesWithBootstrapRefreshToken_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => ConsoleRunOptions.Parse(["--verify-linked-resources", "--bootstrap-refresh-token"]));
+
+        Assert.Contains("--bootstrap-refresh-token", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void Parse_VerifyLinkedResourcesWithAllowProductionWrites_Throws()
+    {
+        var exception = Assert.Throws<InvalidOperationException>(
+            () => ConsoleRunOptions.Parse(["--verify-linked-resources", "--allow-production-writes"]));
+
+        Assert.Contains("--allow-production-writes", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }
 
 #endif

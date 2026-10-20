@@ -29,7 +29,7 @@ catch (InvalidOperationException ex)
 
 var allowProductionWrites = SandboxWriteGuard.ResolveAllowProductionWrites(runOptions.AllowProductionWrites);
 
-if (runOptions.RunAll || runOptions.SeedTurpinverse)
+if (runOptions.RunAll || runOptions.SeedTurpinverse || runOptions.VerifyLinkedResources)
 {
     try
     {
@@ -61,7 +61,7 @@ try
     token = await AuthBootstrap.AuthenticateAsync(
         settings,
         oauthClient,
-        runAll: runOptions.RunAll || runOptions.SeedTurpinverse);
+        runAll: runOptions.RunAll || runOptions.SeedTurpinverse || runOptions.VerifyLinkedResources);
 }
 catch (Exception ex)
 {
@@ -90,7 +90,7 @@ builder.Services.AddTurpinverseSeedServices(builder.Configuration);
 builder.Services.AddSingleton(token);
 builder.Services.AddSingleton(_ =>
 {
-    var usePacing = runOptions.RunAll || runOptions.SeedTurpinverse;
+    var usePacing = runOptions.RunAll || runOptions.SeedTurpinverse || runOptions.VerifyLinkedResources;
     var options = usePacing ? RunAllHttpClientOptions.Create() : null;
     return new FreeAgentClient(oauthClient, token, environment, options);
 });
@@ -141,6 +141,21 @@ var runner = scope.ServiceProvider.GetRequiredService<ConsoleSampleRunner>();
 if (runOptions.RunAll)
 {
     return await runner.RunAllAsync(runOptions);
+}
+
+if (runOptions.VerifyLinkedResources)
+{
+    try
+    {
+        await runner.InvokeSampleByNameAsync(
+            LinkedResourceWriteVerificationSamples.VerifySampleName);
+        return 0;
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"Linked-resource verification failed: {ex.Message}");
+        return 1;
+    }
 }
 
 _ = await runner.RunInteractiveAsync();

@@ -144,7 +144,7 @@ Task<Project> UpdateProjectAsync(
 
 **HTTP:** `PUT /v2/projects/:id`
 
-On update, the SDK round-trips `ContactId` from the read model when present. Set `ContactId = null` to clear the billing contact. Pass `new ProjectUpdateOptions { OmitContact = true }` to update other fields without sending the contact link.
+On update, the SDK round-trips `ContactId` from the read model when present. A billing contact is required in FreeAgent: setting `ContactId = null` serialises `"contact": null` on the wire, but the API rejects the update (`contact_id can't be blank`). Pass `new ProjectUpdateOptions { OmitContact = true }` to update other fields without sending the contact link.
 
 ---
 
