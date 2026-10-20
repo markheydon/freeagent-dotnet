@@ -58,6 +58,18 @@ public class ConsoleSampleRunnerTests
         await Assert.ThrowsAsync<InvalidOperationException>(() => runner.RunAllAsync(options));
     }
 
+    [Fact]
+    public async Task InvokeSampleByNameAsync_LinkedResourceVerificationOnProductionWithHatch_ThrowsBeforeApi()
+    {
+        var services = CreateServices(FreeAgentEnvironment.Production, allowProductionWrites: true);
+
+        using var scope = services.BuildServiceProvider().CreateScope();
+        var runner = scope.ServiceProvider.GetRequiredService<ConsoleSampleRunner>();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => runner.InvokeSampleByNameAsync(LinkedResourceWriteVerificationSamples.VerifySampleName));
+    }
+
     private static ServiceCollection CreateServices(FreeAgentEnvironment environment, bool allowProductionWrites)
     {
         var services = new ServiceCollection();

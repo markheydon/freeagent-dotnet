@@ -42,7 +42,7 @@ internal sealed class ConsoleSampleRunner
             .ToList();
 
     /// <summary>
-    /// Invokes a discovered example by name for unit tests.
+    /// Invokes a discovered example by name for unit tests and the <c>--verify-linked-resources</c> CLI path.
     /// </summary>
     /// <param name="name">Example display name.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
@@ -312,7 +312,12 @@ internal sealed class ConsoleSampleRunner
                 _runtime.Environment,
                 _runtime.AllowProductionWrites);
 
-            if (_runtime.Environment != FreeAgentEnvironment.Sandbox && _runtime.AllowProductionWrites)
+            if (_runtime.Environment != FreeAgentEnvironment.Sandbox
+                && _runtime.AllowProductionWrites
+                && !string.Equals(
+                    entry.Name,
+                    LinkedResourceWriteVerificationSamples.VerifySampleName,
+                    StringComparison.Ordinal))
             {
                 Console.WriteLine(
                     "Warning: Production writes enabled — this example will modify live account data.");

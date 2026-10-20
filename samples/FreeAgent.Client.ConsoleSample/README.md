@@ -135,7 +135,7 @@ Examples marked **(mutates)** write to the connected account.
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
 | Stock items | List stock items; get stock item detail |
 | Price list items | List price list items; get price list item detail; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |
-| Linked resources | **(mutates)** verify linked-resource writes (create, update, delete) — sandbox PUT round-trip checks for issue #134 |
+| Linked resources | **(mutates)** verify linked-resource writes (create, update) — sandbox PUT round-trip checks for issue #134 |
 
 New SDK resource areas should add a matching `*Samples.cs` provider class under `Samples/`.
 
@@ -171,7 +171,12 @@ The Blazor workbench exposes the same orchestrator under **Developer Tools → T
 
 ## 5. Linked-resource sandbox verification (#134)
 
-One-shot live checks that project `ContactId` round-trips on scalar PUT, explicit `ProjectId = null` clears an optional invoice project link, and invoice scalar updates with `OmitLineItems` preserve contact and line items. The command prints a summary you can paste into [GitHub issue #134](https://github.com/markheydon/freeagent-dotnet/issues/134).
+One-shot live checks for linked-resource PUT semantics. The command prints a summary you can paste into [GitHub issue #134](https://github.com/markheydon/freeagent-dotnet/issues/134).
+
+- Project `ContactId` round-trips on create and scalar PUT.
+- Clearing project `ContactId` (null on the wire) is rejected by the API with a contact/blank validation error.
+- Invoice scalar updates with `OmitLineItems` preserve `ContactId` and line items.
+- Explicit invoice `ProjectId = null` clears an optional project link.
 
 **Sandbox only** — same write guard as `--run-all`. Not included in CI `--run-all` smoke.
 
@@ -179,7 +184,7 @@ One-shot live checks that project `ContactId` round-trips on scalar PUT, explici
 dotnet run --project samples/FreeAgent.Client.ConsoleSample -- --verify-linked-resources
 ```
 
-Use the same non-interactive token setup as `--run-all` (`FREEAGENT_REFRESH_TOKEN` or `FREEAGENT_ACCESS_TOKEN`). You can also run the same flow from the interactive menu under **Linked resources**.
+Use the same non-interactive token setup as `--run-all` (`FREEAGENT_REFRESH_TOKEN` or `FREEAGENT_ACCESS_TOKEN`). You can also run the same flow from the interactive menu under **Linked resources** (sandbox only — the menu path uses the same sandbox guard and ignores `FREEAGENT_ALLOW_PRODUCTION_WRITES`).
 
 ---
 

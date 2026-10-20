@@ -14,7 +14,8 @@ internal static class SandboxWriteGuard
     public const string AllowProductionWritesVariableName = "FREEAGENT_ALLOW_PRODUCTION_WRITES";
 
     /// <summary>
-    /// Ensures non-interactive sandbox smoke and seed runs target sandbox only.
+    /// Ensures non-interactive sandbox smoke, seed, and linked-resource verification runs target sandbox only.
+    /// Also applies to the linked-resource verification example from the interactive menu (ignores production-write hatch).
     /// </summary>
     /// <param name="environment">Resolved API environment.</param>
     /// <exception cref="InvalidOperationException">When the environment is not sandbox.</exception>
@@ -26,7 +27,8 @@ internal static class SandboxWriteGuard
         }
 
         throw new InvalidOperationException(
-            $"--run-all and --seed-turpinverse require the sandbox environment; connected environment is {environment}. " +
+            $"--run-all, --seed-turpinverse, and --verify-linked-resources require the sandbox environment; connected environment is {environment}. " +
+            $"The linked-resource verification example from the interactive menu is sandbox-only and ignores {AllowProductionWritesVariableName}. " +
             $"Set {SampleEnvironment.EnvironmentVariableName}=Sandbox or use the default console sample configuration.");
     }
 

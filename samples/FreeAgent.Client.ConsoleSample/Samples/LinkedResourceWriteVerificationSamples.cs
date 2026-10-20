@@ -1,4 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using FreeAgent.Client;
+using FreeAgent.Client.ConsoleSample;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
@@ -12,7 +15,7 @@ namespace FreeAgent.Client.ConsoleSample.Samples;
 internal sealed class LinkedResourceWriteVerificationSamples(SampleContext context) : IConsoleSampleProvider
 {
     /// <summary>Display name for menu discovery and <c>--verify-linked-resources</c>.</summary>
-    internal const string VerifySampleName = "Verify linked-resource writes (create, update, delete)";
+    internal const string VerifySampleName = "Verify linked-resource writes (create, update)";
 
     [ConsoleSample(
         Name = VerifySampleName,
@@ -21,6 +24,8 @@ internal sealed class LinkedResourceWriteVerificationSamples(SampleContext conte
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task VerifyLinkedResourceWritesAsync(CancellationToken cancellationToken)
     {
+        SandboxWriteGuard.EnsureRunAllAllowed(context.Client.Environment);
+
         var results = new List<(string Criterion, bool Passed, string? Detail)>();
         var environment = context.Client.Environment.ToString();
         var timestamp = DateTimeOffset.UtcNow;
@@ -64,6 +69,38 @@ internal sealed class LinkedResourceWriteVerificationSamples(SampleContext conte
 
             results.Add(("Project scalar update preserves ContactId", true, null));
 
+            var projectForNullContact = await context.Client.Projects.GetProjectAsync(
+                fromGet.ResourceId,
+                cancellationToken);
+            projectForNullContact.ContactId = null;
+
+            try
+            {
+                await context.Client.Projects.UpdateProjectAsync(
+                    projectForNullContact.ResourceId,
+                    projectForNullContact,
+                    cancellationToken: cancellationToken);
+
+                throw new InvalidOperationException(
+                    "Project ContactId null update: expected API validation failure, but the update succeeded.");
+            }
+            catch (FreeAgentApiException ex) when (ex.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.UnprocessableEntity)
+            {
+                if (LinkedResourceVerificationCriteria.IsProjectContactIdBlankRejection(ex))
+                {
+                    results.Add((
+                        "Project ContactId null is rejected by API (wire sends null)",
+                        true,
+                        ex.Message));
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Project ContactId null update: expected API validation rejecting a blank contact, "
+                        + $"but got status {(int)ex.StatusCode} {ex.StatusCode} with message: {ex.Message}");
+                }
+            }
+
             var invoice = await CreateProbeDraftInvoiceAsync(
                 expectedContactId,
                 afterScalarUpdate.ResourceId,
@@ -71,6 +108,21 @@ internal sealed class LinkedResourceWriteVerificationSamples(SampleContext conte
             probeInvoiceId = invoice.ResourceId;
             var originalLineCount = invoice.InvoiceItems?.Count ?? 0;
             var originalFirstItemId = invoice.InvoiceItems?.FirstOrDefault()?.ItemId;
+
+            if (originalFirstItemId is not > 0)
+            {
+                var invoiceWithLineIds = await context.Client.Invoices.GetInvoiceAsync(
+                    invoice.ResourceId,
+                    cancellationToken);
+                originalLineCount = invoiceWithLineIds.InvoiceItems?.Count ?? originalLineCount;
+                originalFirstItemId = invoiceWithLineIds.InvoiceItems?.FirstOrDefault()?.ItemId;
+            }
+
+            if (originalLineCount > 0 && originalFirstItemId is not > 0)
+            {
+                throw new InvalidOperationException(
+                    $"Invoice create: expected first line ItemId after GET refetch when {originalLineCount} line item(s) present, but ItemId was missing or zero.");
+            }
 
             if (invoice.ContactId != expectedContactId)
             {

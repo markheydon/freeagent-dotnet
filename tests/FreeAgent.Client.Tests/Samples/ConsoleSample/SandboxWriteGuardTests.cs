@@ -23,6 +23,7 @@ public class SandboxWriteGuardTests
 
         Assert.Contains("sandbox", exception.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("--seed-turpinverse", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("--verify-linked-resources", exception.Message, StringComparison.OrdinalIgnoreCase);
         Assert.Contains("Production", exception.Message, StringComparison.Ordinal);
     }
 
