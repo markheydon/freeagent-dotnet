@@ -97,12 +97,6 @@ internal sealed class ExpenseWritePayload
     [JsonPropertyName("attachment")]
     public ExpenseAttachmentWritePayload? Attachment { get; set; }
 
-    [JsonPropertyName("capital_asset")]
-    public string? CapitalAsset { get; set; }
-
-    [JsonPropertyName("depreciation_schedule")]
-    public string? DepreciationSchedule { get; set; }
-
     [JsonPropertyName("mileage")]
     public decimal? Mileage { get; set; }
 
@@ -180,8 +174,6 @@ internal sealed class ExpenseWritePayload
             NextRecursOn = expense.NextRecursOn,
             RecurringEndDate = expense.RecurringEndDate,
             Attachment = expense.AttachmentWrite,
-            CapitalAsset = expense.CapitalAssetUri,
-            DepreciationSchedule = expense.DepreciationSchedule,
             Mileage = expense.Mileage,
             VehicleType = expense.VehicleType,
             EngineType = expense.EngineType,

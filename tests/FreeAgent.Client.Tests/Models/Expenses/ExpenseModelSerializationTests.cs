@@ -111,6 +111,31 @@ public class ExpenseModelSerializationTests
     }
 
     [Fact]
+    public void SerializeExpenseWritePayload_OmitsReadOnlyCapitalAssetFields()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/expenses/5",
+              "user": "https://api.freeagent.com/v2/users/1",
+              "category": "https://api.freeagent.com/v2/categories/601",
+              "dated_on": "2024-03-01",
+              "gross_value": "-500.0",
+              "capital_asset": "https://api.freeagent.com/v2/capital_assets/9",
+              "depreciation_schedule": "reducing_balance"
+            }
+            """;
+
+        var expense = JsonSerializer.Deserialize<Expense>(json, FreeAgentJsonSerializer.Options);
+        Assert.NotNull(expense);
+
+        var payload = ExpenseWritePayload.FromExpense(expense!, FreeAgentEnvironment.Sandbox);
+        var payloadJson = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
+
+        Assert.DoesNotContain("capital_asset", payloadJson, StringComparison.Ordinal);
+        Assert.DoesNotContain("depreciation_schedule", payloadJson, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void SerializeExpenseWritePayload_MapsCategoryNominalCode()
     {
         var payload = ExpenseWritePayload.FromExpense(
