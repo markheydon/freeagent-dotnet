@@ -10,8 +10,8 @@ namespace FreeAgent.Client.Tests.Samples.ConsoleSample;
 public class ConsoleSampleClassificationTests
 {
     // Update both constants when adding or removing [ConsoleSample] methods.
-    private const int ExpectedExampleCount = 138;
-    private const int ExpectedMutatingCount = 72;
+    private const int ExpectedExampleCount = 140;
+    private const int ExpectedMutatingCount = 73;
 
     [Fact]
     public void DiscoverSamples_RegistersExpectedCounts()
