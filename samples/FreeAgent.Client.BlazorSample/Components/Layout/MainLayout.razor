@@ -200,6 +200,12 @@
                 <MudNavLink Href="/bank-transactions/detail" Icon="@Icons.Material.Filled.Edit">
                     Bank transaction operations
                 </MudNavLink>
+                <MudNavLink Href="/bank-transaction-explanations" Icon="@Icons.Material.Filled.AllInclusive">
+                    Bank transaction explanations list
+                </MudNavLink>
+                <MudNavLink Href="/bank-transaction-explanations/detail" Icon="@Icons.Material.Filled.Edit">
+                    Bank transaction explanation CRUD
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Sales catalogue" Icon="@Icons.Material.Filled.Inventory2" Expanded="@IsSalesCatalogueRoute">
@@ -376,7 +382,9 @@
         CurrentPath.Equals("bank-accounts", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("bank-accounts/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("bank-transactions", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.StartsWith("bank-transactions/", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.StartsWith("bank-transactions/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("bank-transaction-explanations", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("bank-transaction-explanations/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsSalesCatalogueRoute =>
         CurrentPath.Equals("stock-items", StringComparison.OrdinalIgnoreCase)

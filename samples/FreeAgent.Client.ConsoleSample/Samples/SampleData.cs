@@ -1,3 +1,5 @@
+using FreeAgent.Client.Models.BankAccounts;
+using FreeAgent.Client.Models.BankTransactionExplanations;
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.CreditNoteReconciliations;
@@ -32,6 +34,42 @@ internal sealed class SampleData
     public SampleData(SampleContext context)
     {
         _context = context ?? throw new ArgumentNullException(nameof(context));
+    }
+
+    /// <summary>
+    /// Returns the first bank account from the bank accounts list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A bank account.</returns>
+    public async Task<BankAccount> GetFirstBankAccountAsync(CancellationToken cancellationToken = default)
+    {
+        var bankAccounts = await _context.Client.BankAccounts.ListAsync(cancellationToken: cancellationToken);
+        if (bankAccounts.Count == 0)
+        {
+            SampleContext.Skip("no bank accounts found in sandbox account");
+        }
+
+        return bankAccounts[0];
+    }
+
+    /// <summary>
+    /// Returns the first bank transaction explanation for the first bank account.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A bank transaction explanation.</returns>
+    public async Task<BankTransactionExplanation> GetFirstBankTransactionExplanationAsync(CancellationToken cancellationToken = default)
+    {
+        var bankAccount = await GetFirstBankAccountAsync(cancellationToken);
+        var explanations = await _context.Client.BankTransactionExplanations.ListAsync(
+            bankAccountId: bankAccount.ResourceId,
+            cancellationToken: cancellationToken);
+
+        if (explanations.Count == 0)
+        {
+            SampleContext.Skip("no bank transaction explanations found for the first bank account");
+        }
+
+        return explanations[0];
     }
 
     /// <summary>

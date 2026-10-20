@@ -1,6 +1,7 @@
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Services.Attachments;
 using FreeAgent.Client.Services.BankAccounts;
+using FreeAgent.Client.Services.BankTransactionExplanations;
 using FreeAgent.Client.Services.BankTransactions;
 using FreeAgent.Client.Services.Bills;
 using FreeAgent.Client.Services.Categories;
@@ -118,6 +119,11 @@ public sealed class FreeAgentClient : IDisposable
     public BankTransactionsService BankTransactions { get; }
 
     /// <summary>
+    /// Bank transaction explanations API service.
+    /// </summary>
+    public BankTransactionExplanationsService BankTransactionExplanations { get; }
+
+    /// <summary>
     /// Hire purchases API service.
     /// </summary>
     public HirePurchasesService HirePurchases { get; }
@@ -216,6 +222,7 @@ public sealed class FreeAgentClient : IDisposable
         Bills = new BillService(_httpClient);
         BankAccounts = new BankAccountsService(_httpClient);
         BankTransactions = new BankTransactionsService(_httpClient);
+        BankTransactionExplanations = new BankTransactionExplanationsService(_httpClient);
         HirePurchases = new HirePurchasesService(_httpClient);
         Expenses = new ExpenseService(_httpClient);
         CreditNoteReconciliations = new CreditNoteReconciliationsService(_httpClient);

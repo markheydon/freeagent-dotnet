@@ -1,0 +1,422 @@
+@page "/bank-transaction-explanations/detail"
+@using FreeAgent.Client.Models.BankTransactionExplanations
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Bank transaction explanation detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Bank transaction explanations endpoint"
+                         Title="Get, create, update, and delete bank transaction explanations"
+                         CallUnderTest="@_callUnderTest"
+                         Description="Exercises single-explanation CRUD, each documented create variant via typed SDK requests, and wire-to-model diagnostics."
+                         EndpointPath="/v2/bank_transaction_explanations/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/bank_transaction_explanations" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick an explanation ID from the
+                        <MudLink Href="/bank-transaction-explanations">explanations list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Create variants need a bank transaction ID and variant-specific IDs below.
+                    </MudText>
+
+                    <MudSelect T="BankTransactionExplanationWriteProbeVariant"
+                               @bind-Value="_writeVariant"
+                               Label="Create write variant"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               FullWidth="true">
+                        @foreach (var variant in Enum.GetValues<BankTransactionExplanationWriteProbeVariant>())
+                        {
+                            <MudSelectItem Value="variant">@variant</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_explanationId" Label="Explanation ID (get/update/delete)" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_bankAccountId" Label="Bank account ID (create context)" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_bankTransactionId" Label="Bank transaction ID (create)" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_projectId" Label="Project ID" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_invoiceId" Label="Invoice ID" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_billId" Label="Bill ID" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_userId" Label="User ID" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_transferBankAccountId" Label="Transfer bank account ID" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_stockItemId" Label="Stock item ID" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_contactId" Label="Contact ID (opening balance)" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudNumericField @bind-Value="_disposedAssetId" Label="Disposed asset ID" Min="1" HideSpinButtons="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudTextField @bind-Value="_categoryNominalCode" Label="Category nominal code" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudTextField @bind-Value="_propertyUri" Label="Property URI (landlord)" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_updateDescription" Label="Description (update probe)" Lines="2" />
+                        </MudItem>
+                    </MudGrid>
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetExplanationAsync">Get explanation</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading || !CanCreate"
+                                   OnClick="CreateExplanationAsync">Run selected create variant</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _explanationId is null or < 1"
+                                   OnClick="UpdateExplanationAsync">Update description</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _explanationId is null or < 1"
+                                   OnClick="DeleteExplanationAsync">Delete explanation</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _explanation is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All BankTransactionExplanation model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_explanation.ResourceId</MudChip>
+                                @if (!string.IsNullOrWhiteSpace(_explanation.Type))
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@_explanation.Type</MudChip>
+                                }
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Description</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_explanation.Description ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Gross value</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_explanation.GrossValue?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Bank transaction ID</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_explanation.BankTransactionId?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Dated on</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_explanation.DatedOn?.ToString("yyyy-MM-dd") ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load explanation diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? ExplanationIdFromQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "bank_account_id")]
+    public long? BankAccountIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private BankTransactionExplanation? _explanation;
+    private ModelProbeSnapshot? _probe;
+    private BankTransactionExplanationWriteProbeVariant _writeVariant = BankTransactionExplanationWriteProbeVariant.CreateCategory;
+    private string _callUnderTest =
+        "BankTransactionExplanationsService.GetBankTransactionExplanationAsync / Create*BankTransactionExplanationAsync / UpdateBankTransactionExplanationAsync / DeleteBankTransactionExplanationAsync";
+
+    private long? _explanationId;
+    private long? _bankAccountId;
+    private long? _bankTransactionId;
+    private long? _projectId;
+    private long? _invoiceId;
+    private long? _billId;
+    private long? _userId;
+    private long? _transferBankAccountId;
+    private long? _stockItemId;
+    private long? _contactId;
+    private long? _disposedAssetId;
+    private string _categoryNominalCode = "285";
+    private string _propertyUri = string.Empty;
+    private string _updateDescription = "SDK probe description update";
+
+    private bool CanCreate => _bankTransactionId is > 0;
+
+    protected override void OnParametersSet()
+    {
+        if (ExplanationIdFromQuery is > 0 && _explanationId != ExplanationIdFromQuery)
+        {
+            _explanationId = ExplanationIdFromQuery;
+            _operationMessage = $"Explanation ID {_explanationId} loaded from URL. Press Get explanation to fetch diagnostics.";
+        }
+
+        if (BankAccountIdFromQuery is > 0 && _bankAccountId != BankAccountIdFromQuery)
+        {
+            _bankAccountId = BankAccountIdFromQuery;
+        }
+    }
+
+    private async System.Threading.Tasks.Task GetExplanationAsync()
+    {
+        if (_explanationId is null or < 1)
+        {
+            _error = "Enter an explanation ID.";
+            return;
+        }
+
+        _callUnderTest = "BankTransactionExplanationsService.GetBankTransactionExplanationAsync(...)";
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _explanation = await client.BankTransactionExplanations.GetBankTransactionExplanationAsync(_explanationId.Value);
+                _operationMessage = $"Loaded explanation {_explanationId.Value}.";
+                return $"bank_transaction_explanations/{_explanationId}";
+            },
+            envelopeProperty: "bank_transaction_explanation");
+    }
+
+    private async System.Threading.Tasks.Task CreateExplanationAsync()
+    {
+        if (!CanCreate)
+        {
+            _error = "Enter a bank transaction ID before creating.";
+            return;
+        }
+
+        _callUnderTest = BankTransactionExplanationWriteProbeSupport.GetCallUnderTest(_writeVariant) + "(...)";
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _explanation = await BankTransactionExplanationWriteProbeSupport.ExecuteCreateAsync(
+                    client,
+                    _writeVariant,
+                    BuildWriteContext());
+
+                if (_explanation.TryGetResourceId(out var assignedId))
+                {
+                    _explanationId = assignedId;
+                    _operationMessage = $"Created explanation {assignedId} via {_writeVariant}.";
+                    return $"bank_transaction_explanations/{assignedId}";
+                }
+
+                _operationMessage = $"Created explanation via {_writeVariant} but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "bank_transaction_explanation");
+    }
+
+    private async System.Threading.Tasks.Task UpdateExplanationAsync()
+    {
+        if (_explanationId is null or < 1)
+        {
+            return;
+        }
+
+        _callUnderTest = "BankTransactionExplanationsService.UpdateBankTransactionExplanationAsync(...)";
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var request = new UpdateBankTransactionExplanationRequest
+                {
+                    Description = string.IsNullOrWhiteSpace(_updateDescription) ? null : _updateDescription
+                };
+
+                _explanation = await client.BankTransactionExplanations.UpdateBankTransactionExplanationAsync(
+                    _explanationId.Value,
+                    request);
+                _operationMessage = $"Updated description on explanation {_explanationId.Value}.";
+                return $"bank_transaction_explanations/{_explanationId}";
+            },
+            envelopeProperty: "bank_transaction_explanation");
+    }
+
+    private async System.Threading.Tasks.Task DeleteExplanationAsync()
+    {
+        if (_explanationId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _explanationId.Value;
+        _callUnderTest = "BankTransactionExplanationsService.DeleteBankTransactionExplanationAsync(...)";
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.BankTransactionExplanations.DeleteBankTransactionExplanationAsync(deletedId);
+                _explanation = null;
+                _probe = null;
+                _operationMessage = $"Deleted explanation {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private BankTransactionExplanationWriteProbeContext BuildWriteContext() =>
+        new()
+        {
+            BankAccountId = _bankAccountId ?? 0,
+            BankTransactionId = _bankTransactionId ?? 0,
+            ProjectId = _projectId ?? 0,
+            InvoiceId = _invoiceId ?? 0,
+            BillId = _billId ?? 0,
+            UserId = _userId ?? 0,
+            TransferBankAccountId = _transferBankAccountId ?? 0,
+            StockItemId = _stockItemId ?? 0,
+            ContactId = _contactId ?? 0,
+            DisposedAssetId = _disposedAssetId ?? 0,
+            CategoryNominalCode = _categoryNominalCode,
+            PropertyUri = _propertyUri
+        };
+
+    private async System.Threading.Tasks.Task RunOperationAsync(
+        Func<FreeAgentClient, System.Threading.Tasks.Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (_explanation is not null)
+            {
+                SeedFormFromExplanation();
+            }
+
+            if (fetchWirePayload && _explanation is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_explanation, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void SeedFormFromExplanation()
+    {
+        if (_explanation is null)
+        {
+            return;
+        }
+
+        _updateDescription = _explanation.Description ?? _updateDescription;
+        _bankTransactionId = _explanation.BankTransactionId ?? _bankTransactionId;
+        _bankAccountId = _explanation.BankAccountId ?? _bankAccountId;
+        _projectId = _explanation.ProjectId ?? _projectId;
+        _invoiceId = _explanation.PaidInvoiceId ?? _invoiceId;
+        _billId = _explanation.PaidBillId ?? _billId;
+        _userId = _explanation.PaidUserId ?? _userId;
+        _transferBankAccountId = _explanation.TransferBankAccountId ?? _transferBankAccountId;
+        _stockItemId = _explanation.StockItemId ?? _stockItemId;
+        _contactId = _explanation.DirectContactId ?? _contactId;
+        _categoryNominalCode = _explanation.CategoryNominalCode ?? _categoryNominalCode;
+        _propertyUri = _explanation.PropertyUri ?? _propertyUri;
+    }
+}

@@ -1,0 +1,337 @@
+@page "/bank-transaction-explanations"
+@using FreeAgent.Client.Models.BankTransactionExplanations
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Bank transaction explanations - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Bank transaction explanations endpoint"
+                         Title="Bank transaction explanations list"
+                         CallUnderTest="BankTransactionExplanationsService.ListAsync(...)"
+                         Description="Load explanations for one bank account, inspect wire-to-model mapping for any row, then jump into CRUD to test get, create variants, update, and delete."
+                         EndpointPath="/v2/bank_transaction_explanations?bank_account={uri}&from_date={date}&to_date={date}&updated_since={timestamp}"
+                         DocsUrl="https://dev.freeagent.com/docs/bank_transaction_explanations" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        List requires a bank account ID. Use <strong>Inspect mapping</strong> on any row, or open
+                        <MudLink Href="@GetDetailHref()">bank transaction explanation CRUD</MudLink>.
+                        Pick a bank account from the <MudLink Href="/bank-accounts">bank accounts list</MudLink> if needed.
+                    </MudText>
+
+                    <MudGrid Spacing="2" Class="contacts-filter-grid">
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudNumericField @bind-Value="_bankAccountId"
+                                             Label="Bank account ID (required)"
+                                             Min="1"
+                                             Variant="Variant.Outlined"
+                                             Margin="Margin.Dense"
+                                             HideSpinButtons="true"
+                                             FullWidth="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudDatePicker @bind-Date="_updatedSinceDate"
+                                           Label="Updated since (UTC date)"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Clearable="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudDatePicker @bind-Date="_fromDate"
+                                           Label="From date"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Clearable="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudDatePicker @bind-Date="_toDate"
+                                           Label="To date"
+                                           Variant="Variant.Outlined"
+                                           Margin="Margin.Dense"
+                                           Clearable="true" />
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                                       Disabled="_loading"
+                                       Class="contacts-load-button"
+                                       OnClick="LoadExplanationsAsync">
+                                @if (_loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Loading…</span>
+                                }
+                                else
+                                {
+                                    <span>Load explanations</span>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+
+                @if (_explanations is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load explanations</strong> to fetch data from FreeAgent.</MudText>
+                }
+
+                @if (_explanations is not null)
+                {
+                    <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                        <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                            @_explanations.Count explanation@(_explanations.Count == 1 ? string.Empty : "s")
+                        </MudChip>
+                    </MudStack>
+
+                    @if (_explanations.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No bank transaction explanations returned for this bank account. Create one from
+                            <MudLink Href="@GetDetailHref()">bank transaction explanation CRUD</MudLink>
+                            when you have an unexplained bank transaction to explain.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Type</MudTh>
+                                    <MudTh>Description</MudTh>
+                                    <MudTh>Dated on</MudTh>
+                                    <MudTh>Gross value</MudTh>
+                                    <MudTh>Bank transaction ID</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Type">@ValueOrDash(context.Type)</MudTd>
+                                    <MudTd DataLabel="Description">@ValueOrDash(context.Description)</MudTd>
+                                    <MudTd DataLabel="Dated on">@ValueOrDash(context.DatedOn)</MudTd>
+                                    <MudTd DataLabel="Gross value">@ValueOrDash(context.GrossValue)</MudTd>
+                                    <MudTd DataLabel="Bank transaction ID">@ValueOrDash(context.BankTransactionId)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectRow(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetCrudHref(context.Id)">
+                                                Open in CRUD
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedExplanation is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All BankTransactionExplanation model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected explanation</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    ID: @_inspectedExplanation.ResourceId
+                                </MudChip>
+                                @if (!string.IsNullOrWhiteSpace(_inspectedExplanation.Type))
+                                {
+                                    <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@_inspectedExplanation.Type</MudChip>
+                                }
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private long? _bankAccountId;
+    private DateTime? _updatedSinceDate;
+    private DateTime? _fromDate;
+    private DateTime? _toDate;
+    private IReadOnlyList<BankTransactionExplanation>? _explanations;
+    private int? _inspectedIndex;
+    private BankTransactionExplanation? _inspectedExplanation;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private IReadOnlyList<ExplanationRow> _rows = [];
+
+    private async System.Threading.Tasks.Task LoadExplanationsAsync()
+    {
+        if (_bankAccountId is null or < 1)
+        {
+            _error = "Enter a bank account ID.";
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _inspectedIndex = null;
+        _inspectedExplanation = null;
+        _inspectedProbe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _explanations = await client.BankTransactionExplanations.ListAsync(
+                bankAccountId: _bankAccountId,
+                fromDate: _fromDate is null ? null : DateOnly.FromDateTime(_fromDate.Value),
+                toDate: _toDate is null ? null : DateOnly.FromDateTime(_toDate.Value),
+                updatedSince: _updatedSinceDate is null
+                    ? null
+                    : new DateTimeOffset(_updatedSinceDate.Value, TimeSpan.Zero));
+
+            _rows = _explanations
+                .Select((explanation, index) => new ExplanationRow(
+                    index,
+                    explanation.ResourceId,
+                    explanation.Type,
+                    explanation.Description,
+                    explanation.DatedOn?.ToString("yyyy-MM-dd"),
+                    explanation.GrossValue?.ToString(),
+                    explanation.BankTransactionId?.ToString()))
+                .ToList();
+
+            var query = BuildQueryString();
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                string.IsNullOrEmpty(query) ? "bank_transaction_explanations" : $"bank_transaction_explanations?{query}");
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _explanations = null;
+            _rows = [];
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+            _explanations = null;
+            _rows = [];
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string BuildQueryString()
+    {
+        var bankAccountUri = Uri.EscapeDataString(
+            BankAccountReference.ForEnvironment(TokenStore.ConnectedEnvironment, _bankAccountId!.Value).Uri);
+        var parts = new List<string> { $"bank_account={bankAccountUri}" };
+
+        if (_updatedSinceDate is not null)
+        {
+            var updatedSince = new DateTimeOffset(_updatedSinceDate.Value, TimeSpan.Zero);
+            parts.Add($"updated_since={Uri.EscapeDataString(updatedSince.ToString("o"))}");
+        }
+
+        if (_fromDate is not null)
+        {
+            parts.Add($"from_date={Uri.EscapeDataString(DateOnly.FromDateTime(_fromDate.Value).ToString("yyyy-MM-dd"))}");
+        }
+
+        if (_toDate is not null)
+        {
+            parts.Add($"to_date={Uri.EscapeDataString(DateOnly.FromDateTime(_toDate.Value).ToString("yyyy-MM-dd"))}");
+        }
+
+        return string.Join('&', parts);
+    }
+
+    private void InspectRow(int index)
+    {
+        if (_explanations is null || index < 0 || index >= _explanations.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedExplanation = _explanations[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "bank_transaction_explanations", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedExplanation, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedExplanation, _wireApiResponse, envelopeProperty: "bank_transaction_explanations");
+    }
+
+    private string GetDetailHref() =>
+        _bankAccountId is > 0
+            ? $"/bank-transaction-explanations/detail?bank_account_id={_bankAccountId}"
+            : "/bank-transaction-explanations/detail";
+
+    private string GetCrudHref(long id)
+    {
+        var href = $"/bank-transaction-explanations/detail?id={id}";
+        if (_bankAccountId is > 0)
+        {
+            href += $"&bank_account_id={_bankAccountId}";
+        }
+
+        return href;
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private sealed record ExplanationRow(
+        int Index,
+        long Id,
+        string? Type,
+        string? Description,
+        string? DatedOn,
+        string? GrossValue,
+        string? BankTransactionId);
+}
