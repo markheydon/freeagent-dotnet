@@ -1,0 +1,464 @@
+@page "/bank-transactions"
+@using FreeAgent.Client.Models.BankTransactions
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Bank transactions - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Bank transactions endpoint"
+                         Title="Bank transactions list"
+                         CallUnderTest="BankTransactionsService.ListAsync(...)"
+                         Description="List transactions for one bank account, inspect wire-to-model mapping for any row, then open get, delete, and statement upload."
+                         EndpointPath="/v2/bank_transactions?bank_account={uri}&page={page}&per_page={perPage}"
+                         DocsUrl="https://dev.freeagent.com/docs/bank_transactions" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudText Typo="Typo.body2" Class="hero-copy">
+                    List requires a bank account. Use <strong>Inspect mapping</strong> on any row, or open
+                    <MudLink Href="@GetDetailHref()">bank transaction operations</MudLink>.
+                </MudText>
+
+                <MudGrid Spacing="2" Class="contacts-filter-grid">
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <MudNumericField @bind-Value="_bankAccountId"
+                                         Label="Bank account ID"
+                                         Min="1"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         HideSpinButtons="true"
+                                         FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <MudSelect T="BankTransactionView?"
+                                   @bind-Value="_view"
+                                   Label="View"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
+                                   Clearable="true"
+                                   FullWidth="true">
+                            <MudSelectItem T="BankTransactionView?" Value="BankTransactionView.All">all</MudSelectItem>
+                            <MudSelectItem T="BankTransactionView?" Value="BankTransactionView.Unexplained">unexplained</MudSelectItem>
+                            <MudSelectItem T="BankTransactionView?" Value="BankTransactionView.Explained">explained</MudSelectItem>
+                            <MudSelectItem T="BankTransactionView?" Value="BankTransactionView.Manual">manual</MudSelectItem>
+                            <MudSelectItem T="BankTransactionView?" Value="BankTransactionView.Imported">imported</MudSelectItem>
+                            <MudSelectItem T="BankTransactionView?" Value="BankTransactionView.MarkedForReview">marked_for_review</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <MudDatePicker @bind-Date="_fromDate"
+                                       Label="From date"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Clearable="true"
+                                       Class="w-100" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <MudDatePicker @bind-Date="_toDate"
+                                       Label="To date"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Clearable="true"
+                                       Class="w-100" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <MudDatePicker @bind-Date="_updatedSinceDate"
+                                       Label="Updated since (date)"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       Clearable="true"
+                                       Class="w-100" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4" lg="3">
+                        <MudSelect T="string"
+                                   @bind-Value="_lastUploaded"
+                                   Label="Latest statement"
+                                   Variant="Variant.Outlined"
+                                   Margin="Margin.Dense"
+                                   FullWidth="true">
+                            <MudSelectItem Value="@string.Empty">Any upload</MudSelectItem>
+                            <MudSelectItem Value="@("true")">last_uploaded=true</MudSelectItem>
+                            <MudSelectItem Value="@("false")">last_uploaded=false</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="3" lg="2">
+                        <MudNumericField @bind-Value="_perPage"
+                                         Label="Per page"
+                                         Min="1"
+                                         Max="100"
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         HideSpinButtons="true"
+                                         FullWidth="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                        <MudButton Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   Disabled="_loading"
+                                   Class="contacts-load-button"
+                                   OnClick="LoadTransactionsAsync">
+                            @if (_loading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Loading…</span>
+                            }
+                            else
+                            {
+                                <span>Load transactions</span>
+                            }
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+
+                @if (_pageResult is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Enter a bank account ID and press <strong>Load transactions</strong>.</MudText>
+                }
+
+                @if (_pageResult is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_pageResult.Items.Count of @_pageResult.Total transaction@(_pageResult.Total == 1 ? "" : "s")
+                    </MudChip>
+
+                    @if (_pageResult.Items.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No bank transactions returned for the selected filters.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Dated on</MudTh>
+                                    <MudTh>Description</MudTh>
+                                    <MudTh>Amount</MudTh>
+                                    <MudTh>Unexplained</MudTh>
+                                    <MudTh></MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID">@context.Id</MudTd>
+                                    <MudTd DataLabel="Dated on">@context.DatedOn</MudTd>
+                                    <MudTd DataLabel="Description">@context.Description</MudTd>
+                                    <MudTd DataLabel="Amount">@context.Amount</MudTd>
+                                    <MudTd DataLabel="Unexplained">@context.UnexplainedAmount</MudTd>
+                                    <MudTd>
+                                        <MudStack Row="true" Spacing="1">
+                                            <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="@(() => Inspect(context.Index))">Inspect mapping</MudButton>
+                                            <MudButton Size="Size.Small" Variant="Variant.Text" Href="@GetDetailHref(context.Id)">Open</MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+
+                    @if (_inspectedProbe is not null && _inspectedTransaction is not null)
+                    {
+                        <ModelProbeResults Snapshot="_inspectedProbe"
+                                         WirePayload="@_wireApiResponse"
+                                         ModelFieldsHeading="All BankTransaction model fields">
+                            <SummaryContent>
+                                <MudText Typo="Typo.h6">Row @(_inspectedIndex + 1): @_inspectedTransaction.Description</MudText>
+                            </SummaryContent>
+                        </ModelProbeResults>
+                    }
+                }
+
+                <MudExpansionPanels>
+                    <MudExpansionPanel Text="Developer probe: auto-pagination (ListAutoPagingAsync)">
+                        <MudStack Spacing="2">
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       Disabled="_loadingAll"
+                                       OnClick="LoadAllAsync">
+                                @(_loadingAll ? "Enumerating…" : "Count all transactions")
+                            </MudButton>
+                            @if (_allCount is not null)
+                            {
+                                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+                                    <code>ListAutoPagingAsync</code> yielded @_allCount.Value transaction@(_allCount.Value == 1 ? "" : "s").
+                                </MudAlert>
+                            }
+                        </MudStack>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private bool _loadingAll;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private PaginatedResponse<BankTransaction>? _pageResult;
+    private BankTransaction? _inspectedTransaction;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+    private int? _allCount;
+    private long? _bankAccountId;
+    private BankTransactionView? _view;
+    private DateTime? _fromDate;
+    private DateTime? _toDate;
+    private DateTime? _updatedSinceDate;
+    private string _lastUploaded = string.Empty;
+    private int _perPage = 25;
+
+    private IReadOnlyList<TransactionRow> _rows => _pageResult?.Items
+        .Select(static (transaction, index) => new TransactionRow(
+            index,
+            transaction.ResourceId,
+            transaction.DatedOn?.ToString("yyyy-MM-dd") ?? "-",
+            string.IsNullOrWhiteSpace(transaction.Description) ? "-" : transaction.Description,
+            transaction.Amount?.ToString() ?? "-",
+            transaction.UnexplainedAmount?.ToString() ?? "-"))
+        .ToList() ?? [];
+
+    private async Task LoadTransactionsAsync()
+    {
+        if (_bankAccountId is null or < 1)
+        {
+            _error = "Enter a bank account ID.";
+            return;
+        }
+
+        _pageResult = null;
+        _inspectedTransaction = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+        _allCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+        var diagnosticsEndpoint = BuildDiagnosticsEndpoint();
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _pageResult = await client.BankTransactions.ListAsync(
+                page: 1,
+                perPage: _perPage,
+                bankAccountId: _bankAccountId,
+                view: _view,
+                fromDate: ToDateOnly(_fromDate),
+                toDate: ToDateOnly(_toDate),
+                updatedSince: ToTimestamp(_updatedSinceDate),
+                lastUploaded: ParseLastUploaded());
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void Inspect(int index)
+    {
+        if (_pageResult is null || index < 0 || index >= _pageResult.Items.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedTransaction = _pageResult.Items[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "bank_transactions", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedTransaction, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedTransaction, _wireApiResponse, envelopeProperty: "bank_transactions");
+    }
+
+    private async Task LoadAllAsync()
+    {
+        if (_bankAccountId is null or < 1)
+        {
+            _error = "Enter a bank account ID.";
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loadingAll = true;
+        _error = null;
+        _allCount = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var count = 0;
+            await foreach (var _ in client.BankTransactions.ListAutoPagingAsync(
+                perPage: _perPage,
+                bankAccountId: _bankAccountId,
+                view: _view,
+                fromDate: ToDateOnly(_fromDate),
+                toDate: ToDateOnly(_toDate),
+                updatedSince: ToTimestamp(_updatedSinceDate),
+                lastUploaded: ParseLastUploaded()))
+            {
+                count++;
+            }
+
+            _allCount = count;
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loadingAll = false;
+        }
+    }
+
+    private string BuildDiagnosticsEndpoint()
+    {
+        var bankAccountUri = Uri.EscapeDataString(
+            BankAccountReference.ForEnvironment(TokenStore.ConnectedEnvironment, _bankAccountId!.Value).Uri);
+        var query = new List<string>
+        {
+            $"bank_account={bankAccountUri}",
+            "page=1",
+            $"per_page={_perPage}"
+        };
+
+        if (_view is not null)
+        {
+            query.Add($"view={ViewWireValue(_view.Value)}");
+        }
+
+        if (_fromDate is not null)
+        {
+            query.Add($"from_date={_fromDate.Value:yyyy-MM-dd}");
+        }
+
+        if (_toDate is not null)
+        {
+            query.Add($"to_date={_toDate.Value:yyyy-MM-dd}");
+        }
+
+        if (_updatedSinceDate is not null)
+        {
+            query.Add($"updated_since={Uri.EscapeDataString(new DateTimeOffset(_updatedSinceDate.Value, TimeSpan.Zero).ToString("o"))}");
+        }
+
+        if (!string.IsNullOrEmpty(_lastUploaded))
+        {
+            query.Add($"last_uploaded={_lastUploaded}");
+        }
+
+        return "bank_transactions?" + string.Join("&", query);
+    }
+
+    private string GetDetailHref(long? transactionId = null)
+    {
+        var query = new List<string>();
+        if (transactionId is > 0)
+        {
+            query.Add($"id={transactionId.Value}");
+        }
+
+        if (_bankAccountId is > 0)
+        {
+            query.Add($"bankAccountId={_bankAccountId.Value}");
+        }
+
+        return query.Count == 0
+            ? "/bank-transactions/detail"
+            : "/bank-transactions/detail?" + string.Join("&", query);
+    }
+
+    private bool? ParseLastUploaded() => _lastUploaded switch
+    {
+        "true" => true,
+        "false" => false,
+        _ => null
+    };
+
+    private static DateOnly? ToDateOnly(DateTime? value) =>
+        value is null ? null : DateOnly.FromDateTime(value.Value);
+
+    private static DateTimeOffset? ToTimestamp(DateTime? value) =>
+        value is null ? null : new DateTimeOffset(value.Value, TimeSpan.Zero);
+
+    private static string ViewWireValue(BankTransactionView view) => view switch
+    {
+        BankTransactionView.All => "all",
+        BankTransactionView.Unexplained => "unexplained",
+        BankTransactionView.Explained => "explained",
+        BankTransactionView.Manual => "manual",
+        BankTransactionView.Imported => "imported",
+        BankTransactionView.MarkedForReview => "marked_for_review",
+        _ => "all"
+    };
+
+    private sealed record TransactionRow(
+        int Index,
+        long Id,
+        string DatedOn,
+        string Description,
+        string Amount,
+        string UnexplainedAmount);
+}

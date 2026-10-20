@@ -55,7 +55,7 @@ Explanation type determines which URI fields are required (payment, invoice rece
 | Resource | Official docs | SDK |
 |----------|---------------|-----|
 | Bank accounts | [Bank accounts](https://dev.freeagent.com/docs/bank_accounts) | `client.BankAccounts` |
-| Bank transactions | [Bank transactions](https://dev.freeagent.com/docs/bank_transactions) | Not yet |
+| Bank transactions | [Bank transactions](https://dev.freeagent.com/docs/bank_transactions) | `client.BankTransactions` |
 | Bank transaction explanations | [Bank transaction explanations](https://dev.freeagent.com/docs/bank_transaction_explanations) | Not yet |
 | Bank feeds | [Bank feeds](https://dev.freeagent.com/docs/bank_feeds) | Not yet |
 
@@ -102,4 +102,4 @@ From 1 December 2026, bank transaction explanations will return an `attachments`
 
 ## SDK sequencing note
 
-Start with **Bank accounts**, then **Bank transactions** (list is scoped to an account), then **Bank transaction explanations**. Typed services for [Invoices](sales.md), [Bills](purchases.md), and [Categories](foundations.md) improve explanation probes but are not required to model the explanation resource itself.
+**Bank accounts** and **Bank transactions** are implemented (`client.BankAccounts`, `client.BankTransactions`). List and statement upload take a bank account id. Nested explanations on GET use the fields documented on the bank transactions page. **Bank transaction explanations** remain outstanding for create, update, and delete. Typed services for [Invoices](sales.md), [Bills](purchases.md), and [Categories](foundations.md) improve explanation probes but are not required to model the explanation resource itself.
