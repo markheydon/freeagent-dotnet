@@ -214,9 +214,17 @@ internal static class LinkedResourceWriteMapper
         if (categoryBacking.IsExplicitlySet)
         {
             var code = categoryBacking.Get(fromLink: null);
-            return string.IsNullOrWhiteSpace(code)
-                ? null
-                : ExpenseCategoryWriteValue.ForCategory(CategoryReference.ForEnvironment(environment, code));
+            if (!string.IsNullOrWhiteSpace(code))
+            {
+                return ExpenseCategoryWriteValue.ForCategory(CategoryReference.ForEnvironment(environment, code));
+            }
+
+            if (isMileageExplicit != false && isMileageFromLink)
+            {
+                return ExpenseCategoryWriteValue.Mileage();
+            }
+
+            return null;
         }
 
         if (isMileageExplicit == false)

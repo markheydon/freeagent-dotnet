@@ -69,6 +69,23 @@ public class LinkedResourceWriteMapperTests
     }
 
     [Fact]
+    public void ResolveExpenseCategoryWrite_ClearedNominalOnMileageLink_ReturnsMileage()
+    {
+        var backing = default(SettableLinkValue);
+        backing.Set(null);
+
+        var value = LinkedResourceWriteMapper.ResolveExpenseCategoryWrite(
+            FreeAgentEnvironment.Sandbox,
+            isMileageExplicit: null,
+            isMileageFromLink: true,
+            categoryBacking: backing,
+            linkNominalCode: null);
+
+        Assert.True(value.HasValue);
+        Assert.True(value.Value.IsMileage);
+    }
+
+    [Fact]
     public void ResolveContactReference_RoundTripsFromWireLink()
     {
         var backing = default(SettableLinkId);

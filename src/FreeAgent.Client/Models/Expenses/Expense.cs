@@ -89,7 +89,11 @@ public sealed class Expense : IFreeAgentResource
         get => _categoryNominalCode.Get(CategoryLink?.NominalCode);
         set
         {
-            _isMileageCategory = false;
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                _isMileageCategory = false;
+            }
+
             _categoryNominalCode.Set(value);
         }
     }

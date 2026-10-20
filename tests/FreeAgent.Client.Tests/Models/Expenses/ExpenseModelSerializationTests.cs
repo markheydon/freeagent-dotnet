@@ -88,21 +88,26 @@ public class ExpenseModelSerializationTests
     [Fact]
     public void SerializeExpenseWritePayload_MapsMileageAfterCategoryClear()
     {
-        var expense = new Expense
-        {
-            UserId = 1,
-            DatedOn = new DateOnly(2024, 3, 1),
-            Mileage = 10m,
-            VehicleType = ExpenseVehicleType.Car,
-            Description = "Trip"
-        };
-        expense.CategoryNominalCode = null;
-        expense.IsMileageCategory = true;
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/expenses/4",
+              "user": "https://api.freeagent.com/v2/users/1",
+              "category": "Mileage",
+              "dated_on": "2024-03-01",
+              "mileage": "10",
+              "vehicle_type": "Car",
+              "description": "Trip"
+            }
+            """;
+
+        var expense = JsonSerializer.Deserialize<Expense>(json, FreeAgentJsonSerializer.Options);
+        Assert.NotNull(expense);
+        expense!.CategoryNominalCode = null;
 
         var payload = ExpenseWritePayload.FromExpense(expense, FreeAgentEnvironment.Sandbox);
-        var json = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
+        var payloadJson = JsonSerializer.Serialize(payload, FreeAgentJsonSerializer.Options);
 
-        Assert.Contains("\"category\":\"Mileage\"", json, StringComparison.Ordinal);
+        Assert.Contains("\"category\":\"Mileage\"", payloadJson, StringComparison.Ordinal);
     }
 
     [Fact]
