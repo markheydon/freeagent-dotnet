@@ -206,17 +206,17 @@ internal static class LinkedResourceWriteMapper
         in SettableLinkValue categoryBacking,
         string? linkNominalCode)
     {
+        if (isMileageExplicit == true)
+        {
+            return ExpenseCategoryWriteValue.Mileage();
+        }
+
         if (categoryBacking.IsExplicitlySet)
         {
             var code = categoryBacking.Get(fromLink: null);
             return string.IsNullOrWhiteSpace(code)
                 ? null
                 : ExpenseCategoryWriteValue.ForCategory(CategoryReference.ForEnvironment(environment, code));
-        }
-
-        if (isMileageExplicit == true)
-        {
-            return ExpenseCategoryWriteValue.Mileage();
         }
 
         if (isMileageExplicit == false)

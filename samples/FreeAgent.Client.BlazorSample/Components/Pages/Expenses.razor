@@ -1,6 +1,7 @@
 @page "/expenses"
 @using FreeAgent.Client
 @using FreeAgent.Client.Models.Expenses
+@using FreeAgent.Client.Models.Shared
 @using FreeAgent.Client.BlazorSample.Services
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
@@ -255,7 +256,7 @@
 
         if (_projectIdFilter is > 0)
         {
-            query.Add($"project={Uri.EscapeDataString($"https://api.freeagent.com/v2/projects/{_projectIdFilter}")}");
+            query.Add($"project={Uri.EscapeDataString(ProjectReference.ForEnvironment(TokenStore.ConnectedEnvironment, _projectIdFilter.Value).Uri)}");
         }
 
         return $"expenses?{string.Join('&', query)}";
