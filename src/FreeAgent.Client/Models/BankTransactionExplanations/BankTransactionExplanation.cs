@@ -288,10 +288,16 @@ public sealed class BankTransactionExplanation : IFreeAgentResource
     public Invoice? PaidInvoice => PaidInvoiceLink?.Value;
 
     /// <summary>
-    /// Invoice identifier parsed from the response.
+    /// Invoice identifier when <c>paid_invoice</c> links to an invoice.
     /// </summary>
     [JsonIgnore]
-    public long? PaidInvoiceId => PaidInvoiceLink?.Id;
+    public long? PaidInvoiceId => GetPaidInvoiceLinkId("invoices");
+
+    /// <summary>
+    /// Credit note identifier when <c>paid_invoice</c> links to a credit note refund.
+    /// </summary>
+    [JsonIgnore]
+    public long? PaidCreditNoteId => GetPaidInvoiceLinkId("credit_notes");
 
     /// <summary>
     /// Foreign currency value when explaining a foreign currency invoice.
@@ -471,4 +477,20 @@ public sealed class BankTransactionExplanation : IFreeAgentResource
     /// </summary>
     [JsonPropertyName("updated_at")]
     public DateTimeOffset? UpdatedAt { get; set; }
+
+    private long? GetPaidInvoiceLinkId(string resourceSegment)
+    {
+        if (PaidInvoiceLink?.Uri is not string uri)
+        {
+            return null;
+        }
+
+        if (!uri.Contains($"/{resourceSegment}/", StringComparison.OrdinalIgnoreCase)
+            && !uri.EndsWith($"/{resourceSegment}", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return PaidInvoiceLink.Id;
+    }
 }

@@ -57,6 +57,36 @@ public class BankTransactionExplanationModelSerializationTests
     }
 
     [Fact]
+    public void Deserialize_ReadsPaidInvoiceAndCreditNoteIdsFromPaidInvoiceLink()
+    {
+        const string invoiceJson = """
+        {
+          "url": "https://api.freeagent.com/v2/bank_transaction_explanations/1",
+          "paid_invoice": "https://api.freeagent.com/v2/invoices/3"
+        }
+        """;
+
+        var invoiceExplanation = JsonSerializer.Deserialize<BankTransactionExplanation>(invoiceJson, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(invoiceExplanation);
+        Assert.Equal(3, invoiceExplanation.PaidInvoiceId);
+        Assert.Null(invoiceExplanation.PaidCreditNoteId);
+
+        const string creditNoteJson = """
+        {
+          "url": "https://api.freeagent.com/v2/bank_transaction_explanations/2",
+          "paid_invoice": "https://api.freeagent.com/v2/credit_notes/5"
+        }
+        """;
+
+        var creditNoteExplanation = JsonSerializer.Deserialize<BankTransactionExplanation>(creditNoteJson, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(creditNoteExplanation);
+        Assert.Null(creditNoteExplanation.PaidInvoiceId);
+        Assert.Equal(5, creditNoteExplanation.PaidCreditNoteId);
+    }
+
+    [Fact]
     public void Deserialize_ReadsEcStatusAndRebillTypeWireValues()
     {
         const string json = """
