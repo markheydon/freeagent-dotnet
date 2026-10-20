@@ -54,7 +54,7 @@ Inspect `./nupkg/*.nupkg` without publishing.
 | Tag/csproj version mismatch | Workflow fails validation - align `<Version>` and tag |
 | `403` on NuGet push | Check Trusted Publishing policy (repo, workflow file, package glob) and `NUGET_USER` secret |
 | Package already exists | Expected on re-run; workflow uses `--skip-duplicate` |
-| Missing `net8.0` build on CI | Ensure setup-dotnet installs `8.0.x` and `10.0.x` |
+| Missing `net8.0` build on CI | Ensure setup-dotnet installs `global.json` plus `8.0.x` |
 
 ## Stable releases
 
