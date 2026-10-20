@@ -16,7 +16,7 @@ List, get, and delete bank transactions for a bank account, and upload statement
 
 Pagination patterns: see [Pagination](../how-to/pagination.md). Bank account links: see [Linked resources](../explanation/linked-resources.md). Cluster context: see [Banking entity map](../explanation/api-entity-map/banking.md).
 
-Nested `bank_transaction_explanations` on GET use the fields documented on the bank transactions page. Create, update, and delete for explanations are a separate resource and are not part of this service.
+Nested `bank_transaction_explanations` on GET use the fields documented on the bank transactions page. Create, update, and delete for explanations are handled by [`client.BankTransactionExplanations`](bank-transaction-explanations.md), not this service.
 
 A successful statement upload means FreeAgent accepted the payload. It does not confirm that every line was imported. List the account, or pass `lastUploaded: true`, to see the result.
 

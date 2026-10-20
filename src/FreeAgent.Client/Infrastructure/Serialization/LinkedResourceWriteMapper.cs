@@ -37,6 +37,30 @@ internal static class LinkedResourceWriteMapper
     public static CreditNoteReference? ToCreditNoteReference(FreeAgentEnvironment environment, long? creditNoteId) =>
         creditNoteId is long id ? CreditNoteReference.ForEnvironment(environment, id) : null;
 
+    public static string? ToPaidInvoiceWireUri(
+        FreeAgentEnvironment environment,
+        long? invoiceId,
+        long? creditNoteId)
+    {
+        if (creditNoteId is long creditNote)
+        {
+            return CreditNoteReference.ForEnvironment(environment, creditNote).Uri;
+        }
+
+        return invoiceId is long invoice
+            ? InvoiceReference.ForEnvironment(environment, invoice).Uri
+            : null;
+    }
+
+    public static BillReference? ToBillReference(FreeAgentEnvironment environment, long? billId) =>
+        billId is long id ? BillReference.ForEnvironment(environment, id) : null;
+
+    public static BankTransactionReference? ToBankTransactionReference(FreeAgentEnvironment environment, long? bankTransactionId) =>
+        bankTransactionId is long id ? BankTransactionReference.ForEnvironment(environment, id) : null;
+
+    public static CapitalAssetReference? ToCapitalAssetReference(FreeAgentEnvironment environment, long? capitalAssetId) =>
+        capitalAssetId is long id ? CapitalAssetReference.ForEnvironment(environment, id) : null;
+
     public static WriteLink<ContactReference>? ResolveContactReference(
         FreeAgentEnvironment environment,
         in SettableLinkId backing,
