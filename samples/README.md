@@ -111,11 +111,19 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/recurring-invoices/detail](https://localhost:5001/recurring-invoices/detail) | `GetRecurringInvoiceAsync()` | GET probe, optional linked-resource hydration, progress bar |
 | [/credit-notes](https://localhost:5001/credit-notes) | `CreditNotesService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/contact/project filters |
 | [/credit-notes/detail](https://localhost:5001/credit-notes/detail) | `GetCreditNoteAsync()`, `CreateCreditNoteAsync()`, `UpdateCreditNoteAsync()`, `DeleteCreditNoteAsync()`, transition and email methods | CRUD probes, Turpinverse seed data, progress bar |
+| [/credit-note-reconciliations](https://localhost:5001/credit-note-reconciliations) | `CreditNoteReconciliationsService.ListAsync()` | Per-row mapping inspection, date filters |
+| [/credit-note-reconciliations/detail](https://localhost:5001/credit-note-reconciliations/detail) | `GetCreditNoteReconciliationAsync()`, `CreateCreditNoteReconciliationAsync()`, `UpdateCreditNoteReconciliationAsync()`, `DeleteCreditNoteReconciliationAsync()` | CRUD probes, progress bar |
 | [/bills](https://localhost:5001/bills) | `BillService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/contact/project filters |
 | [/bills/detail](https://localhost:5001/bills/detail) | `GetBillAsync()`, `CreateBillAsync()`, `UpdateBillAsync()`, `DeleteBillAsync()` | CRUD probes, hire purchase flag, Turpinverse seed data, progress bar |
 | [/attachments/detail](https://localhost:5001/attachments/detail) | `AttachmentsService.GetAttachmentAsync()`, `DeleteAttachmentAsync()` | GET and DELETE probes, resolve ID from expense, `?id=` deep links, progress bar |
 | [/hire-purchases](https://localhost:5001/hire-purchases) | `HirePurchasesService.ListAsync()` | Per-row mapping inspection, read-only list (UK hire purchase bills) |
 | [/hire-purchases/detail](https://localhost:5001/hire-purchases/detail) | `HirePurchasesService.GetHirePurchaseAsync()` | GET probe, `?id=` deep links, progress bar |
+| [/expenses](https://localhost:5001/expenses) | `ExpenseService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view and project filters |
+| [/expenses/detail](https://localhost:5001/expenses/detail) | `GetExpenseAsync()`, `CreateExpenseAsync()`, `CreateExpensesAsync()`, `UpdateExpenseAsync()`, `DeleteExpenseAsync()`, `GetMileageSettingsAsync()` | CRUD probes, category and mileage variants, batch create, progress bar |
+| [/stock-items](https://localhost:5001/stock-items) | `StockItemsService.ListAsync()` | Per-row mapping inspection, sort filter |
+| [/stock-items/detail](https://localhost:5001/stock-items/detail) | `StockItemsService.GetStockItemAsync()` | GET probe, `?id=` deep links, progress bar |
+| [/price-list-items](https://localhost:5001/price-list-items) | `PriceListItemsService.ListAsync()` | Per-row mapping inspection, sort filter |
+| [/price-list-items/detail](https://localhost:5001/price-list-items/detail) | `GetPriceListItemAsync()`, `CreatePriceListItemAsync()`, `UpdatePriceListItemAsync()`, `DeletePriceListItemAsync()` | CRUD probes, progress bar |
 | [/tasks](https://localhost:5001/tasks) | `ProjectTaskService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/sort/project/updated_since filters |
 | [/tasks/detail](https://localhost:5001/tasks/detail) | `GetProjectTaskAsync()`, `CreateProjectTaskAsync()`, `UpdateProjectTaskAsync()`, `DeleteProjectTaskAsync()` | CRUD probes, Turpinverse seed data, progress bar |
 | [/timeslips](https://localhost:5001/timeslips) | `TimeslipService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/date/user/task/project/nested filters |

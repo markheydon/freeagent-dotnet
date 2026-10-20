@@ -32,9 +32,8 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          global-json-file: global.json
+          dotnet-version: 8.0.x
 
       - name: Restore
         run: dotnet restore FreeAgent.slnx
@@ -75,9 +74,8 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          global-json-file: global.json
+          dotnet-version: 8.0.x
 
       - name: Clean, restore, build, and test
         run: |
@@ -115,7 +113,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          global-json-file: global.json
 
       - name: Resolve smoke policy
         id: policy

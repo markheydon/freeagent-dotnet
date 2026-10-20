@@ -123,7 +123,7 @@ PR titles use `[Type] <imperative summary> (#issue)` when a tracking issue exist
 | `chore_request.yml` | `type/chore` | `status/todo` | `priority/medium` |
 | `bug_report.yml` | `type/bug` | `status/todo` | `priority/medium` |
 
-Dependabot PRs receive `type/chore`, `status/todo`, and `priority/medium` via [`.github/dependabot.yml`](../.github/dependabot.yml).
+Dependabot PRs receive `type/chore`, `status/in-review`, and `priority/medium` via [`.github/dependabot.yml`](../.github/dependabot.yml).
 
 ---
 

@@ -57,7 +57,7 @@ flowchart LR
 |---------|------|----------------|
 | Foundations | [Foundations](api-entity-map/foundations.md) | Company, contacts, users, categories |
 | Projects and time | [Projects and time](api-entity-map/projects-and-time.md) | Projects, tasks, timeslips, notes |
-| Sales | [Sales](api-entity-map/sales.md) | Invoices, estimates, recurring invoices, credit notes, stock items |
+| Sales | [Sales](api-entity-map/sales.md) | Invoices, estimates, recurring invoices, credit notes, credit note reconciliations, stock items, price list items |
 | Purchases | [Purchases](api-entity-map/purchases.md) | Bills, expenses, hire purchases, attachments |
 | Banking | [Banking](api-entity-map/banking.md) | Bank accounts, transactions, explanations, feeds |
 | Assets and journals | [Assets and journals](api-entity-map/assets-and-journals.md) | Capital assets, journal sets, properties, payroll |
@@ -73,28 +73,19 @@ Layers describe **dependency pressure**, not a mandatory backlog. A resource in 
 |-------|-----------|-----------|
 | **0 - Done** | Company, Contacts, Categories, Users, Email addresses, OAuth helpers | Company context, contacts, chart-of-accounts categories, and users are referenced across many resources |
 | **2 - Done** | Projects, Tasks, Timeslips, Notes | Client work structure: projects require `contact`; tasks require `project`; timeslips require `task`, `project`, and `user`; notes hang off contacts or projects |
-| **3 - Sales documents** | Invoices, Estimates, Recurring invoices, Credit notes | Invoices require only `contact` on create; `project`, `bank_account`, and item `category` URIs are optional |
-| **4 - Purchases** | Bills, Expenses | Bills require `contact`; expenses require `user` and `category` |
+| **3 - Done** | Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Stock items, Price list items | Invoices require only `contact` on create; `project`, `bank_account`, and item `category` URIs are optional. Stock items are catalogue list/get reads; price list items are full CRUD catalogue entries used on sales lines |
+| **4 - Done** | Bills, Expenses, Hire purchases, Attachments | Bills require `contact`; expenses require `user` and `category`. Hire purchases are read-only and created via Bills. Attachments are fetched by identifier |
 | **5 - Banking** | Bank accounts, Bank transactions, Bank transaction explanations | Explanations link back to invoices, bills, contacts, projects, users, and stock |
 | **6 - Assets and books** | Capital assets, Journal sets, Properties, Payroll | Heavier accounting surface; properties are landlord-only |
 | **7 - Reports** | P&amp;L, Balance sheet, Trial balance, VAT returns, and similar | Mostly date-bounded reads with few URI dependencies |
 
-### Is Invoices blocked?
+### What is left
 
-**No.** The only required URI when creating an invoice is `contact`, which the SDK already implements. Optional URIs use typed references where the SDK provides them (`ProjectReference`, `BankAccountReference`, `CategoryReference` on line items). `property`, `recurring_invoice`, and invoice-item `stock_item` may remain opaque URI strings until those resources are implemented.
+Sales and Purchases are implemented. See [API coverage](../reference/api-coverage.md) for the current SDK surface, and [Sales cluster SDK patterns](api-entity-map/sales.md#sales-cluster-sdk-patterns) for the transition, line-item, PDF, and email patterns those resources share.
 
-The Invoices implementation introduces **Sales cluster patterns** reused by sibling resources: status transition methods, nested line-item updates on the parent payload, PDF and email actions, and company default-text settings under the resource path. See [Sales cluster SDK patterns](api-entity-map/sales.md#sales-cluster-sdk-patterns).
+**Banking** is the next dependency-heavy cluster. Invoice remittance already accepts a `BankAccountReference`; a typed `client.BankAccounts` service is still outstanding, and bank transaction explanations are what connect payments back to invoices and bills (`paid_invoice`, `paid_bill`).
 
-Resources that are **nice to have nearby** (before or shortly after invoices), depending on how deeply you want sample probes and typed models to resolve links:
-
-| Resource | Why it sits near invoices |
-|----------|--------------------------|
-| **Categories** | Implemented. Invoice, estimate, and bill line items reference categories |
-| **Bank accounts** | Invoice remittance via `bank_account`; later needed for bank explanations with `paid_invoice` |
-| **Projects** | Implemented. Optional on invoices; required for tasks and timeslips |
-| **Users** | Implemented. Not needed for invoices; required for timeslips and expenses |
-
-Implement **after** invoices if you care about end-to-end flows: credit note reconciliations, estimate-to-invoice conversion, timeslip `billed_on_invoice`, expense or bill `rebilled_on_invoice`, and bank explanation `paid_invoice`.
+Links that stay opaque until later clusters include `property` (landlord companies only) and capital-asset URIs on expenses.
 
 When you add or retrofit an SDK endpoint, check the relevant cluster page and update it if the official docs expose a URI link not yet shown.
 

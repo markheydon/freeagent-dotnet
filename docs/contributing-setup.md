@@ -17,7 +17,7 @@ Install **both** .NET SDKs:
 | **.NET 10.0** | Primary focus; required for the Blazor sample app |
 | **.NET 8.0** | SDK package multi-targets `net8.0` |
 
-CI installs both `8.0.x` and `10.0.x` (see [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)).
+CI installs the SDK from [global.json](../global.json) plus `8.0.x` for the `net8.0` target (see [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)).
 
 ### Verify installation
 
@@ -25,7 +25,7 @@ CI installs both `8.0.x` and `10.0.x` (see [`.github/workflows/ci.yml`](../.gith
 dotnet --list-sdks
 ```
 
-You should see 8.x and 10.x entries. [global.json](../global.json) pins SDK `10.0.300` with `rollForward: latestFeature` for the build orchestrator.
+You should see 8.x and 10.x entries. [global.json](../global.json) sets the minimum .NET 10 SDK for the build orchestrator (`rollForward: latestFeature` allows newer 10.0 patches on your machine).
 
 ### WSL / Ubuntu
 
