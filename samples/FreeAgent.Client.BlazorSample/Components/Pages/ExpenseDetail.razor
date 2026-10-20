@@ -1,0 +1,336 @@
+@page "/expenses/detail"
+@using FreeAgent.Client
+@using FreeAgent.Client.Models.Expenses
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Expense detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Expenses endpoint"
+                         Title="Get, create, update, and delete expenses"
+                         CallUnderTest="ExpenseService CRUD, batch create, and GetMileageSettingsAsync"
+                         Description="Exercises category and mileage create variants, batch create, update, delete, and mileage settings."
+                         EndpointPath="/v2/expenses/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/expenses" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudNumericField @bind-Value="_expenseId" Label="Expense ID" Min="1" />
+                <MudNumericField @bind-Value="_userId" Label="User ID (create)" Min="1" />
+                <MudTextField @bind-Value="_categoryNominalCode" Label="Category nominal code (category create)" />
+                <MudSelect T="string"
+                           @bind-Value="_createVariant"
+                           Label="Create variant"
+                           Variant="Variant.Outlined"
+                           Margin="Margin.Dense"
+                           FullWidth="true">
+                    <MudSelectItem Value="@VariantCategory">CreateExpenseAsync (category)</MudSelectItem>
+                    <MudSelectItem Value="@VariantMileage">CreateExpenseAsync (mileage)</MudSelectItem>
+                    <MudSelectItem Value="@VariantBatch">CreateExpensesAsync (batch)</MudSelectItem>
+                </MudSelect>
+
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                               OnClick="GetExpenseAsync">Get expense</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading"
+                               OnClick="CreateProbeExpenseAsync">Create probe expense</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _expenseId is null or < 1"
+                               OnClick="UpdateExpenseAsync">Update description</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _expenseId is null or < 1"
+                               OnClick="DeleteExpenseAsync">Delete expense</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                               OnClick="GetMileageSettingsAsync">Get mileage settings</MudButton>
+                </MudStack>
+
+                @if (_probe is not null && _expense is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Expense model fields" />
+                }
+                else if (_mileageSettingsProbe is not null)
+                {
+                    <ModelProbeResults Snapshot="_mileageSettingsProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="Mileage settings fields" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private const string VariantCategory = "category";
+    private const string VariantMileage = "mileage";
+    private const string VariantBatch = "batch";
+
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? ExpenseIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private Expense? _expense;
+    private MileageSettings? _mileageSettings;
+    private ModelProbeSnapshot? _probe;
+    private ModelProbeSnapshot? _mileageSettingsProbe;
+    private long? _expenseId;
+    private long? _userId;
+    private string? _categoryNominalCode;
+    private string _createVariant = VariantCategory;
+
+    protected override void OnParametersSet()
+    {
+        if (ExpenseIdFromQuery is > 0 && _expenseId != ExpenseIdFromQuery)
+        {
+            _expenseId = ExpenseIdFromQuery;
+            _operationMessage = $"Expense ID {_expenseId} loaded from URL. Press Get expense to fetch diagnostics.";
+        }
+    }
+
+    private async System.Threading.Tasks.Task GetExpenseAsync()
+    {
+        if (_expenseId is null or < 1)
+        {
+            _error = "Enter an expense ID.";
+            return;
+        }
+
+        await RunExpenseOperationAsync(
+            async client =>
+            {
+                _expense = await client.Expenses.GetExpenseAsync(
+                    _expenseId.Value,
+                    new ExpenseGetOptions { IncludeUser = true, IncludeCategory = true });
+                _mileageSettings = null;
+                _mileageSettingsProbe = null;
+                _operationMessage = $"Loaded expense {_expenseId.Value}.";
+                return $"expenses/{_expenseId}";
+            });
+    }
+
+    private async System.Threading.Tasks.Task CreateProbeExpenseAsync()
+    {
+        if (_userId is null or < 1)
+        {
+            _error = "Enter a user ID before creating an expense.";
+            return;
+        }
+
+        await RunExpenseOperationAsync(
+            async client =>
+            {
+                if (_createVariant == VariantMileage)
+                {
+                    _expense = await client.Expenses.CreateExpenseAsync(new Expense
+                    {
+                        UserId = _userId.Value,
+                        IsMileageCategory = true,
+                        DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+                        Mileage = 10m,
+                        VehicleType = ExpenseVehicleType.Car,
+                        EngineType = ExpenseEngineType.Petrol,
+                        Description = $"SDK probe mileage {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}"
+                    });
+                }
+                else if (_createVariant == VariantBatch)
+                {
+                    var probe = BuildCategoryExpense(_userId.Value);
+                    var second = BuildCategoryExpense(_userId.Value);
+                    second.Description = $"{probe.Description} (batch)";
+                    var created = await client.Expenses.CreateExpensesAsync([probe, second]);
+                    _expense = created[0];
+                    _operationMessage = $"Batch created {created.Count} expenses.";
+                }
+                else
+                {
+                    _expense = await client.Expenses.CreateExpenseAsync(BuildCategoryExpense(_userId.Value));
+                }
+
+                if (_expense.TryGetResourceId(out var id))
+                {
+                    _expenseId = id;
+                    return $"expenses/{id}";
+                }
+
+                return null;
+            });
+    }
+
+    private Expense BuildCategoryExpense(long userId)
+    {
+        if (string.IsNullOrWhiteSpace(_categoryNominalCode))
+        {
+            throw new InvalidOperationException("Enter a category nominal code for category expenses.");
+        }
+
+        return new Expense
+        {
+            UserId = userId,
+            CategoryNominalCode = _categoryNominalCode.Trim(),
+            DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+            GrossValue = -10m,
+            Description = $"SDK probe expense {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}"
+        };
+    }
+
+    private async System.Threading.Tasks.Task UpdateExpenseAsync()
+    {
+        if (_expenseId is null or < 1)
+        {
+            return;
+        }
+
+        await RunExpenseOperationAsync(
+            async client =>
+            {
+                var existing = _expense ?? await client.Expenses.GetExpenseAsync(_expenseId.Value);
+                existing.Description = $"{existing.Description} (updated)";
+                _expense = await client.Expenses.UpdateExpenseAsync(_expenseId.Value, existing);
+                _operationMessage = $"Updated expense {_expenseId.Value}.";
+                return $"expenses/{_expenseId}";
+            });
+    }
+
+    private async System.Threading.Tasks.Task DeleteExpenseAsync()
+    {
+        if (_expenseId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _expenseId.Value;
+        await RunExpenseOperationAsync(
+            async client =>
+            {
+                await client.Expenses.DeleteExpenseAsync(deletedId);
+                _expense = null;
+                _probe = null;
+                _operationMessage = $"Deleted expense {deletedId}.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async System.Threading.Tasks.Task GetMileageSettingsAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _mileageSettingsProbe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _mileageSettings = await client.Expenses.GetMileageSettingsAsync();
+            _expense = null;
+            _operationMessage = "Loaded mileage settings.";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "expenses/mileage_settings");
+            _mileageSettingsProbe = ModelWireDiagnostics.Build(_mileageSettings, _wireApiResponse, "mileage_settings");
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async System.Threading.Tasks.Task RunExpenseOperationAsync(
+        Func<FreeAgentClient, System.Threading.Tasks.Task<string?>> action,
+        string envelopeProperty = "expense",
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _mileageSettingsProbe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var endpoint = await action(client);
+
+            if (fetchWirePayload && _expense is not null && !string.IsNullOrWhiteSpace(endpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    endpoint);
+
+                _probe = ModelWireDiagnostics.Build(_expense, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}
