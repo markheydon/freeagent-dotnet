@@ -1,6 +1,7 @@
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Services.Attachments;
 using FreeAgent.Client.Services.BankAccounts;
+using FreeAgent.Client.Services.BankFeeds;
 using FreeAgent.Client.Services.BankTransactionExplanations;
 using FreeAgent.Client.Services.BankTransactions;
 using FreeAgent.Client.Services.Bills;
@@ -114,6 +115,11 @@ public sealed class FreeAgentClient : IDisposable
     public BankAccountsService BankAccounts { get; }
 
     /// <summary>
+    /// Bank feeds API service.
+    /// </summary>
+    public BankFeedsService BankFeeds { get; }
+
+    /// <summary>
     /// Bank transactions API service.
     /// </summary>
     public BankTransactionsService BankTransactions { get; }
@@ -221,6 +227,7 @@ public sealed class FreeAgentClient : IDisposable
         Attachments = new AttachmentsService(_httpClient);
         Bills = new BillService(_httpClient);
         BankAccounts = new BankAccountsService(_httpClient);
+        BankFeeds = new BankFeedsService(_httpClient);
         BankTransactions = new BankTransactionsService(_httpClient);
         BankTransactionExplanations = new BankTransactionExplanationsService(_httpClient);
         HirePurchases = new HirePurchasesService(_httpClient);

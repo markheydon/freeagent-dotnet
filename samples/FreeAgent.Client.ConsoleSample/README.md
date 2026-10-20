@@ -90,7 +90,7 @@ dotnet run
 ### What happens
 
 1. The app completes OAuth (browser flow or token from environment variables).
-2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Stock items, Price list items).
+2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Stock items, Price list items).
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
@@ -138,6 +138,7 @@ Examples marked **(mutates)** write to the connected account.
 | Attachments | Get attachment detail; **(mutates)** delete attachment |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
 | Bank accounts | List bank accounts; list standard accounts; get detail; create variants; update and delete (sandbox) |
+| Bank feeds | List bank feeds; get bank feed detail |
 | Bank transaction explanations | List explanations for a bank account; get explanation by id; **(mutates)** create category explanation with new transaction and delete |
 | Bank transactions | List bank transactions; list unexplained transactions; get detail; **(mutates)** upload a statement line and delete; **(mutates)** upload a statement file and delete |
 | Stock items | List stock items; get stock item detail |

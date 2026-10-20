@@ -194,6 +194,12 @@
                 <MudNavLink Href="/bank-accounts/detail" Icon="@Icons.Material.Filled.Edit">
                     Bank account CRUD
                 </MudNavLink>
+                <MudNavLink Href="/bank-feeds" Icon="@Icons.Material.Filled.AllInclusive">
+                    Bank feeds list
+                </MudNavLink>
+                <MudNavLink Href="/bank-feeds/detail" Icon="@Icons.Material.Filled.Visibility">
+                    Bank feed detail
+                </MudNavLink>
                 <MudNavLink Href="/bank-transactions" Icon="@Icons.Material.Filled.AllInclusive">
                     Bank transactions list
                 </MudNavLink>
@@ -381,6 +387,8 @@
     private bool IsBankingRoute =>
         CurrentPath.Equals("bank-accounts", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("bank-accounts/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("bank-feeds", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("bank-feeds/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("bank-transactions", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("bank-transactions/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("bank-transaction-explanations", StringComparison.OrdinalIgnoreCase)
