@@ -28,6 +28,11 @@ internal sealed class ConsoleRunOptions
     public bool AllowProductionWrites { get; init; }
 
     /// <summary>
+    /// When <see langword="true"/>, runs the linked-resource sandbox verification harness (issue #134).
+    /// </summary>
+    public bool VerifyLinkedResources { get; init; }
+
+    /// <summary>
     /// Parses command-line arguments for console sample options.
     /// </summary>
     /// <param name="args">Application arguments.</param>
@@ -38,11 +43,18 @@ internal sealed class ConsoleRunOptions
         var bootstrapRefreshToken = false;
         var allowProductionWrites = false;
         var seedTurpinverse = false;
+        var verifyLinkedResources = false;
         string? categoryFilter = null;
 
         for (var i = 0; i < args.Length; i++)
         {
             var arg = args[i];
+
+            if (arg is "--verify-linked-resources")
+            {
+                verifyLinkedResources = true;
+                continue;
+            }
 
             if (arg is "--run-all" or "-a")
             {
@@ -104,6 +116,26 @@ internal sealed class ConsoleRunOptions
             throw new InvalidOperationException("--allow-production-writes cannot be combined with --seed-turpinverse.");
         }
 
+        if (verifyLinkedResources && runAll)
+        {
+            throw new InvalidOperationException("--verify-linked-resources cannot be combined with --run-all.");
+        }
+
+        if (verifyLinkedResources && seedTurpinverse)
+        {
+            throw new InvalidOperationException("--verify-linked-resources cannot be combined with --seed-turpinverse.");
+        }
+
+        if (verifyLinkedResources && bootstrapRefreshToken)
+        {
+            throw new InvalidOperationException("--verify-linked-resources cannot be combined with --bootstrap-refresh-token.");
+        }
+
+        if (verifyLinkedResources && allowProductionWrites)
+        {
+            throw new InvalidOperationException("--verify-linked-resources cannot be combined with --allow-production-writes.");
+        }
+
         return new ConsoleRunOptions
         {
             RunAll = runAll,
@@ -111,6 +143,7 @@ internal sealed class ConsoleRunOptions
             AllowProductionWrites = allowProductionWrites,
             SeedTurpinverse = seedTurpinverse,
             CategoryFilter = categoryFilter,
+            VerifyLinkedResources = verifyLinkedResources,
         };
     }
 }

@@ -142,7 +142,7 @@ var invoice = await client.Invoices.CreateInvoiceAsync(new Invoice
 });
 ```
 
-When updating an invoice, estimate, or credit note retrieved from the API, the SDK round-trips existing link ids from the read model. Set a link id to `null` to clear it on the wire. To update scalar fields without re-sending linked resources or line items, use update options:
+When updating a resource retrieved from the API, the SDK round-trips existing link ids from the read model. Set an **optional** link id to `null` to clear it on the wire (for example `ProjectId` on an invoice). Required links follow API rules — project billing `ContactId` cannot be blank, so clearing it returns a validation error even though the SDK serialises `"contact": null`. To update scalar fields without re-sending linked resources or line items, use update options:
 
 ```csharp
 await client.Invoices.UpdateInvoiceAsync(

@@ -135,6 +135,7 @@ Examples marked **(mutates)** write to the connected account.
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
 | Stock items | List stock items; get stock item detail |
 | Price list items | List price list items; get price list item detail; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |
+| Linked resources | **(mutates)** verify linked-resource writes (create, update, delete) — sandbox PUT round-trip checks for issue #134 |
 
 New SDK resource areas should add a matching `*Samples.cs` provider class under `Samples/`.
 
@@ -168,7 +169,21 @@ The Blazor workbench exposes the same orchestrator under **Developer Tools → T
 
 ---
 
-## 5. Run all examples (smoke test)
+## 5. Linked-resource sandbox verification (#134)
+
+One-shot live checks that project `ContactId` round-trips on scalar PUT, explicit `ProjectId = null` clears an optional invoice project link, and invoice scalar updates with `OmitLineItems` preserve contact and line items. The command prints a summary you can paste into [GitHub issue #134](https://github.com/markheydon/freeagent-dotnet/issues/134).
+
+**Sandbox only** — same write guard as `--run-all`. Not included in CI `--run-all` smoke.
+
+```bash
+dotnet run --project samples/FreeAgent.Client.ConsoleSample -- --verify-linked-resources
+```
+
+Use the same non-interactive token setup as `--run-all` (`FREEAGENT_REFRESH_TOKEN` or `FREEAGENT_ACCESS_TOKEN`). You can also run the same flow from the interactive menu under **Linked resources**.
+
+---
+
+## 6. Run all examples (smoke test)
 
 Use `--run-all` to execute every registered example without the interactive menu. Output follows a `dotnet test`-style report with pass, fail, and skip counts.
 
