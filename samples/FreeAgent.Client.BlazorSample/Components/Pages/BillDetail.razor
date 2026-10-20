@@ -15,7 +15,7 @@
     <EndpointProbeHeader SectionKicker="Bills endpoint"
                          Title="Get, create, update, and delete bills"
                          CallUnderTest="BillService.GetBillAsync / CreateBillAsync / UpdateBillAsync / DeleteBillAsync"
-                         Description="Exercises single-bill CRUD, hire purchase flag updates, and line item updates via the parent payload. Shows wire-to-model diagnostics after each mutation."
+                         Description="Exercises single-bill CRUD, hire purchase on create and update, and line item updates via the parent payload. Shows wire-to-model diagnostics after each mutation."
                          EndpointPath="/v2/bills/:id"
                          DocsUrl="https://dev.freeagent.com/docs/bills" />
 
@@ -65,7 +65,7 @@
                                      Variant="Variant.Outlined"
                                      Margin="Margin.Dense"
                                      FullWidth="true" />
-                    <MudSwitch @bind-Value="_isPaidByHirePurchase" Color="Color.Primary" Label="is_paid_by_hire_purchase (update)" />
+                    <MudSwitch @bind-Value="_isPaidByHirePurchase" Color="Color.Primary" Label="is_paid_by_hire_purchase (create and update)" />
 
                     <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
                         <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
@@ -326,6 +326,7 @@
                     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
                     DueOn = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
                     Currency = CurrencyCode.GBP,
+                    IsPaidByHirePurchase = _isPaidByHirePurchase,
                     Reference = $"probe-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
                     BillItems =
                     [

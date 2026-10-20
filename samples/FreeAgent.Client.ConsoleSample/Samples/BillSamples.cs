@@ -65,7 +65,7 @@ internal sealed class BillSamples(SampleContext context) : IConsoleSampleProvide
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeBillAndDeleteAsync(CancellationToken cancellationToken)
     {
-        var created = await CreateSampleBillAsync(cancellationToken);
+        var created = await CreateSampleBillAsync(cancellationToken, isPaidByHirePurchase: false);
 
         SampleOutput.WriteHeader("Created probe bill");
         SampleOutput.WriteField("Id", created.ResourceId);
@@ -73,6 +73,7 @@ internal sealed class BillSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Status", created.Status);
         SampleOutput.WriteField("Total value", created.TotalValue);
         SampleOutput.WriteField("Line items", created.BillItems?.Count ?? 0);
+        SampleOutput.WriteField("Hire purchase", created.IsPaidByHirePurchase);
 
         await context.Client.Bills.DeleteBillAsync(created.ResourceId, cancellationToken);
 
@@ -80,11 +81,28 @@ internal sealed class BillSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
+    [ConsoleSample(Name = "Create hire purchase probe bill and delete", MutatesData = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task CreateHirePurchaseProbeBillAndDeleteAsync(CancellationToken cancellationToken)
+    {
+        var created = await CreateSampleBillAsync(cancellationToken, isPaidByHirePurchase: true);
+
+        SampleOutput.WriteHeader("Created hire purchase probe bill");
+        SampleOutput.WriteField("Id", created.ResourceId);
+        SampleOutput.WriteField("Reference", created.Reference);
+        SampleOutput.WriteField("Hire purchase", created.IsPaidByHirePurchase);
+
+        await context.Client.Bills.DeleteBillAsync(created.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted hire purchase probe bill");
+        SampleOutput.WriteField("Id", created.ResourceId);
+    }
+
     [ConsoleSample(Name = "Update bill line item", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateBillLineItemAsync(CancellationToken cancellationToken)
     {
-        var created = await CreateSampleBillAsync(cancellationToken);
+        var created = await CreateSampleBillAsync(cancellationToken, isPaidByHirePurchase: false);
 
         try
         {
@@ -118,7 +136,9 @@ internal sealed class BillSamples(SampleContext context) : IConsoleSampleProvide
         }
     }
 
-    private async Task<Bill> CreateSampleBillAsync(CancellationToken cancellationToken)
+    private async Task<Bill> CreateSampleBillAsync(
+        CancellationToken cancellationToken,
+        bool isPaidByHirePurchase = false)
     {
         var contact = await context.Data.GetFirstContactAsync(cancellationToken);
         var nominalCode = await context.Data.GetFirstAdminExpensesCategoryNominalCodeAsync(cancellationToken);
@@ -129,6 +149,7 @@ internal sealed class BillSamples(SampleContext context) : IConsoleSampleProvide
                 ContactId = contact.ResourceId,
                 DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
                 DueOn = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+                IsPaidByHirePurchase = isPaidByHirePurchase,
                 Reference = $"Console probe {DateTimeOffset.UtcNow:yyyyMMdd-HHmmss}",
                 BillItems =
                 [

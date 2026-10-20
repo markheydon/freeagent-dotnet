@@ -50,6 +50,25 @@ public class BillModelSerializationTests
     }
 
     [Fact]
+    public void DeserializeBillItem_MapsBillIdFromBillLink()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/bill_items/17",
+              "bill": "https://api.freeagent.com/v2/bills/9",
+              "description": "Supplier line",
+              "total_value": "50.0"
+            }
+            """;
+
+        var item = JsonSerializer.Deserialize<BillItem>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(item);
+        Assert.Equal(9, item!.BillId);
+        Assert.Null(item.Bill);
+    }
+
+    [Fact]
     public void DeserializeBillItem_MapsItemIdFromUrlWhenIdOmitted()
     {
         const string json = """
@@ -110,5 +129,33 @@ public class BillModelSerializationTests
         Assert.Contains("\"dated_on\":\"2024-03-18\"", json, StringComparison.Ordinal);
         Assert.Contains("\"description\":\"Supplier charge\"", json, StringComparison.Ordinal);
         Assert.Contains("\"category\":\"https://api.freeagent.com/v2/categories/285\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void WritePayload_FromBill_SerialisesHirePurchaseFlag()
+    {
+        var bill = new Bill
+        {
+            ContactId = 1,
+            DatedOn = new DateOnly(2024, 1, 1),
+            DueOn = new DateOnly(2024, 1, 31),
+            IsPaidByHirePurchase = true,
+            Reference = "HP-001",
+            BillItems =
+            [
+                new BillItem
+                {
+                    Description = "Asset",
+                    TotalValue = 1000m,
+                    CategoryNominalCode = "285"
+                }
+            ]
+        };
+
+        var json = JsonSerializer.Serialize(
+            BillWritePayload.FromBill(bill, FreeAgentEnvironment.Production),
+            FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"is_paid_by_hire_purchase\":true", json, StringComparison.Ordinal);
     }
 }

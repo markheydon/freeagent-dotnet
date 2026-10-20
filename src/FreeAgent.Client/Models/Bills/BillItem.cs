@@ -24,10 +24,23 @@ public sealed class BillItem
     public string? Url { get; set; }
 
     /// <summary>
-    /// Parent bill resource URI. Read-only on the wire.
+    /// Wire representation of the parent bill link.
     /// </summary>
     [JsonPropertyName("bill")]
-    public string? BillUri { get; set; }
+    [JsonInclude]
+    internal ExpandableField<Bill>? BillLink { get; set; }
+
+    /// <summary>
+    /// Parent bill when returned nested on the wire.
+    /// </summary>
+    [JsonIgnore]
+    public Bill? Bill => BillLink?.Value;
+
+    /// <summary>
+    /// Parent bill identifier parsed from the bill link on read responses.
+    /// </summary>
+    [JsonIgnore]
+    public long? BillId => BillLink?.Id;
 
     /// <summary>
     /// Wire representation of the category link.
