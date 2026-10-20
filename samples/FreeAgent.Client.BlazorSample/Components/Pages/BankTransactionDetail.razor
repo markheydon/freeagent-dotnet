@@ -1,0 +1,355 @@
+@page "/bank-transactions/detail"
+@using FreeAgent.Client.Models.BankTransactions
+@using FreeAgent.Client.BlazorSample.Services
+@using Microsoft.AspNetCore.Components.Forms
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Bank transaction detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Bank transactions endpoint"
+                         Title="Get, delete, and upload bank transactions"
+                         CallUnderTest="@_callUnderTest"
+                         Description="Exercises get, delete, JSON statement upload, and file statement upload. Upload responses do not include the imported transactions, so a successful upload is followed by a last-uploaded list."
+                         EndpointPath="/v2/bank_transactions/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/bank_transactions" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (!string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudSelect T="BankTransactionProbeOperation"
+                                   @bind-Value="_operation"
+                                   Label="Operation"
+                                   Variant="Variant.Outlined">
+                            <MudSelectItem Value="BankTransactionProbeOperation.Get">Get bank transaction</MudSelectItem>
+                            <MudSelectItem Value="BankTransactionProbeOperation.Delete">Delete bank transaction</MudSelectItem>
+                            <MudSelectItem Value="BankTransactionProbeOperation.UploadStatement">Upload JSON statement</MudSelectItem>
+                            <MudSelectItem Value="BankTransactionProbeOperation.UploadStatementFile">Upload statement file</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudNumericField @bind-Value="_bankAccountId" Label="Bank account ID" Min="1" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudNumericField @bind-Value="_bankTransactionId" Label="Bank transaction ID" Min="1" Variant="Variant.Outlined" />
+                    </MudItem>
+                </MudGrid>
+
+                @if (_operation == BankTransactionProbeOperation.UploadStatement)
+                {
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudDatePicker @bind-Date="_datedOn" Label="Dated on" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudNumericField @bind-Value="_amount" Label="Amount" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudTextField @bind-Value="_description" Label="Description" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="3">
+                            <MudTextField @bind-Value="_fitId" Label="fitid" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4">
+                            <MudSelect T="BankStatementTransactionType?"
+                                       @bind-Value="_transactionType"
+                                       Label="transaction_type"
+                                       Clearable="true"
+                                       Variant="Variant.Outlined">
+                                @foreach (var transactionType in Enum.GetValues<BankStatementTransactionType>())
+                                {
+                                    <MudSelectItem T="BankStatementTransactionType?" Value="transactionType">@transactionType</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                    </MudGrid>
+                }
+
+                @if (_operation == BankTransactionProbeOperation.UploadStatementFile)
+                {
+                    <MudStack Spacing="1">
+                        <MudFileUpload T="IBrowserFile" @bind-Files="_statementFile" Accept=".ofx,.qbo,.qif,.csv">
+                            <CustomContent>
+                                <MudButton Variant="Variant.Outlined"
+                                           Color="Color.Primary"
+                                           StartIcon="@Icons.Material.Filled.UploadFile"
+                                           OnClick="@(() => context.OpenFilePickerAsync())">
+                                    Choose statement file
+                                </MudButton>
+                            </CustomContent>
+                        </MudFileUpload>
+                        <MudText Typo="Typo.caption">@(_statementFile?.Name ?? "No file selected")</MudText>
+                    </MudStack>
+                }
+
+                <MudButton Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Disabled="_loading"
+                           OnClick="RunOperationAsync">
+                    Run operation
+                </MudButton>
+
+                @if (_probe is not null && _transaction is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All BankTransaction model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                                <MudChip T="string" Variant="Variant.Outlined">ID: @_transaction.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined">@_transaction.DatedOn</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined">Amount: @_transaction.Amount</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? IdFromQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "bankAccountId")]
+    public long? BankAccountIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private string _callUnderTest = "BankTransactionsService.GetBankTransactionAsync / DeleteBankTransactionAsync / UploadBankStatementAsync / UploadBankStatementFileAsync";
+    private BankTransactionProbeOperation _operation = BankTransactionProbeOperation.Get;
+    private long? _bankAccountId;
+    private long? _bankTransactionId;
+    private DateTime? _datedOn = DateTime.UtcNow.Date;
+    private decimal? _amount = -1.23m;
+    private string _description = "SDK probe statement line";
+    private string? _fitId;
+    private BankStatementTransactionType? _transactionType;
+    private IBrowserFile? _statementFile;
+    private BankTransaction? _transaction;
+    private ModelProbeSnapshot? _probe;
+    private bool _probeFromList;
+
+    protected override void OnParametersSet()
+    {
+        if (IdFromQuery is > 0)
+        {
+            _bankTransactionId = IdFromQuery;
+        }
+
+        if (BankAccountIdFromQuery is > 0)
+        {
+            _bankAccountId = BankAccountIdFromQuery;
+        }
+    }
+
+    private async Task RunOperationAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _operationMessage = null;
+        _probe = null;
+        _transaction = null;
+        _wireApiResponse = string.Empty;
+        _probeFromList = false;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            string? diagnosticsEndpoint = _operation switch
+            {
+                BankTransactionProbeOperation.Get => await GetAsync(client),
+                BankTransactionProbeOperation.Delete => await DeleteAsync(client),
+                BankTransactionProbeOperation.UploadStatement => await UploadStatementAsync(client),
+                BankTransactionProbeOperation.UploadStatementFile => await UploadStatementFileAsync(client),
+                _ => null
+            };
+
+            if (_transaction is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                if (_probeFromList && ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "bank_transactions", 0, out var wireItem))
+                {
+                    _probe = ModelWireDiagnostics.Build(_transaction, wireItem);
+                }
+                else if (!_probeFromList)
+                {
+                    _probe = ModelWireDiagnostics.Build(_transaction, _wireApiResponse, envelopeProperty: "bank_transaction");
+                }
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task<string?> GetAsync(FreeAgentClient client)
+    {
+        if (_bankTransactionId is null or < 1)
+        {
+            _error = "Enter a bank transaction ID.";
+            return null;
+        }
+
+        _callUnderTest = "BankTransactionsService.GetBankTransactionAsync(...)";
+        _transaction = await client.BankTransactions.GetBankTransactionAsync(_bankTransactionId.Value);
+        _operationMessage = $"Loaded bank transaction {_transaction.ResourceId}.";
+        return $"bank_transactions/{_bankTransactionId.Value}";
+    }
+
+    private async Task<string?> DeleteAsync(FreeAgentClient client)
+    {
+        if (_bankTransactionId is null or < 1)
+        {
+            _error = "Enter a bank transaction ID.";
+            return null;
+        }
+
+        _callUnderTest = "BankTransactionsService.DeleteBankTransactionAsync(...)";
+        await client.BankTransactions.DeleteBankTransactionAsync(_bankTransactionId.Value);
+        _operationMessage = $"Deleted bank transaction {_bankTransactionId}. No wire payload is returned for DELETE. FreeAgent only deletes a transaction that is fully unexplained.";
+        return null;
+    }
+
+    private async Task<string?> UploadStatementAsync(FreeAgentClient client)
+    {
+        if (_bankAccountId is null or < 1)
+        {
+            _error = "Enter a bank account ID.";
+            return null;
+        }
+
+        if (_datedOn is null)
+        {
+            _error = "Enter a dated on value.";
+            return null;
+        }
+
+        _callUnderTest = "BankTransactionsService.UploadBankStatementAsync(...)";
+        var fitId = string.IsNullOrWhiteSpace(_fitId) ? $"sdk-probe-{DateTime.UtcNow:yyyyMMddHHmmss}" : _fitId;
+        await client.BankTransactions.UploadBankStatementAsync(
+            new UploadBankStatementRequest(
+            [
+                new BankStatementTransaction
+                {
+                    DatedOn = DateOnly.FromDateTime(_datedOn.Value),
+                    Amount = _amount,
+                    Description = _description,
+                    FitId = fitId,
+                    TransactionType = _transactionType
+                }
+            ]),
+            bankAccountId: _bankAccountId);
+
+        return await LoadLastUploadedAsync(client, "JSON statement upload accepted.");
+    }
+
+    private async Task<string?> UploadStatementFileAsync(FreeAgentClient client)
+    {
+        if (_bankAccountId is null or < 1)
+        {
+            _error = "Enter a bank account ID.";
+            return null;
+        }
+
+        if (_statementFile is null)
+        {
+            _error = "Choose a statement file.";
+            return null;
+        }
+
+        _callUnderTest = "BankTransactionsService.UploadBankStatementFileAsync(...)";
+        await using var stream = _statementFile.OpenReadStream(10 * 1024 * 1024);
+        await client.BankTransactions.UploadBankStatementFileAsync(
+            new UploadBankStatementFileRequest(stream, _statementFile.Name),
+            bankAccountId: _bankAccountId);
+
+        return await LoadLastUploadedAsync(client, "Statement file upload accepted.");
+    }
+
+    private async Task<string?> LoadLastUploadedAsync(FreeAgentClient client, string message)
+    {
+        var page = await client.BankTransactions.ListAsync(
+            bankAccountId: _bankAccountId,
+            lastUploaded: true,
+            perPage: 25);
+
+        _operationMessage = page.Items.Count == 0
+            ? $"{message} The follow-up last-uploaded list was empty. Check the account in FreeAgent if the import was deduplicated or rejected after upload."
+            : $"{message} Follow-up list returned {page.Items.Count} transaction(s). Mapping shows the first row.";
+
+        if (page.Items.Count == 0)
+        {
+            return null;
+        }
+
+        _transaction = page.Items[0];
+        _bankTransactionId = _transaction.ResourceId;
+        _probeFromList = true;
+        var bankAccountUri = Uri.EscapeDataString(
+            FreeAgent.Client.Models.Shared.BankAccountReference.ForEnvironment(
+                TokenStore.ConnectedEnvironment,
+                _bankAccountId!.Value).Uri);
+        return $"bank_transactions?bank_account={bankAccountUri}&last_uploaded=true&page=1&per_page=25";
+    }
+
+    private enum BankTransactionProbeOperation
+    {
+        Get,
+        Delete,
+        UploadStatement,
+        UploadStatementFile
+    }
+}

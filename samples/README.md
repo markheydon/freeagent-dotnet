@@ -122,6 +122,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/expenses/detail](https://localhost:5001/expenses/detail) | `GetExpenseAsync()`, `CreateExpenseAsync()`, `CreateExpensesAsync()`, `UpdateExpenseAsync()`, `DeleteExpenseAsync()`, `GetMileageSettingsAsync()` | CRUD probes, category and mileage variants, batch create, progress bar |
 | [/bank-accounts](https://localhost:5001/bank-accounts) | `BankAccountsService.ListAsync()` | Per-row mapping inspection, view filter |
 | [/bank-accounts/detail](https://localhost:5001/bank-accounts/detail) | `GetBankAccountAsync()`, `Create*BankAccountAsync()`, `UpdateBankAccountAsync()`, `DeleteBankAccountAsync()` | CRUD probes, create variant selector, progress bar |
+| [/bank-transactions](https://localhost:5001/bank-transactions) | `BankTransactionsService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, bank account and view filters |
+| [/bank-transactions/detail](https://localhost:5001/bank-transactions/detail) | `GetBankTransactionAsync()`, `DeleteBankTransactionAsync()`, `UploadBankStatementAsync()`, `UploadBankStatementFileAsync()` | Get, delete, JSON and file statement uploads, progress bar |
 | [/stock-items](https://localhost:5001/stock-items) | `StockItemsService.ListAsync()` | Per-row mapping inspection, sort filter |
 | [/stock-items/detail](https://localhost:5001/stock-items/detail) | `StockItemsService.GetStockItemAsync()` | GET probe, `?id=` deep links, progress bar |
 | [/price-list-items](https://localhost:5001/price-list-items) | `PriceListItemsService.ListAsync()` | Per-row mapping inspection, sort filter |
