@@ -81,12 +81,24 @@ gh secret set FREEAGENT_REFRESH_TOKEN --repo markheydon/freeagent-dotnet
 
 ## How the workflow behaves
 
+The **Console Sample Smoke** job is omitted unless the run is smoke-eligible. Eligibility is decided in the `Detect smoke-relevant changes` job:
+
+| Condition | Smoke job |
+|-----------|-----------|
+| Changes under `src/`, `samples/`, or `scripts/ci/` (compared to the PR base or previous commit) | Eligible |
+| Documentation-only, tests-only, dependency-only (`.csproj` / lockfile), GitHub Actions-only, or other paths outside the list above | **Not** eligible — job skipped |
+| Pull request opened by **Dependabot** | **Not** eligible — unit tests still run; live API smoke is deferred to the weekly schedule |
+| Weekly schedule or **workflow_dispatch** | Always eligible (API freshness on `main`) |
+
+When the job runs, credentials behave as before:
+
 | Trigger | Secrets configured? | Result |
 |---------|---------------------|--------|
-| Pull request | No | Smoke **skipped** (forks and draft work stay unblocked) |
-| Pull request | Yes | Smoke **runs** (secrets are available to workflows from this repository) |
-| Push to `main` | No | Workflow **fails** (credentials required on main) |
-| Push to `main` | Yes | Smoke **runs** |
+| Pull request (eligible) | No | Smoke **skipped** (forks and draft work stay unblocked) |
+| Pull request (eligible) | Yes | Smoke **runs** (secrets are available to workflows from this repository) |
+| Push to `main` (eligible) | No | Workflow **fails** (credentials required when smoke would run) |
+| Push to `main` (eligible) | Yes | Smoke **runs** |
+| Push to `main` (not eligible) | Any | Smoke job **skipped** |
 | Weekly schedule / manual dispatch on `main` | No | Workflow **fails** |
 | Weekly schedule / manual dispatch on `main` | Yes | Smoke **runs** |
 

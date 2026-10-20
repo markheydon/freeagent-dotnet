@@ -20,6 +20,52 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Detect smoke-relevant changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_smoke: ${{ steps.decide.outputs.run_smoke }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Paths filter
+        id: paths
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            smoke:
+              - 'src/**'
+              - 'samples/**'
+              - 'scripts/ci/**'
+
+      - name: Decide smoke eligibility
+        id: decide
+        env:
+          EVENT: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
+          PATHS_SMOKE: ${{ steps.paths.outputs.smoke }}
+        run: |
+          if [[ "$ACTOR" == "dependabot[bot]" ]]; then
+            echo "run_smoke=false" >> "$GITHUB_OUTPUT"
+            echo "Sandbox smoke skipped — Dependabot pull requests do not run live API smoke."
+            exit 0
+          fi
+
+          case "$EVENT" in
+            schedule|workflow_dispatch)
+              echo "run_smoke=true" >> "$GITHUB_OUTPUT"
+              exit 0
+              ;;
+          esac
+
+          if [[ "$PATHS_SMOKE" == "true" ]]; then
+            echo "run_smoke=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_smoke=false" >> "$GITHUB_OUTPUT"
+            echo "Sandbox smoke skipped — no changes under src/, samples/, or scripts/ci/."
+          fi
+
   verify:
     name: Verify
     runs-on: ubuntu-latest
@@ -64,7 +110,7 @@ jobs:
   build-and-test:
     name: Build & Test
     runs-on: ubuntu-latest
-    needs: verify
+    needs: [verify, changes]
     timeout-minutes: 15
 
     steps:
@@ -92,9 +138,11 @@ jobs:
           path: TestResults/*.trx
 
       - name: Publish console sample for smoke
+        if: needs.changes.outputs.run_smoke == 'true'
         run: dotnet publish samples/FreeAgent.Client.ConsoleSample/FreeAgent.Client.ConsoleSample.csproj --configuration Release --no-build -o "$RUNNER_TEMP/console-smoke"
 
       - name: Upload console smoke build
+        if: needs.changes.outputs.run_smoke == 'true'
         uses: actions/upload-artifact@v7
         with:
           name: console-smoke
@@ -102,8 +150,9 @@ jobs:
 
   console-smoke:
     name: Console Sample Smoke
+    if: needs.changes.outputs.run_smoke == 'true'
     runs-on: ubuntu-latest
-    needs: build-and-test
+    needs: [build-and-test, changes]
     timeout-minutes: 25
 
     steps:
