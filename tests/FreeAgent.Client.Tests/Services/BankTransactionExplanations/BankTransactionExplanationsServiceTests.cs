@@ -238,6 +238,136 @@ public class BankTransactionExplanationsServiceTests
     }
 
     [Fact]
+    public async System.Threading.Tasks.Task CreateBillPaymentBankTransactionExplanationAsync_SerialisesPaidBillOnly()
+    {
+        var body = await CaptureCreatePayloadAsync(service => service.CreateBillPaymentBankTransactionExplanationAsync(
+            CreateBillPaymentBankTransactionExplanationRequest.Create(8, 5, new DateOnly(2019, 5, 1), 50m)));
+
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        Assert.Equal("https://api.freeagent.com/v2/bills/5", explanation.GetProperty("paid_bill").GetString());
+        Assert.False(explanation.TryGetProperty("category", out _));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateSmartUserPaymentBankTransactionExplanationAsync_SerialisesPaidUserOnly()
+    {
+        var body = await CaptureCreatePayloadAsync(service => service.CreateSmartUserPaymentBankTransactionExplanationAsync(
+            CreateSmartUserPaymentBankTransactionExplanationRequest.Create(8, 2, new DateOnly(2019, 5, 1), -20m)));
+
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        Assert.Equal("https://api.freeagent.com/v2/users/2", explanation.GetProperty("paid_user").GetString());
+        Assert.False(explanation.TryGetProperty("category", out _));
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateCategorisedUserPaymentBankTransactionExplanationAsync_SerialisesPaidUserAndCategory()
+    {
+        var body = await CaptureCreatePayloadAsync(service => service.CreateCategorisedUserPaymentBankTransactionExplanationAsync(
+            CreateCategorisedUserPaymentBankTransactionExplanationRequest.Create(8, 2, "285", new DateOnly(2019, 5, 1), -20m)));
+
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        Assert.Equal("https://api.freeagent.com/v2/users/2", explanation.GetProperty("paid_user").GetString());
+        Assert.Equal("https://api.freeagent.com/v2/categories/285", explanation.GetProperty("category").GetString());
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateStockBankTransactionExplanationAsync_SerialisesStockFields()
+    {
+        var body = await CaptureCreatePayloadAsync(service => service.CreateStockBankTransactionExplanationAsync(
+            CreateStockBankTransactionExplanationRequest.Create(8, 4, stockAlteringQuantity: 3, new DateOnly(2019, 5, 1), -15m, categoryNominalCode: "366")));
+
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        Assert.Equal("https://api.freeagent.com/v2/stock_items/4", explanation.GetProperty("stock_item").GetString());
+        Assert.Equal(3, explanation.GetProperty("stock_altering_quantity").GetInt32());
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateCapitalAssetPurchaseBankTransactionExplanationAsync_SerialisesCategory()
+    {
+        var body = await CaptureCreatePayloadAsync(service => service.CreateCapitalAssetPurchaseBankTransactionExplanationAsync(
+            CreateCapitalAssetPurchaseBankTransactionExplanationRequest.Create(8, "720", new DateOnly(2019, 5, 1), -500m, assetLifeYears: "5")));
+
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        Assert.Equal("https://api.freeagent.com/v2/categories/720", explanation.GetProperty("category").GetString());
+        Assert.Equal("5", explanation.GetProperty("asset_life_years").GetString());
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateCapitalAssetDisposalBankTransactionExplanationAsync_SerialisesDisposedAsset()
+    {
+        var body = await CaptureCreatePayloadAsync(service => service.CreateCapitalAssetDisposalBankTransactionExplanationAsync(
+            CreateCapitalAssetDisposalBankTransactionExplanationRequest.Create(8, 9, new DateOnly(2019, 5, 1), 200m)));
+
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        Assert.Equal("https://api.freeagent.com/v2/capital_assets/9", explanation.GetProperty("disposed_asset").GetString());
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateLandlordPropertyBankTransactionExplanationAsync_SerialisesPropertyUri()
+    {
+        const string propertyUri = "https://api.freeagent.com/v2/properties/1";
+        var body = await CaptureCreatePayloadAsync(service => service.CreateLandlordPropertyBankTransactionExplanationAsync(
+            CreateLandlordPropertyBankTransactionExplanationRequest.Create(8, "285", propertyUri, new DateOnly(2019, 5, 1), -30m)));
+
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        Assert.Equal(propertyUri, explanation.GetProperty("property").GetString());
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateOpeningBalanceBankTransactionExplanationAsync_SerialisesDirectContactAndCategory()
+    {
+        var body = await CaptureCreatePayloadAsync(service => service.CreateOpeningBalanceBankTransactionExplanationAsync(
+            CreateOpeningBalanceBankTransactionExplanationRequest.Create(8, 7, "681", new DateOnly(2019, 5, 1), 100m)));
+
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        Assert.Equal("https://api.freeagent.com/v2/contacts/7", explanation.GetProperty("direct_contact").GetString());
+        Assert.Equal("https://api.freeagent.com/v2/categories/681", explanation.GetProperty("category").GetString());
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task UpdateBankTransactionExplanationAsync_SerialisesUpdatePayload()
+    {
+        string? body = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "bank_transaction_explanation": {
+                    "url": "https://api.freeagent.com/v2/bank_transaction_explanations/12",
+                    "description": "updated"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new BankTransactionExplanationsService(client);
+
+        await service.UpdateBankTransactionExplanationAsync(
+            12,
+            new UpdateBankTransactionExplanationRequest { Description = "updated", CategoryNominalCode = "285" });
+
+        Assert.NotNull(body);
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        Assert.Equal("updated", explanation.GetProperty("description").GetString());
+        Assert.Equal("https://api.freeagent.com/v2/categories/285", explanation.GetProperty("category").GetString());
+    }
+
+    [Fact]
     public async System.Threading.Tasks.Task DeleteBankTransactionExplanationAsync_CallsDeleteEndpoint()
     {
         var handler = new QueueHttpMessageHandler(request =>
@@ -252,5 +382,33 @@ public class BankTransactionExplanationsServiceTests
         var service = new BankTransactionExplanationsService(client);
 
         await service.DeleteBankTransactionExplanationAsync(99);
+    }
+
+    private static async Task<string> CaptureCreatePayloadAsync(
+        Func<BankTransactionExplanationsService, Task<BankTransactionExplanation>> act)
+    {
+        string? body = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "bank_transaction_explanation": {
+                    "url": "https://api.freeagent.com/v2/bank_transaction_explanations/12"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new BankTransactionExplanationsService(client);
+
+        await act(service);
+
+        return body ?? throw new InvalidOperationException("Create request body was not captured.");
     }
 }

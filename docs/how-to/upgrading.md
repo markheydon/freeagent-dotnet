@@ -78,6 +78,12 @@ Task-related public API members now use the `ProjectTask` prefix to align with t
 
 Wire JSON property names (`task`, `tasks`) are unchanged.
 
+### Bank transaction explanation model namespace
+
+The full `BankTransactionExplanation` type moved from `FreeAgent.Client.Models.BankTransactions` to `FreeAgent.Client.Models.BankTransactionExplanations` when the standalone explanations resource was implemented. Nested explanations on `BankTransaction.BankTransactionExplanations` still use the same type; update `using` directives and any fully qualified type references.
+
+Use `client.BankTransactionExplanations` for list, get, create (per documented variant), update, and delete. Explanation create, update, and delete are no longer implied by `BankTransactionsService` alone.
+
 ### Contacts list returns full `Contact` models
 
 Contact list methods now return `Contact` instead of the removed `ContactSummary` type. Update any code that depended on the slimmer list shape.

@@ -30,6 +30,8 @@ src/
 	├── Models/                          # Resource-grouped strongly typed models
 	│   ├── Attachments/                 # Attachment models and response wrappers
 	│   ├── BankAccounts/                # Bank account models and write requests
+	│   ├── BankTransactionExplanations/ # Bank transaction explanation models and per-variant create requests
+	│   ├── BankTransactions/            # Bank transaction models (nested explanations use BankTransactionExplanations)
 	│   ├── Bills/                       # Bill models, line items, response wrappers
 	│   ├── Categories/                  # Category models, operation-variant requests, nominal-code validation
 	│   ├── Company/                     # Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers
@@ -72,6 +74,12 @@ src/
 		│   └── ExpenseService.cs
 		├── HirePurchases/
 		│   └── HirePurchasesService.cs
+		├── BankAccounts/
+		│   └── BankAccountsService.cs
+		├── BankTransactionExplanations/
+		│   └── BankTransactionExplanationsService.cs
+		├── BankTransactions/
+		│   └── BankTransactionsService.cs
 		├── Invoices/
 		│   └── InvoiceService.cs
 		├── Notes/
