@@ -65,6 +65,8 @@ flowchart LR
 
 ## Using this map to sequence SDK work
 
+Each cluster below corresponds to a `type/feature` GitHub tracker; each resource in a cluster is typically a `type/story`—see [Backlog shape in this repository](../../plan/LABEL_STRATEGY.md#backlog-shape-in-this-repository).
+
 Layers describe **dependency pressure**, not a mandatory backlog. A resource in a later layer can still be implemented first if its only upstream links are optional URIs you are willing to pass as opaque strings until typed services exist.
 
 | Layer | Resources | Rationale |

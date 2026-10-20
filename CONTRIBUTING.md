@@ -66,7 +66,7 @@ If formatting changes are reported, run `dotnet format FreeAgent.slnx` and commi
 
 ## Branch and Pull Request Workflow
 
-1. Fork the repository and create a feature branch from `main`.
+1. Fork the repository and create a feature branch from `main`. (Git feature branches are a naming convention only; the GitHub `type/feature` label applies to **cluster tracking issues**, not every branch.)
 2. Keep changes focused and small where practical.
 3. Add or update tests for behavioural changes.
 4. Update docs affected by your change.

@@ -6,6 +6,37 @@ The **canonical label taxonomy** for `markheydon` repositories is maintained in
 This repository uses the same prefixed label groups. Pull request titles follow
 [`solo-dev-board - plan/PULL_REQUEST_POLICY.md`](https://github.com/markheydon/solo-dev-board/blob/main/plan/PULL_REQUEST_POLICY.md).
 
+## Backlog shape in this repository
+
+How milestones, GitHub issues, and pull requests relate in this project:
+
+```mermaid
+flowchart TB
+  milestone[V1_milestone]
+  featureTracker["type/feature cluster issue"]
+  story["type/story resource issue"]
+  pr["PR closes story"]
+  milestone --> featureTracker
+  featureTracker --> story
+  story --> pr
+```
+
+| Repo term | GitHub artefact | Label / title |
+|-----------|-----------------|---------------|
+| Release increment | Milestone (for example V1.0) | (no `type/*` on milestone) |
+| API **cluster** ([entity map](../docs/explanation/api-entity-map.md)) | Tracking issue | `type/feature`, `[Feature] Implement … cluster` |
+| SDK **resource** (or report) | Implementation issue | `type/story`, `[Story] Implement … resource` |
+| Cross-cutting prerequisite | Issue (uncommon here) | `type/enabler` when it unlocks many stories; otherwise `type/chore` |
+
+Rules:
+
+- **`type/epic`**: not used here while the **milestone** carries the release theme (solo-dev-board: epics are not milestone buckets). Prefer linking parent **feature** cluster issues, not hunting for an epic.
+- **Cluster = feature issue**: entity-map “cluster” and `[Feature]` trackers are the same thing (for example #65–#68).
+- **PRs close stories**: title `[Story] Implement … (#NNN)`; `Closes #NNN` on the story; **Related** link to the parent feature (for example `#65`). Do not `Closes` the parent unless you intend to close the whole cluster tracker.
+- **`[Feature]` PR titles** only when closing a `type/feature` tracker itself (for example cluster completion housekeeping)—not for per-resource SDK work.
+- **Git “feature branch”** (`feature/bills-resource`) is a naming convention only; it is unrelated to `type/feature`.
+- **`type/enabler` vs `type/chore`**: use `type/enabler` when the work is a technical prerequisite for multiple stories (contract or infra). Use `type/chore` for maintenance, verification (#134), sample backfill, and CI. Both are valid; do not relabel chores as enablers unless the solo-dev-board enabler definition clearly fits.
+
 ---
 
 ## Required labels
@@ -106,7 +137,7 @@ These unprefixed labels are **retired** in this repository. Remove them from Git
 
 ## Decision guide
 
-1. Large theme spanning multiple features? → `type/epic` or `type/feature`
+1. Large theme spanning multiple features? → `type/epic` or `type/feature`. In this repo, prefer `type/feature` for [API entity map](../docs/explanation/api-entity-map.md) clusters; reserve `type/epic` unless a named theme spans multiple milestones.
 2. User-facing SDK capability? → `type/story`
 3. Unblocks other stories technically? → `type/enabler`
 4. Test-only deliverable? → `type/test`
