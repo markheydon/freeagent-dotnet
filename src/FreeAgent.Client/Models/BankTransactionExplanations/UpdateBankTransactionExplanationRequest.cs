@@ -103,6 +103,11 @@ public sealed class UpdateBankTransactionExplanationRequest
     public long? PaidInvoiceId { get; set; }
 
     /// <summary>
+    /// Refunded credit note identifier (serialised to the <c>paid_invoice</c> wire field).
+    /// </summary>
+    public long? PaidCreditNoteId { get; set; }
+
+    /// <summary>
     /// Foreign currency value.
     /// </summary>
     public decimal? ForeignCurrencyValue { get; set; }

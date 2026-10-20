@@ -72,7 +72,7 @@ internal sealed class BankTransactionExplanationWritePayload
     public string? ReceiptReference { get; set; }
 
     [JsonPropertyName("paid_invoice")]
-    public InvoiceReference? PaidInvoice { get; set; }
+    public string? PaidInvoice { get; set; }
 
     [JsonPropertyName("foreign_currency_value")]
     public decimal? ForeignCurrencyValue { get; set; }
@@ -130,7 +130,10 @@ internal sealed class BankTransactionExplanationWritePayload
             RebillType = request.RebillType,
             RebillFactor = request.RebillFactor,
             ReceiptReference = request.ReceiptReference,
-            PaidInvoice = LinkedResourceWriteMapper.ToInvoiceReference(environment, request.PaidInvoiceId),
+            PaidInvoice = LinkedResourceWriteMapper.ToPaidInvoiceWireUri(
+                environment,
+                request.PaidInvoiceId,
+                request.PaidCreditNoteId),
             ForeignCurrencyValue = request.ForeignCurrencyValue,
             PaidBill = LinkedResourceWriteMapper.ToBillReference(environment, request.PaidBillId),
             PaidUser = LinkedResourceWriteMapper.ToUserReference(environment, request.PaidUserId),

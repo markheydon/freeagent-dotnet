@@ -126,12 +126,14 @@ public sealed class CreatePaymentOrRefundBankTransactionExplanationRequest : Ban
 /// </summary>
 public sealed class CreateInvoiceReceiptBankTransactionExplanationRequest : BankTransactionExplanationCreateRequestBase
 {
-    internal long PaidInvoiceId { get; private init; }
+    internal long? PaidInvoiceId { get; private init; }
+
+    internal long? PaidCreditNoteId { get; private init; }
 
     internal decimal? ForeignCurrencyValue { get; private init; }
 
     /// <summary>
-    /// Creates an invoice receipt or credit note refund explanation.
+    /// Creates an invoice receipt explanation.
     /// </summary>
     public static CreateInvoiceReceiptBankTransactionExplanationRequest Create(
         long bankTransactionId,
@@ -148,6 +150,31 @@ public sealed class CreateInvoiceReceiptBankTransactionExplanationRequest : Bank
         {
             BankTransactionId = bankTransactionId,
             PaidInvoiceId = paidInvoiceId,
+            DatedOn = datedOn,
+            GrossValue = grossValue,
+            ForeignCurrencyValue = foreignCurrencyValue,
+            Description = description
+        };
+    }
+
+    /// <summary>
+    /// Creates a credit note refund explanation.
+    /// </summary>
+    public static CreateInvoiceReceiptBankTransactionExplanationRequest CreateCreditNoteRefund(
+        long bankTransactionId,
+        long paidCreditNoteId,
+        DateOnly datedOn,
+        decimal grossValue,
+        decimal? foreignCurrencyValue = null,
+        string? description = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bankTransactionId);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(paidCreditNoteId);
+
+        return new CreateInvoiceReceiptBankTransactionExplanationRequest
+        {
+            BankTransactionId = bankTransactionId,
+            PaidCreditNoteId = paidCreditNoteId,
             DatedOn = datedOn,
             GrossValue = grossValue,
             ForeignCurrencyValue = foreignCurrencyValue,

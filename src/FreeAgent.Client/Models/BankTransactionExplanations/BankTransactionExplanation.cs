@@ -89,7 +89,9 @@ public sealed class BankTransactionExplanation : IFreeAgentResource
     /// Category nominal code parsed from the response.
     /// </summary>
     [JsonIgnore]
-    public string? CategoryNominalCode => CategoryLink?.Value?.NominalCode;
+    public string? CategoryNominalCode => CategoryLink?.Uri is string uri
+        ? CategoryReference.ExtractNominalCode(uri)
+        : CategoryLink?.Value?.NominalCode;
 
     /// <summary>
     /// Date of the explanation.

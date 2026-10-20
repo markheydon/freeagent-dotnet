@@ -41,6 +41,22 @@ public class BankTransactionExplanationModelSerializationTests
     }
 
     [Fact]
+    public void Deserialize_ReadsCategoryNominalCodeFromUriLink()
+    {
+        const string json = """
+        {
+          "url": "https://api.freeagent.com/v2/bank_transaction_explanations/1",
+          "category": "https://api.freeagent.com/v2/categories/285"
+        }
+        """;
+
+        var explanation = JsonSerializer.Deserialize<BankTransactionExplanation>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(explanation);
+        Assert.Equal("285", explanation.CategoryNominalCode);
+    }
+
+    [Fact]
     public void Deserialize_ReadsEcStatusAndRebillTypeWireValues()
     {
         const string json = """

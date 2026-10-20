@@ -161,6 +161,42 @@ public class BankTransactionExplanationsServiceTests
     }
 
     [Fact]
+    public async System.Threading.Tasks.Task CreateInvoiceReceiptBankTransactionExplanationAsync_SerialisesCreditNoteRefundUri()
+    {
+        string? body = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "bank_transaction_explanation": {
+                    "url": "https://api.freeagent.com/v2/bank_transaction_explanations/12"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new BankTransactionExplanationsService(client);
+
+        await service.CreateInvoiceReceiptBankTransactionExplanationAsync(
+            CreateInvoiceReceiptBankTransactionExplanationRequest.CreateCreditNoteRefund(
+                bankTransactionId: 8,
+                paidCreditNoteId: 5,
+                datedOn: new DateOnly(2019, 5, 1),
+                grossValue: 100m));
+
+        Assert.NotNull(body);
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        Assert.Equal("https://api.freeagent.com/v2/credit_notes/5", explanation.GetProperty("paid_invoice").GetString());
+    }
+
+    [Fact]
     public async System.Threading.Tasks.Task CreateTransferBankTransactionExplanationAsync_SerialisesTransferAccount()
     {
         string? body = null;

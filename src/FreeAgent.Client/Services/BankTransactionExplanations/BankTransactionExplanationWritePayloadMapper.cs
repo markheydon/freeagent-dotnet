@@ -42,7 +42,10 @@ internal static class BankTransactionExplanationWritePayloadMapper
         ArgumentNullException.ThrowIfNull(request);
 
         var payload = CreateCommonPayload(request, environment);
-        payload.PaidInvoice = LinkedResourceWriteMapper.ToInvoiceReference(environment, request.PaidInvoiceId);
+        payload.PaidInvoice = LinkedResourceWriteMapper.ToPaidInvoiceWireUri(
+            environment,
+            request.PaidInvoiceId,
+            request.PaidCreditNoteId);
         payload.ForeignCurrencyValue = request.ForeignCurrencyValue;
         return payload;
     }
