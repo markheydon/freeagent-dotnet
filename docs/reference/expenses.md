@@ -16,6 +16,8 @@ List, create (including batch), update, and delete expenses; optional linked-res
 
 Pagination patterns: see [Pagination](../how-to/pagination.md). User, category, project, and stock item links: see [Linked resources](../explanation/linked-resources.md). Purchases cluster patterns: see [Purchases entity map](../explanation/api-entity-map/purchases.md).
 
+Nested `attachment` on expense responses may omit thumbnail URLs and `expires_at`. For the full attachment payload (including when signed URLs expire), call [Attachments](attachments.md) (`client.Attachments.GetAttachmentAsync`) using the attachment ID from the nested `url`.
+
 ## Methods
 
 ### ListAsync / ListAutoPagingAsync

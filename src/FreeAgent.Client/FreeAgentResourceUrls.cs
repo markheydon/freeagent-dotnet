@@ -96,6 +96,14 @@ public sealed class FreeAgentResourceUrls
         RecurringInvoiceReference.ForEnvironment(_environment, recurringInvoiceId);
 
     /// <summary>
+    /// Creates an attachment resource reference.
+    /// </summary>
+    /// <param name="attachmentId">Attachment identifier.</param>
+    /// <returns>Attachment reference.</returns>
+    public AttachmentReference Attachment(long attachmentId) =>
+        AttachmentReference.ForEnvironment(_environment, attachmentId);
+
+    /// <summary>
     /// Creates a bill resource reference.
     /// </summary>
     /// <param name="billId">Bill identifier.</param>

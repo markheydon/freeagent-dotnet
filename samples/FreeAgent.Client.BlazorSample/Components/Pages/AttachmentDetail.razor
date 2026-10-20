@@ -1,0 +1,265 @@
+@page "/attachments/detail"
+@using FreeAgent.Client.Models.Attachments
+@using FreeAgent.Client.Models.Shared
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Attachment detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Attachments endpoint"
+                         Title="Get and delete attachments"
+                         CallUnderTest="AttachmentsService.GetAttachmentAsync / DeleteAttachmentAsync"
+                         Description="Fetches attachment metadata and signed download URLs by ID. Access level matches the parent resource."
+                         EndpointPath="/v2/attachments/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/attachments" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pass <code>?id=12345</code> in the URL, or resolve an ID from the first expense in your sandbox that has an attachment.
+                    </MudText>
+                    <MudNumericField @bind-Value="_attachmentId" Label="Attachment ID" Min="1" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="ResolveFromExpenseAsync">Resolve from expense</MudButton>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _attachmentId is null or < 1"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetAttachmentAsync">Get attachment</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _attachmentId is null or < 1"
+                                   OnClick="DeleteAttachmentAsync">Delete attachment</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _attachment is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Attachment model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_attachment.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_attachment.ContentType)</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">File name</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_attachment.FileName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Expires at</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_attachment.ExpiresAt?.ToString("u") ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Description</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_attachment.Description)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load attachment diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? AttachmentIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private Attachment? _attachment;
+    private ModelProbeSnapshot? _probe;
+    private long? _attachmentId;
+
+    protected override void OnParametersSet()
+    {
+        if (AttachmentIdFromQuery is > 0 && _attachmentId != AttachmentIdFromQuery)
+        {
+            _attachmentId = AttachmentIdFromQuery;
+            _operationMessage = $"Attachment ID {_attachmentId} loaded from URL. Press Get attachment to fetch diagnostics.";
+        }
+    }
+
+    private const int MaxExpensesToScanForAttachment = 500;
+
+    private async System.Threading.Tasks.Task ResolveFromExpenseAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var scanned = 0;
+                await foreach (var expense in client.Expenses.ListAutoPagingAsync(perPage: 100))
+                {
+                    if (scanned++ >= MaxExpensesToScanForAttachment)
+                    {
+                        break;
+                    }
+
+                    var detail = await client.Expenses.GetExpenseAsync(expense.ResourceId);
+                    if (detail.Attachment?.Url is null)
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        var reference = AttachmentReference.Parse(detail.Attachment.Url);
+                        _attachmentId = reference.Id;
+                        _operationMessage =
+                            $"Resolved attachment {reference.Id} from expense {detail.ResourceId} (scanned {scanned} expense(s)). Press Get attachment to fetch metadata.";
+                        return null;
+                    }
+                    catch (ArgumentException)
+                    {
+                        continue;
+                    }
+                }
+
+                throw new InvalidOperationException(
+                    $"No expenses with attachments were found in the first {MaxExpensesToScanForAttachment} expenses.");
+            },
+            fetchWirePayload: false);
+    }
+
+    private async System.Threading.Tasks.Task GetAttachmentAsync()
+    {
+        if (_attachmentId is null or < 1)
+        {
+            _error = "Enter an attachment ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _attachment = await client.Attachments.GetAttachmentAsync(_attachmentId.Value);
+                _operationMessage = $"Loaded attachment {_attachmentId.Value}.";
+                return $"attachments/{_attachmentId}";
+            },
+            envelopeProperty: "attachment");
+    }
+
+    private async System.Threading.Tasks.Task DeleteAttachmentAsync()
+    {
+        if (_attachmentId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _attachmentId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Attachments.DeleteAttachmentAsync(deletedId);
+                _attachment = null;
+                _probe = null;
+                _operationMessage = $"Deleted attachment {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async System.Threading.Tasks.Task RunOperationAsync(
+        Func<FreeAgentClient, System.Threading.Tasks.Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _attachment is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_attachment, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

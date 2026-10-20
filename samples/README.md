@@ -113,6 +113,7 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/credit-notes/detail](https://localhost:5001/credit-notes/detail) | `GetCreditNoteAsync()`, `CreateCreditNoteAsync()`, `UpdateCreditNoteAsync()`, `DeleteCreditNoteAsync()`, transition and email methods | CRUD probes, Turpinverse seed data, progress bar |
 | [/bills](https://localhost:5001/bills) | `BillService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/contact/project filters |
 | [/bills/detail](https://localhost:5001/bills/detail) | `GetBillAsync()`, `CreateBillAsync()`, `UpdateBillAsync()`, `DeleteBillAsync()` | CRUD probes, hire purchase flag, Turpinverse seed data, progress bar |
+| [/attachments/detail](https://localhost:5001/attachments/detail) | `AttachmentsService.GetAttachmentAsync()`, `DeleteAttachmentAsync()` | GET and DELETE probes, resolve ID from expense, `?id=` deep links, progress bar |
 | [/hire-purchases](https://localhost:5001/hire-purchases) | `HirePurchasesService.ListAsync()` | Per-row mapping inspection, read-only list (UK hire purchase bills) |
 | [/hire-purchases/detail](https://localhost:5001/hire-purchases/detail) | `HirePurchasesService.GetHirePurchaseAsync()` | GET probe, `?id=` deep links, progress bar |
 | [/tasks](https://localhost:5001/tasks) | `ProjectTaskService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/sort/project/updated_since filters |

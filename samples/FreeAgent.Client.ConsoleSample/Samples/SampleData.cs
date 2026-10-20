@@ -10,6 +10,7 @@ using FreeAgent.Client.Models.Notes;
 using FreeAgent.Client.Models.PriceListItems;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.RecurringInvoices;
+using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Models.StockItems;
 using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Timeslips;
@@ -243,6 +244,47 @@ internal sealed class SampleData
         }
 
         return page.Items[0];
+    }
+
+    /// <summary>
+    /// Returns the identifier of the first attachment found on an expense in the sandbox account.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>An attachment identifier.</returns>
+    public async Task<long> GetFirstAttachmentIdAsync(CancellationToken cancellationToken = default)
+    {
+        const int maxExpensesToScan = 500;
+        var scanned = 0;
+        await foreach (var expense in _context.Client.Expenses.ListAutoPagingAsync(
+                           perPage: 100,
+                           cancellationToken: cancellationToken))
+        {
+            if (scanned++ >= maxExpensesToScan)
+            {
+                break;
+            }
+
+            var detail = await _context.Client.Expenses.GetExpenseAsync(
+                expense.ResourceId,
+                cancellationToken: cancellationToken);
+
+            if (detail.Attachment?.Url is null)
+            {
+                continue;
+            }
+
+            try
+            {
+                return AttachmentReference.Parse(detail.Attachment.Url).Id;
+            }
+            catch (ArgumentException)
+            {
+                continue;
+            }
+        }
+
+        SampleContext.Skip($"no expenses with attachments found in the first {maxExpensesToScan} expenses");
+        return 0;
     }
 
     /// <summary>
