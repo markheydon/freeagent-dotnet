@@ -122,6 +122,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/expenses/detail](https://localhost:5001/expenses/detail) | `GetExpenseAsync()`, `CreateExpenseAsync()`, `CreateExpensesAsync()`, `UpdateExpenseAsync()`, `DeleteExpenseAsync()`, `GetMileageSettingsAsync()` | CRUD probes, category and mileage variants, batch create, progress bar |
 | [/bank-accounts](https://localhost:5001/bank-accounts) | `BankAccountsService.ListAsync()` | Per-row mapping inspection, view filter |
 | [/bank-accounts/detail](https://localhost:5001/bank-accounts/detail) | `GetBankAccountAsync()`, `Create*BankAccountAsync()`, `UpdateBankAccountAsync()`, `DeleteBankAccountAsync()` | CRUD probes, create variant selector, progress bar |
+| [/bank-feeds](https://localhost:5001/bank-feeds) | `BankFeedsService.ListAsync()` | Per-row mapping inspection, read-only list |
+| [/bank-feeds/detail](https://localhost:5001/bank-feeds/detail) | `BankFeedsService.GetBankFeedAsync()` | GET probe, `?id=` deep links, progress bar |
 | [/bank-transactions](https://localhost:5001/bank-transactions) | `BankTransactionsService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, bank account and view filters |
 | [/bank-transactions/detail](https://localhost:5001/bank-transactions/detail) | `GetBankTransactionAsync()`, `DeleteBankTransactionAsync()`, `UploadBankStatementAsync()`, `UploadBankStatementFileAsync()` | Get, delete, JSON and file statement uploads, progress bar |
 | [/bank-transaction-explanations](https://localhost:5001/bank-transaction-explanations) | `BankTransactionExplanationsService.ListAsync()` | Per-row mapping inspection, required bank account ID, date filters |

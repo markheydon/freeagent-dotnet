@@ -57,7 +57,7 @@ Explanation type determines which URI fields are required (payment, invoice rece
 | Bank accounts | [Bank accounts](https://dev.freeagent.com/docs/bank_accounts) | `client.BankAccounts` |
 | Bank transactions | [Bank transactions](https://dev.freeagent.com/docs/bank_transactions) | `client.BankTransactions` |
 | Bank transaction explanations | [Bank transaction explanations](https://dev.freeagent.com/docs/bank_transaction_explanations) | `client.BankTransactionExplanations` |
-| Bank feeds | [Bank feeds](https://dev.freeagent.com/docs/bank_feeds) | Not yet |
+| Bank feeds | [Bank feeds](https://dev.freeagent.com/docs/bank_feeds) | `client.BankFeeds` |
 
 ## Key URI fields
 
@@ -102,4 +102,4 @@ From 1 December 2026, bank transaction explanations will return an `attachments`
 
 ## SDK sequencing note
 
-**Bank accounts**, **Bank transactions**, and **Bank transaction explanations** are implemented (`client.BankAccounts`, `client.BankTransactions`, `client.BankTransactionExplanations`). List and statement upload take a bank account id; explanation list requires the same. Nested explanations on bank transaction GET use the fields documented on the bank transactions page. **Bank feeds** remain outstanding. Typed services for [Invoices](sales.md), [Bills](purchases.md), and [Categories](foundations.md) support richer explanation create probes.
+**Bank accounts**, **Bank feeds**, **Bank transactions**, and **Bank transaction explanations** are implemented (`client.BankAccounts`, `client.BankFeeds`, `client.BankTransactions`, `client.BankTransactionExplanations`). List and statement upload take a bank account id; explanation list requires the same. Nested explanations on bank transaction GET use the fields documented on the bank transactions page. Typed services for [Invoices](sales.md), [Bills](purchases.md), and [Categories](foundations.md) support richer explanation create probes.
