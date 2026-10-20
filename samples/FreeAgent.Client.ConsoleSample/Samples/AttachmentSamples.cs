@@ -26,7 +26,7 @@ internal sealed class AttachmentSamples(SampleContext context) : IConsoleSampleP
         SampleOutput.WriteField("Description", attachment.Description);
     }
 
-    [ConsoleSample(Name = "Delete attachment", MutatesData = true)]
+    [ConsoleSample(Name = "Delete attachment", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DeleteAttachmentAsync(CancellationToken cancellationToken)
     {
