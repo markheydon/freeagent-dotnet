@@ -80,6 +80,55 @@ public class ExpenseServiceTests
     }
 
     [Fact]
+    public async Task ListAutoPagingAsync_YieldsAllPages()
+    {
+        var page = 0;
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
+        {
+            page++;
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(page == 1
+                    ? """
+                      {
+                        "expenses": [
+                          { "url": "https://api.freeagent.com/v2/expenses/1" },
+                          { "url": "https://api.freeagent.com/v2/expenses/2" }
+                        ]
+                      }
+                      """
+                    : """
+                      {
+                        "expenses": [
+                          { "url": "https://api.freeagent.com/v2/expenses/3" }
+                        ]
+                      }
+                      """)
+            };
+            if (page == 1)
+            {
+                response.Headers.TryAddWithoutValidation("X-Total-Count", "3");
+            }
+
+            return response;
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ExpenseService(client);
+
+        var ids = new List<long>();
+        await foreach (var expense in service.ListAutoPagingAsync(perPage: 2))
+        {
+            ids.Add(expense.ResourceId);
+        }
+
+        Assert.Equal([1, 2, 3], ids);
+    }
+
+    [Fact]
     public async Task CreateExpenseAsync_PostsMileageCategory()
     {
         string? body = null;

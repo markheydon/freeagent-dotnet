@@ -124,6 +124,38 @@
                                      WirePayload="@_wireApiResponse"
                                      ModelFieldsHeading="All Expense model fields (selected row)" />
                 }
+
+                <MudExpansionPanels>
+                    <MudExpansionPanel Text="Developer probe: auto-pagination (ListAutoPagingAsync)">
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.body2" Class="hero-copy">
+                                Optional check that the async enumerator walks every page.
+                            </MudText>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.AllInclusive"
+                                       Disabled="_loadingAll"
+                                       OnClick="LoadAllAsync">
+                                @if (_loadingAll)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Enumerating…</span>
+                                }
+                                else
+                                {
+                                    <span>Count all expenses</span>
+                                }
+                            </MudButton>
+
+                            @if (_allExpensesCount is not null)
+                            {
+                                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+                                    <code>ListAutoPagingAsync</code> yielded @_allExpensesCount.Value expense@(_allExpensesCount.Value == 1 ? string.Empty : "s").
+                                </MudAlert>
+                            }
+                        </MudStack>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
             </MudStack>
         </MudPaper>
     }
@@ -131,12 +163,14 @@
 
 @code {
     private bool _loading;
+    private bool _loadingAll;
     private string? _error;
     private string _wireApiResponse = string.Empty;
     private PaginatedResponse<Expense>? _pageResult;
     private Expense? _inspectedExpense;
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
+    private int? _allExpensesCount;
     private string? _view;
     private long? _projectIdFilter;
     private int _perPage = 25;
@@ -155,6 +189,7 @@
         _inspectedExpense = null;
         _inspectedProbe = null;
         _inspectedIndex = null;
+        _allExpensesCount = null;
 
         var token = TokenStore.GetToken();
         if (token is null)
@@ -224,6 +259,44 @@
         }
 
         return $"expenses?{string.Join('&', query)}";
+    }
+
+    private async System.Threading.Tasks.Task LoadAllAsync()
+    {
+        _allExpensesCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loadingAll = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var count = 0;
+            await foreach (var _ in client.Expenses.ListAutoPagingAsync(
+                               perPage: _perPage,
+                               view: _view,
+                               projectId: _projectIdFilter))
+            {
+                count++;
+            }
+
+            _allExpensesCount = count;
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        finally
+        {
+            _loadingAll = false;
+        }
     }
 
     private sealed record ExpenseRow(int Index, long Id, string DatedOn, string Description);

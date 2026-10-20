@@ -20,6 +20,30 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteRows(
             page.Items,
             expense => $"{expense.ResourceId,8}  {expense.DatedOn:yyyy-MM-dd}  {expense.Description}");
+
+        if (page.HasNextPage)
+        {
+            Console.WriteLine();
+            Console.WriteLine("  (First page only. Use ListAutoPagingAsync to stream all pages.)");
+        }
+    }
+
+    [ConsoleSample(Name = "Stream all expenses", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task StreamAllExpensesAsync(CancellationToken cancellationToken)
+    {
+        var count = 0;
+        await foreach (var expense in context.Client.Expenses.ListAutoPagingAsync(cancellationToken: cancellationToken))
+        {
+            count++;
+            if (count <= 5)
+            {
+                Console.WriteLine($"  {expense.ResourceId,8}  {expense.DatedOn:yyyy-MM-dd}  {expense.Description}");
+            }
+        }
+
+        SampleOutput.WriteHeader("Streamed expenses via ListAutoPagingAsync");
+        Console.WriteLine($"  Total expenses streamed: {count}");
     }
 
     [ConsoleSample(Name = "List recent expenses")]
