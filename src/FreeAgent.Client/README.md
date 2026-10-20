@@ -120,7 +120,7 @@ await client.Invoices.CreateInvoiceAsync(new Invoice
 });
 ```
 
-Further resources that link to contacts and projects include [recurring invoices](https://markheydon.me.uk/freeagent-dotnet/reference/recurring-invoices), [credit notes](https://markheydon.me.uk/freeagent-dotnet/reference/credit-notes), [credit note reconciliations](https://markheydon.me.uk/freeagent-dotnet/reference/credit-note-reconciliations), and [notes](https://markheydon.me.uk/freeagent-dotnet/reference/notes).
+Further resources that link to contacts and projects include [recurring invoices](https://markheydon.me.uk/freeagent-dotnet/reference/recurring-invoices), [credit notes](https://markheydon.me.uk/freeagent-dotnet/reference/credit-notes), [credit note reconciliations](https://markheydon.me.uk/freeagent-dotnet/reference/credit-note-reconciliations), [bank accounts](https://markheydon.me.uk/freeagent-dotnet/reference/bank-accounts) (optional remittance on invoices and credit notes via `BankAccountId`), and [notes](https://markheydon.me.uk/freeagent-dotnet/reference/notes).
 
 See [linked resources](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/explanation/linked-resources.md) for the full pattern, including list filters, webhook URL parsing, and update options.
 

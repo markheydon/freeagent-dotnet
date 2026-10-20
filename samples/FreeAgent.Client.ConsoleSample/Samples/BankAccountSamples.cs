@@ -91,6 +91,28 @@ internal sealed class BankAccountSamples(SampleContext context) : IConsoleSample
         SampleOutput.WriteField("Deleted", created.ResourceId);
     }
 
+    [ConsoleSample(Name = "Update bank account and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateBankAccountAndDeleteAsync(CancellationToken cancellationToken)
+    {
+        var name = $"SDK console bank account {DateTime.UtcNow:yyyyMMddHHmmss}";
+        var created = await context.Client.BankAccounts.CreateStandardBankAccountAsync(
+            CreateStandardBankAccountRequest.Create(name, openingBalance: 0m),
+            cancellationToken);
+
+        var updated = await context.Client.BankAccounts.UpdateBankAccountAsync(
+            created.ResourceId,
+            UpdateBankAccountRequest.Create(name: $"{name} (updated)"),
+            cancellationToken);
+
+        SampleOutput.WriteHeader("Updated bank account");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+        SampleOutput.WriteField("Name", updated.Name);
+
+        await context.Client.BankAccounts.DeleteBankAccountAsync(created.ResourceId, cancellationToken);
+        SampleOutput.WriteField("Deleted", created.ResourceId);
+    }
+
     [ConsoleSample(Name = "Create e-commerce account and delete", ExcludeFromRunAll = true, MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateEcommerceBankAccountAndDeleteAsync(CancellationToken cancellationToken)

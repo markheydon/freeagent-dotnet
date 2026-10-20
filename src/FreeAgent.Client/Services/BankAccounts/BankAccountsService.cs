@@ -8,6 +8,9 @@ namespace FreeAgent.Client.Services.BankAccounts;
 /// <summary>
 /// Service for interacting with FreeAgent bank accounts.
 /// </summary>
+/// <remarks>
+/// Minimum FreeAgent access level: Banking.
+/// </remarks>
 public sealed class BankAccountsService
 {
     private readonly IFreeAgentRequestClient _requestClient;

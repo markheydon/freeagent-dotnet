@@ -137,7 +137,7 @@ Examples marked **(mutates)** write to the connected account.
 | Expenses | List expenses; stream all expenses; list recent expenses; list expenses for project; get expense detail; get mileage settings; **(mutates)** create probe expense and delete; **(mutates)** create probe mileage expense and delete; **(mutates)** create probe expenses batch and delete |
 | Attachments | Get attachment detail; **(mutates)** delete attachment |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
-| Bank accounts | List bank accounts; list standard accounts; get detail; create variants and delete (sandbox) |
+| Bank accounts | List bank accounts; list standard accounts; get detail; create variants; update and delete (sandbox) |
 | Stock items | List stock items; get stock item detail |
 | Price list items | List price list items; get price list item detail; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |
 | Linked resources | **(mutates)** verify linked-resource writes (create, update) — sandbox PUT round-trip checks for issue #134 |

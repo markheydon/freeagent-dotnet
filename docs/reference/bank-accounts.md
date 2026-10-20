@@ -98,6 +98,28 @@ Task<BankAccount> CreateEcommerceBankAccountAsync(
 
 **HTTP:** `POST /v2/bank_accounts` with `type` set to `EcommerceAccount`.
 
+### Create methods
+
+Each create method maps to `POST /v2/bank_accounts` with a variant-specific payload. The SDK sets `type` — callers do not supply it.
+
+| Method | Request type | Notes |
+|--------|--------------|-------|
+| `CreateStandardBankAccountAsync` | `CreateStandardBankAccountRequest` | Optional sort code, IBAN, and BIC |
+| `CreateCreditCardBankAccountAsync` | `CreateCreditCardBankAccountRequest` | Requires `account_number` (last four digits) |
+| `CreateEcommerceBankAccountAsync` | `CreateEcommerceBankAccountRequest` | E-commerce payment account |
+
+**Sample:**
+
+```csharp
+using FreeAgent.Client.Models.BankAccounts;
+
+var standard = await client.BankAccounts.CreateStandardBankAccountAsync(
+    CreateStandardBankAccountRequest.Create("Business current account", openingBalance: 0m));
+
+var card = await client.BankAccounts.CreateCreditCardBankAccountAsync(
+    CreateCreditCardBankAccountRequest.Create("Company card", openingBalance: 0m, accountNumber: "1234"));
+```
+
 ---
 
 ### UpdateBankAccountAsync
@@ -110,6 +132,14 @@ Task<BankAccount> UpdateBankAccountAsync(
 ```
 
 **HTTP:** `PUT /v2/bank_accounts/:id`
+
+**Sample:**
+
+```csharp
+var updated = await client.BankAccounts.UpdateBankAccountAsync(
+    bankAccountId,
+    UpdateBankAccountRequest.Create(name: "Renamed account", status: BankAccountStatus.Hidden));
+```
 
 ---
 
