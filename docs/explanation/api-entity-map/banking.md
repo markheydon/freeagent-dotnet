@@ -54,7 +54,7 @@ Explanation type determines which URI fields are required (payment, invoice rece
 
 | Resource | Official docs | SDK |
 |----------|---------------|-----|
-| Bank accounts | [Bank accounts](https://dev.freeagent.com/docs/bank_accounts) | Not yet |
+| Bank accounts | [Bank accounts](https://dev.freeagent.com/docs/bank_accounts) | `client.BankAccounts` |
 | Bank transactions | [Bank transactions](https://dev.freeagent.com/docs/bank_transactions) | Not yet |
 | Bank transaction explanations | [Bank transaction explanations](https://dev.freeagent.com/docs/bank_transaction_explanations) | Not yet |
 | Bank feeds | [Bank feeds](https://dev.freeagent.com/docs/bank_feeds) | Not yet |

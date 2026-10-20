@@ -1,0 +1,266 @@
+@page "/bank-accounts/detail"
+@using FreeAgent.Client.Models.BankAccounts
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Bank account detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Bank accounts endpoint"
+                         Title="Get, create, update, and delete bank accounts"
+                         CallUnderTest="@_callUnderTest"
+                         Description="Exercises each documented bank account create variant via typed SDK requests and shows wire-to-model diagnostics for the returned bank account envelope."
+                         EndpointPath="/v2/bank_accounts/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/bank_accounts" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a bank account ID from the <MudLink Href="/bank-accounts">bank accounts list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Select a documented write variant below to exercise the matching typed SDK method.
+                    </MudText>
+
+                    <MudSelect T="BankAccountWriteProbeVariant"
+                               @bind-Value="_writeVariant"
+                               Label="Write variant"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               FullWidth="true">
+                        @foreach (var variant in Enum.GetValues<BankAccountWriteProbeVariant>())
+                        {
+                            <MudSelectItem Value="variant">@variant</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudNumericField @bind-Value="_bankAccountId" @bind-Value:after="OnBankAccountIdChanged" Label="Bank account ID" Min="1" />
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetBankAccountAsync">Get bank account</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="ExecuteWriteVariantAsync">Run selected write variant</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _bankAccountId is null or < 1"
+                                   OnClick="DeleteBankAccountAsync">Delete bank account</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _bankAccount is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All BankAccount model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_bankAccount.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_bankAccount.Type?.ToString())</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Name</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_bankAccount.Name)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Current balance</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_bankAccount.CurrentBalance?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load bank account diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? IdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private long? _bankAccountId;
+    private BankAccountWriteProbeVariant _writeVariant = BankAccountWriteProbeVariant.CreateStandard;
+    private BankAccount? _bankAccount;
+    private ModelProbeSnapshot? _probe;
+    private string _callUnderTest = "BankAccountsService.GetBankAccountAsync / Create*BankAccountAsync / UpdateBankAccountAsync / DeleteBankAccountAsync";
+
+    protected override void OnParametersSet()
+    {
+        if (IdFromQuery is > 0 && _bankAccountId != IdFromQuery)
+        {
+            _bankAccountId = IdFromQuery;
+            _operationMessage = $"Bank account ID {_bankAccountId} loaded from URL. Press Get bank account to fetch diagnostics.";
+        }
+    }
+
+    private void OnBankAccountIdChanged()
+    {
+        if (_bankAccountId is > 0)
+        {
+            NavigationManager.NavigateTo($"/bank-accounts/detail?id={_bankAccountId}", replace: true);
+        }
+    }
+
+    private async Task GetBankAccountAsync()
+    {
+        if (_bankAccountId is null or < 1)
+        {
+            _error = "Enter a bank account ID.";
+            return;
+        }
+
+        _callUnderTest = "BankAccountsService.GetBankAccountAsync(...)";
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _bankAccount = await client.BankAccounts.GetBankAccountAsync(_bankAccountId.Value);
+                _operationMessage = $"Loaded bank account {_bankAccountId}: {_bankAccount.Name}";
+                return $"bank_accounts/{_bankAccountId}";
+            });
+    }
+
+    private async Task ExecuteWriteVariantAsync()
+    {
+        _callUnderTest = $"BankAccountsService.{BankAccountWriteProbeSupport.GetSdkMethodName(_writeVariant)}(...)";
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _bankAccount = await BankAccountWriteProbeSupport.ExecuteAsync(
+                    client,
+                    _writeVariant,
+                    _bankAccountId);
+
+                _bankAccountId = _bankAccount.ResourceId;
+                NavigationManager.NavigateTo($"/bank-accounts/detail?id={_bankAccountId}", replace: true);
+                _operationMessage = $"Executed {_writeVariant} for bank account {_bankAccountId}.";
+                return $"bank_accounts/{_bankAccountId}";
+            });
+    }
+
+    private async Task DeleteBankAccountAsync()
+    {
+        if (_bankAccountId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _bankAccountId.Value;
+        _callUnderTest = "BankAccountsService.DeleteBankAccountAsync(...)";
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.BankAccounts.DeleteBankAccountAsync(deletedId);
+                _bankAccount = null;
+                _probe = null;
+                _operationMessage = $"Deleted bank account {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgentClient, Task<string?>> action,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _bankAccount is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_bankAccount, _wireApiResponse, envelopeProperty: "bank_account");
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            if (fetchWirePayload && _bankAccountId is > 0)
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    $"bank_accounts/{_bankAccountId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

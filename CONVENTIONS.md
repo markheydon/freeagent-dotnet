@@ -29,7 +29,7 @@ src/
 	│   └── Serialization/               # JSON converters and TFM compatibility
 	├── Models/                          # Resource-grouped strongly typed models
 	│   ├── Attachments/                 # Attachment models and response wrappers
-	│   ├── BankAccounts/                # Bank account stub models for invoice links
+	│   ├── BankAccounts/                # Bank account models and write requests
 	│   ├── Bills/                       # Bill models, line items, response wrappers
 	│   ├── Categories/                  # Category models, operation-variant requests, nominal-code validation
 	│   ├── Company/                     # Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers
