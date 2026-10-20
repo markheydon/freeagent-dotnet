@@ -149,7 +149,7 @@ jobs:
 
       - name: Download console smoke build
         if: steps.policy.outputs.mode == 'run'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: console-smoke
           path: console-smoke
