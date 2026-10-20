@@ -10,7 +10,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - Rate limiting and bounded retries for transient failures.
 - Typed exception model (`FreeAgentApiException`, `FreeAgentRateLimitException`, …).
 - Pagination (single-page and auto-pagination).
-- Company, Contacts, Categories, Users, Projects, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Hire purchases, Expenses, Attachments, Stock items, Price list items, Tasks, Timeslips, Notes, and Email addresses API support.
+- Company, Contacts, Categories, Users, Projects, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Hire purchases, Expenses, Attachments, Stock items, Price list items, Tasks, Timeslips, Notes, and Email addresses API support.
 - `CurrencyCode` enum for documented ISO 4217 codes (reference type; not a REST resource).
 - Targets .NET 8.0 and .NET 10.0.
 - Fully async/await with XML documentation.
@@ -120,7 +120,7 @@ await client.Invoices.CreateInvoiceAsync(new Invoice
 });
 ```
 
-Further resources that link to contacts and projects include [recurring invoices](https://markheydon.me.uk/freeagent-dotnet/reference/recurring-invoices), [credit notes](https://markheydon.me.uk/freeagent-dotnet/reference/credit-notes), [credit note reconciliations](https://markheydon.me.uk/freeagent-dotnet/reference/credit-note-reconciliations), and [notes](https://markheydon.me.uk/freeagent-dotnet/reference/notes).
+Further resources that link to contacts and projects include [recurring invoices](https://markheydon.me.uk/freeagent-dotnet/reference/recurring-invoices), [credit notes](https://markheydon.me.uk/freeagent-dotnet/reference/credit-notes), [credit note reconciliations](https://markheydon.me.uk/freeagent-dotnet/reference/credit-note-reconciliations), [bank accounts](https://markheydon.me.uk/freeagent-dotnet/reference/bank-accounts) (optional remittance on invoices and credit notes via `BankAccountId`), and [notes](https://markheydon.me.uk/freeagent-dotnet/reference/notes).
 
 See [linked resources](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/explanation/linked-resources.md) for the full pattern, including list filters, webhook URL parsing, and update options.
 

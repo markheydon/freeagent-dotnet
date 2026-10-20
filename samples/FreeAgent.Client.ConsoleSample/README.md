@@ -90,7 +90,7 @@ dotnet run
 ### What happens
 
 1. The app completes OAuth (browser flow or token from environment variables).
-2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Hire purchases, Expenses, Attachments, Stock items, Price list items).
+2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Hire purchases, Expenses, Attachments, Stock items, Price list items).
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
@@ -137,6 +137,7 @@ Examples marked **(mutates)** write to the connected account.
 | Expenses | List expenses; stream all expenses; list recent expenses; list expenses for project; get expense detail; get mileage settings; **(mutates)** create probe expense and delete; **(mutates)** create probe mileage expense and delete; **(mutates)** create probe expenses batch and delete |
 | Attachments | Get attachment detail; **(mutates)** delete attachment |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
+| Bank accounts | List bank accounts; list standard accounts; get detail; create variants; update and delete (sandbox) |
 | Stock items | List stock items; get stock item detail |
 | Price list items | List price list items; get price list item detail; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |
 | Linked resources | **(mutates)** verify linked-resource writes (create, update) — sandbox PUT round-trip checks for issue #134 |

@@ -1,0 +1,250 @@
+@page "/bank-accounts"
+@using FreeAgent.Client.Models.BankAccounts
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Bank accounts - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Bank accounts endpoint"
+                         Title="Bank accounts list"
+                         CallUnderTest="BankAccountsService.ListAsync(...)"
+                         Description="Load company bank accounts, inspect wire-to-model mapping for any row, then open bank account CRUD for get, create, update, and delete."
+                         EndpointPath="/v2/bank_accounts?view={optional}"
+                         DocsUrl="https://dev.freeagent.com/docs/bank_accounts" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        List all bank accounts or filter by documented <code>view</code> values. Use <strong>Inspect mapping</strong> on any row,
+                        or open <MudLink Href="/bank-accounts/detail">Bank account CRUD</MudLink> for single-account operations.
+                    </MudText>
+
+                    <MudGrid Spacing="2" Class="contacts-filter-grid">
+                        <MudItem xs="12" sm="6" md="4" lg="3">
+                            <MudSelect T="string"
+                                       @bind-Value="_view"
+                                       Label="View filter"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       FullWidth="true">
+                                <MudSelectItem Value="@string.Empty">All accounts</MudSelectItem>
+                                <MudSelectItem Value="@BankAccountViews.StandardBankAccounts">standard_bank_accounts</MudSelectItem>
+                                <MudSelectItem Value="@BankAccountViews.CreditCardAccounts">credit_card_accounts</MudSelectItem>
+                                <MudSelectItem Value="@BankAccountViews.PaypalAccounts">paypal_accounts</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Primary"
+                                       StartIcon="@Icons.Material.Filled.CloudDownload"
+                                       Disabled="_loading"
+                                       OnClick="LoadBankAccountsAsync">
+                                @if (_loading)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Loading…</span>
+                                }
+                                else
+                                {
+                                    <span>Load bank accounts</span>
+                                }
+                            </MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </MudStack>
+
+                @if (_bankAccounts is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load bank accounts</strong> to fetch accounts from FreeAgent.</MudText>
+                }
+
+                @if (_bankAccounts is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_bankAccounts.Count bank account@(_bankAccounts.Count == 1 ? "" : "s") loaded
+                    </MudChip>
+
+                    @if (_bankAccounts.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No bank accounts returned for the selected filter.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Name</MudTh>
+                                    <MudTh>Type</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Balance</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Name">@ValueOrDash(context.Name)</MudTd>
+                                    <MudTd DataLabel="Type">@ValueOrDash(context.Type)</MudTd>
+                                    <MudTd DataLabel="Status">@ValueOrDash(context.Status)</MudTd>
+                                    <MudTd DataLabel="Balance">@context.Balance</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectRowAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetDetailHref(context.Id)">
+                                                Open CRUD
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedItem is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All BankAccount model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected bank account</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    ID: @_inspectedItem.ResourceId
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private string _view = string.Empty;
+    private IReadOnlyList<BankAccount>? _bankAccounts;
+    private BankAccount? _inspectedItem;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+
+    private IReadOnlyList<BankAccountRow> _rows => _bankAccounts?
+        .Select(static (item, index) => new BankAccountRow(
+            index,
+            item.ResourceId,
+            item.Name,
+            item.Type?.ToString(),
+            item.Status?.ToString(),
+            item.CurrentBalance?.ToString() ?? "-"))
+        .ToList() ?? [];
+
+    private async Task LoadBankAccountsAsync()
+    {
+        _bankAccounts = null;
+        _inspectedItem = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var diagnosticsEndpoint = string.IsNullOrWhiteSpace(_view)
+            ? "bank_accounts"
+            : $"bank_accounts?view={Uri.EscapeDataString(_view)}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _bankAccounts = await client.BankAccounts.ListAsync(
+                string.IsNullOrWhiteSpace(_view) ? null : _view);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_bankAccounts is null || index < 0 || index >= _bankAccounts.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedItem = _bankAccounts[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "bank_accounts", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, _wireApiResponse, envelopeProperty: "bank_accounts");
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string GetDetailHref(long id) => $"/bank-accounts/detail?id={id}";
+
+    private sealed record BankAccountRow(int Index, long Id, string? Name, string? Type, string? Status, string Balance);
+}
