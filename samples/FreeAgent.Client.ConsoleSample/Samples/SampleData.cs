@@ -4,6 +4,7 @@ using FreeAgent.Client.Models.CreditNoteReconciliations;
 using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Expenses;
+using FreeAgent.Client.Models.HirePurchases;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Notes;
 using FreeAgent.Client.Models.PriceListItems;
@@ -328,6 +329,22 @@ internal sealed class SampleData
         }
 
         return stockItems[0];
+    }
+
+    /// <summary>
+    /// Returns the first hire purchase from the hire purchases list.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>A hire purchase.</returns>
+    public async Task<HirePurchase> GetFirstHirePurchaseAsync(CancellationToken cancellationToken = default)
+    {
+        var hirePurchases = await _context.Client.HirePurchases.ListAsync(cancellationToken: cancellationToken);
+        if (hirePurchases.Count == 0)
+        {
+            SampleContext.Skip("no hire purchases found in sandbox account (UK hire purchase bills only)");
+        }
+
+        return hirePurchases[0];
     }
 
     /// <summary>

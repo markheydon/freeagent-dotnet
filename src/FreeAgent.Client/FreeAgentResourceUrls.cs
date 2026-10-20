@@ -104,6 +104,14 @@ public sealed class FreeAgentResourceUrls
         BillReference.ForEnvironment(_environment, billId);
 
     /// <summary>
+    /// Creates a hire purchase resource reference.
+    /// </summary>
+    /// <param name="hirePurchaseId">Hire purchase identifier.</param>
+    /// <returns>Hire purchase reference.</returns>
+    public HirePurchaseReference HirePurchase(long hirePurchaseId) =>
+        HirePurchaseReference.ForEnvironment(_environment, hirePurchaseId);
+
+    /// <summary>
     /// Creates a credit note resource reference.
     /// </summary>
     /// <param name="creditNoteId">Credit note identifier.</param>

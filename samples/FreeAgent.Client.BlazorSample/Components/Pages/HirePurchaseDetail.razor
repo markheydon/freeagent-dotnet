@@ -1,0 +1,180 @@
+@page "/hire-purchases/detail"
+@using FreeAgent.Client.Models.HirePurchases
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Hire purchase detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Hire purchases endpoint"
+                         Title="Get a single hire purchase"
+                         CallUnderTest="HirePurchasesService.GetHirePurchaseAsync"
+                         Description="Read-only detail probe for a single hire purchase with wire-to-model diagnostics."
+                         EndpointPath="/v2/hire_purchases/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/hire_purchases" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a hire purchase ID from the <MudLink Href="/hire-purchases">hire purchases list</MudLink>, or pass <code>?id=12345</code> in the URL.
+                    </MudText>
+                    <MudNumericField @bind-Value="_hirePurchaseId" @bind-Value:after="OnHirePurchaseIdChanged" Label="Hire purchase ID" Min="1" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _hirePurchaseId is null or < 1"
+                               StartIcon="@Icons.Material.Filled.CloudDownload"
+                               OnClick="GetHirePurchaseAsync">Get hire purchase</MudButton>
+                </MudStack>
+
+                @if (_probe is not null && _hirePurchase is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All HirePurchase model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_hirePurchase.ResourceId</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Description</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_hirePurchase.Description)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Bill id</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_hirePurchase.BillId?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Liabilities over one year</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_hirePurchase.LiabilitiesOverOneYearCategoryNominalCode)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Liabilities under one year</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_hirePurchase.LiabilitiesUnderOneYearCategoryNominalCode)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Run <strong>Get hire purchase</strong> to load diagnostics.</MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? HirePurchaseIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private long? _hirePurchaseId;
+    private HirePurchase? _hirePurchase;
+    private ModelProbeSnapshot? _probe;
+
+    protected override void OnParametersSet()
+    {
+        if (HirePurchaseIdFromQuery is > 0)
+        {
+            _hirePurchaseId = HirePurchaseIdFromQuery;
+        }
+    }
+
+    private void OnHirePurchaseIdChanged()
+    {
+        _hirePurchase = null;
+        _probe = null;
+        _error = null;
+    }
+
+    private async Task GetHirePurchaseAsync()
+    {
+        if (_hirePurchaseId is null or < 1)
+        {
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+        _hirePurchase = null;
+        _probe = null;
+
+        var diagnosticsEndpoint = $"hire_purchases/{_hirePurchaseId}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _hirePurchase = await client.HirePurchases.GetHirePurchaseAsync(_hirePurchaseId.Value);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+
+            _probe = ModelWireDiagnostics.Build(_hirePurchase, _wireApiResponse, envelopeProperty: "hire_purchase");
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

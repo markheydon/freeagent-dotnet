@@ -1,0 +1,225 @@
+@page "/hire-purchases"
+@using FreeAgent.Client.Models.HirePurchases
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Hire purchases - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Hire purchases endpoint"
+                         Title="Hire purchases list"
+                         CallUnderTest="HirePurchasesService.ListAsync(...)"
+                         Description="Load hire purchases (UK companies only), inspect wire-to-model mapping for any row, then jump into hire purchase detail for a single GET."
+                         EndpointPath="/v2/hire_purchases"
+                         DocsUrl="https://dev.freeagent.com/docs/hire_purchases" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Hire purchases are read-only and are created via the Bills API (<code>is_paid_by_hire_purchase</code>). Load the list, inspect mapping per row, then open detail for <code>GET /v2/hire_purchases/:id</code>.
+                    </MudText>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CloudDownload"
+                               Disabled="_loading"
+                               OnClick="LoadHirePurchasesAsync">
+                        @if (_loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Loading…</span>
+                        }
+                        else
+                        {
+                            <span>Load hire purchases</span>
+                        }
+                    </MudButton>
+                </MudStack>
+
+                @if (_hirePurchases is null && !_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Press <strong>Load hire purchases</strong> to fetch records from FreeAgent.</MudText>
+                }
+
+                @if (_hirePurchases is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_hirePurchases.Count hire purchase@(_hirePurchases.Count == 1 ? "" : "s") loaded
+                    </MudChip>
+
+                    @if (_hirePurchases.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No hire purchases returned. Create a hire purchase bill in FreeAgent or use the bill probe page with <code>is_paid_by_hire_purchase</code>.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Description</MudTh>
+                                    <MudTh>Bill</MudTh>
+                                    <MudTh>Liabilities (&gt;1y / &lt;1y)</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Description">@ValueOrDash(context.Description)</MudTd>
+                                    <MudTd DataLabel="Bill">@context.BillId</MudTd>
+                                    <MudTd DataLabel="Liabilities">@context.LiabilityCategories</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectRowAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetDetailHref(context.Id)">
+                                                Open detail
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedItem is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All HirePurchase model fields (selected row)">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Inspected hire purchase</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    ID: @_inspectedItem.ResourceId
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private IReadOnlyList<HirePurchase>? _hirePurchases;
+    private HirePurchase? _inspectedItem;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+
+    private IReadOnlyList<HirePurchaseRow> _rows => _hirePurchases?
+        .Select(static (item, index) => new HirePurchaseRow(
+            index,
+            item.ResourceId,
+            item.Description,
+            item.BillId?.ToString() ?? "-",
+            $"{ValueOrDash(item.LiabilitiesOverOneYearCategoryNominalCode)} / {ValueOrDash(item.LiabilitiesUnderOneYearCategoryNominalCode)}"))
+        .ToList() ?? [];
+
+    private async Task LoadHirePurchasesAsync()
+    {
+        _hirePurchases = null;
+        _inspectedItem = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        const string diagnosticsEndpoint = "hire_purchases";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _hirePurchases = await client.HirePurchases.ListAsync();
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_hirePurchases is null || index < 0 || index >= _hirePurchases.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedItem = _hirePurchases[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "hire_purchases", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, _wireApiResponse, envelopeProperty: "hire_purchases");
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string GetDetailHref(long id) => $"/hire-purchases/detail?id={id}";
+
+    private sealed record HirePurchaseRow(int Index, long Id, string? Description, string BillId, string LiabilityCategories);
+}

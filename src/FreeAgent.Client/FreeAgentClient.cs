@@ -8,6 +8,7 @@ using FreeAgent.Client.Services.CreditNotes;
 using FreeAgent.Client.Services.EmailAddresses;
 using FreeAgent.Client.Services.Estimates;
 using FreeAgent.Client.Services.Expenses;
+using FreeAgent.Client.Services.HirePurchases;
 using FreeAgent.Client.Services.Invoices;
 using FreeAgent.Client.Services.Notes;
 using FreeAgent.Client.Services.PriceListItems;
@@ -97,6 +98,11 @@ public sealed class FreeAgentClient : IDisposable
     /// Bills API service.
     /// </summary>
     public BillService Bills { get; }
+
+    /// <summary>
+    /// Hire purchases API service.
+    /// </summary>
+    public HirePurchasesService HirePurchases { get; }
 
     /// <summary>
     /// Expenses API service.
@@ -189,6 +195,7 @@ public sealed class FreeAgentClient : IDisposable
         RecurringInvoices = new RecurringInvoiceService(_httpClient);
         CreditNotes = new CreditNotesService(_httpClient);
         Bills = new BillService(_httpClient);
+        HirePurchases = new HirePurchasesService(_httpClient);
         Expenses = new ExpenseService(_httpClient);
         CreditNoteReconciliations = new CreditNoteReconciliationsService(_httpClient);
         StockItems = new StockItemsService(_httpClient);
