@@ -93,6 +93,15 @@ jobs:
           name: test-results
           path: TestResults/*.trx
 
+      - name: Publish console sample for smoke
+        run: dotnet publish samples/FreeAgent.Client.ConsoleSample/FreeAgent.Client.ConsoleSample.csproj --configuration Release --no-build -o "$RUNNER_TEMP/console-smoke"
+
+      - name: Upload console smoke build
+        uses: actions/upload-artifact@v7
+        with:
+          name: console-smoke
+          path: ${{ runner.temp }}/console-smoke
+
   console-smoke:
     name: Console Sample Smoke
     runs-on: ubuntu-latest
@@ -140,6 +149,13 @@ jobs:
         run: |
           echo "Skipping console smoke - FREEAGENT_REFRESH_TOKEN not configured"
 
+      - name: Download console smoke build
+        if: steps.policy.outputs.mode == 'run'
+        uses: actions/download-artifact@v7
+        with:
+          name: console-smoke
+          path: console-smoke
+
       - name: Refresh sandbox access token
         if: steps.policy.outputs.mode == 'run'
         id: auth
@@ -156,4 +172,4 @@ jobs:
           FREEAGENT_CLIENT_ID: ${{ secrets.FREEAGENT_CLIENT_ID }}
           FREEAGENT_CLIENT_SECRET: ${{ secrets.FREEAGENT_CLIENT_SECRET }}
           FREEAGENT_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
-        run: dotnet run --project samples/FreeAgent.Client.ConsoleSample --configuration Release -- --seed-turpinverse --run-all
+        run: dotnet console-smoke/FreeAgent.Client.ConsoleSample.dll -- --seed-turpinverse --run-all
