@@ -160,6 +160,8 @@ public sealed class CreateEcommerceBankAccountRequest
 
     internal bool? BankGuessEnabled { get; private init; }
 
+    internal string? Email { get; private init; }
+
     /// <summary>
     /// Creates a request for a new e-commerce bank account.
     /// </summary>
@@ -170,6 +172,7 @@ public sealed class CreateEcommerceBankAccountRequest
     /// <param name="bankName">Bank name.</param>
     /// <param name="bankCode">Bank identifier constant.</param>
     /// <param name="bankGuessEnabled">Whether bank guess is enabled.</param>
+    /// <param name="email">PayPal login email (required when creating a PayPal account).</param>
     /// <returns>A create-e-commerce-bank-account request.</returns>
     public static CreateEcommerceBankAccountRequest Create(
         string name,
@@ -178,7 +181,8 @@ public sealed class CreateEcommerceBankAccountRequest
         bool? isPersonal = null,
         string? bankName = null,
         string? bankCode = null,
-        bool? bankGuessEnabled = null)
+        bool? bankGuessEnabled = null,
+        string? email = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
 
@@ -190,7 +194,8 @@ public sealed class CreateEcommerceBankAccountRequest
             IsPersonal = isPersonal,
             BankName = bankName,
             BankCode = bankCode,
-            BankGuessEnabled = bankGuessEnabled
+            BankGuessEnabled = bankGuessEnabled,
+            Email = email
         };
     }
 }

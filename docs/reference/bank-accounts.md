@@ -106,7 +106,7 @@ Each create method maps to `POST /v2/bank_accounts` with a variant-specific payl
 |--------|--------------|-------|
 | `CreateStandardBankAccountAsync` | `CreateStandardBankAccountRequest` | Optional sort code, IBAN, and BIC |
 | `CreateCreditCardBankAccountAsync` | `CreateCreditCardBankAccountRequest` | Requires `account_number` (last four digits) |
-| `CreateEcommerceBankAccountAsync` | `CreateEcommerceBankAccountRequest` | E-commerce payment account |
+| `CreateEcommerceBankAccountAsync` | `CreateEcommerceBankAccountRequest` | E-commerce payment account; set `email` for PayPal |
 
 **Sample:**
 

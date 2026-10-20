@@ -46,7 +46,8 @@ internal static class BankAccountWritePayloadMapper
             IsPersonal = request.IsPersonal,
             BankName = request.BankName,
             BankCode = request.BankCode,
-            BankGuessEnabled = request.BankGuessEnabled
+            BankGuessEnabled = request.BankGuessEnabled,
+            Email = request.Email
         };
 
     public static BankAccountWritePayload FromUpdate(UpdateBankAccountRequest request) =>

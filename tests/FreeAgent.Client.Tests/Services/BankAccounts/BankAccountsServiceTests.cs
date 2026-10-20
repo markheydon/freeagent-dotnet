@@ -233,6 +233,40 @@ public class BankAccountsServiceTests
     }
 
     [Fact]
+    public async Task CreateEcommerceBankAccountAsync_SerialisesEmail()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            var json = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            using var document = JsonDocument.Parse(json);
+            var bankAccount = document.RootElement.GetProperty("bank_account");
+
+            Assert.Equal("seller@example.com", bankAccount.GetProperty("email").GetString());
+
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "bank_account": {
+                    "url": "https://api.freeagent.com/v2/bank_accounts/64",
+                    "type": "EcommerceAccount",
+                    "name": "PayPal",
+                    "email": "seller@example.com"
+                  }
+                }
+                """)
+            };
+        });
+
+        var service = CreateService(handler);
+        await service.CreateEcommerceBankAccountAsync(
+            CreateEcommerceBankAccountRequest.Create(
+                "PayPal",
+                openingBalance: 0m,
+                email: "seller@example.com"));
+    }
+
+    [Fact]
     public async Task UpdateBankAccountAsync_PutsEnvelope()
     {
         var handler = new QueueHttpMessageHandler(request =>
