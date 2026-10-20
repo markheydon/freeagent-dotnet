@@ -11,6 +11,7 @@ public enum TurpinverseSeedStage
     Invoices,
     Estimates,
     CreditNotes,
+    Bills,
     Notes,
     Timeslips,
 }
@@ -29,6 +30,7 @@ public static class TurpinverseSeedStageOrder
         TurpinverseSeedStage.Invoices,
         TurpinverseSeedStage.Estimates,
         TurpinverseSeedStage.CreditNotes,
+        TurpinverseSeedStage.Bills,
         TurpinverseSeedStage.Notes,
         TurpinverseSeedStage.Timeslips,
     ];

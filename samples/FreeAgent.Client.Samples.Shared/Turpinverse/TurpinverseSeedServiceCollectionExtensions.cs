@@ -36,6 +36,8 @@ public static class TurpinverseSeedServiceCollectionExtensions
         services.AddSingleton<TurpinverseQuoteSeeder>();
         services.AddSingleton<TurpinverseCreditNoteCatalog>();
         services.AddSingleton<TurpinverseCreditNoteSeeder>();
+        services.AddSingleton<TurpinverseBillCatalog>();
+        services.AddSingleton<TurpinverseBillSeeder>();
         services.AddSingleton<TurpinverseTaskSeeder>();
         services.AddSingleton<TurpinverseTimeslipSeeder>();
         services.AddSingleton<TurpinverseNoteSeeder>();

@@ -90,7 +90,7 @@ dotnet run
 ### What happens
 
 1. The app completes OAuth (browser flow or token from environment variables).
-2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Stock items, Price list items).
+2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Stock items, Price list items).
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
@@ -132,6 +132,7 @@ Examples marked **(mutates)** write to the connected account.
 | Estimates | List estimates; stream all estimates via ListAutoPagingAsync; list estimates filtered by contact; get estimate by id; **(mutates)** create probe estimate and delete; **(mutates)** update estimate comments; **(mutates)** mark estimate as sent/draft/approved/rejected; **(mutates)** send estimate email (template); **(mutates)** create/update/delete estimate item; **(mutates)** duplicate probe estimate and delete; **(mutates)** convert estimate to invoice; get estimate PDF; get estimate default additional text; **(mutates)** update/delete estimate default additional text |
 | Recurring invoices | List recurring invoices; stream all recurring invoices via ListAutoPagingAsync; list recurring invoices filtered by contact; get recurring invoice by id |
 | Credit notes | List credit notes; stream all credit notes via ListAutoPagingAsync; list credit notes filtered by contact; get credit note by id; **(mutates)** create probe credit note and delete; **(mutates)** update credit note comments; **(mutates)** mark credit note as sent/draft; get credit note PDF; **(mutates)** send credit note email (template) |
+| Bills | List bills; list bills filtered by contact; get bill by id; **(mutates)** create probe bill and delete; **(mutates)** create hire purchase probe bill and delete; **(mutates)** update bill line item |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
 | Stock items | List stock items; get stock item detail |
 | Price list items | List price list items; get price list item detail; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |

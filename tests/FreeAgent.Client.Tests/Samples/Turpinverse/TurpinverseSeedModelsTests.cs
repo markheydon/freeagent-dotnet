@@ -21,7 +21,7 @@ public class TurpinverseSeedModelsTests
     {
         var stages = TurpinverseSeedStageOrder.All;
 
-        Assert.Equal(8, stages.Count);
+        Assert.Equal(9, stages.Count);
         Assert.Equal(TurpinverseSeedStage.Contacts, stages[0]);
         Assert.Equal(TurpinverseSeedStage.Projects, stages[1]);
         Assert.Equal(TurpinverseSeedStage.Tasks, stages[2]);
@@ -38,7 +38,7 @@ public class TurpinverseSeedModelsTests
         var result = new TurpinverseSeedRunResult(stages, TimeSpan.FromSeconds(1));
 
         Assert.True(result.Succeeded);
-        Assert.Equal(8, result.TotalCreated);
+        Assert.Equal(9, result.TotalCreated);
         Assert.Equal(0, result.TotalUpdated);
         Assert.Equal(0, result.TotalFailures);
     }

@@ -51,6 +51,7 @@ internal static class TurpinverseSeedReporter
         TurpinverseSeedStage.Invoices => "Invoices",
         TurpinverseSeedStage.Estimates => "Estimates",
         TurpinverseSeedStage.CreditNotes => "CreditNotes",
+        TurpinverseSeedStage.Bills => "Bills",
         TurpinverseSeedStage.Notes => "Notes",
         TurpinverseSeedStage.Timeslips => "Timeslips",
         _ => stage.ToString(),

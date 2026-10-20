@@ -1,4 +1,5 @@
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Services.Bills;
 using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
@@ -92,6 +93,11 @@ public sealed class FreeAgentClient : IDisposable
     public CreditNotesService CreditNotes { get; }
 
     /// <summary>
+    /// Bills API service.
+    /// </summary>
+    public BillService Bills { get; }
+
+    /// <summary>
     /// Credit note reconciliations API service.
     /// </summary>
     public CreditNoteReconciliationsService CreditNoteReconciliations { get; }
@@ -176,6 +182,7 @@ public sealed class FreeAgentClient : IDisposable
         Estimates = new EstimateService(_httpClient);
         RecurringInvoices = new RecurringInvoiceService(_httpClient);
         CreditNotes = new CreditNotesService(_httpClient);
+        Bills = new BillService(_httpClient);
         CreditNoteReconciliations = new CreditNoteReconciliationsService(_httpClient);
         StockItems = new StockItemsService(_httpClient);
         PriceListItems = new PriceListItemsService(_httpClient);

@@ -1,0 +1,540 @@
+@page "/bills/detail"
+@using FreeAgent.Client.Models.Bills
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services
+@using FreeAgent.Client.Samples.Shared.Turpinverse
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject TurpinverseBillSeeder TurpinverseBillSeeder
+@inject NavigationManager NavigationManager
+
+<PageTitle>Bill detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Bills endpoint"
+                         Title="Get, create, update, and delete bills"
+                         CallUnderTest="BillService.GetBillAsync / CreateBillAsync / UpdateBillAsync / DeleteBillAsync"
+                         Description="Exercises single-bill CRUD, hire purchase on create and update, and line item updates via the parent payload. Shows wire-to-model diagnostics after each mutation."
+                         EndpointPath="/v2/bills/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/bills" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a bill ID from the <MudLink Href="/bills">bills list</MudLink>, or pass
+                        <code>?id=12345</code> in the URL. Seed Turpinverse canon bills after seeding contacts and projects.
+                        Each Turpinverse seed upserts on <code>reference</code> values prefixed with <code>turpinverse:</code>.
+                    </MudText>
+                    <MudNumericField @bind-Value="_billId" Label="Bill ID" Min="1" />
+                    <MudNumericField @bind-Value="_contactId"
+                                     Label="Supplier contact ID (create only)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+                    <MudNumericField @bind-Value="_billItemId"
+                                     Label="Bill item ID (update line item)"
+                                     Min="1"
+                                     Variant="Variant.Outlined"
+                                     Margin="Margin.Dense"
+                                     FullWidth="true" />
+                    <MudSwitch @bind-Value="_isPaidByHirePurchase" Color="Color.Primary" Label="is_paid_by_hire_purchase (create and update)" />
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetBillAsync">Get bill</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateBrazierLegalBillAsync">Create Brazier Legal bill</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateAllTurpinverseBillsAsync">Create all Turpinverse bills</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Info" Disabled="_loading || _contactId is null or < 1"
+                                   OnClick="CreateProbeBillAsync">Create probe bill</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _billId is null or < 1"
+                                   OnClick="UpdateBillCommentsAsync">Update comments</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _billId is null or < 1"
+                                   OnClick="UpdateHirePurchaseFlagAsync">Update hire purchase flag</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _billId is null or < 1"
+                                   OnClick="DeleteBillAsync">Delete bill</MudButton>
+                    </MudStack>
+
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _billItemId is null or < 1 || _billId is null or < 1"
+                                   OnClick="UpdateBillItemAsync">Update bill item</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _bill is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Bill model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_bill.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_bill.Status?.ToString())</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Reference</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_bill.Reference)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Contact</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_bill.Contact?.OrganisationName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Dated on</MudText>
+                                        <MudText Typo="Typo.subtitle1">@FormatDate(_bill.DatedOn)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Total value</MudText>
+                                        <MudText Typo="Typo.subtitle1">@FormatAmount(_bill.TotalValue)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Run an operation above to load bill diagnostics.
+                    </MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? BillIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private Bill? _bill;
+    private ModelProbeSnapshot? _probe;
+    private long? _billId;
+    private long? _contactId;
+    private long? _billItemId;
+    private bool _isPaidByHirePurchase;
+
+    protected override void OnParametersSet()
+    {
+        if (BillIdFromQuery is > 0 && _billId != BillIdFromQuery)
+        {
+            _billId = BillIdFromQuery;
+            _operationMessage = $"Bill ID {_billId} loaded from URL. Press Get bill to fetch diagnostics.";
+        }
+    }
+
+    private async Task GetBillAsync()
+    {
+        if (_billId is null or < 1)
+        {
+            _error = "Enter a bill ID.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _bill = await client.Bills.GetBillAsync(
+                    _billId.Value,
+                    new BillGetOptions { IncludeContact = true, IncludeProject = true });
+                _isPaidByHirePurchase = _bill.IsPaidByHirePurchase ?? false;
+                _operationMessage = $"Loaded bill {_billId.Value}: {ValueOrFallback(_bill.Reference)}";
+                return $"bills/{_billId}";
+            },
+            envelopeProperty: "bill");
+    }
+
+    private async Task CreateBrazierLegalBillAsync()
+    {
+        await RunOperationAsync(
+            async client =>
+            {
+                var result = await TurpinverseBillSeeder.CreateBrazierLegalBillAsync(client);
+                _bill = result.Bill;
+                if (_bill.TryGetResourceId(out var assignedId))
+                {
+                    _billId = assignedId;
+                    _operationMessage = result.Action == BillSeedAction.Updated
+                        ? $"Updated Brazier Legal bill (bill {assignedId}) from current Turpinverse canon."
+                        : $"Created Brazier Legal bill as bill {assignedId}.";
+                    return $"bills/{assignedId}";
+                }
+
+                _billId = null;
+                _operationMessage = "Created Brazier Legal bill but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "bill");
+    }
+
+    private async Task CreateAllTurpinverseBillsAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreatePacedFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var result = await TurpinverseBillSeeder.CreateAllBillsAsync(client);
+            var lastTouched = result.Updated.Count > 0
+                ? result.Updated[^1]
+                : result.Created.Count > 0
+                    ? result.Created[^1]
+                    : null;
+
+            if (lastTouched is not null)
+            {
+                _bill = lastTouched;
+
+                if (_bill.TryGetResourceId(out var assignedId))
+                {
+                    _billId = assignedId;
+
+                    _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                        token.AccessToken,
+                        TokenStore.ConnectedEnvironment,
+                        $"bills/{assignedId}");
+
+                    _probe = ModelWireDiagnostics.Build(_bill, _wireApiResponse, "bill");
+                }
+                else
+                {
+                    _billId = null;
+                }
+            }
+            else
+            {
+                _bill = null;
+                _billId = null;
+            }
+
+            var summaryParts = new List<string>();
+            if (result.Created.Count > 0)
+            {
+                summaryParts.Add($"created {result.Created.Count}");
+            }
+
+            if (result.Updated.Count > 0)
+            {
+                summaryParts.Add($"updated {result.Updated.Count}");
+            }
+
+            if (result.Failures.Count > 0)
+            {
+                summaryParts.Add($"failed {result.Failures.Count}");
+            }
+
+            _operationMessage = summaryParts.Count == 0
+                ? "No Turpinverse bills were created or updated."
+                : $"Turpinverse bill sync complete: {string.Join(", ", summaryParts)}.";
+
+            if (result.Failures.Count > 0)
+            {
+                var failureSummary = string.Join(
+                    "; ",
+                    result.Failures.Select(static failure => $"{failure.BillNumber}: {failure.Message}"));
+                _error = $"Some bills could not be seeded: {failureSummary}";
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task CreateProbeBillAsync()
+    {
+        if (_contactId is null or < 1)
+        {
+            _error = "Enter a supplier contact ID before creating a probe bill.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var categoryNominalCode = await ResolveAdminExpensesNominalCodeAsync(client);
+                _bill = await client.Bills.CreateBillAsync(new Bill
+                {
+                    ContactId = _contactId.Value,
+                    DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+                    DueOn = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(30)),
+                    Currency = CurrencyCode.GBP,
+                    IsPaidByHirePurchase = _isPaidByHirePurchase,
+                    Reference = $"probe-{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+                    BillItems =
+                    [
+                        new BillItem
+                        {
+                            Description = "SDK probe supplier line",
+                            TotalValue = 100m,
+                            SalesTaxRate = 20m,
+                            SalesTaxStatus = BillSalesTaxStatus.Taxable,
+                            CategoryNominalCode = categoryNominalCode
+                        }
+                    ]
+                });
+
+                if (_bill.TryGetResourceId(out var assignedId))
+                {
+                    _billId = assignedId;
+                    _operationMessage = $"Created probe bill {assignedId}.";
+                    return $"bills/{assignedId}";
+                }
+
+                _billId = null;
+                _operationMessage = "Created probe bill but could not parse ID from URL.";
+                return null;
+            },
+            envelopeProperty: "bill");
+    }
+
+    private async Task UpdateBillCommentsAsync()
+    {
+        if (_billId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _bill ?? await client.Bills.GetBillAsync(_billId.Value);
+                existing.Comments = $"{existing.Comments} (updated)".Trim();
+                _bill = await client.Bills.UpdateBillAsync(
+                    _billId.Value,
+                    existing,
+                    new BillUpdateOptions { OmitLineItems = true });
+                _operationMessage = $"Updated bill {_billId.Value} comments.";
+                return $"bills/{_billId}";
+            },
+            envelopeProperty: "bill");
+    }
+
+    private async Task UpdateHirePurchaseFlagAsync()
+    {
+        if (_billId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _bill ?? await client.Bills.GetBillAsync(_billId.Value);
+                existing.IsPaidByHirePurchase = _isPaidByHirePurchase;
+                _bill = await client.Bills.UpdateBillAsync(
+                    _billId.Value,
+                    existing,
+                    new BillUpdateOptions { OmitLineItems = true });
+                _operationMessage = $"Updated bill {_billId.Value} hire purchase flag to {_isPaidByHirePurchase}.";
+                return $"bills/{_billId}";
+            },
+            envelopeProperty: "bill");
+    }
+
+    private async Task DeleteBillAsync()
+    {
+        if (_billId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _billId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Bills.DeleteBillAsync(deletedId);
+                _bill = null;
+                _probe = null;
+                _operationMessage = $"Deleted bill {deletedId}. No wire payload is returned for DELETE.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task UpdateBillItemAsync()
+    {
+        if (_billId is null or < 1)
+        {
+            _error = "Enter a bill ID before updating a line item.";
+            return;
+        }
+
+        if (_billItemId is null or < 1)
+        {
+            _error = "Enter a bill item ID to update.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = _bill ?? await client.Bills.GetBillAsync(_billId.Value);
+                existing.BillItems =
+                [
+                    new BillItem
+                    {
+                        Url = BuildBillItemUrl(TokenStore.ConnectedEnvironment, _billItemId.Value),
+                        Description = "SDK probe line item (updated)",
+                        TotalValue = 75m
+                    }
+                ];
+                _bill = await client.Bills.UpdateBillAsync(_billId.Value, existing);
+                _operationMessage = $"Updated bill item {_billItemId.Value} on bill {_billId.Value}.";
+                return $"bills/{_billId}";
+            },
+            envelopeProperty: "bill");
+    }
+
+    private static async Task<string> ResolveAdminExpensesNominalCodeAsync(FreeAgentClient client)
+    {
+        var sets = await client.Categories.ListAsync();
+        var nominalCode = sets.AdminExpensesCategories
+            .Select(static category => category.NominalCode)
+            .FirstOrDefault(static code => !string.IsNullOrWhiteSpace(code));
+
+        if (string.IsNullOrWhiteSpace(nominalCode))
+        {
+            throw new InvalidOperationException("No admin expenses category nominal code is available.");
+        }
+
+        return nominalCode;
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgentClient, Task<string?>> action,
+        string? envelopeProperty = null,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _bill is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_bill, _wireApiResponse, envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (TurpinverseCanonFetchException ex)
+        {
+            _error = $"Turpinverse canon error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+
+    private static string FormatDate(DateOnly? value) =>
+        value is null ? "Not returned" : value.Value.ToString("yyyy-MM-dd");
+
+    private static string FormatAmount(decimal? value) =>
+        value is null ? "Not returned" : value.Value.ToString("0.00");
+
+    private static string BuildBillItemUrl(FreeAgentEnvironment environment, long billItemId)
+    {
+        var sampleContactUri = ContactReference.ForEnvironment(environment, 1).Uri;
+        var apiRoot = sampleContactUri[..sampleContactUri.IndexOf("contacts/", StringComparison.Ordinal)];
+        return $"{apiRoot}bill_items/{billItemId}";
+    }
+}

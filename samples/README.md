@@ -111,6 +111,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/recurring-invoices/detail](https://localhost:5001/recurring-invoices/detail) | `GetRecurringInvoiceAsync()` | GET probe, optional linked-resource hydration, progress bar |
 | [/credit-notes](https://localhost:5001/credit-notes) | `CreditNotesService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/contact/project filters |
 | [/credit-notes/detail](https://localhost:5001/credit-notes/detail) | `GetCreditNoteAsync()`, `CreateCreditNoteAsync()`, `UpdateCreditNoteAsync()`, `DeleteCreditNoteAsync()`, transition and email methods | CRUD probes, Turpinverse seed data, progress bar |
+| [/bills](https://localhost:5001/bills) | `BillService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/contact/project filters |
+| [/bills/detail](https://localhost:5001/bills/detail) | `GetBillAsync()`, `CreateBillAsync()`, `UpdateBillAsync()`, `DeleteBillAsync()` | CRUD probes, hire purchase flag, Turpinverse seed data, progress bar |
 | [/tasks](https://localhost:5001/tasks) | `ProjectTaskService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/sort/project/updated_since filters |
 | [/tasks/detail](https://localhost:5001/tasks/detail) | `GetProjectTaskAsync()`, `CreateProjectTaskAsync()`, `UpdateProjectTaskAsync()`, `DeleteProjectTaskAsync()` | CRUD probes, Turpinverse seed data, progress bar |
 | [/timeslips](https://localhost:5001/timeslips) | `TimeslipService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view/date/user/task/project/nested filters |

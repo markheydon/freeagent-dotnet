@@ -298,3 +298,60 @@ public sealed class TurpinverseCreditNoteLine
     [JsonPropertyName("productId")]
     public string? ProductId { get; set; }
 }
+
+public sealed class TurpinverseBill
+{
+    [JsonPropertyName("billId")]
+    public string BillId { get; set; } = string.Empty;
+
+    [JsonPropertyName("billNumber")]
+    public string BillNumber { get; set; } = string.Empty;
+
+    [JsonPropertyName("supplierAccountId")]
+    public string SupplierAccountId { get; set; } = string.Empty;
+
+    [JsonPropertyName("contactId")]
+    public string? ContactId { get; set; }
+
+    [JsonPropertyName("status")]
+    public string Status { get; set; } = string.Empty;
+
+    [JsonPropertyName("issueDate")]
+    public string IssueDate { get; set; } = string.Empty;
+
+    [JsonPropertyName("dueDate")]
+    public string DueDate { get; set; } = string.Empty;
+
+    [JsonPropertyName("currency")]
+    public string Currency { get; set; } = string.Empty;
+
+    [JsonPropertyName("notes")]
+    public string? Notes { get; set; }
+
+    [JsonPropertyName("lines")]
+    public IReadOnlyList<TurpinverseBillLine> Lines { get; set; } = [];
+}
+
+public sealed class TurpinverseBillLine
+{
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = string.Empty;
+
+    [JsonPropertyName("quantity")]
+    public decimal Quantity { get; set; }
+
+    [JsonPropertyName("unitPrice")]
+    public decimal UnitPrice { get; set; }
+
+    [JsonPropertyName("taxRateId")]
+    public string? TaxRateId { get; set; }
+
+    [JsonPropertyName("lineTotal")]
+    public decimal LineTotal { get; set; }
+
+    [JsonPropertyName("productId")]
+    public string? ProductId { get; set; }
+
+    [JsonPropertyName("projectId")]
+    public string? ProjectId { get; set; }
+}

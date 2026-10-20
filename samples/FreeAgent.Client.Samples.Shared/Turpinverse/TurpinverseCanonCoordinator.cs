@@ -11,6 +11,7 @@ public sealed class TurpinverseCanonCoordinator
     private readonly TurpinverseInvoiceCatalog _invoiceCatalog;
     private readonly TurpinverseQuoteCatalog _quoteCatalog;
     private readonly TurpinverseCreditNoteCatalog _creditNoteCatalog;
+    private readonly TurpinverseBillCatalog _billCatalog;
 
     public TurpinverseCanonCoordinator(
         TurpinverseCanonClient canonClient,
@@ -18,7 +19,8 @@ public sealed class TurpinverseCanonCoordinator
         TurpinverseProjectCatalog projectCatalog,
         TurpinverseInvoiceCatalog invoiceCatalog,
         TurpinverseQuoteCatalog quoteCatalog,
-        TurpinverseCreditNoteCatalog creditNoteCatalog)
+        TurpinverseCreditNoteCatalog creditNoteCatalog,
+        TurpinverseBillCatalog billCatalog)
     {
         _canonClient = canonClient ?? throw new ArgumentNullException(nameof(canonClient));
         _contactCatalog = contactCatalog ?? throw new ArgumentNullException(nameof(contactCatalog));
@@ -26,6 +28,7 @@ public sealed class TurpinverseCanonCoordinator
         _invoiceCatalog = invoiceCatalog ?? throw new ArgumentNullException(nameof(invoiceCatalog));
         _quoteCatalog = quoteCatalog ?? throw new ArgumentNullException(nameof(quoteCatalog));
         _creditNoteCatalog = creditNoteCatalog ?? throw new ArgumentNullException(nameof(creditNoteCatalog));
+        _billCatalog = billCatalog ?? throw new ArgumentNullException(nameof(billCatalog));
     }
 
     /// <summary>
@@ -40,11 +43,13 @@ public sealed class TurpinverseCanonCoordinator
         _invoiceCatalog.InvalidateInMemory();
         _quoteCatalog.InvalidateInMemory();
         _creditNoteCatalog.InvalidateInMemory();
+        _billCatalog.InvalidateInMemory();
 
         await _contactCatalog.EnsureLoadedAsync(forceRefresh: false, cancellationToken).ConfigureAwait(false);
         await _projectCatalog.EnsureLoadedAsync(forceRefresh: false, cancellationToken).ConfigureAwait(false);
         await _invoiceCatalog.EnsureLoadedAsync(forceRefresh: false, cancellationToken).ConfigureAwait(false);
         await _quoteCatalog.EnsureLoadedAsync(forceRefresh: false, cancellationToken).ConfigureAwait(false);
         await _creditNoteCatalog.EnsureLoadedAsync(forceRefresh: false, cancellationToken).ConfigureAwait(false);
+        await _billCatalog.EnsureLoadedAsync(forceRefresh: false, cancellationToken).ConfigureAwait(false);
     }
 }
