@@ -41,6 +41,49 @@ public class ExpenseModelSerializationTests
     }
 
     [Fact]
+    public void DeserializeExpense_MapsSecondSalesTaxStatusAsString()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/expenses/6",
+              "user": "https://api.freeagent.com/v2/users/1",
+              "category": "https://api.freeagent.com/v2/categories/285",
+              "dated_on": "2024-03-01",
+              "second_sales_tax_status": "CUSTOM_TAX_CODE"
+            }
+            """;
+
+        var expense = JsonSerializer.Deserialize<Expense>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(expense);
+        Assert.Equal("CUSTOM_TAX_CODE", expense!.SecondSalesTaxStatus);
+    }
+
+    [Fact]
+    public void FromExpense_IsMileageCategoryFalseWithoutCategory_Throws()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/expenses/4",
+              "user": "https://api.freeagent.com/v2/users/1",
+              "category": "Mileage",
+              "dated_on": "2024-03-01",
+              "mileage": "10",
+              "vehicle_type": "Car"
+            }
+            """;
+
+        var expense = JsonSerializer.Deserialize<Expense>(json, FreeAgentJsonSerializer.Options);
+        Assert.NotNull(expense);
+        expense!.IsMileageCategory = false;
+
+        var exception = Assert.Throws<ArgumentException>(() =>
+            ExpenseWritePayload.FromExpense(expense, FreeAgentEnvironment.Sandbox));
+
+        Assert.Equal("expense", exception.ParamName);
+    }
+
+    [Fact]
     public void DeserializeExpense_MapsMileageCategoryLiteral()
     {
         const string json = """

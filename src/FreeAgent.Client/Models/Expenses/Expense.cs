@@ -169,7 +169,7 @@ public sealed class Expense : IFreeAgentResource
     /// Second sales tax status for universal accounts.
     /// </summary>
     [JsonPropertyName("second_sales_tax_status")]
-    public BillSalesTaxStatus? SecondSalesTaxStatus { get; set; }
+    public string? SecondSalesTaxStatus { get; set; }
 
     /// <summary>
     /// VAT status for reporting purposes.

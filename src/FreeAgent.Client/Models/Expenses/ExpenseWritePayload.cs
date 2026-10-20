@@ -50,7 +50,7 @@ internal sealed class ExpenseWritePayload
     public BillSalesTaxStatus? SalesTaxStatus { get; set; }
 
     [JsonPropertyName("second_sales_tax_status")]
-    public BillSalesTaxStatus? SecondSalesTaxStatus { get; set; }
+    public string? SecondSalesTaxStatus { get; set; }
 
     [JsonPropertyName("ec_status")]
     public BillEcStatus? EcStatus { get; set; }
@@ -128,18 +128,27 @@ internal sealed class ExpenseWritePayload
     {
         ArgumentNullException.ThrowIfNull(expense);
 
+        var category = LinkedResourceWriteMapper.ResolveExpenseCategoryWrite(
+            environment,
+            expense.IsMileageCategoryBacking,
+            expense.CategoryLinkIsMileage,
+            expense.CategoryNominalCodeBacking,
+            expense.CategoryLinkNominalCode);
+
+        if (expense.IsMileageCategoryBacking == false && category is null)
+        {
+            throw new ArgumentException(
+                "A category nominal code is required when IsMileageCategory is false.",
+                nameof(expense));
+        }
+
         return new ExpenseWritePayload
         {
             User = LinkedResourceWriteMapper.ResolveUserReference(
                 environment,
                 expense.UserIdBacking,
                 expense.UserLinkId),
-            Category = LinkedResourceWriteMapper.ResolveExpenseCategoryWrite(
-                environment,
-                expense.IsMileageCategoryBacking,
-                expense.CategoryLinkIsMileage,
-                expense.CategoryNominalCodeBacking,
-                expense.CategoryLinkNominalCode),
+            Category = category,
             DatedOn = expense.DatedOn,
             Currency = expense.Currency,
             GrossValue = expense.GrossValue,
