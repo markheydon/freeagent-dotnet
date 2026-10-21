@@ -35,7 +35,7 @@ dotnet add package FreeAgent.Client
 | `PublishTrimmed` / aggressive trimming | **Not supported yet** |
 | Native AOT publish (`PublishAot`) | **Not supported yet** |
 
-The client uses reflection-based `System.Text.Json` for API models and OAuth token DTOs. That suits typical SDK-style hosts. [File-based apps](https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps) need `#:property JsonSerializerIsReflectionEnabledByDefault=true` until trim-safe JSON ships ([#175](https://github.com/markheydon/freeagent-dotnet/issues/175)). Trimmed and Native AOT publish modes are not supported yet; see [#173](https://github.com/markheydon/freeagent-dotnet/issues/173). Details: [Getting started — host compatibility](docs/tutorial/getting-started.md#host-compatibility).
+The client uses reflection-based `System.Text.Json` for API models and OAuth token DTOs. That suits typical SDK-style hosts. [File-based apps](https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps) need `#:property JsonSerializerIsReflectionEnabledByDefault=true` until trim-safe JSON ships ([#175](https://github.com/markheydon/freeagent-dotnet/issues/175)). Trimmed and Native AOT publish modes are not supported yet; see [#173](https://github.com/markheydon/freeagent-dotnet/issues/173). Details: [Getting started — host compatibility](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started/#host-compatibility).
 
 ## Quick start
 

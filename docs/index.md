@@ -17,7 +17,7 @@ Internal engineering policy lives in the repository root ([`GOALS.md`](https://g
 
 | Document | Type | Audience |
 |----------|------|----------|
-| [Getting started](tutorial/getting-started.md) | Tutorial | New SDK consumers |
+| [Getting started](tutorial/getting-started.md) | Tutorial | New SDK consumers; OAuth setup and .NET host compatibility |
 | [Pagination](how-to/pagination.md) | How-to | Consumers listing resources |
 | [Error handling](how-to/error-handling.md) | How-to | Consumers handling API failures |
 | [Token refresh](how-to/token-refresh.md) | How-to | Consumers managing OAuth tokens |
