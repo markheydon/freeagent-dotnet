@@ -27,5 +27,7 @@ public enum BankTransactionExplanationEcStatus
 
     /// <summary>EC VAT MOSS supply.</summary>
     [JsonStringEnumMemberName("EC VAT MOSS")]
-    EcVatMoss
+    EcVatMoss,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

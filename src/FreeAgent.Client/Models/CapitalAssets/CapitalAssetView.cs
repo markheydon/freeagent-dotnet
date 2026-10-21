@@ -25,5 +25,7 @@ public enum CapitalAssetView
     /// Capital assets that can be disposed of.
     /// </summary>
     [JsonStringEnumMemberName("disposable")]
-    Disposable
+    Disposable,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

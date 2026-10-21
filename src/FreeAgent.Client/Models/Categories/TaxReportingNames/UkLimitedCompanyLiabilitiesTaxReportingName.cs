@@ -18,5 +18,6 @@ public enum UkLimitedCompanyLiabilitiesTaxReportingName
     /// <summary>Provisions for liabilities.</summary>
     [JsonStringEnumMemberName("provisions_for_liabilities")]
     ProvisionsForLiabilities,
-
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

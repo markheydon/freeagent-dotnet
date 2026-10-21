@@ -16,7 +16,7 @@ superseded_by: ""
 
 ## Context
 
-The FreeAgent API occasionally returns values for constrained fields (e.g., enums) that are not documented or are added without notice. Most enums in the SDK are strict, mapping only documented values and throwing or failing on unknowns. However, for certain fields (e.g., `SalesTaxRegistrationStatus`), the SDK must tolerate unknown or undocumented values to avoid breaking deserialisation and to aid diagnostics. This exception is justified by:
+The FreeAgent API occasionally returns values for constrained fields (e.g., enums) that are not documented or are added without notice. SDK wire enums must tolerate unknown tokens on **deserialise** so responses remain readable when FreeAgent adds values. Some fields (e.g., `SalesTaxRegistrationStatus`) also need bespoke normalisation. This is justified by:
 
 - Incomplete or outdated API documentation for some endpoints.
 - Real-world evidence of undocumented values in production (e.g., "Unregistered").
@@ -24,20 +24,19 @@ The FreeAgent API occasionally returns values for constrained fields (e.g., enum
 
 ## Decision
 
-Adopt a selective tolerance policy for unknown or undocumented constrained values:
+Adopt a tolerant-on-read policy for wire enums and selected constrained value types:
 
-- By default, all enums and constrained fields are strict: only documented values are mapped.
-- For fields with a history of undocumented or unstable values (e.g., `SalesTaxRegistrationStatus`), implement tolerant parsing with an `Unknown` fallback.
-- Tolerant fields must be justified in code comments with a valid reason, such as missing documentation.
-- All tolerant fields must surface unknown values in diagnostics and tests.
-- Do not apply tolerant parsing to all enums; this is an explicit, case-by-case exception.
+- Public wire enums using `JsonStringEnumMemberNameCompatibleConverter<T>` include an `Unknown` member and map unrecognised wire strings to `Unknown` on deserialise (see issue #179).
+- Serialising `Unknown` to the API throws `JsonException`; callers must use documented enum members for writes.
+- Fields with normalisation or open-ended wire tokens (e.g., `SalesTaxRegistrationStatus`, `SecondSalesTaxStatus` with `WireValue`) use dedicated converters or structs.
+- `WireEnumConventionsTests` guards that compatible-converter enums define `Unknown`.
 
 ## Consequences
 
 ### Positive
 - **POS-001**: Prevents runtime failures when FreeAgent returns undocumented values.
 - **POS-002**: Enables rapid diagnosis and recovery from API drift.
-- **POS-003**: Keeps most enums strict, preserving type safety and contract clarity.
+- **POS-003**: Documented enum members remain discoverable; `Unknown` signals API drift without failing GET deserialisation.
 
 ### Negative
 - **NEG-001**: Slightly increases implementation complexity for tolerant fields.
@@ -55,9 +54,10 @@ Adopt a selective tolerance policy for unknown or undocumented constrained value
 - **ALT-004**: **Rejection Reason**: Reduces type safety and makes contract drift harder to detect.
 
 ## Implementation Notes
-- **IMP-001**: See `src/FreeAgent.Client/Models/Company/SalesTaxRegistrationStatus.cs` for tolerant enum implementation.
-- **IMP-002**: See `tests/FreeAgent.Client.Tests/Services/Company/CompanyServiceTests.cs` for test coverage of unknown value handling.
-- **IMP-003**: All tolerant fields must be documented in code including justification of the exception.
+- **IMP-001**: See `JsonStringEnumMemberNameCompatibleConverter<T>` for default unknown wire handling.
+- **IMP-002**: See `src/FreeAgent.Client/Models/Company/SalesTaxRegistrationStatus.cs` for normalised tolerant enum implementation.
+- **IMP-003**: See `src/FreeAgent.Client/Models/Shared/SecondSalesTaxStatus.cs` for preserving raw wire tokens on account-specific second sales tax codes.
+- **IMP-004**: See `tests/FreeAgent.Client.Tests/Infrastructure/Serialization/WireEnumConventionsTests.cs` for enum guardrails.
 
 ## References
 - **REF-001**: [adr-0004-api-type-mapping-contracts.md](adr-0004-api-type-mapping-contracts.md)

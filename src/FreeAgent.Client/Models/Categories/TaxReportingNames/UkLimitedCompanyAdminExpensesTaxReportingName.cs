@@ -238,5 +238,6 @@ public enum UkLimitedCompanyAdminExpensesTaxReportingName
     /// <summary>Wages and salaries.</summary>
     [JsonStringEnumMemberName("wages_and_salaries")]
     WagesAndSalaries,
-
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

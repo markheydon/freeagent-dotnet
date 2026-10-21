@@ -41,5 +41,7 @@ public enum CompanyType
     UsSCorp,
     /// <summary>Universal company type for non-UK/US entities.</summary>
     [JsonStringEnumMemberName("UniversalCompany")]
-    UniversalCompany
+    UniversalCompany,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

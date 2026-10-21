@@ -64,5 +64,7 @@ public enum ContactLocale
     /// <summary>Slovak (wire value: "sk").</summary>
     [JsonStringEnumMemberName("sk")] Slovak,
     /// <summary>Turkish (wire value: "tr").</summary>
-    [JsonStringEnumMemberName("tr")] Turkish
+    [JsonStringEnumMemberName("tr")] Turkish,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

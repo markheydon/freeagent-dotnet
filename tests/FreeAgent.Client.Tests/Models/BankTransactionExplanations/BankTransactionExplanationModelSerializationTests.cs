@@ -105,4 +105,20 @@ public class BankTransactionExplanationModelSerializationTests
         Assert.Equal(BillSalesTaxStatus.Taxable, explanation.SalesTaxStatus);
         Assert.Equal(BillRebillType.Markup, explanation.RebillType);
     }
+
+    [Fact]
+    public void Deserialize_ReadsExplanationTypeWireValue()
+    {
+        const string json = """
+        {
+          "url": "https://api.freeagent.com/v2/bank_transaction_explanations/1",
+          "type": "Payment"
+        }
+        """;
+
+        var explanation = JsonSerializer.Deserialize<BankTransactionExplanation>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(explanation);
+        Assert.Equal(BankTransactionExplanationType.Payment, explanation.Type);
+    }
 }

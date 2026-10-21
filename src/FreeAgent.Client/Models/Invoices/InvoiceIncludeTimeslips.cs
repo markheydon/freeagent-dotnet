@@ -23,5 +23,7 @@ public enum InvoiceIncludeTimeslips
 
     /// <summary>Separate lines grouped by timeslip date.</summary>
     [JsonStringEnumMemberName("billed_grouped_by_timeslip_date")]
-    BilledGroupedByTimeslipDate
+    BilledGroupedByTimeslipDate,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

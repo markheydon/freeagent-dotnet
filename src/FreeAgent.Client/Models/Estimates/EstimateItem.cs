@@ -85,7 +85,7 @@ public sealed class EstimateItem
     /// Second sales tax status for universal accounts.
     /// </summary>
     [JsonPropertyName("second_sales_tax_status")]
-    public string? SecondSalesTaxStatus { get; set; }
+    public SecondSalesTaxStatus? SecondSalesTaxStatus { get; set; }
 
     /// <summary>
     /// Total amount of second sales tax for universal accounts.

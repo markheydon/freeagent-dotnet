@@ -45,7 +45,7 @@ public sealed class BankFeed : IFreeAgentResource
     /// FreeAgent documents this as a string; only <c>enabled</c> appears in the official examples.
     /// </remarks>
     [JsonPropertyName("state")]
-    public string? State { get; set; }
+    public BankFeedState? State { get; set; }
 
     /// <summary>
     /// Creation timestamp (UTC).

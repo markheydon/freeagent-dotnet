@@ -26,6 +26,12 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP comp
 
 ## Recent breaking changes (alpha)
 
+### Typed wire enums and unknown-tolerant deserialisation
+
+- Remaining string wire fields are now typed: `SecondSalesTaxStatus`, `CisDeductionRate?` for `cis_rate`, `BankTransactionExplanationType?` for explanation `type`, `BankFeedState?` for feed `state`, and `BillAttachmentContentType?` on read-model attachments.
+- Wire enums deserialise unrecognised API strings to an `Unknown` member instead of throwing. Check for `Unknown` after GET calls; do not send `Unknown` on create or update (serialisation throws).
+- `SecondSalesTaxStatus` exposes `Kind` and `WireValue` so account-specific second sales tax codes are not lost when `Kind` is `Unknown`.
+
 ### List API naming (Stripe.NET parity)
 
 Collection reads now use Stripe.NET-aligned names on resource services:

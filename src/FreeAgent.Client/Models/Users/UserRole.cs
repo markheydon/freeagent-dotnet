@@ -35,5 +35,7 @@ public enum UserRole
 
     /// <summary>Accountant advisor (wire value: "Accountant").</summary>
     [JsonStringEnumMemberName("Accountant")]
-    Accountant
+    Accountant,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

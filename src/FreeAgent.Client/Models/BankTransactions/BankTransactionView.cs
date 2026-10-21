@@ -43,5 +43,7 @@ public enum BankTransactionView
     /// Transactions marked for review.
     /// </summary>
     [JsonStringEnumMemberName("marked_for_review")]
-    MarkedForReview
+    MarkedForReview,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

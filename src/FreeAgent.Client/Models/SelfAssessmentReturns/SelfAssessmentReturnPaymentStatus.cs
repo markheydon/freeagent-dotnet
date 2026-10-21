@@ -20,4 +20,6 @@ public enum SelfAssessmentReturnPaymentStatus
     /// <summary>Reserved for future use.</summary>
     [JsonStringEnumMemberName("paid")]
     Paid,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

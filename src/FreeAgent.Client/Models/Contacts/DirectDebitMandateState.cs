@@ -27,5 +27,7 @@ public enum DirectDebitMandateState
 
     /// <summary>Mandate failed (wire value: "failed").</summary>
     [JsonStringEnumMemberName("failed")]
-    Failed
+    Failed,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

@@ -58,5 +58,6 @@ public enum UkSoleTraderAdminExpensesTaxReportingName
     /// <summary>Wages salaries and staff costs.</summary>
     [JsonStringEnumMemberName("wages_salaries_and_staff_costs")]
     WagesSalariesAndStaffCosts,
-
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

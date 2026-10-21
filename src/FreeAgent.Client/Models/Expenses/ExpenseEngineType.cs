@@ -31,5 +31,7 @@ public enum ExpenseEngineType
 
     /// <summary>Electric vehicle charged at a public charger.</summary>
     [JsonStringEnumMemberName("Electric (Public charger)")]
-    ElectricPublicCharger
+    ElectricPublicCharger,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

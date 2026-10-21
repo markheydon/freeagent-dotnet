@@ -1,5 +1,6 @@
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.EcMoss;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.BankTransactionExplanations;
 
@@ -32,7 +33,7 @@ public abstract class BankTransactionExplanationCreateRequestBase
 
     internal BillSalesTaxStatus? SalesTaxStatus { get; init; }
 
-    internal string? SecondSalesTaxStatus { get; init; }
+    internal SecondSalesTaxStatus? SecondSalesTaxStatus { get; init; }
 
     internal string? ChequeNumber { get; init; }
 

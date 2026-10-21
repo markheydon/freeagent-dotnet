@@ -80,7 +80,7 @@ var bankFeed = await client.BankFeeds.GetBankFeedAsync(7);
 | `ResourceId` | `long` | parsed from `url` |
 | `BankAccount` | `BankAccount?` | nested `bank_account` when expanded |
 | `BankAccountId` | `long?` | `bank_account` URI |
-| `State` | `string?` | `state` |
+| `State` | `BankFeedState?` | `state` |
 | `CreatedAt` | `DateTimeOffset?` | `created_at` |
 | `UpdatedAt` | `DateTimeOffset?` | `updated_at` |
 | `FeedType` | `BankFeedType?` | `feed_type` |

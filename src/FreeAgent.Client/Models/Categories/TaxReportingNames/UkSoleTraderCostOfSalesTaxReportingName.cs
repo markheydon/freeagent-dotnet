@@ -19,5 +19,6 @@ public enum UkSoleTraderCostOfSalesTaxReportingName
     /// <remarks>Available only when CIS for Contractors is enabled.</remarks>
     [JsonStringEnumMemberName("construction_industry_scheme_subcontractor_costs")]
     ConstructionIndustrySchemeSubcontractorCosts,
-
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

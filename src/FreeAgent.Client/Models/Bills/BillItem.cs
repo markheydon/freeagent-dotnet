@@ -117,7 +117,7 @@ public sealed class BillItem
     /// Second sales tax status for universal accounts.
     /// </summary>
     [JsonPropertyName("second_sales_tax_status")]
-    public string? SecondSalesTaxStatus { get; set; }
+    public SecondSalesTaxStatus? SecondSalesTaxStatus { get; set; }
 
     /// <summary>
     /// Sales tax value for the line item.

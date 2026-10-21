@@ -32,6 +32,7 @@ public class BankFeedModelSerializationTests
         var bankFeed = Assert.Single(response.BankFeeds);
         Assert.Equal(7, bankFeed.ResourceId);
         Assert.Equal(22, bankFeed.BankAccountId);
+        Assert.Equal(BankFeedState.Enabled, bankFeed.State);
         Assert.Equal(BankFeedType.OpenBanking, bankFeed.FeedType);
         Assert.Equal("HSBC", bankFeed.BankServiceName);
         Assert.Null(bankFeed.ScaExpiresAt);
@@ -58,6 +59,7 @@ public class BankFeedModelSerializationTests
         var response = JsonSerializer.Deserialize<BankFeedResponse>(json, FreeAgentJsonSerializer.Options);
 
         Assert.NotNull(response?.BankFeed);
+        Assert.Equal(BankFeedState.Enabled, response.BankFeed.State);
         Assert.Equal(BankFeedType.Api, response.BankFeed.FeedType);
         Assert.Equal(
             DateTimeOffset.Parse("2021-01-01T01:01:01.000Z", CultureInfo.InvariantCulture),

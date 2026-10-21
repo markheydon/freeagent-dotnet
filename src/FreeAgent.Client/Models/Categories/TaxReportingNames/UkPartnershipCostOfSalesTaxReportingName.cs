@@ -14,5 +14,6 @@ public enum UkPartnershipCostOfSalesTaxReportingName
     /// <summary>Subcontractor costs.</summary>
     [JsonStringEnumMemberName("subcontractor_costs")]
     SubcontractorCosts,
-
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

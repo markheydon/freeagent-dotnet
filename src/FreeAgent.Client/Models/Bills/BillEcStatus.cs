@@ -23,5 +23,7 @@ public enum BillEcStatus
 
     /// <summary>Reverse charge supply.</summary>
     [JsonStringEnumMemberName("Reverse Charge")]
-    ReverseCharge
+    ReverseCharge,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

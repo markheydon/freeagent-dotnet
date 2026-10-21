@@ -15,5 +15,7 @@ public enum ProjectBillingPeriod
 
     /// <summary>Daily billing period (wire value: "day").</summary>
     [JsonStringEnumMemberName("day")]
-    Day
+    Day,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

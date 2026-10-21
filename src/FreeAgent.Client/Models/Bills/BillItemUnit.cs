@@ -47,5 +47,7 @@ public enum BillItemUnit
 
     /// <summary>Stock.</summary>
     [JsonStringEnumMemberName("Stock")]
-    Stock
+    Stock,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

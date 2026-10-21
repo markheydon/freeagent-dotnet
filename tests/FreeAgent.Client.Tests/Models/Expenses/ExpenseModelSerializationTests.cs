@@ -3,6 +3,7 @@ using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.Expenses;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Tests.Models.Expenses;
 
@@ -41,7 +42,7 @@ public class ExpenseModelSerializationTests
     }
 
     [Fact]
-    public void DeserializeExpense_MapsSecondSalesTaxStatusAsString()
+    public void DeserializeExpense_MapsSecondSalesTaxStatusWithUnknownKindAndWireValue()
     {
         const string json = """
             {
@@ -56,7 +57,26 @@ public class ExpenseModelSerializationTests
         var expense = JsonSerializer.Deserialize<Expense>(json, FreeAgentJsonSerializer.Options);
 
         Assert.NotNull(expense);
-        Assert.Equal("CUSTOM_TAX_CODE", expense!.SecondSalesTaxStatus);
+        Assert.NotNull(expense!.SecondSalesTaxStatus);
+        Assert.Equal(SecondSalesTaxStatusKind.Unknown, expense.SecondSalesTaxStatus.Value.Kind);
+        Assert.Equal("CUSTOM_TAX_CODE", expense.SecondSalesTaxStatus.Value.WireValue);
+    }
+
+    [Fact]
+    public void DeserializeExpense_EmptySecondSalesTaxStatus_Throws()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/expenses/6",
+              "user": "https://api.freeagent.com/v2/users/1",
+              "category": "https://api.freeagent.com/v2/categories/285",
+              "dated_on": "2024-03-01",
+              "second_sales_tax_status": ""
+            }
+            """;
+
+        Assert.Throws<JsonException>(() =>
+            JsonSerializer.Deserialize<Expense>(json, FreeAgentJsonSerializer.Options));
     }
 
     [Fact]

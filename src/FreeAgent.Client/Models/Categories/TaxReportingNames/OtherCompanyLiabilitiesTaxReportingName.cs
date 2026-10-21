@@ -14,5 +14,6 @@ public enum OtherCompanyLiabilitiesTaxReportingName
     /// <summary>Creditors.</summary>
     [JsonStringEnumMemberName("creditors")]
     Creditors,
-
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

@@ -34,7 +34,7 @@ public sealed class BankTransactionExplanation : IFreeAgentResource
     /// Read-only explanation type (for example Payment or Invoice Receipt).
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public BankTransactionExplanationType? Type { get; set; }
 
     /// <summary>
     /// Wire representation of the parent bank transaction.
@@ -170,7 +170,7 @@ public sealed class BankTransactionExplanation : IFreeAgentResource
     /// Second sales tax status for universal accounts.
     /// </summary>
     [JsonPropertyName("second_sales_tax_status")]
-    public string? SecondSalesTaxStatus { get; set; }
+    public SecondSalesTaxStatus? SecondSalesTaxStatus { get; set; }
 
     /// <summary>
     /// Cheque number when applicable.

@@ -349,7 +349,7 @@ Key properties:
 
 | Property | Type | Wire name | Notes |
 |----------|------|-----------|-------|
-| `Type` | `string?` | `type` | Read-only explanation type |
+| `Type` | `BankTransactionExplanationType?` | `type` | Read-only explanation type |
 | `DatedOn` | `DateOnly?` | `dated_on` | |
 | `Description` | `string?` | `description` | |
 | `GrossValue` | `decimal?` | `gross_value` | Bank account currency |

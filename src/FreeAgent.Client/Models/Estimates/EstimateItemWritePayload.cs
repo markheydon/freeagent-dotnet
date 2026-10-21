@@ -40,7 +40,7 @@ internal sealed class EstimateItemWritePayload
     public InvoiceSalesTaxStatus? SalesTaxStatus { get; set; }
 
     [JsonPropertyName("second_sales_tax_status")]
-    public string? SecondSalesTaxStatus { get; set; }
+    public SecondSalesTaxStatus? SecondSalesTaxStatus { get; set; }
 
     [JsonPropertyName("category")]
     [JsonConverter(typeof(WriteLinkJsonConverter<CategoryReference>))]

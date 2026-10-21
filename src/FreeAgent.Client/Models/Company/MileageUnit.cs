@@ -12,5 +12,8 @@ public enum MileageUnit
     Miles,
 
     /// <summary>Kilometres (wire values: "kilometers" or "kilometres").</summary>
-    Kilometers
+    Kilometers,
+
+    /// <summary>Undocumented or future mileage unit wire value.</summary>
+    Unknown
 }

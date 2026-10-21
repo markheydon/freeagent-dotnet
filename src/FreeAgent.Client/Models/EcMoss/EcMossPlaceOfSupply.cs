@@ -115,5 +115,7 @@ public enum EcMossPlaceOfSupply
 
     /// <summary>Sweden.</summary>
     [JsonStringEnumMemberName("Sweden")]
-    Sweden
+    Sweden,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

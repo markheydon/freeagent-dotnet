@@ -23,5 +23,7 @@ public enum ShortDateFormat
 
     /// <summary>yyyy-mm-dd</summary>
     [JsonStringEnumMemberName("yyyy-mm-dd")]
-    YearMonthDayDashes
+    YearMonthDayDashes,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

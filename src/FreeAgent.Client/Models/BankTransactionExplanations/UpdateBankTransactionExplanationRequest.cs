@@ -1,6 +1,7 @@
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.DepreciationProfiles;
 using FreeAgent.Client.Models.EcMoss;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.BankTransactionExplanations;
 
@@ -67,7 +68,7 @@ public sealed class UpdateBankTransactionExplanationRequest
     /// <summary>
     /// Second sales tax status for universal accounts.
     /// </summary>
-    public string? SecondSalesTaxStatus { get; set; }
+    public SecondSalesTaxStatus? SecondSalesTaxStatus { get; set; }
 
     /// <summary>
     /// Cheque number.

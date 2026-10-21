@@ -19,5 +19,7 @@ public enum BankAccountStatus
     /// Hidden bank account.
     /// </summary>
     [JsonStringEnumMemberName("hidden")]
-    Hidden
+    Hidden,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

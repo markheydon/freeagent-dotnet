@@ -22,5 +22,6 @@ public enum UniversalAndUsCostOfSalesTaxReportingName
     /// <summary>Purchases.</summary>
     [JsonStringEnumMemberName("purchases")]
     Purchases,
-
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

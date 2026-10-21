@@ -16,4 +16,6 @@ public enum PayrollNiCalculationType
     /// <summary>Employee NI calculation.</summary>
     [JsonStringEnumMemberName("Employee")]
     Employee,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

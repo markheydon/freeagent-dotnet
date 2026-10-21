@@ -51,7 +51,7 @@ internal sealed class ExpenseWritePayload
     public BillSalesTaxStatus? SalesTaxStatus { get; set; }
 
     [JsonPropertyName("second_sales_tax_status")]
-    public string? SecondSalesTaxStatus { get; set; }
+    public SecondSalesTaxStatus? SecondSalesTaxStatus { get; set; }
 
     [JsonPropertyName("ec_status")]
     public BillEcStatus? EcStatus { get; set; }

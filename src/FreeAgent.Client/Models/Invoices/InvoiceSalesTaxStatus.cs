@@ -15,5 +15,7 @@ public enum InvoiceSalesTaxStatus
 
     /// <summary>Item is exempt from sales tax.</summary>
     [JsonStringEnumMemberName("EXEMPT")]
-    Exempt
+    Exempt,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

@@ -15,5 +15,7 @@ public enum RecurringInvoiceStatus
 
     /// <summary>Active recurring invoice.</summary>
     [JsonStringEnumMemberName("Active")]
-    Active
+    Active,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

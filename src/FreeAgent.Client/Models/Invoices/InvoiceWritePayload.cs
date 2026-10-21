@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
+using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.EcMoss;
 using FreeAgent.Client.Models.Shared;
 
@@ -47,7 +48,7 @@ internal sealed class InvoiceWritePayload
     public CurrencyCode? Currency { get; set; }
 
     [JsonPropertyName("cis_rate")]
-    public string? CisRate { get; set; }
+    public CisDeductionRate? CisRate { get; set; }
 
     [JsonPropertyName("cis_deduction_rate")]
     public decimal? CisDeductionRate { get; set; }

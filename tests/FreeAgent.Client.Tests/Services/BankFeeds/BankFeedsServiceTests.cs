@@ -54,7 +54,7 @@ public class BankFeedsServiceTests
         Assert.Equal(2, bankFeeds.Count);
         Assert.Equal(7, bankFeeds[0].ResourceId);
         Assert.Equal(22, bankFeeds[0].BankAccountId);
-        Assert.Equal("enabled", bankFeeds[0].State);
+        Assert.Equal(BankFeedState.Enabled, bankFeeds[0].State);
         Assert.Equal(BankFeedType.Api, bankFeeds[0].FeedType);
         Assert.Equal("Mettle", bankFeeds[0].BankServiceName);
         Assert.Equal(

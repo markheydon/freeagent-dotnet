@@ -13,6 +13,10 @@ public sealed class JsonStringEnumMemberNameCompatibleConverter<TEnum> : JsonCon
 {
     private static readonly Dictionary<string, TEnum> NameToValue = BuildNameToValueMap();
     private static readonly Dictionary<TEnum, string> ValueToName = BuildValueToNameMap();
+    private static readonly bool HasUnknownMember = Enum.IsDefined(typeof(TEnum), "Unknown");
+    private static readonly TEnum UnknownValue = HasUnknownMember
+        ? Enum.Parse<TEnum>("Unknown")
+        : default;
 
     /// <inheritdoc />
     public override TEnum Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -33,12 +37,22 @@ public sealed class JsonStringEnumMemberNameCompatibleConverter<TEnum> : JsonCon
             return parsed;
         }
 
+        if (HasUnknownMember)
+        {
+            return UnknownValue;
+        }
+
         throw new JsonException($"Unknown {typeof(TEnum).Name} value: \"{value}\".");
     }
 
     /// <inheritdoc />
     public override void Write(Utf8JsonWriter writer, TEnum value, JsonSerializerOptions options)
     {
+        if (HasUnknownMember && EqualityComparer<TEnum>.Default.Equals(value, UnknownValue))
+        {
+            throw new JsonException($"Cannot serialise unknown {typeof(TEnum).Name} value to a FreeAgent wire value.");
+        }
+
         if (ValueToName.TryGetValue(value, out var wireName))
         {
             writer.WriteStringValue(wireName);

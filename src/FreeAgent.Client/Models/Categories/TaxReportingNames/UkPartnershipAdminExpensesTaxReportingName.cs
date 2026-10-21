@@ -66,5 +66,6 @@ public enum UkPartnershipAdminExpensesTaxReportingName
     /// <summary>Travel and subsistence.</summary>
     [JsonStringEnumMemberName("travel_and_subsistence")]
     TravelAndSubsistence,
-
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

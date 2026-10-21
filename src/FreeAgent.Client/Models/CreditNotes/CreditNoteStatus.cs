@@ -27,5 +27,7 @@ public enum CreditNoteStatus
 
     /// <summary>Written-off credit note.</summary>
     [JsonStringEnumMemberName("Written-off")]
-    WrittenOff
+    WrittenOff,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

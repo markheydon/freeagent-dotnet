@@ -86,5 +86,5 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
     }
 
     private static string FormatExplanationRow(BankTransactionExplanation explanation) =>
-        $"{explanation.ResourceId,8}  gross={explanation.GrossValue,10}  type={explanation.Type ?? "—",-20}  dated={explanation.DatedOn?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "—"}";
+        $"{explanation.ResourceId,8}  gross={explanation.GrossValue,10}  type={explanation.Type?.ToString() ?? "—",-20}  dated={explanation.DatedOn?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "—"}";
 }

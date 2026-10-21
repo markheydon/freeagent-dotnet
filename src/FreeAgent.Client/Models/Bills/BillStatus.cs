@@ -27,5 +27,7 @@ public enum BillStatus
 
     /// <summary>Refunded bill (negative total value and fully paid).</summary>
     [JsonStringEnumMemberName("Refunded")]
-    Refunded
+    Refunded,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

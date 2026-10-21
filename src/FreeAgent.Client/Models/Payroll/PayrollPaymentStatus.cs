@@ -20,4 +20,6 @@ public enum PayrollPaymentStatus
     /// <summary>Payment recorded as paid (reserved for future API use).</summary>
     [JsonStringEnumMemberName("paid")]
     Paid,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

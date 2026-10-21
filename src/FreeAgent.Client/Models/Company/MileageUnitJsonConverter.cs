@@ -26,7 +26,7 @@ public sealed class MileageUnitJsonConverter : JsonConverter<MileageUnit>
         {
             "miles" => MileageUnit.Miles,
             "kilometres" or "kilometers" => MileageUnit.Kilometers,
-            _ => throw new JsonException($"Unknown {nameof(MileageUnit)} value: \"{value}\".")
+            _ => MileageUnit.Unknown
         };
     }
 
@@ -37,6 +37,7 @@ public sealed class MileageUnitJsonConverter : JsonConverter<MileageUnit>
         {
             MileageUnit.Miles => "miles",
             MileageUnit.Kilometers => "kilometers",
+            MileageUnit.Unknown => throw new JsonException($"Cannot serialise unknown {nameof(MileageUnit)} value to a FreeAgent wire value."),
             _ => throw new JsonException($"Unsupported {nameof(MileageUnit)} value: {value}.")
         };
 

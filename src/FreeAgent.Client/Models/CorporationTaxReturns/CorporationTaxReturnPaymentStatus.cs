@@ -20,4 +20,6 @@ public enum CorporationTaxReturnPaymentStatus
     /// <summary>Reserved for future use by FreeAgent.</summary>
     [JsonStringEnumMemberName("paid")]
     Paid,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

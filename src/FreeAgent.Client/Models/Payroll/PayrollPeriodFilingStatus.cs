@@ -28,4 +28,6 @@ public enum PayrollPeriodFilingStatus
     /// <summary>Period filed.</summary>
     [JsonStringEnumMemberName("filed")]
     Filed,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

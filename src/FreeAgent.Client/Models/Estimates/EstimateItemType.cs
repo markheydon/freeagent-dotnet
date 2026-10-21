@@ -63,5 +63,7 @@ public enum EstimateItemType
 
     /// <summary>Credit line.</summary>
     [JsonStringEnumMemberName("Credit")]
-    Credit
+    Credit,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

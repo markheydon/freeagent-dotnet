@@ -15,5 +15,7 @@ public enum CisSettingsPayeNiPeriod
 
     /// <summary>Quarterly reporting (wire value: "Quarterly").</summary>
     [JsonStringEnumMemberName("Quarterly")]
-    Quarterly
+    Quarterly,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }
