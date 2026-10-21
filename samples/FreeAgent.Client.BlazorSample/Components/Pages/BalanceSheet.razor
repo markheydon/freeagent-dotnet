@@ -1,0 +1,170 @@
+@page "/balance-sheet"
+@using BalanceSheetModel = FreeAgent.Client.Models.BalanceSheet.BalanceSheet
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Balance sheet - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Balance sheet"
+                         CallUnderTest="BalanceSheetService.GetAsync(...) / GetOpeningBalancesAsync()"
+                         Description="Load balance sheet figures as at a date, or opening balances for the opening balances period."
+                         EndpointPath="/v2/accounting/balance_sheet"
+                         DocsUrl="https://dev.freeagent.com/docs/balance_sheet" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudText Typo="Typo.body2" Class="hero-copy">
+                    Leave the as-at date empty for FreeAgent defaults (current date within the ongoing annual accounting period). Opening balances use a separate endpoint with no date filter.
+                </MudText>
+
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Label="As at date (optional)" @bind-Date="_asAtDate" Clearable="true" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CloudDownload"
+                               Disabled="_loading"
+                               OnClick="LoadBalanceSheetAsync">
+                        @if (_loading && _activeOperation == Operation.BalanceSheet)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Running…</span>
+                        }
+                        else
+                        {
+                            <span>Fetch balance sheet</span>
+                        }
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.History"
+                               Disabled="_loading"
+                               OnClick="LoadOpeningBalancesAsync">
+                        @if (_loading && _activeOperation == Operation.OpeningBalances)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Running…</span>
+                        }
+                        else
+                        {
+                            <span>Fetch opening balances</span>
+                        }
+                    </MudButton>
+                </MudStack>
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_probe is not null && _sheet is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All BalanceSheet model fields" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private enum Operation
+    {
+        None,
+        BalanceSheet,
+        OpeningBalances
+    }
+
+    private bool _loading;
+    private Operation _activeOperation = Operation.None;
+    private string? _error;
+    private BalanceSheetModel? _sheet;
+    private ModelProbeSnapshot? _probe;
+    private string _wireApiResponse = string.Empty;
+    private DateTime? _asAtDate;
+
+    private async Task LoadBalanceSheetAsync()
+    {
+        var asAt = _asAtDate is null ? (DateOnly?)null : DateOnly.FromDateTime(_asAtDate.Value);
+        await LoadAsync(
+            Operation.BalanceSheet,
+            async client => await client.BalanceSheet.GetAsync(asAt),
+            asAt is null
+                ? "accounting/balance_sheet"
+                : $"accounting/balance_sheet?as_at_date={asAt.Value:yyyy-MM-dd}");
+    }
+
+    private async Task LoadOpeningBalancesAsync()
+    {
+        await LoadAsync(
+            Operation.OpeningBalances,
+            async client => await client.BalanceSheet.GetOpeningBalancesAsync(),
+            "accounting/balance_sheet/opening_balances");
+    }
+
+    private async Task LoadAsync(
+        Operation operation,
+        Func<FreeAgent.Client.FreeAgentClient, Task<BalanceSheetModel>> fetch,
+        string diagnosticsEndpoint)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _activeOperation = operation;
+        _error = null;
+        _sheet = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _sheet = await fetch(client);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+
+            _probe = ModelWireDiagnostics.Build(_sheet, _wireApiResponse, envelopeProperty: "balance_sheet");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+            _activeOperation = Operation.None;
+        }
+    }
+}

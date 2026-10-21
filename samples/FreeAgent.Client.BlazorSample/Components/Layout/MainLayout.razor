@@ -239,6 +239,9 @@
                 <MudNavLink Href="/profit-and-loss" Icon="@Icons.Material.Filled.TrendingUp">
                     Profit and loss
                 </MudNavLink>
+                <MudNavLink Href="/balance-sheet" Icon="@Icons.Material.Filled.AccountBalance">
+                    Balance sheet
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Sales catalogue" Icon="@Icons.Material.Filled.Inventory2" Expanded="@IsSalesCatalogueRoute">
@@ -430,7 +433,8 @@
         || CurrentPath.StartsWith("cis-settings/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsReportsRoute =>
-        CurrentPath.Equals("profit-and-loss", StringComparison.OrdinalIgnoreCase);
+        CurrentPath.Equals("profit-and-loss", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("balance-sheet", StringComparison.OrdinalIgnoreCase);
 
     private bool IsSalesCatalogueRoute =>
         CurrentPath.Equals("stock-items", StringComparison.OrdinalIgnoreCase)
