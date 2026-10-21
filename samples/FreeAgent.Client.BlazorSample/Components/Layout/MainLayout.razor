@@ -248,6 +248,9 @@
                 <MudNavLink Href="/cashflow" Icon="@Icons.Material.Filled.SwapVert">
                     Cashflow
                 </MudNavLink>
+                <MudNavLink Href="/vat-returns" Icon="@Icons.Material.Filled.ReceiptLong">
+                    VAT returns
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Sales catalogue" Icon="@Icons.Material.Filled.Inventory2" Expanded="@IsSalesCatalogueRoute">
@@ -442,7 +445,8 @@
         CurrentPath.Equals("profit-and-loss", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("balance-sheet", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("trial-balance", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.Equals("cashflow", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.Equals("cashflow", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("vat-returns", StringComparison.OrdinalIgnoreCase);
 
     private bool IsSalesCatalogueRoute =>
         CurrentPath.Equals("stock-items", StringComparison.OrdinalIgnoreCase)

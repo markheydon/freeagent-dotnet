@@ -1,0 +1,149 @@
+@page "/vat-returns"
+@using FreeAgent.Client.Models.VatReturns
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>VAT returns - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="VAT returns"
+                         CallUnderTest="VatReturnsService.ListAsync() / GetAsync(periodEndsOn)"
+                         Description="List VAT return periods and fetch detail (including breakdown) for a period end date."
+                         EndpointPath="/v2/vat_returns"
+                         DocsUrl="https://dev.freeagent.com/docs/vat_returns" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_loading"
+                           OnClick="LoadListAsync">
+                    List VAT returns
+                </MudButton>
+
+                @if (_returns is not null && _returns.Count > 0)
+                {
+                    <MudSelect T="DateOnly?" Label="Period end (detail fetch)" @bind-Value="_selectedPeriodEndsOn">
+                        @foreach (var item in _returns.Where(r => r.PeriodEndsOn is not null))
+                        {
+                            <MudSelectItem Value="@item.PeriodEndsOn">@item.PeriodEndsOn</MudSelectItem>
+                        }
+                    </MudSelect>
+
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                               Disabled="_loading || _selectedPeriodEndsOn is null"
+                               OnClick="LoadDetailAsync">
+                        Fetch VAT return detail
+                    </MudButton>
+                }
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_probe is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="@_probeHeading" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private IReadOnlyList<VatReturn>? _returns;
+    private VatReturn? _detail;
+    private DateOnly? _selectedPeriodEndsOn;
+    private ModelProbeSnapshot? _probe;
+    private string _wireApiResponse = string.Empty;
+    private string _probeHeading = "Model fields";
+
+    private async Task LoadListAsync()
+    {
+        await RunAsync(async client =>
+        {
+            _returns = await client.VatReturns.ListAsync();
+            _selectedPeriodEndsOn = _returns.FirstOrDefault(r => r.PeriodEndsOn is not null)?.PeriodEndsOn;
+            _detail = null;
+            _probeHeading = "First VatReturn list item fields";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                TokenStore.GetToken()!.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "vat_returns");
+            _probe = _returns.Count > 0
+                ? ModelWireDiagnostics.Build(_returns[0], _wireApiResponse, envelopeProperty: "vat_returns")
+                : null;
+        });
+    }
+
+    private async Task LoadDetailAsync()
+    {
+        if (_selectedPeriodEndsOn is null)
+        {
+            return;
+        }
+
+        var period = _selectedPeriodEndsOn.Value;
+        await RunAsync(async client =>
+        {
+            _detail = await client.VatReturns.GetAsync(period);
+            _probeHeading = "VatReturn detail fields";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                TokenStore.GetToken()!.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                $"vat_returns/{period:yyyy-MM-dd}");
+            _probe = ModelWireDiagnostics.Build(_detail, _wireApiResponse, envelopeProperty: "vat_return");
+        });
+    }
+
+    private async Task RunAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}
