@@ -227,6 +227,12 @@
                 <MudNavLink Href="/capital-asset-types/detail" Icon="@Icons.Material.Filled.Edit">
                     Capital asset type CRUD
                 </MudNavLink>
+                <MudNavLink Href="/journal-sets" Icon="@Icons.Material.Filled.AllInclusive">
+                    Journal sets list
+                </MudNavLink>
+                <MudNavLink Href="/journal-sets/detail" Icon="@Icons.Material.Filled.Edit">
+                    Journal set CRUD
+                </MudNavLink>
                 <MudNavLink Href="/depreciation-profiles" Icon="@Icons.Material.Filled.TrendingDown">
                     Depreciation profiles
                 </MudNavLink>
@@ -483,6 +489,8 @@
         || CurrentPath.StartsWith("capital-assets/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("capital-asset-types", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("capital-asset-types/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("journal-sets", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("journal-sets/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("depreciation-profiles", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("cis-bands", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("cis-settings", StringComparison.OrdinalIgnoreCase)

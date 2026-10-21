@@ -120,6 +120,10 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/hire-purchases/detail](https://localhost:5001/hire-purchases/detail) | `HirePurchasesService.GetHirePurchaseAsync()` | GET probe, `?id=` deep links, progress bar |
 | [/capital-assets](https://localhost:5001/capital-assets) | `CapitalAssetsService.ListAsync()` | Per-row mapping inspection, view and `include_history` filters |
 | [/capital-assets/detail](https://localhost:5001/capital-assets/detail) | `CapitalAssetsService.GetCapitalAssetAsync()` | GET probe, optional history, `?id=` deep links, progress bar |
+| [/capital-asset-types](https://localhost:5001/capital-asset-types) | `CapitalAssetTypesService.ListAsync()` | Per-row mapping inspection, list output |
+| [/capital-asset-types/detail](https://localhost:5001/capital-asset-types/detail) | `GetCapitalAssetTypeAsync()`, `CreateCapitalAssetTypeAsync()`, `UpdateCapitalAssetTypeAsync()`, `DeleteCapitalAssetTypeAsync()` | CRUD probes, probe upsert by name, progress bar |
+| [/journal-sets](https://localhost:5001/journal-sets) | `JournalSetsService.ListAsync()`, `GetOpeningBalancesAsync()` | Per-row mapping inspection, date/tag filters, opening balances |
+| [/journal-sets/detail](https://localhost:5001/journal-sets/detail) | `GetJournalSetAsync()`, `CreateJournalSetAsync()`, `UpdateJournalSetAsync()`, `DeleteJournalSetAsync()` | CRUD probes, tagged probe upsert, balancing entry pair, progress bar |
 | [/expenses](https://localhost:5001/expenses) | `ExpenseService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view and project filters |
 | [/expenses/detail](https://localhost:5001/expenses/detail) | `GetExpenseAsync()`, `CreateExpenseAsync()`, `CreateExpensesAsync()`, `UpdateExpenseAsync()`, `DeleteExpenseAsync()`, `GetMileageSettingsAsync()` | CRUD probes, category and mileage variants, batch create, progress bar |
 | [/bank-accounts](https://localhost:5001/bank-accounts) | `BankAccountsService.ListAsync()` | Per-row mapping inspection, view filter |

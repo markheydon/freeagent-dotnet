@@ -158,4 +158,12 @@ public sealed class FreeAgentResourceUrls
     /// <returns>Capital asset type reference.</returns>
     public CapitalAssetTypeReference CapitalAssetType(long capitalAssetTypeId) =>
         CapitalAssetTypeReference.ForEnvironment(_environment, capitalAssetTypeId);
+
+    /// <summary>
+    /// Creates a property resource reference.
+    /// </summary>
+    /// <param name="propertyId">Property identifier.</param>
+    /// <returns>Property reference.</returns>
+    public PropertyReference Property(long propertyId) =>
+        PropertyReference.ForEnvironment(_environment, propertyId);
 }
