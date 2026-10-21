@@ -47,7 +47,7 @@ public sealed class FinalAccountsReportsService
     /// <param name="periodEndsOn">Period end date used in the API path.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Final accounts report returned by FreeAgent</returns>
-    public async Task<FinalAccountsReport> GetAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
+    public async Task<FinalAccountsReport> GetFinalAccountsReportAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
     {
         var response = await _requestClient.GetAsync<FinalAccountsReportResponse>(
             BuildPeriodEndpoint(periodEndsOn),

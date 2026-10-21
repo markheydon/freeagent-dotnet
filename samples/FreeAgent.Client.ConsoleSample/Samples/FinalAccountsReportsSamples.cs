@@ -44,7 +44,7 @@ internal sealed class FinalAccountsReportsSamples(SampleContext context) : ICons
         var periodEndsOn = reports[0].PeriodEndsOn
             ?? throw new InvalidOperationException("Listed final accounts report is missing period_ends_on.");
 
-        var detail = await context.Client.FinalAccountsReports.GetAsync(periodEndsOn, cancellationToken);
+        var detail = await context.Client.FinalAccountsReports.GetFinalAccountsReportAsync(periodEndsOn, cancellationToken);
 
         SampleOutput.WriteHeader("Final accounts report detail");
         SampleOutput.WriteField("Period ends", detail.PeriodEndsOn);

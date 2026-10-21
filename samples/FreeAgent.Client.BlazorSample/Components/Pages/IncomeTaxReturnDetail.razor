@@ -9,7 +9,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="Income tax return detail and transitions"
-                         CallUnderTest="IncomeTaxReturnsService.GetAsync / MarkAsFiledAsync / MarkAsUnfiledAsync / MarkPaymentAsPaidAsync / MarkPaymentAsUnpaidAsync"
+                         CallUnderTest="IncomeTaxReturnsService.GetIncomeTaxReturnAsync / MarkAsFiledAsync / MarkAsUnfiledAsync / MarkPaymentAsPaidAsync / MarkPaymentAsUnpaidAsync"
                          Description="Fetch a return by user and period end date and exercise each documented mark-as transition. Mutations change live sandbox data."
                          EndpointPath="/v2/users/:user_id/self_assessment_returns/:period_ends_on"
                          DocsUrl="https://dev.freeagent.com/docs/income_tax_returns" />
@@ -142,7 +142,7 @@
     private async Task GetAsync() => await RunMutationAsync(
         async client =>
         {
-            _return = await client.IncomeTaxReturns.GetAsync(_userId!.Value, _periodEndsOn!.Value);
+            _return = await client.IncomeTaxReturns.GetIncomeTaxReturnAsync(_userId!.Value, _periodEndsOn!.Value);
             _operationMessage = "Loaded income tax return from GET.";
         });
 

@@ -12,7 +12,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Sales"
                          Title="EC VAT MOSS sales tax rates"
-                         CallUnderTest="EcMossService.GetSalesTaxRatesAsync()"
+                         CallUnderTest="EcMossService.ListSalesTaxRatesAsync()"
                          Description="Look up MOSS sales tax rate bands for an EU place-of-supply country and transaction date."
                          EndpointPath="/v2/ec_moss/sales_tax_rates"
                          DocsUrl="https://dev.freeagent.com/docs/sales_tax" />
@@ -131,7 +131,7 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _rates = await client.EcMoss.GetSalesTaxRatesAsync(_country, datedOn);
+            _rates = await client.EcMoss.ListSalesTaxRatesAsync(_country, datedOn);
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,

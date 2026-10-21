@@ -154,7 +154,7 @@ public sealed class TokenStore
     /// <summary>
     /// Generates a cryptographically random state value, stores it together with the chosen
     /// <paramref name="environment"/> for CSRF validation, and returns it for inclusion in
-    /// the OAuth authorization URL.
+    /// the OAuth authorisation URL.
     /// </summary>
     public string GenerateAndStorePendingState(FreeAgentEnvironment environment)
     {
@@ -184,7 +184,7 @@ public sealed class TokenStore
     /// <param name="state">The state value returned from the OAuth callback.</param>
     /// <param name="pendingEnvironment">
     /// When this method returns <c>true</c>, contains the environment that was selected
-    /// when the authorization URL was generated. When <c>false</c>, the value is undefined.
+    /// when the authorisation URL was generated. When <c>false</c>, the value is undefined.
     /// </param>
     /// <returns><c>true</c> if the state matches; <c>false</c> otherwise.</returns>
     public bool ValidateAndClearState(string state, out FreeAgentEnvironment pendingEnvironment)

@@ -66,7 +66,7 @@ app.MapGet("/oauth/start", (
     return Results.Redirect(authorizationUrl);
 });
 
-// OAuth authorization callback - FreeAgent redirects here after the user approves or denies the app.
+// OAuth authorisation callback - FreeAgent redirects here after the user approves or denies the app.
 app.MapGet("/oauth/callback", async (
     string? code,
     string? state,

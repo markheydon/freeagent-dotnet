@@ -43,7 +43,7 @@ See [FreeAgent.Client.BlazorSample/README.md](FreeAgent.Client.BlazorSample/READ
    https://localhost:5001/oauth/callback
    ```
 
-   > **Important:** The redirect URI must match exactly - including the scheme (`https`), host (`localhost`), port (`:5001`), and path (`/oauth/callback`). A mismatch will cause the authorization flow to fail.
+   > **Important:** The redirect URI must match exactly - including the scheme (`https`), host (`localhost`), port (`:5001`), and path (`/oauth/callback`). A mismatch will cause the authorisation flow to fail.
 
 4. Note your **OAuth identifier** and **OAuth secret**.
 
@@ -83,7 +83,7 @@ The app starts at `https://localhost:5001`. Your browser may show a certificate 
 
 1. Navigate to <https://localhost:5001>.
 2. Click **Connect to FreeAgent**.
-3. You are redirected to FreeAgent's authorization page - approve the app.
+3. You are redirected to FreeAgent's authorisation page - approve the app.
 4. FreeAgent redirects back to `https://localhost:5001/oauth/callback`.
 5. The app exchanges the code for a token and shows **Connected** in the header.
 
@@ -154,20 +154,20 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/users/detail](https://localhost:5001/users/detail) | `GetUserAsync()`, `GetCurrentUserAsync()`, `CreateUserAsync()`, `UpdateUserAsync()`, `UpdateCurrentUserAsync()`, `DeleteUserAsync()` | CRUD probes, personal profile endpoints, progress bar |
 | [/email-addresses](https://localhost:5001/email-addresses) | `EmailAddressesService.ListAsync()` | Per-row mapping inspection, list output |
 | [/profit-and-loss](https://localhost:5001/profit-and-loss) | `ProfitAndLossService.GetSummaryAsync()` | Date range query, wire-to-model mapping |
-| [/balance-sheet](https://localhost:5001/balance-sheet) | `BalanceSheetService.GetAsync()` / `GetOpeningBalancesAsync()` | As-of date query, wire-to-model mapping |
-| [/trial-balance](https://localhost:5001/trial-balance) | `TrialBalanceService.GetSummaryAsync()` / `GetOpeningBalancesAsync()` | Date range query, wire-to-model mapping |
-| [/cashflow](https://localhost:5001/cashflow) | `CashflowService.GetAsync()` | Date range query, wire-to-model mapping |
+| [/balance-sheet](https://localhost:5001/balance-sheet) | `BalanceSheetService.GetBalanceSheetAsync()` / `GetOpeningBalancesAsync()` | As-of date query, wire-to-model mapping |
+| [/trial-balance](https://localhost:5001/trial-balance) | `TrialBalanceService.ListSummaryAsync()` / `ListOpeningBalancesAsync()` | Date range query, wire-to-model mapping |
+| [/cashflow](https://localhost:5001/cashflow) | `CashflowService.GetCashflowAsync()` | Date range query, wire-to-model mapping |
 | [/transactions](https://localhost:5001/transactions) | `TransactionsService.ListAsync()` | Per-row mapping inspection, date and nominal-code filters |
 | [/transactions/detail](https://localhost:5001/transactions/detail?id=1) | `TransactionsService.GetAccountingTransactionAsync()` | GET probe, `?id=` deep links, progress bar |
-| [/vat-returns](https://localhost:5001/vat-returns) | `VatReturnsService.ListAsync()` / `GetAsync(periodEndsOn)` | List + period detail fetch, wire-to-model mapping |
+| [/vat-returns](https://localhost:5001/vat-returns) | `VatReturnsService.ListAsync()` / `GetVatReturnAsync(periodEndsOn)` | List + period detail fetch, wire-to-model mapping |
 | [/corporation-tax-returns](https://localhost:5001/corporation-tax-returns) | `CorporationTaxReturnsService.ListAsync()` | Per-row mapping inspection; limited-company note when empty |
-| [/corporation-tax-returns/detail](https://localhost:5001/corporation-tax-returns/detail?periodEndsOn=YYYY-MM-DD) | `GetAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()`, `MarkAsPaidAsync()`, `MarkAsUnpaidAsync()` | `?periodEndsOn=` deep links, all mark-as transitions, progress bar |
+| [/corporation-tax-returns/detail](https://localhost:5001/corporation-tax-returns/detail?periodEndsOn=YYYY-MM-DD) | `GetCorporationTaxReturnAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()`, `MarkAsPaidAsync()`, `MarkAsUnpaidAsync()` | `?periodEndsOn=` deep links, all mark-as transitions, progress bar |
 | [/income-tax-returns](https://localhost:5001/income-tax-returns) | `IncomeTaxReturnsService.ListAsync(userId)` | Resolves `users/me` when `userId` omitted; per-row mapping |
-| [/income-tax-returns/detail](https://localhost:5001/income-tax-returns/detail?userId=&amp;periodEndsOn=YYYY-MM-DD) | `GetAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()`, `MarkPaymentAsPaidAsync()`, `MarkPaymentAsUnpaidAsync()` | User-scoped SA wire path; payment date for payment transitions |
+| [/income-tax-returns/detail](https://localhost:5001/income-tax-returns/detail?userId=&amp;periodEndsOn=YYYY-MM-DD) | `GetIncomeTaxReturnAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()`, `MarkPaymentAsPaidAsync()`, `MarkPaymentAsUnpaidAsync()` | User-scoped SA wire path; payment date for payment transitions |
 | [/self-assessment-returns](https://localhost:5001/self-assessment-returns) | `SelfAssessmentReturnsService.ListAsync(userId)` | Same wire path as income tax; self assessment docs entry point |
 | [/self-assessment-returns/detail](https://localhost:5001/self-assessment-returns/detail?userId=&amp;periodEndsOn=YYYY-MM-DD) | Self assessment return GET and mark-as transitions | Parallel probe surface for `self_assessment_returns` docs |
 | [/final-accounts-reports](https://localhost:5001/final-accounts-reports) | `FinalAccountsReportsService.ListAsync()` | Limited-company note when empty |
-| [/final-accounts-reports/detail](https://localhost:5001/final-accounts-reports/detail?periodEndsOn=YYYY-MM-DD) | `GetAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()` | Filing transitions only; `ExcludeFromRunAll` on mutating console examples |
+| [/final-accounts-reports/detail](https://localhost:5001/final-accounts-reports/detail?periodEndsOn=YYYY-MM-DD) | `GetFinalAccountsReportAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()` | Filing transitions only; `ExcludeFromRunAll` on mutating console examples |
 | [/sales-tax-periods](https://localhost:5001/sales-tax-periods) | `SalesTaxPeriodsService.ListAsync()` | US/universal companies; per-row mapping |
 | [/sales-tax-periods/detail](https://localhost:5001/sales-tax-periods/detail?id=123) | `GetSalesTaxPeriodAsync()`, `CreateSalesTaxPeriodAsync()`, `UpdateSalesTaxPeriodAsync()`, `DeleteSalesTaxPeriodAsync()` | Probe upsert by name `SDK-PROBE-STP`; mutating console examples `ExcludeFromRunAll` |
 

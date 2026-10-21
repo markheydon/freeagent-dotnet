@@ -12,7 +12,7 @@ internal sealed class BalanceSheetSamples(SampleContext context) : IConsoleSampl
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task GetBalanceSheetAsync(CancellationToken cancellationToken)
     {
-        var sheet = await context.Client.BalanceSheet.GetAsync(cancellationToken: cancellationToken);
+        var sheet = await context.Client.BalanceSheet.GetBalanceSheetAsync(cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader("Balance sheet");
         SampleOutput.WriteField("As at", sheet.AsAtDate);

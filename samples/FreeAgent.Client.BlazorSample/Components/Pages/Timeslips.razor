@@ -9,7 +9,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Timeslips endpoint"
                          Title="Timeslips list"
-                         CallUnderTest="TimeslipService.ListAsync(...)"
+                         CallUnderTest="TimeslipService.ListAsync(...) / ListAutoPagingAsync(...)"
                          Description="Load timeslips, inspect wire-to-model mapping for any row, then jump into Timeslip CRUD to test get, create, update, delete, and timers."
                          EndpointPath="/v2/timeslips?page={page}&amp;per_page={perPage}&amp;view={view}"
                          DocsUrl="https://dev.freeagent.com/docs/timeslips" />
@@ -205,6 +205,38 @@
                         </SummaryContent>
                     </ModelProbeResults>
                 }
+
+                <MudExpansionPanels>
+                    <MudExpansionPanel Text="Developer probe: auto-pagination (ListAutoPagingAsync)">
+                        <MudStack Spacing="2">
+                            <MudText Typo="Typo.body2" Class="hero-copy">
+                                Optional check that the async enumerator walks every page using the current filters.
+                            </MudText>
+                            <MudButton Variant="Variant.Outlined"
+                                       Color="Color.Secondary"
+                                       StartIcon="@Icons.Material.Filled.AllInclusive"
+                                       Disabled="_loadingAll"
+                                       OnClick="LoadAllAsync">
+                                @if (_loadingAll)
+                                {
+                                    <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                    <span>Enumerating…</span>
+                                }
+                                else
+                                {
+                                    <span>Count all timeslips</span>
+                                }
+                            </MudButton>
+
+                            @if (_allTimeslipsCount is not null)
+                            {
+                                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+                                    <code>ListAutoPagingAsync</code> yielded @_allTimeslipsCount.Value timeslip@(_allTimeslipsCount.Value == 1 ? string.Empty : "s").
+                                </MudAlert>
+                            }
+                        </MudStack>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
             </MudStack>
         </MudPaper>
     }
@@ -212,12 +244,14 @@
 
 @code {
     private bool _loading;
+    private bool _loadingAll;
     private string? _error;
     private string _wireApiResponse = string.Empty;
     private PaginatedResponse<Timeslip>? _pageResult;
     private Timeslip? _inspectedTimeslip;
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
+    private int? _allTimeslipsCount;
     private string? _view;
     private DateTime? _fromDate;
     private DateTime? _toDate;
@@ -243,6 +277,7 @@
         _inspectedTimeslip = null;
         _inspectedProbe = null;
         _inspectedIndex = null;
+        _allTimeslipsCount = null;
 
         var token = TokenStore.GetToken();
         if (token is null)
@@ -365,6 +400,56 @@
         }
 
         return $"timeslips?{string.Join('&', query)}";
+    }
+
+    private async System.Threading.Tasks.Task LoadAllAsync()
+    {
+        _allTimeslipsCount = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loadingAll = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var count = 0;
+            await foreach (var _ in client.Timeslips.ListAutoPagingAsync(
+                               perPage: _perPage,
+                               view: _view,
+                               fromDate: _fromDate is null ? null : DateOnly.FromDateTime(_fromDate.Value),
+                               toDate: _toDate is null ? null : DateOnly.FromDateTime(_toDate.Value),
+                               updatedSince: _updatedSinceDate is null
+                                   ? null
+                                   : new DateTimeOffset(_updatedSinceDate.Value, TimeSpan.Zero),
+                               nested: _nested ? true : null,
+                               userId: _userIdFilter,
+                               projectTaskId: _projectTaskIdFilter,
+                               projectId: _projectIdFilter))
+            {
+                count++;
+            }
+
+            _allTimeslipsCount = count;
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loadingAll = false;
+        }
     }
 
     private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;

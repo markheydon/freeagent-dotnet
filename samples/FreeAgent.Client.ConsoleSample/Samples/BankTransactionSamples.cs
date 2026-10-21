@@ -26,6 +26,39 @@ internal sealed class BankTransactionSamples(SampleContext context) : IConsoleSa
         SampleOutput.WriteRows(
             page.Items,
             transaction => $"{transaction.ResourceId,8}  {transaction.DatedOn:yyyy-MM-dd}  {transaction.Amount,10}  {transaction.Description}");
+
+        if (page.HasNextPage)
+        {
+            Console.WriteLine();
+            Console.WriteLine("  (First page only. Use ListAutoPagingAsync to stream all pages.)");
+        }
+    }
+
+    [ConsoleSample(Name = "Stream all bank transactions", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task StreamAllBankTransactionsAsync(CancellationToken cancellationToken)
+    {
+        var bankAccountId = await GetFirstBankAccountIdAsync(cancellationToken);
+        if (bankAccountId is null)
+        {
+            return;
+        }
+
+        var count = 0;
+        await foreach (var transaction in context.Client.BankTransactions.ListAutoPagingAsync(
+                           bankAccountId: bankAccountId,
+                           cancellationToken: cancellationToken))
+        {
+            count++;
+            if (count <= 5)
+            {
+                Console.WriteLine(
+                    $"  {transaction.ResourceId,8}  {transaction.DatedOn:yyyy-MM-dd}  {transaction.Amount,10}  {transaction.Description}");
+            }
+        }
+
+        SampleOutput.WriteHeader("Streamed bank transactions via ListAutoPagingAsync");
+        Console.WriteLine($"  Total transactions streamed: {count}");
     }
 
     [ConsoleSample(Name = "List unexplained bank transactions")]

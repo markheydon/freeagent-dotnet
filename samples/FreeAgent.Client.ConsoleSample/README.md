@@ -122,9 +122,9 @@ Examples marked **(mutates)** write to the connected account.
 | Company | Get company profile; list business categories; list tax timeline |
 | Contacts | List active contacts; stream all contacts; get contact detail; **(mutates)** create probe contact and delete; **(mutates)** update contact organisation name |
 | Categories | List category sets; get category by nominal code; **(mutates)** create/update income category and delete; **(mutates)** create/update cost of sales category and delete; **(mutates)** create/update admin expenses category and delete; **(mutates)** create/update current asset category and delete; **(mutates)** create/update liabilities category and delete; **(mutates)** create/update equity category and delete |
-| Projects | List projects; list active projects; get project detail; list projects for contact; **(mutates)** create probe project and delete; **(mutates)** update project name |
-| Tasks | List tasks; list tasks for project; get task detail; **(mutates)** create probe task and delete; **(mutates)** update task name |
-| Timeslips | List timeslips; list unbilled timeslips; list timeslips for task; get timeslip detail; **(mutates)** create probe timeslip and delete; **(mutates)** create probe timeslips batch and delete; **(mutates)** update timeslip hours; **(mutates)** start and stop timeslip timer |
+| Projects | List projects; stream all projects via ListAutoPagingAsync; list active projects; get project detail; list projects for contact; **(mutates)** create probe project and delete; **(mutates)** update project name |
+| Tasks | List tasks; stream all tasks via ListAutoPagingAsync; list tasks for project; get task detail; **(mutates)** create probe task and delete; **(mutates)** update task name |
+| Timeslips | List timeslips; stream all timeslips via ListAutoPagingAsync; list unbilled timeslips; list timeslips for task; get timeslip detail; **(mutates)** create probe timeslip and delete; **(mutates)** create probe timeslips batch and delete; **(mutates)** update timeslip hours; **(mutates)** start and stop timeslip timer |
 | Notes | List contact notes; list project notes; get note detail; **(mutates)** create contact note; **(mutates)** create project note; **(mutates)** update note; **(mutates)** delete note |
 | Users | List users; get current user; get user by ID; **(mutates)** create probe user and delete; **(mutates)** update user last name; **(mutates)** update current user opening mileage |
 | Email addresses | List email addresses |
@@ -132,13 +132,13 @@ Examples marked **(mutates)** write to the connected account.
 | Estimates | List estimates; stream all estimates via ListAutoPagingAsync; list estimates filtered by contact; get estimate by id; **(mutates)** create probe estimate and delete; **(mutates)** update estimate comments; **(mutates)** mark estimate as sent/draft/approved/rejected; **(mutates)** send estimate email (template); **(mutates)** create/update/delete estimate item; **(mutates)** duplicate probe estimate and delete; **(mutates)** convert estimate to invoice; get estimate PDF; get estimate default additional text; **(mutates)** update/delete estimate default additional text |
 | Recurring invoices | List recurring invoices; stream all recurring invoices via ListAutoPagingAsync; list recurring invoices filtered by contact; get recurring invoice by id |
 | Credit notes | List credit notes; stream all credit notes via ListAutoPagingAsync; list credit notes filtered by contact; get credit note by id; **(mutates)** create probe credit note and delete; **(mutates)** update credit note comments; **(mutates)** mark credit note as sent/draft; get credit note PDF; **(mutates)** send credit note email (template) |
-| Bills | List bills; list bills filtered by contact; get bill by id; **(mutates)** create probe bill and delete; **(mutates)** create hire purchase probe bill and delete; **(mutates)** update bill line item |
+| Bills | List bills; stream all bills via ListAutoPagingAsync; list bills filtered by contact; get bill by id; **(mutates)** create probe bill and delete; **(mutates)** create hire purchase probe bill and delete; **(mutates)** update bill line item |
 | Hire purchases | List hire purchases; **(mutates)** get hire purchase detail with probe create and delete |
 | Expenses | List expenses; stream all expenses; list recent expenses; list expenses for project; get expense detail; get mileage settings; **(mutates)** create probe expense and delete; **(mutates)** create probe mileage expense and delete; **(mutates)** create probe expenses batch and delete; **(mutates)** update expense description and delete |
 | Attachments | Get attachment detail; **(mutates)** create expense with attachment, get and delete |
 | Capital assets | List capital assets; get capital asset detail with history |
 | Capital asset types | List capital asset types; **(mutates)** get capital asset type detail with probe create and delete; **(mutates)** update capital asset type name; **(mutates)** create probe capital asset type and delete |
-| Journal sets | List journal sets; get opening balances journal set; **(mutates)** get journal set detail with probe create and delete; **(mutates)** create probe journal set and delete |
+| Journal sets | List journal sets; get opening balances journal set; **(mutates)** get journal set detail with probe create and delete; **(mutates)** update probe journal set description and delete; **(mutates)** create probe journal set and delete |
 | Properties | List properties (skips when company is not `UkUnincorporatedLandlord`); **(mutates)** get property detail with probe create and delete; **(mutates)** update property address; **(mutates)** create probe property and delete |
 | Depreciation profiles | Deserialize straight line profile; deserialize reducing balance profile; build no depreciation purchase helper |
 | CIS bands | List CIS bands |
@@ -160,8 +160,8 @@ Examples marked **(mutates)** write to the connected account.
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
 | Bank accounts | List bank accounts; list standard accounts; get detail; create variants; update and delete (sandbox) |
 | Bank feeds | List bank feeds; get bank feed detail |
-| Bank transaction explanations | List explanations for a bank account; get explanation by id; **(mutates)** create category explanation with new transaction and delete |
-| Bank transactions | List bank transactions; list unexplained transactions; get detail; **(mutates)** upload a statement line and delete; **(mutates)** upload a statement file and delete |
+| Bank transaction explanations | List explanations; get by id; **(mutates)** create/delete probes for each documented create variant; **(mutates)** update explanation and delete; **(mutates)** create category explanation with new transaction and delete |
+| Bank transactions | List bank transactions; stream all bank transactions via ListAutoPagingAsync; list unexplained transactions; get detail; **(mutates)** upload a statement line and delete; **(mutates)** upload a statement file and delete |
 | Stock items | List stock items; get stock item detail |
 | Price list items | List price list items; **(mutates)** get price list item detail with probe create and delete; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |
 | Linked resources | **(mutates)** verify linked-resource writes (create, update) — sandbox PUT round-trip checks for issue #134 |

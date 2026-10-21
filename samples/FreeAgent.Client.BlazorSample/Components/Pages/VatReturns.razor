@@ -9,7 +9,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="VAT returns"
-                         CallUnderTest="VatReturnsService.ListAsync() / GetAsync(periodEndsOn)"
+                         CallUnderTest="VatReturnsService.ListAsync() / GetVatReturnAsync(periodEndsOn)"
                          Description="List VAT return periods and fetch detail (including breakdown) for a period end date."
                          EndpointPath="/v2/vat_returns"
                          DocsUrl="https://dev.freeagent.com/docs/vat_returns" />
@@ -107,7 +107,7 @@
         var period = _selectedPeriodEndsOn.Value;
         await RunAsync(async client =>
         {
-            _detail = await client.VatReturns.GetAsync(period);
+            _detail = await client.VatReturns.GetVatReturnAsync(period);
             _probeHeading = "VatReturn detail fields";
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 TokenStore.GetToken()!.AccessToken,

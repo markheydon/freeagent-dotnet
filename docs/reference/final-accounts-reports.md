@@ -24,10 +24,10 @@ Task<IReadOnlyList<FinalAccountsReport>> ListAsync(CancellationToken cancellatio
 
 **HTTP:** `GET /v2/final_accounts_reports`
 
-### GetAsync
+### GetFinalAccountsReportAsync
 
 ```csharp
-Task<FinalAccountsReport> GetAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
+Task<FinalAccountsReport> GetFinalAccountsReportAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `GET /v2/final_accounts_reports/:period_ends_on`

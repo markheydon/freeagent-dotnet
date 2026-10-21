@@ -113,14 +113,33 @@ When creating or updating contacts, read-only API fields (`url`, balances, manda
 |---|---|
 | `place_of_supply` as `string?` on invoices, estimates, credit notes, recurring invoices, bank explanations | `EcMossPlaceOfSupply?` |
 | Expense / bill item `SalesTaxRate` as `decimal?` | `PurchaseSalesTaxRate?` (`PurchaseSalesTaxRate.Auto` or `FromPercentage`) |
-| (none) | `client.EcMoss.GetSalesTaxRatesAsync` |
+| (none) | `client.EcMoss.ListSalesTaxRatesAsync` |
 
 MOSS creates/updates throw `ArgumentException` when `ec_status` is `EC VAT MOSS` but required fields are missing (see [EC VAT MOSS sales tax rates](../reference/ec-moss-sales-tax-rates.md)).
 
 ## Additive API changes
 
 - **Attachments:** `client.Attachments` (`GetAttachmentAsync`, `DeleteAttachmentAsync`) — see [Attachments reference](../reference/attachments.md).
-- **EC VAT MOSS:** `client.EcMoss.GetSalesTaxRatesAsync` — see [EC VAT MOSS sales tax rates](../reference/ec-moss-sales-tax-rates.md).
+- **EC VAT MOSS:** `client.EcMoss.ListSalesTaxRatesAsync` — see [EC VAT MOSS sales tax rates](../reference/ec-moss-sales-tax-rates.md).
+
+### Goals review (list and read naming)
+
+Collection reads and generic report `GetAsync` names were aligned with [ADR-0012](../../adr/adr-0012-list-api-naming.md):
+
+| Before | After |
+|---|---|
+| `client.EcMoss.GetSalesTaxRatesAsync` | `client.EcMoss.ListSalesTaxRatesAsync` |
+| `client.TrialBalance.GetSummaryAsync` | `client.TrialBalance.ListSummaryAsync` |
+| `client.TrialBalance.GetOpeningBalancesAsync` | `client.TrialBalance.ListOpeningBalancesAsync` |
+| `client.BalanceSheet.GetAsync` | `client.BalanceSheet.GetBalanceSheetAsync` |
+| `client.Cashflow.GetAsync` | `client.Cashflow.GetCashflowAsync` |
+| `client.VatReturns.GetAsync` | `client.VatReturns.GetVatReturnAsync` |
+| `client.CorporationTaxReturns.GetAsync` | `client.CorporationTaxReturns.GetCorporationTaxReturnAsync` |
+| `client.FinalAccountsReports.GetAsync` | `client.FinalAccountsReports.GetFinalAccountsReportAsync` |
+| `client.IncomeTaxReturns.GetAsync` | `client.IncomeTaxReturns.GetIncomeTaxReturnAsync` |
+| `client.SelfAssessmentReturns.GetAsync` | `client.SelfAssessmentReturns.GetSelfAssessmentReturnAsync` |
+
+`ProfitAndLossService.GetSummaryAsync`, `BalanceSheetService.GetOpeningBalancesAsync`, and `JournalSetsService.GetOpeningBalancesAsync` are unchanged (single-resource reads, not collections).
 
 ## Stable releases
 

@@ -38,7 +38,7 @@ internal sealed class VatReturnsSamples(SampleContext context) : IConsoleSampleP
         var periodEndsOn = returns[0].PeriodEndsOn
             ?? throw new InvalidOperationException("Listed VAT return is missing period_ends_on.");
 
-        var detail = await context.Client.VatReturns.GetAsync(periodEndsOn, cancellationToken);
+        var detail = await context.Client.VatReturns.GetVatReturnAsync(periodEndsOn, cancellationToken);
 
         SampleOutput.WriteHeader("VAT return detail");
         SampleOutput.WriteField("Period ends", detail.PeriodEndsOn);

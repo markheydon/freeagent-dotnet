@@ -51,7 +51,7 @@ public sealed class IncomeTaxReturnsService
     /// <param name="periodEndsOn">Period end date used in the API path.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Income tax return returned by FreeAgent</returns>
-    public async Task<IncomeTaxReturn> GetAsync(
+    public async Task<IncomeTaxReturn> GetIncomeTaxReturnAsync(
         long userId,
         DateOnly periodEndsOn,
         CancellationToken cancellationToken = default)

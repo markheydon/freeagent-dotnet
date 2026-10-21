@@ -12,7 +12,7 @@ internal sealed class TrialBalanceSamples(SampleContext context) : IConsoleSampl
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task GetTrialBalanceSummaryAsync(CancellationToken cancellationToken)
     {
-        var lines = await context.Client.TrialBalance.GetSummaryAsync(cancellationToken: cancellationToken);
+        var lines = await context.Client.TrialBalance.ListSummaryAsync(cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader("Trial balance summary");
         SampleOutput.WriteField("Line count", lines.Count);
@@ -27,7 +27,7 @@ internal sealed class TrialBalanceSamples(SampleContext context) : IConsoleSampl
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task GetTrialBalanceOpeningBalancesAsync(CancellationToken cancellationToken)
     {
-        var lines = await context.Client.TrialBalance.GetOpeningBalancesAsync(cancellationToken);
+        var lines = await context.Client.TrialBalance.ListOpeningBalancesAsync(cancellationToken);
 
         SampleOutput.WriteHeader("Trial balance opening balances");
         SampleOutput.WriteField("Line count", lines.Count);

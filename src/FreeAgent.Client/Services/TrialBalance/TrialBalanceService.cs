@@ -25,7 +25,7 @@ public sealed class TrialBalanceService
     /// <param name="toDate">Optional end date (<c>to_date</c> query parameter).</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Trial balance summary lines returned by FreeAgent</returns>
-    public async Task<IReadOnlyList<TrialBalanceLine>> GetSummaryAsync(
+    public async Task<IReadOnlyList<TrialBalanceLine>> ListSummaryAsync(
         DateOnly? fromDate = null,
         DateOnly? toDate = null,
         CancellationToken cancellationToken = default)
@@ -65,7 +65,7 @@ public sealed class TrialBalanceService
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Opening balance trial balance lines returned by FreeAgent</returns>
-    public async Task<IReadOnlyList<TrialBalanceLine>> GetOpeningBalancesAsync(CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TrialBalanceLine>> ListOpeningBalancesAsync(CancellationToken cancellationToken = default)
     {
         var response = await _requestClient.GetAsync<TrialBalanceSummaryResponse>(
             "accounting/trial_balance/summary/opening_balances",

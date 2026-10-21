@@ -9,7 +9,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="Final accounts report detail and transitions"
-                         CallUnderTest="FinalAccountsReportsService.GetAsync / MarkAsFiledAsync / MarkAsUnfiledAsync"
+                         CallUnderTest="FinalAccountsReportsService.GetFinalAccountsReportAsync / MarkAsFiledAsync / MarkAsUnfiledAsync"
                          Description="Fetch a report by period end date and exercise mark-as filed/unfiled transitions. Mutations change live sandbox data."
                          EndpointPath="/v2/final_accounts_reports/:period_ends_on"
                          DocsUrl="https://dev.freeagent.com/docs/final_accounts_reports" />
@@ -109,7 +109,7 @@
     private async Task GetAsync() => await RunMutationAsync(
         async client =>
         {
-            _report = await client.FinalAccountsReports.GetAsync(_periodEndsOn!.Value);
+            _report = await client.FinalAccountsReports.GetFinalAccountsReportAsync(_periodEndsOn!.Value);
             _operationMessage = "Loaded final accounts report from GET.";
         });
 

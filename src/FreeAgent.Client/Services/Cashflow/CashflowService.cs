@@ -27,7 +27,7 @@ public sealed class CashflowService
     /// <param name="toDate">End date (<c>to_date</c> query parameter).</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Cashflow summary returned by FreeAgent</returns>
-    public async Task<CashflowModel> GetAsync(
+    public async Task<CashflowModel> GetCashflowAsync(
         DateOnly fromDate,
         DateOnly toDate,
         CancellationToken cancellationToken = default)

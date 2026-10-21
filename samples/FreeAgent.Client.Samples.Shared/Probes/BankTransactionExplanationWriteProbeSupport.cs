@@ -1,4 +1,6 @@
-namespace FreeAgent.Client.BlazorSample.Services;
+using FreeAgent.Client;
+
+namespace FreeAgent.Client.Samples.Shared.Probes;
 
 /// <summary>
 /// Documented bank transaction explanation create variants exposed by the SDK for sample probing.

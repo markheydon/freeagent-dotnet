@@ -24,10 +24,10 @@ Task<IReadOnlyList<CorporationTaxReturn>> ListAsync(CancellationToken cancellati
 
 **HTTP:** `GET /v2/corporation_tax_returns`
 
-### GetAsync
+### GetCorporationTaxReturnAsync
 
 ```csharp
-Task<CorporationTaxReturn> GetAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
+Task<CorporationTaxReturn> GetCorporationTaxReturnAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `GET /v2/corporation_tax_returns/:period_ends_on`

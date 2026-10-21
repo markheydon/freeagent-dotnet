@@ -24,10 +24,10 @@ Task<IReadOnlyList<VatReturn>> ListAsync(CancellationToken cancellationToken = d
 
 **HTTP:** `GET /v2/vat_returns`
 
-### GetAsync
+### GetVatReturnAsync
 
 ```csharp
-Task<VatReturn> GetAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
+Task<VatReturn> GetVatReturnAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `GET /v2/vat_returns/:period_ends_on`

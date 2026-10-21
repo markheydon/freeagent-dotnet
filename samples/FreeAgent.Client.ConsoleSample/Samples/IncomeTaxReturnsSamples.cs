@@ -48,7 +48,7 @@ internal sealed class IncomeTaxReturnsSamples(SampleContext context) : IConsoleS
         var periodEndsOn = returns[0].PeriodEndsOn
             ?? throw new InvalidOperationException("Listed income tax return is missing period_ends_on.");
 
-        var detail = await context.Client.IncomeTaxReturns.GetAsync(userId, periodEndsOn, cancellationToken);
+        var detail = await context.Client.IncomeTaxReturns.GetIncomeTaxReturnAsync(userId, periodEndsOn, cancellationToken);
 
         SampleOutput.WriteHeader("Income tax return detail");
         SampleOutput.WriteField("Period ends", detail.PeriodEndsOn);
@@ -150,7 +150,7 @@ internal sealed class IncomeTaxReturnsSamples(SampleContext context) : IConsoleS
         DateOnly periodEndsOn,
         CancellationToken cancellationToken)
     {
-        var detail = await context.Client.IncomeTaxReturns.GetAsync(userId, periodEndsOn, cancellationToken);
+        var detail = await context.Client.IncomeTaxReturns.GetIncomeTaxReturnAsync(userId, periodEndsOn, cancellationToken);
         var payment = detail.Payments?
             .FirstOrDefault(p => p.DueOn is not null && p.Status is IncomeTaxReturnPaymentStatus.Unpaid);
 

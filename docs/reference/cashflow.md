@@ -16,10 +16,10 @@ Read historic cashflow for a date range.
 
 ## Methods
 
-### GetAsync
+### GetCashflowAsync
 
 ```csharp
-Task<Cashflow> GetAsync(
+Task<Cashflow> GetCashflowAsync(
     DateOnly fromDate,
     DateOnly toDate,
     CancellationToken cancellationToken = default)

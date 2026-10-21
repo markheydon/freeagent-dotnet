@@ -26,7 +26,7 @@ public sealed class BalanceSheetService
     /// <param name="asAtDate">Optional as-at date (<c>as_at_date</c> query parameter).</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Balance sheet returned by FreeAgent</returns>
-    public async Task<BalanceSheetModel> GetAsync(
+    public async Task<BalanceSheetModel> GetBalanceSheetAsync(
         DateOnly? asAtDate = null,
         CancellationToken cancellationToken = default)
     {

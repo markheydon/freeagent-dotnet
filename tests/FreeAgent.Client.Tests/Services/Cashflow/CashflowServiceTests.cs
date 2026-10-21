@@ -35,7 +35,7 @@ public class CashflowServiceTests
         });
 
         var service = CreateService(handler);
-        var cashflow = await service.GetAsync(new DateOnly(2019, 7, 1), new DateOnly(2019, 9, 30));
+        var cashflow = await service.GetCashflowAsync(new DateOnly(2019, 7, 1), new DateOnly(2019, 9, 30));
 
         Assert.Equal(12593.21m, cashflow.Balance);
     }
@@ -51,7 +51,7 @@ public class CashflowServiceTests
         var service = CreateService(handler);
 
         var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() =>
-            service.GetAsync(new DateOnly(2019, 1, 1), new DateOnly(2019, 1, 31)));
+            service.GetCashflowAsync(new DateOnly(2019, 1, 1), new DateOnly(2019, 1, 31)));
 
         Assert.Contains("Cashflow", exception.Message, StringComparison.Ordinal);
     }

@@ -62,7 +62,7 @@ public class FinalAccountsReportsServiceTests
         });
 
         var service = CreateService(handler);
-        var report = await service.GetAsync(new DateOnly(2022, 12, 31));
+        var report = await service.GetFinalAccountsReportAsync(new DateOnly(2022, 12, 31));
 
         Assert.Equal(FinalAccountsReportFilingStatus.Pending, report.FilingStatus);
     }

@@ -16,10 +16,10 @@ Look up MOSS sales tax rate bands for an EU place-of-supply country and transact
 
 ## Methods
 
-### GetSalesTaxRatesAsync
+### ListSalesTaxRatesAsync
 
 ```csharp
-Task<IReadOnlyList<EcMossSalesTaxRate>> GetSalesTaxRatesAsync(
+Task<IReadOnlyList<EcMossSalesTaxRate>> ListSalesTaxRatesAsync(
     EcMossPlaceOfSupply country,
     DateOnly date,
     CancellationToken cancellationToken = default)
@@ -44,4 +44,4 @@ When `ec_status` is `EC VAT MOSS`:
 - **Invoices, estimates, credit notes** — `place_of_supply` (`EcMossPlaceOfSupply`) is required on create and update (validated by the SDK before HTTP).
 - **Bank transaction explanations** — `place_of_supply` and `sales_tax_rate` are required on create and update when MOSS applies.
 
-Use `GetSalesTaxRatesAsync` with the same country and transaction date to choose a `sales_tax_rate` for bank explanations (and to inform invoice line rates).
+Use `ListSalesTaxRatesAsync` with the same country and transaction date to choose a `sales_tax_rate` for bank explanations (and to inform invoice line rates).

@@ -10,7 +10,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="Balance sheet"
-                         CallUnderTest="BalanceSheetService.GetAsync(...) / GetOpeningBalancesAsync()"
+                         CallUnderTest="BalanceSheetService.GetBalanceSheetAsync(...) / GetOpeningBalancesAsync()"
                          Description="Load balance sheet figures as at a date, or opening balances for the opening balances period."
                          EndpointPath="/v2/accounting/balance_sheet"
                          DocsUrl="https://dev.freeagent.com/docs/balance_sheet" />
@@ -112,7 +112,7 @@
         var asAt = _asAtDate is null ? (DateOnly?)null : DateOnly.FromDateTime(_asAtDate.Value);
         await LoadAsync(
             Operation.BalanceSheet,
-            async client => await client.BalanceSheet.GetAsync(asAt),
+            async client => await client.BalanceSheet.GetBalanceSheetAsync(asAt),
             asAt is null
                 ? "accounting/balance_sheet"
                 : $"accounting/balance_sheet?as_at_date={asAt.Value:yyyy-MM-dd}");
