@@ -118,6 +118,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/attachments/detail](https://localhost:5001/attachments/detail) | `AttachmentsService.GetAttachmentAsync()`, `DeleteAttachmentAsync()` | GET and DELETE probes, resolve ID from expense, `?id=` deep links, progress bar |
 | [/hire-purchases](https://localhost:5001/hire-purchases) | `HirePurchasesService.ListAsync()` | Per-row mapping inspection, read-only list (UK hire purchase bills) |
 | [/hire-purchases/detail](https://localhost:5001/hire-purchases/detail) | `HirePurchasesService.GetHirePurchaseAsync()` | GET probe, `?id=` deep links, progress bar |
+| [/capital-assets](https://localhost:5001/capital-assets) | `CapitalAssetsService.ListAsync()` | Per-row mapping inspection, view and `include_history` filters |
+| [/capital-assets/detail](https://localhost:5001/capital-assets/detail) | `CapitalAssetsService.GetCapitalAssetAsync()` | GET probe, optional history, `?id=` deep links, progress bar |
 | [/expenses](https://localhost:5001/expenses) | `ExpenseService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view and project filters |
 | [/expenses/detail](https://localhost:5001/expenses/detail) | `GetExpenseAsync()`, `CreateExpenseAsync()`, `CreateExpensesAsync()`, `UpdateExpenseAsync()`, `DeleteExpenseAsync()`, `GetMileageSettingsAsync()` | CRUD probes, category and mileage variants, batch create, progress bar |
 | [/bank-accounts](https://localhost:5001/bank-accounts) | `BankAccountsService.ListAsync()` | Per-row mapping inspection, view filter |

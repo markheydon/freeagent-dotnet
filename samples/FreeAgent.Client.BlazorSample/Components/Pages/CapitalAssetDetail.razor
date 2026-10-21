@@ -1,0 +1,187 @@
+@page "/capital-assets/detail"
+@using FreeAgent.Client
+@using FreeAgent.Client.Models.CapitalAssets
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Capital asset detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Capital assets endpoint"
+                         Title="Get a single capital asset"
+                         CallUnderTest="CapitalAssetsService.GetCapitalAssetAsync"
+                         Description="Read-only detail probe for a single capital asset with optional lifecycle history."
+                         EndpointPath="/v2/capital_assets/:id?include_history={optional}"
+                         DocsUrl="https://dev.freeagent.com/docs/capital_assets" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a capital asset ID from the <MudLink Href="/capital-assets">capital assets list</MudLink>, or pass <code>?id=12345</code> in the URL.
+                    </MudText>
+                    <MudNumericField @bind-Value="_capitalAssetId" @bind-Value:after="OnCapitalAssetIdChanged" Label="Capital asset ID" Min="1" />
+                    <MudCheckBox @bind-Value="_includeHistory" Label="include_history=true" Color="Color.Primary" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _capitalAssetId is null or < 1"
+                               StartIcon="@Icons.Material.Filled.CloudDownload"
+                               OnClick="GetCapitalAssetAsync">Get capital asset</MudButton>
+                </MudStack>
+
+                @if (_probe is not null && _capitalAsset is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All CapitalAsset model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_capitalAsset.ResourceId</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Description</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_capitalAsset.Description)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Asset type</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_capitalAsset.AssetType)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Purchased on</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_capitalAsset.PurchasedOn?.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">History events</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_capitalAsset.CapitalAssetHistory?.Count.ToString() ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Run <strong>Get capital asset</strong> to load diagnostics.</MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? CapitalAssetIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private long? _capitalAssetId;
+    private bool _includeHistory;
+    private CapitalAsset? _capitalAsset;
+    private ModelProbeSnapshot? _probe;
+
+    protected override void OnParametersSet()
+    {
+        if (CapitalAssetIdFromQuery is > 0)
+        {
+            _capitalAssetId = CapitalAssetIdFromQuery;
+        }
+    }
+
+    private void OnCapitalAssetIdChanged()
+    {
+        _capitalAsset = null;
+        _probe = null;
+        _error = null;
+    }
+
+    private async Task GetCapitalAssetAsync()
+    {
+        if (_capitalAssetId is null or < 1)
+        {
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+        _capitalAsset = null;
+        _probe = null;
+
+        var diagnosticsEndpoint = _includeHistory
+            ? $"capital_assets/{_capitalAssetId}?include_history=true"
+            : $"capital_assets/{_capitalAssetId}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _capitalAsset = await client.CapitalAssets.GetCapitalAssetAsync(
+                _capitalAssetId.Value,
+                _includeHistory ? new CapitalAssetGetOptions { IncludeHistory = true } : null);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+
+            _probe = ModelWireDiagnostics.Build(_capitalAsset, _wireApiResponse, envelopeProperty: "capital_asset");
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

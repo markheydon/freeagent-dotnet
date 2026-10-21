@@ -16,7 +16,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - Rate limiting and bounded retries for transient failures
 - Typed exception model (`FreeAgentApiException`, `FreeAgentRateLimitException`, …)
 - Pagination (single-page and auto-pagination)
-- Company, Contacts, Categories, Users, Projects, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Stock items, Price list items, Profit and loss, Balance sheet, Trial balance, Cashflow, Transactions, VAT returns, Corporation tax returns, Sales tax periods, EC VAT MOSS sales tax rates, Tasks, Timeslips, Notes, and Email addresses API support
+- Company, Contacts, Categories, Users, Projects, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Stock items, Price list items, Capital assets, Profit and loss, Balance sheet, Trial balance, Cashflow, Transactions, VAT returns, Corporation tax returns, Sales tax periods, EC VAT MOSS sales tax rates, Tasks, Timeslips, Notes, and Email addresses API support
 - Targets .NET 8.0 and .NET 10.0
 - Fully async/await with XML documentation
 

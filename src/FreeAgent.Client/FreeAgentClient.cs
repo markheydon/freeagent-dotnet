@@ -6,6 +6,7 @@ using FreeAgent.Client.Services.BankFeeds;
 using FreeAgent.Client.Services.BankTransactionExplanations;
 using FreeAgent.Client.Services.BankTransactions;
 using FreeAgent.Client.Services.Bills;
+using FreeAgent.Client.Services.CapitalAssets;
 using FreeAgent.Client.Services.CapitalAssetTypes;
 using FreeAgent.Client.Services.Cashflow;
 using FreeAgent.Client.Services.Categories;
@@ -170,6 +171,11 @@ public sealed class FreeAgentClient : IDisposable
     public PriceListItemsService PriceListItems { get; }
 
     /// <summary>
+    /// Capital assets API service.
+    /// </summary>
+    public CapitalAssetsService CapitalAssets { get; }
+
+    /// <summary>
     /// Capital asset types API service.
     /// </summary>
     public CapitalAssetTypesService CapitalAssetTypes { get; }
@@ -325,6 +331,7 @@ public sealed class FreeAgentClient : IDisposable
         CreditNoteReconciliations = new CreditNoteReconciliationsService(_httpClient);
         StockItems = new StockItemsService(_httpClient);
         PriceListItems = new PriceListItemsService(_httpClient);
+        CapitalAssets = new CapitalAssetsService(_httpClient);
         CapitalAssetTypes = new CapitalAssetTypesService(_httpClient);
         CisBands = new CisBandsService(_httpClient);
         CisSettings = new CisSettingsService(_httpClient);

@@ -215,6 +215,12 @@
             </MudNavGroup>
 
             <MudNavGroup Title="Assets and journals" Icon="@Icons.Material.Filled.AccountBalanceWallet" Expanded="@IsAssetsAndJournalsRoute">
+                <MudNavLink Href="/capital-assets" Icon="@Icons.Material.Filled.AllInclusive">
+                    Capital assets list
+                </MudNavLink>
+                <MudNavLink Href="/capital-assets/detail" Icon="@Icons.Material.Filled.Visibility">
+                    Capital asset detail
+                </MudNavLink>
                 <MudNavLink Href="/capital-asset-types" Icon="@Icons.Material.Filled.AllInclusive">
                     Capital asset types list
                 </MudNavLink>
@@ -473,7 +479,9 @@
         || CurrentPath.StartsWith("bank-transaction-explanations/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsAssetsAndJournalsRoute =>
-        CurrentPath.Equals("capital-asset-types", StringComparison.OrdinalIgnoreCase)
+        CurrentPath.Equals("capital-assets", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("capital-assets/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("capital-asset-types", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("capital-asset-types/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("depreciation-profiles", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("cis-bands", StringComparison.OrdinalIgnoreCase)
