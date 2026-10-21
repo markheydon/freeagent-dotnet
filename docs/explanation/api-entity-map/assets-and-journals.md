@@ -87,7 +87,7 @@ Opening balances journal set also embeds `bank_accounts` and `stock_items` array
 
 ### Property
 
-Only for companies of type `UkUnincorporatedLandlord`. Referenced optionally on invoices, expenses, bank explanations, and journal entries in that context.
+Only for companies of type `UkUnincorporatedLandlord`. Referenced optionally on invoices, expenses, bank explanations, and journal entries in that context. REST CRUD is [`client.Properties`](../../reference/properties.md); linked writes use `PropertyReference` / `client.Urls.Property(id)`.
 
 ### User payroll profile
 

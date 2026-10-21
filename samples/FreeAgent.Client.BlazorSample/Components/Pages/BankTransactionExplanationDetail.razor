@@ -100,7 +100,11 @@
                             <MudTextField @bind-Value="_categoryNominalCode" Label="Category nominal code" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4">
-                            <MudTextField @bind-Value="_propertyUri" Label="Property URI (landlord)" />
+                            <MudStack Spacing="1">
+                                <MudTextField @bind-Value="_propertyUri" Label="Property URI (landlord)" />
+                                <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Disabled="_loading"
+                                           OnClick="LoadFirstPropertyUriAsync">Fill URI from first property (Properties API)</MudButton>
+                            </MudStack>
                         </MudItem>
                         <MudItem xs="12">
                             <MudTextField @bind-Value="_updateDescription" Label="Description (update probe)" Lines="2" />
@@ -221,6 +225,45 @@
         if (BankAccountIdFromQuery is > 0 && _bankAccountId != BankAccountIdFromQuery)
         {
             _bankAccountId = BankAccountIdFromQuery;
+        }
+    }
+
+    private async System.Threading.Tasks.Task LoadFirstPropertyUriAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var properties = await client.Properties.ListAsync();
+            if (properties.Count == 0)
+            {
+                _error = "No properties returned. Connect a UkUnincorporatedLandlord company or create a property first.";
+                return;
+            }
+
+            _propertyUri = properties[0].Url;
+            _operationMessage = $"Property URI set from property {properties[0].ResourceId}.";
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
         }
     }
 

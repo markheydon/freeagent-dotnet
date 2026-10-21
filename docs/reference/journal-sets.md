@@ -142,5 +142,5 @@ Not validated locally (depends on category type or company settings; FreeAgent r
 - **User categories** — `user` required per docs, but which nominal codes are user categories is account-specific.
 - **Stock categories** — `stock_item` and `stock_altering_quantity` required per docs, but stock categories are not identified by a documented code range on the journal sets page.
 - **Opening balance contact** — `contact` for Trade Debtors (681) or Trade Creditors (796) only in the opening balances journal set.
-- **Landlord property** — `property` for UK unincorporated landlord profit and loss categories.
+- **Landlord property** — `property` for UK unincorporated landlord profit and loss categories. List and create properties via [`client.Properties`](properties.md); journal entry writes use `PropertyId` on `JournalEntry`.
 - **Balancing debits** — journal sets must balance; that is enforced by FreeAgent, not pre-checked in the client.

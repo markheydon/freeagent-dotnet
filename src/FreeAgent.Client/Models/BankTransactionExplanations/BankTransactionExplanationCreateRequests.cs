@@ -1,6 +1,8 @@
+using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.DepreciationProfiles;
 using FreeAgent.Client.Models.EcMoss;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.BankTransactionExplanations;
 
@@ -484,6 +486,36 @@ public sealed class CreateLandlordPropertyBankTransactionExplanationRequest : Ba
             GrossValue = grossValue,
             Description = description
         };
+    }
+
+    /// <summary>
+    /// Creates a landlord property-linked explanation using a property identifier.
+    /// </summary>
+    /// <param name="bankTransactionId">Bank transaction identifier.</param>
+    /// <param name="categoryNominalCode">Landlord profit and loss category nominal code.</param>
+    /// <param name="propertyId">Property identifier (equivalent to <c>client.Urls.Property(propertyId)</c>).</param>
+    /// <param name="environment">Target API environment for URI construction.</param>
+    /// <param name="datedOn">Accounting date.</param>
+    /// <param name="grossValue">Gross value (negative for money out).</param>
+    /// <param name="description">Optional description.</param>
+    public static CreateLandlordPropertyBankTransactionExplanationRequest Create(
+        long bankTransactionId,
+        string categoryNominalCode,
+        long propertyId,
+        FreeAgentEnvironment environment,
+        DateOnly datedOn,
+        decimal grossValue,
+        string? description = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(propertyId);
+
+        return Create(
+            bankTransactionId,
+            categoryNominalCode,
+            PropertyReference.ForEnvironment(environment, propertyId).Uri,
+            datedOn,
+            grossValue,
+            description);
     }
 }
 
