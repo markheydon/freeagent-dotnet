@@ -30,6 +30,7 @@ For how resources relate to each other and a suggested implementation order, see
 | [CIS bands](cis-bands.md) | `client.CisBands` | [CIS bands](https://dev.freeagent.com/docs/cis_bands) |
 | [CIS settings](cis-settings.md) | `client.CisSettings` | [CIS settings](https://dev.freeagent.com/docs/cis_settings) |
 | [Profit and loss](profit-and-loss.md) | `client.ProfitAndLoss` | [Profit and loss](https://dev.freeagent.com/docs/profit_and_loss) |
+| [Balance sheet](balance-sheet.md) | `client.BalanceSheet` | [Balance sheet](https://dev.freeagent.com/docs/balance_sheet) |
 | [Depreciation profiles](depreciation-profiles.md) | `CapitalAssetPurchaseWrite` / `DepreciationProfile` | [Depreciation profiles](https://dev.freeagent.com/docs/depreciation_profiles) |
 | [Bank accounts](bank-accounts.md) | `client.BankAccounts` | [Bank accounts](https://dev.freeagent.com/docs/bank_accounts) |
 | [Bank feeds](bank-feeds.md) | `client.BankFeeds` | [Bank feeds](https://dev.freeagent.com/docs/bank_feeds) |

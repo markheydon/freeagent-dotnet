@@ -1,5 +1,6 @@
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Services.Attachments;
+using FreeAgent.Client.Services.BalanceSheet;
 using FreeAgent.Client.Services.BankAccounts;
 using FreeAgent.Client.Services.BankFeeds;
 using FreeAgent.Client.Services.BankTransactionExplanations;
@@ -179,6 +180,11 @@ public sealed class FreeAgentClient : IDisposable
     public ProfitAndLossService ProfitAndLoss { get; }
 
     /// <summary>
+    /// Balance sheet report API service.
+    /// </summary>
+    public BalanceSheetService BalanceSheet { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -263,6 +269,7 @@ public sealed class FreeAgentClient : IDisposable
         CisBands = new CisBandsService(_httpClient);
         CisSettings = new CisSettingsService(_httpClient);
         ProfitAndLoss = new ProfitAndLossService(_httpClient);
+        BalanceSheet = new BalanceSheetService(_httpClient);
     }
 
     /// <summary>
