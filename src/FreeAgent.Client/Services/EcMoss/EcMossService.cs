@@ -25,7 +25,7 @@ public sealed class EcMossService
     /// <param name="date">Transaction date.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>MOSS sales tax rate bands for the country and date.</returns>
-    public async Task<IReadOnlyList<EcMossSalesTaxRate>> GetSalesTaxRatesAsync(
+    public async Task<IReadOnlyList<EcMossSalesTaxRate>> ListSalesTaxRatesAsync(
         EcMossPlaceOfSupply country,
         DateOnly date,
         CancellationToken cancellationToken = default)

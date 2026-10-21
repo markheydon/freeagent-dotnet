@@ -63,7 +63,7 @@ public class CorporationTaxReturnsServiceTests
         });
 
         var service = CreateService(handler);
-        var corporationTaxReturn = await service.GetAsync(new DateOnly(2022, 12, 31));
+        var corporationTaxReturn = await service.GetCorporationTaxReturnAsync(new DateOnly(2022, 12, 31));
 
         Assert.Equal(2724.03m, corporationTaxReturn.AmountDue);
         Assert.Equal(CorporationTaxReturnPaymentStatus.Unpaid, corporationTaxReturn.PaymentStatus);

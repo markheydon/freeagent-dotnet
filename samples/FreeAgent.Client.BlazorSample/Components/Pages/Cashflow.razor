@@ -10,7 +10,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="Cashflow summary"
-                         CallUnderTest="CashflowService.GetAsync(fromDate, toDate)"
+                         CallUnderTest="CashflowService.GetCashflowAsync(fromDate, toDate)"
                          Description="Load historic cashflow for a date range (both dates required)."
                          EndpointPath="/v2/cashflow"
                          DocsUrl="https://dev.freeagent.com/docs/cashflow" />
@@ -98,7 +98,7 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _cashflow = await client.Cashflow.GetAsync(from, to);
+            _cashflow = await client.Cashflow.GetCashflowAsync(from, to);
 
             var endpoint = $"cashflow?from_date={from:yyyy-MM-dd}&to_date={to:yyyy-MM-dd}";
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(

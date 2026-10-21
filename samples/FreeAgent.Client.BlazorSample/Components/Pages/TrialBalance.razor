@@ -9,7 +9,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="Trial balance summary"
-                         CallUnderTest="TrialBalanceService.GetSummaryAsync(...) / GetOpeningBalancesAsync()"
+                         CallUnderTest="TrialBalanceService.ListSummaryAsync(...) / ListOpeningBalancesAsync()"
                          Description="Load trial balance summary lines for optional date filters, or opening balances."
                          EndpointPath="/v2/accounting/trial_balance/summary"
                          DocsUrl="https://dev.freeagent.com/docs/trial_balance" />
@@ -88,14 +88,14 @@
         var from = _fromDate is null ? (DateOnly?)null : DateOnly.FromDateTime(_fromDate.Value);
         var to = _toDate is null ? (DateOnly?)null : DateOnly.FromDateTime(_toDate.Value);
         await LoadAsync(
-            async client => await client.TrialBalance.GetSummaryAsync(from, to),
+            async client => await client.TrialBalance.ListSummaryAsync(from, to),
             BuildDiagnosticsEndpoint(from, to, openingBalances: false));
     }
 
     private async Task LoadOpeningBalancesAsync()
     {
         await LoadAsync(
-            client => client.TrialBalance.GetOpeningBalancesAsync(),
+            client => client.TrialBalance.ListOpeningBalancesAsync(),
             "accounting/trial_balance/summary/opening_balances");
     }
 

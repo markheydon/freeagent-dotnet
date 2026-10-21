@@ -31,7 +31,7 @@ public class BalanceSheetServiceTests
         });
 
         var service = CreateService(handler);
-        var sheet = await service.GetAsync();
+        var sheet = await service.GetBalanceSheetAsync();
 
         Assert.Equal("GBP", sheet.Currency);
         Assert.Equal(100, sheet.TotalAssets);
@@ -53,7 +53,7 @@ public class BalanceSheetServiceTests
         });
 
         var service = CreateService(handler);
-        await service.GetAsync(asAtDate: new DateOnly(2023, 9, 30));
+        await service.GetBalanceSheetAsync(asAtDate: new DateOnly(2023, 9, 30));
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class BalanceSheetServiceTests
 
         var service = CreateService(handler);
 
-        var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetAsync());
+        var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetBalanceSheetAsync());
         Assert.Contains("Balance sheet", exception.Message, StringComparison.Ordinal);
     }
 

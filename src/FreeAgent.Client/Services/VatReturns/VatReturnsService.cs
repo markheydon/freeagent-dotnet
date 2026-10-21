@@ -41,7 +41,7 @@ public sealed class VatReturnsService
     /// <param name="periodEndsOn">Period end date used in the API path.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>VAT return returned by FreeAgent</returns>
-    public async Task<VatReturn> GetAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
+    public async Task<VatReturn> GetVatReturnAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
     {
         var endpoint = $"vat_returns/{periodEndsOn.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
         var response = await _requestClient.GetAsync<VatReturnResponse>(endpoint, cancellationToken);

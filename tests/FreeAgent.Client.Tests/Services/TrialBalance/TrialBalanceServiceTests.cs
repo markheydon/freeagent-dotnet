@@ -10,7 +10,7 @@ namespace FreeAgent.Client.Tests.Services.TrialBalance;
 public class TrialBalanceServiceTests
 {
     [Fact]
-    public async Task GetSummaryAsync_WithoutFilters_CallsSummaryEndpoint()
+    public async Task ListSummaryAsync_WithoutFilters_CallsSummaryEndpoint()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -35,14 +35,14 @@ public class TrialBalanceServiceTests
         });
 
         var service = CreateService(handler);
-        var lines = await service.GetSummaryAsync();
+        var lines = await service.ListSummaryAsync();
 
         Assert.Single(lines);
         Assert.Equal(275m, lines[0].Total);
     }
 
     [Fact]
-    public async Task GetSummaryAsync_WithDateFilters_BuildsQueryString()
+    public async Task ListSummaryAsync_WithDateFilters_BuildsQueryString()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -56,7 +56,7 @@ public class TrialBalanceServiceTests
         });
 
         var service = CreateService(handler);
-        var lines = await service.GetSummaryAsync(
+        var lines = await service.ListSummaryAsync(
             fromDate: new DateOnly(2014, 1, 1),
             toDate: new DateOnly(2014, 5, 1));
 
@@ -64,7 +64,7 @@ public class TrialBalanceServiceTests
     }
 
     [Fact]
-    public async Task GetSummaryAsync_ThrowsWhenSummaryMissing()
+    public async Task ListSummaryAsync_ThrowsWhenSummaryMissing()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -73,12 +73,12 @@ public class TrialBalanceServiceTests
 
         var service = CreateService(handler);
 
-        var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetSummaryAsync());
+        var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListSummaryAsync());
         Assert.Contains("Trial balance", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task GetOpeningBalancesAsync_CallsOpeningBalancesEndpoint()
+    public async Task ListOpeningBalancesAsync_CallsOpeningBalancesEndpoint()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -91,7 +91,7 @@ public class TrialBalanceServiceTests
         });
 
         var service = CreateService(handler);
-        await service.GetOpeningBalancesAsync();
+        await service.ListOpeningBalancesAsync();
     }
 
     private static TrialBalanceService CreateService(QueueHttpMessageHandler handler)

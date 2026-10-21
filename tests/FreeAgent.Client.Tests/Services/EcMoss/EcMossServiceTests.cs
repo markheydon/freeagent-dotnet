@@ -10,7 +10,7 @@ namespace FreeAgent.Client.Tests.Services.EcMoss;
 public class EcMossServiceTests
 {
     [Fact]
-    public async Task GetSalesTaxRatesAsync_BuildsCountryAndDateQuery()
+    public async Task ListSalesTaxRatesAsync_BuildsCountryAndDateQuery()
     {
         string? requestPath = null;
         var handler = new QueueHttpMessageHandler(request =>
@@ -30,7 +30,7 @@ public class EcMossServiceTests
         });
 
         var service = CreateService(handler);
-        var rates = await service.GetSalesTaxRatesAsync(EcMossPlaceOfSupply.Austria, new DateOnly(2017, 1, 1));
+        var rates = await service.ListSalesTaxRatesAsync(EcMossPlaceOfSupply.Austria, new DateOnly(2017, 1, 1));
 
         Assert.Contains("country=Austria", requestPath, StringComparison.Ordinal);
         Assert.Contains("date=2017-01-01", requestPath, StringComparison.Ordinal);

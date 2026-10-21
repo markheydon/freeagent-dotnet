@@ -44,7 +44,7 @@ internal sealed class CorporationTaxReturnsSamples(SampleContext context) : ICon
         var periodEndsOn = returns[0].PeriodEndsOn
             ?? throw new InvalidOperationException("Listed corporation tax return is missing period_ends_on.");
 
-        var detail = await context.Client.CorporationTaxReturns.GetAsync(periodEndsOn, cancellationToken);
+        var detail = await context.Client.CorporationTaxReturns.GetCorporationTaxReturnAsync(periodEndsOn, cancellationToken);
 
         SampleOutput.WriteHeader("Corporation tax return detail");
         SampleOutput.WriteField("Period ends", detail.PeriodEndsOn);

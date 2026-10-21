@@ -16,10 +16,10 @@ Read balance sheet figures as at a date, or opening balances for the opening bal
 
 ## Methods
 
-### GetAsync
+### GetBalanceSheetAsync
 
 ```csharp
-Task<BalanceSheet> GetAsync(
+Task<BalanceSheet> GetBalanceSheetAsync(
     DateOnly? asAtDate = null,
     CancellationToken cancellationToken = default)
 ```

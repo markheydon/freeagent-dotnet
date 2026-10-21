@@ -61,7 +61,7 @@ public class VatReturnsServiceTests
         });
 
         var service = CreateService(handler);
-        var vatReturn = await service.GetAsync(new DateOnly(2023, 7, 31));
+        var vatReturn = await service.GetVatReturnAsync(new DateOnly(2023, 7, 31));
 
         Assert.Equal("VAT Return", vatReturn.Breakdown?.Title);
     }

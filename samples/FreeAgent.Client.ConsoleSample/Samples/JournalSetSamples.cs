@@ -56,6 +56,46 @@ internal sealed class JournalSetSamples(SampleContext context) : IConsoleSampleP
         }
     }
 
+    [ConsoleSample(Name = "Update probe journal set description and delete", MutatesData = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateProbeJournalSetDescriptionAsync(CancellationToken cancellationToken)
+    {
+        var (probeId, createdForProbe) = await ResolveProbeJournalSetIdAsync(cancellationToken);
+        string? originalDescription = null;
+        if (!createdForProbe)
+        {
+            var existing = await context.Client.JournalSets.GetJournalSetAsync(probeId, cancellationToken);
+            originalDescription = existing.Description;
+        }
+
+        try
+        {
+            var updatedDescription = $"SDK console probe updated {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}";
+            var updated = await context.Client.JournalSets.UpdateJournalSetAsync(
+                probeId,
+                new UpdateJournalSetRequest { Description = updatedDescription },
+                cancellationToken);
+
+            SampleOutput.WriteHeader("Updated probe journal set");
+            SampleOutput.WriteField("Id", updated.ResourceId);
+            SampleOutput.WriteField("Description", updated.Description);
+        }
+        finally
+        {
+            if (createdForProbe)
+            {
+                await context.Client.JournalSets.DeleteJournalSetAsync(probeId, cancellationToken);
+            }
+            else if (!string.IsNullOrWhiteSpace(originalDescription))
+            {
+                await context.Client.JournalSets.UpdateJournalSetAsync(
+                    probeId,
+                    new UpdateJournalSetRequest { Description = originalDescription },
+                    cancellationToken);
+            }
+        }
+    }
+
     [ConsoleSample(Name = "Create probe journal set and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeJournalSetAsync(CancellationToken cancellationToken)

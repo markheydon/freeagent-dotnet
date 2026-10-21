@@ -15,7 +15,7 @@ internal sealed class CashflowSamples(SampleContext context) : IConsoleSamplePro
         var to = DateOnly.FromDateTime(DateTime.UtcNow.Date);
         var from = to.AddMonths(-3);
 
-        var cashflow = await context.Client.Cashflow.GetAsync(from, to, cancellationToken);
+        var cashflow = await context.Client.Cashflow.GetCashflowAsync(from, to, cancellationToken);
 
         SampleOutput.WriteHeader("Cashflow");
         SampleOutput.WriteField("From", cashflow.From);

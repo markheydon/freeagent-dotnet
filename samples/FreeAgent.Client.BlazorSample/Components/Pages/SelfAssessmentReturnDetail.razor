@@ -9,7 +9,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="Self assessment return detail and transitions"
-                         CallUnderTest="SelfAssessmentReturnsService.GetAsync / MarkAsFiledAsync / MarkAsUnfiledAsync / MarkPaymentAsPaidAsync / MarkPaymentAsUnpaidAsync"
+                         CallUnderTest="SelfAssessmentReturnsService.GetSelfAssessmentReturnAsync / MarkAsFiledAsync / MarkAsUnfiledAsync / MarkPaymentAsPaidAsync / MarkPaymentAsUnpaidAsync"
                          Description="Fetch a return by user and period end date and exercise each documented mark-as transition. Mutations change live sandbox data."
                          EndpointPath="/v2/users/:user_id/self_assessment_returns/:period_ends_on"
                          DocsUrl="https://dev.freeagent.com/docs/self_assessment_returns" />
@@ -142,8 +142,8 @@
     private async Task GetAsync() => await RunMutationAsync(
         async client =>
         {
-            _return = await client.SelfAssessmentReturns.GetAsync(_userId!.Value, _periodEndsOn!.Value);
-            _operationMessage = "Loaded income tax return from GET.";
+            _return = await client.SelfAssessmentReturns.GetSelfAssessmentReturnAsync(_userId!.Value, _periodEndsOn!.Value);
+            _operationMessage = "Loaded self assessment return from GET.";
         });
 
     private async Task MarkAsFiledAsync() => await RunMutationAsync(

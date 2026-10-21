@@ -48,7 +48,7 @@ internal sealed class SelfAssessmentReturnsSamples(SampleContext context) : ICon
         var periodEndsOn = returns[0].PeriodEndsOn
             ?? throw new InvalidOperationException("Listed self assessment return is missing period_ends_on.");
 
-        var detail = await context.Client.SelfAssessmentReturns.GetAsync(userId, periodEndsOn, cancellationToken);
+        var detail = await context.Client.SelfAssessmentReturns.GetSelfAssessmentReturnAsync(userId, periodEndsOn, cancellationToken);
 
         SampleOutput.WriteHeader("Self assessment return detail");
         SampleOutput.WriteField("Period ends", detail.PeriodEndsOn);
@@ -150,7 +150,7 @@ internal sealed class SelfAssessmentReturnsSamples(SampleContext context) : ICon
         DateOnly periodEndsOn,
         CancellationToken cancellationToken)
     {
-        var detail = await context.Client.SelfAssessmentReturns.GetAsync(userId, periodEndsOn, cancellationToken);
+        var detail = await context.Client.SelfAssessmentReturns.GetSelfAssessmentReturnAsync(userId, periodEndsOn, cancellationToken);
         var payment = detail.Payments?
             .FirstOrDefault(p => p.DueOn is not null && p.Status is SelfAssessmentReturnPaymentStatus.Unpaid);
 

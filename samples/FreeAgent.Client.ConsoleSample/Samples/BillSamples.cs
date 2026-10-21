@@ -24,6 +24,24 @@ internal sealed class BillSamples(SampleContext context) : IConsoleSampleProvide
         }
     }
 
+    [ConsoleSample(Name = "Stream all bills", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task StreamAllBillsAsync(CancellationToken cancellationToken)
+    {
+        var count = 0;
+        await foreach (var bill in context.Client.Bills.ListAutoPagingAsync(cancellationToken: cancellationToken))
+        {
+            count++;
+            if (count <= 5)
+            {
+                Console.WriteLine($"  {FormatBillRow(bill)}");
+            }
+        }
+
+        SampleOutput.WriteHeader("Streamed bills via ListAutoPagingAsync");
+        Console.WriteLine($"  Total bills streamed: {count}");
+    }
+
     [ConsoleSample(Name = "List bills filtered by contact")]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task ListBillsFilteredByContactAsync(CancellationToken cancellationToken)

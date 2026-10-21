@@ -74,7 +74,7 @@ Cross-cutting rules are in [Sales tax and VAT](https://dev.freeagent.com/docs/sa
 
 - Invoice, estimate, and credit note line items use `sales_tax_rate`; contact `charge_sales_tax` applies when a line rate is omitted.
 - When `ec_status` is `EC VAT MOSS`, set `place_of_supply` to `EcMossPlaceOfSupply` on the parent document.
-- Fetch MOSS rate bands with `client.EcMoss.GetSalesTaxRatesAsync(country, datedOn)`.
+- Fetch MOSS rate bands with `client.EcMoss.ListSalesTaxRatesAsync(country, datedOn)`.
 
 ## Key URI fields
 

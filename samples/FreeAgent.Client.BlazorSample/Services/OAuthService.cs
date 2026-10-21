@@ -4,8 +4,8 @@ using FreeAgent.Client.Samples.Shared.Seeding;
 namespace FreeAgent.Client.BlazorSample.Services;
 
 /// <summary>
-/// Wraps <see cref="FreeAgentOAuthClient"/> and provides authorization URL generation,
-/// authorization code exchange, and <see cref="FreeAgentClient"/> creation with automatic token refresh.
+/// Wraps <see cref="FreeAgentOAuthClient"/> and provides authorisation URL generation,
+/// authorisation code exchange, and <see cref="FreeAgentClient"/> creation with automatic token refresh.
 /// </summary>
 public sealed class OAuthService : IDisposable
 {
@@ -69,7 +69,7 @@ public sealed class OAuthService : IDisposable
         !string.IsNullOrWhiteSpace(_redirectUri);
 
     /// <summary>
-    /// Builds the FreeAgent OAuth authorization URL including the CSRF state parameter.
+    /// Builds the FreeAgent OAuth authorisation URL including the CSRF state parameter.
     /// </summary>
     public string BuildAuthorizationUrl(string state)
     {
@@ -78,7 +78,7 @@ public sealed class OAuthService : IDisposable
     }
 
     /// <summary>
-    /// Exchanges an authorization code for an <see cref="OAuthTokenResponse"/>.
+    /// Exchanges an authorisation code for an <see cref="OAuthTokenResponse"/>.
     /// </summary>
     public async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, CancellationToken cancellationToken = default)
     {

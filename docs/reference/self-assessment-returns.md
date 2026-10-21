@@ -26,10 +26,10 @@ Task<IReadOnlyList<SelfAssessmentReturn>> ListAsync(long userId, CancellationTok
 
 **HTTP:** `GET /v2/users/:user_id/self_assessment_returns`
 
-### GetAsync
+### GetSelfAssessmentReturnAsync
 
 ```csharp
-Task<SelfAssessmentReturn> GetAsync(long userId, DateOnly periodEndsOn, CancellationToken cancellationToken = default)
+Task<SelfAssessmentReturn> GetSelfAssessmentReturnAsync(long userId, DateOnly periodEndsOn, CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `GET /v2/users/:user_id/self_assessment_returns/:period_ends_on`

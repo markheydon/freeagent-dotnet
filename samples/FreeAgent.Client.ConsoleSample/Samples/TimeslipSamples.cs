@@ -17,6 +17,30 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteRows(
             page.Items,
             timeslip => $"{timeslip.ResourceId,8}  {timeslip.DatedOn:yyyy-MM-dd}  {timeslip.Hours,6:0.##}h");
+
+        if (page.HasNextPage)
+        {
+            Console.WriteLine();
+            Console.WriteLine("  (First page only. Use ListAutoPagingAsync to stream all pages.)");
+        }
+    }
+
+    [ConsoleSample(Name = "Stream all timeslips", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task StreamAllTimeslipsAsync(CancellationToken cancellationToken)
+    {
+        var count = 0;
+        await foreach (var timeslip in context.Client.Timeslips.ListAutoPagingAsync(cancellationToken: cancellationToken))
+        {
+            count++;
+            if (count <= 5)
+            {
+                Console.WriteLine($"  {timeslip.ResourceId,8}  {timeslip.DatedOn:yyyy-MM-dd}  {timeslip.Hours,6:0.##}h");
+            }
+        }
+
+        SampleOutput.WriteHeader("Streamed timeslips via ListAutoPagingAsync");
+        Console.WriteLine($"  Total timeslips streamed: {count}");
     }
 
     [ConsoleSample(Name = "List unbilled timeslips")]

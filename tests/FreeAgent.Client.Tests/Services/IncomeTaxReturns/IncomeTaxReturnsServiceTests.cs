@@ -72,7 +72,7 @@ public class IncomeTaxReturnsServiceTests
         });
 
         var service = CreateService(handler);
-        var incomeTaxReturn = await service.GetAsync(UserId, new DateOnly(2022, 4, 5));
+        var incomeTaxReturn = await service.GetIncomeTaxReturnAsync(UserId, new DateOnly(2022, 4, 5));
 
         Assert.Equal(6181.82m, incomeTaxReturn.Payments![0].AmountDue);
         Assert.Equal(IncomeTaxReturnPaymentStatus.Unpaid, incomeTaxReturn.Payments[0].Status);

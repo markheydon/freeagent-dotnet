@@ -15,6 +15,30 @@ internal sealed class ProjectSamples(SampleContext context) : IConsoleSampleProv
 
         SampleOutput.WriteHeader($"Projects (showing {page.Items.Count} of {page.Total})");
         SampleOutput.WriteRows(page.Items, project => $"{project.ResourceId,8}  {project.Name}  ({project.Status})");
+
+        if (page.HasNextPage)
+        {
+            Console.WriteLine();
+            Console.WriteLine("  (First page only. Use ListAutoPagingAsync to stream all pages.)");
+        }
+    }
+
+    [ConsoleSample(Name = "Stream all projects", ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task StreamAllProjectsAsync(CancellationToken cancellationToken)
+    {
+        var count = 0;
+        await foreach (var project in context.Client.Projects.ListAutoPagingAsync(cancellationToken: cancellationToken))
+        {
+            count++;
+            if (count <= 5)
+            {
+                Console.WriteLine($"  {project.ResourceId,8}  {project.Name}  ({project.Status})");
+            }
+        }
+
+        SampleOutput.WriteHeader("Streamed projects via ListAutoPagingAsync");
+        Console.WriteLine($"  Total projects streamed: {count}");
     }
 
     [ConsoleSample(Name = "List active projects")]

@@ -75,19 +75,15 @@ Layers describe **dependency pressure**, not a mandatory backlog. A resource in 
 | **2 - Done** | Projects, Tasks, Timeslips, Notes | Client work structure: projects require `contact`; tasks require `project`; timeslips require `task`, `project`, and `user`; notes hang off contacts or projects |
 | **3 - Done** | Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Stock items, Price list items | Invoices require only `contact` on create; `project`, `bank_account`, and item `category` URIs are optional. Stock items are catalogue list/get reads; price list items are full CRUD catalogue entries used on sales lines |
 | **4 - Done** | Bills, Expenses, Hire purchases, Attachments | Bills require `contact`; expenses require `user` and `category`. Hire purchases are read-only and created via Bills. Attachments are fetched by identifier |
-| **5 - Banking** | Bank accounts, Bank transactions, Bank transaction explanations | Explanations link back to invoices, bills, contacts, projects, users, and stock |
-| **6 - Assets and books** | Capital assets, Journal sets, Properties, Payroll | Heavier accounting surface; properties are landlord-only |
-| **7 - Reports** | P&amp;L, Balance sheet, Trial balance, VAT returns, and similar | Mostly date-bounded reads with few URI dependencies |
+| **5 - Done** | Bank accounts, Bank transactions, Bank transaction explanations, Bank feeds | Explanations link back to invoices, bills, contacts, projects, users, and stock |
+| **6 - Done** | Capital assets, Capital asset types, Journal sets, Properties, Payroll, Payroll profiles | Properties are landlord-only; capital assets map from expenses and bank explanations |
+| **7 - Done** | P&amp;L, Balance sheet, Trial balance, Cashflow, Transactions, VAT returns, Corporation tax returns, Income tax returns, Self assessment returns, Final accounts reports, Sales tax periods, EC VAT MOSS | Mostly date-bounded reads with few URI dependencies |
 
 ### What is left
 
-Sales and Purchases are implemented. See [API coverage](../reference/api-coverage.md) for the current SDK surface, and [Sales cluster SDK patterns](api-entity-map/sales.md#sales-cluster-sdk-patterns) for the transition, line-item, PDF, and email patterns those resources share.
+Cluster sequencing above reflects **implemented** SDK resources as of [API coverage](../reference/api-coverage.md). Remaining or future endpoints are tracked via [GitHub Issues](https://github.com/markheydon/freeagent-dotnet/issues), not in this layering table.
 
-**Banking** is implemented (`client.BankAccounts`, `client.BankTransactions`, `client.BankTransactionExplanations`, `client.BankFeeds`). Explanations connect payments back to invoices and bills (`paid_invoice`, `paid_bill`).
-
-Links that stay opaque until later clusters include `property` (landlord companies only). Capital asset URIs on expenses and explanations map to [`client.CapitalAssets`](../reference/capital-assets.md).
-
-When you add or retrofit an SDK endpoint, check the relevant cluster page and update it if the official docs expose a URI link not yet shown.
+When you add or retrofit an SDK endpoint, check the relevant cluster page and update it if the official docs expose a URI link not yet shown. For cross-cluster SDK patterns on sales documents, see [Sales cluster SDK patterns](api-entity-map/sales.md#sales-cluster-sdk-patterns).
 
 ## Related documentation
 

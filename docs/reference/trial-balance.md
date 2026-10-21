@@ -16,10 +16,10 @@ Read trial balance summary lines for a date range or opening balances.
 
 ## Methods
 
-### GetSummaryAsync
+### ListSummaryAsync
 
 ```csharp
-Task<IReadOnlyList<TrialBalanceLine>> GetSummaryAsync(
+Task<IReadOnlyList<TrialBalanceLine>> ListSummaryAsync(
     DateOnly? fromDate = null,
     DateOnly? toDate = null,
     CancellationToken cancellationToken = default)
@@ -29,10 +29,10 @@ Task<IReadOnlyList<TrialBalanceLine>> GetSummaryAsync(
 
 Optional query parameters: `from_date`, `to_date` (`YYYY-MM-DD`). When omitted, FreeAgent returns the summary for the current date.
 
-### GetOpeningBalancesAsync
+### ListOpeningBalancesAsync
 
 ```csharp
-Task<IReadOnlyList<TrialBalanceLine>> GetOpeningBalancesAsync(CancellationToken cancellationToken = default)
+Task<IReadOnlyList<TrialBalanceLine>> ListOpeningBalancesAsync(CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `GET /v2/accounting/trial_balance/summary/opening_balances`

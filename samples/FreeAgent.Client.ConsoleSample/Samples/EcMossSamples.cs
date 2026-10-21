@@ -11,7 +11,7 @@ internal sealed class EcMossSamples(SampleContext context) : IConsoleSampleProvi
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task ListMossSalesTaxRatesAsync(CancellationToken cancellationToken)
     {
-        var rates = await context.Client.EcMoss.GetSalesTaxRatesAsync(
+        var rates = await context.Client.EcMoss.ListSalesTaxRatesAsync(
             EcMossPlaceOfSupply.Austria,
             DateOnly.FromDateTime(DateTime.UtcNow),
             cancellationToken);

@@ -26,10 +26,10 @@ Task<IReadOnlyList<IncomeTaxReturn>> ListAsync(long userId, CancellationToken ca
 
 **HTTP:** `GET /v2/users/:user_id/self_assessment_returns`
 
-### GetAsync
+### GetIncomeTaxReturnAsync
 
 ```csharp
-Task<IncomeTaxReturn> GetAsync(long userId, DateOnly periodEndsOn, CancellationToken cancellationToken = default)
+Task<IncomeTaxReturn> GetIncomeTaxReturnAsync(long userId, DateOnly periodEndsOn, CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `GET /v2/users/:user_id/self_assessment_returns/:period_ends_on`

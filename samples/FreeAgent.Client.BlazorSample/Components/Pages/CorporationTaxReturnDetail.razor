@@ -9,7 +9,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="Corporation tax return detail and transitions"
-                         CallUnderTest="CorporationTaxReturnsService.GetAsync / MarkAsFiledAsync / MarkAsUnfiledAsync / MarkAsPaidAsync / MarkAsUnpaidAsync"
+                         CallUnderTest="CorporationTaxReturnsService.GetCorporationTaxReturnAsync / MarkAsFiledAsync / MarkAsUnfiledAsync / MarkAsPaidAsync / MarkAsUnpaidAsync"
                          Description="Fetch a return by period end date and exercise each documented mark-as transition. Mutations change live sandbox data."
                          EndpointPath="/v2/corporation_tax_returns/:period_ends_on"
                          DocsUrl="https://dev.freeagent.com/docs/corporation_tax_returns" />
@@ -113,7 +113,7 @@
     private async Task GetAsync() => await RunMutationAsync(
         async client =>
         {
-            _return = await client.CorporationTaxReturns.GetAsync(_periodEndsOn!.Value);
+            _return = await client.CorporationTaxReturns.GetCorporationTaxReturnAsync(_periodEndsOn!.Value);
             _operationMessage = "Loaded corporation tax return from GET.";
         });
 

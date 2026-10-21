@@ -51,7 +51,7 @@ public sealed class SelfAssessmentReturnsService
     /// <param name="periodEndsOn">Period end date used in the API path.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Self assessment return returned by FreeAgent</returns>
-    public async Task<SelfAssessmentReturn> GetAsync(
+    public async Task<SelfAssessmentReturn> GetSelfAssessmentReturnAsync(
         long userId,
         DateOnly periodEndsOn,
         CancellationToken cancellationToken = default)

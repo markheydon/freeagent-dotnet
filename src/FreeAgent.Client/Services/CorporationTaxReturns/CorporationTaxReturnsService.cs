@@ -47,7 +47,7 @@ public sealed class CorporationTaxReturnsService
     /// <param name="periodEndsOn">Period end date used in the API path.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Corporation tax return returned by FreeAgent</returns>
-    public async Task<CorporationTaxReturn> GetAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
+    public async Task<CorporationTaxReturn> GetCorporationTaxReturnAsync(DateOnly periodEndsOn, CancellationToken cancellationToken = default)
     {
         var response = await _requestClient.GetAsync<CorporationTaxReturnResponse>(
             BuildPeriodEndpoint(periodEndsOn),

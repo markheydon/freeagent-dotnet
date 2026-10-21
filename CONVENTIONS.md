@@ -4,7 +4,7 @@
 
 
 **Project:** FreeAgent.NET
-**Last updated:** 20 October 2026
+**Last updated:** 21 October 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.
@@ -27,77 +27,10 @@ src/
 	│   ├── Configuration/               # Environment enum and URL mapping
 	│   ├── Http/                        # HTTP transport, rate limiting, API exceptions, pagination helpers
 	│   └── Serialization/               # JSON converters and TFM compatibility
-	├── Models/                          # Resource-grouped strongly typed models
-	│   ├── Attachments/                 # Attachment models and response wrappers
-	│   ├── BankAccounts/                # Bank account models and write requests
-	│   ├── BankTransactionExplanations/ # Bank transaction explanation models and per-variant create requests
-	│   ├── BankTransactions/            # Bank transaction models (nested explanations use BankTransactionExplanations)
-	│   ├── Bills/                       # Bill models, line items, response wrappers
-	│   ├── Categories/                  # Category models, operation-variant requests, nominal-code validation
-	│   ├── Company/                     # Company, AnnualAccountingPeriod, SalesTaxRate, TaxTimelineItem, response wrappers
-	│   ├── Contacts/                    # Contact models and response wrappers
-	│   ├── CreditNotes/                 # Credit note models and write payloads
-	│   ├── CreditNoteReconciliations/   # Credit note reconciliation models and write payloads
-	│   ├── EmailAddresses/              # Email addresses response wrapper
-	│   ├── Estimates/                   # Estimate models, line items, transitions, response wrappers
-	│   ├── Expenses/                    # Expense models, mileage settings, response wrappers
-	│   ├── HirePurchases/               # Hire purchase models and response wrappers
-	│   ├── Invoices/                    # Invoice models, line items, transitions, response wrappers
-	│   ├── Notes/                       # Note models and response wrappers
-	│   ├── PriceListItems/              # Price list item models and write payloads
-	│   ├── Projects/                    # Project models, views, sort options, response wrappers
-	│   ├── RecurringInvoices/           # Recurring invoice models and response wrappers
-	│   ├── Shared/                      # Cross-resource primitives (ContactReference, ProjectReference, CurrencyCode)
-	│   ├── StockItems/                  # Stock item models and response wrappers
-	│   ├── Tasks/                       # Task models and response wrappers
-	│   ├── Timeslips/                   # Timeslip models and response wrappers
-	│   └── Users/                       # User models and response wrappers
-	└── Services/                        # Resource-oriented service classes
-		├── Attachments/
-		│   └── AttachmentsService.cs
-		├── Bills/
-		│   └── BillService.cs
-		├── Categories/                  # CategoryService and category write/response mappers
-		├── Company/
-		│   └── CompanyService.cs
-		├── Contacts/
-		│   └── ContactService.cs
-		├── CreditNotes/
-		│   └── CreditNotesService.cs
-		├── CreditNoteReconciliations/
-		│   └── CreditNoteReconciliationsService.cs
-		├── EmailAddresses/
-		│   └── EmailAddressesService.cs
-		├── Estimates/
-		│   └── EstimateService.cs
-		├── Expenses/
-		│   └── ExpenseService.cs
-		├── HirePurchases/
-		│   └── HirePurchasesService.cs
-		├── BankAccounts/
-		│   └── BankAccountsService.cs
-		├── BankTransactionExplanations/
-		│   └── BankTransactionExplanationsService.cs
-		├── BankTransactions/
-		│   └── BankTransactionsService.cs
-		├── Invoices/
-		│   └── InvoiceService.cs
-		├── Notes/
-		│   └── NoteService.cs
-		├── PriceListItems/
-		│   └── PriceListItemsService.cs
-		├── Projects/
-		│   └── ProjectService.cs
-		├── RecurringInvoices/
-		│   └── RecurringInvoiceService.cs
-		├── StockItems/
-		│   └── StockItemsService.cs
-		├── Tasks/
-		│   └── ProjectTaskService.cs
-		├── Timeslips/
-		│   └── TimeslipService.cs
-		└── Users/
-		    └── UserService.cs
+	├── Models/                          # Resource-grouped strongly typed models (one folder per API resource area)
+	│   ├── Attachments/ … VatReturns/   # See src/FreeAgent.Client/Models/ for the full set (reports, tax, payroll, banking, sales, purchases, and Shared/)
+	└── Services/                        # Resource-oriented service classes (folder per resource; *Service.cs entry point)
+		├── Attachments/ … VatReturns/     # See src/FreeAgent.Client/Services/ — 44 resource services including reports, tax returns, payroll, banking, and assets
 
 tests/
 └── FreeAgent.Client.Tests/
@@ -107,48 +40,10 @@ tests/
 	│   ├── Configuration/
 	│   ├── Http/
 	│   └── Serialization/
-	├── Models/
-	│   ├── Attachments/
-	│   ├── Bills/
-	│   ├── Categories/
-	│   ├── Contacts/
-	│   ├── CreditNotes/
-	│   ├── CreditNoteReconciliations/
-	│   ├── Estimates/
-	│   ├── Expenses/
-	│   ├── HirePurchases/
-	│   ├── Invoices/
-	│   ├── PriceListItems/
-	│   ├── RecurringInvoices/
-	│   ├── Notes/
-	│   ├── Projects/
-	│   ├── Shared/
-	│   ├── Tasks/
-	│   ├── Timeslips/
-	│   └── Users/
+	├── Models/                          # Mirrors Models/ layout under src/
 	├── Sample/                          # Sample-app helper tests (Turpinverse, wire diagnostics)
 	├── Samples/                         # Console sample helper tests
-	├── Services/
-	│   ├── Attachments/
-	│   ├── Bills/
-	│   ├── Categories/
-	│   ├── Company/
-	│   ├── Contacts/
-	│   ├── CreditNotes/
-	│   ├── CreditNoteReconciliations/
-	│   ├── EmailAddresses/
-	│   ├── Estimates/
-	│   ├── Expenses/
-	│   ├── HirePurchases/
-	│   ├── Invoices/
-	│   ├── Notes/
-	│   ├── PriceListItems/
-	│   ├── Projects/
-	│   ├── RecurringInvoices/
-	│   ├── StockItems/
-	│   ├── Tasks/
-	│   ├── Timeslips/
-	│   └── Users/
+	├── Services/                        # Mirrors Services/ layout under src/ (per-resource test folders)
 	└── TestSupport/
 ```
 
@@ -230,6 +125,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
+| 21 October 2026 | Refresh project-structure tree after goals review | SDK surface now includes reports, tax, payroll, and banking clusters |
 | 25 September 2026 | Unified link write contract: `*Id` on models, `*Reference` for filters and inbound URLs | Linked resource contract refactor |
 | 25 September 2026 | Refresh project-structure tree for Sales cluster services, models, and tests | Goals review documentation drift after #64 |
 | 24 September 2026 | Refresh project-structure tree for Invoices, Tasks, Timeslips, Notes, and stub link models | Goals review documentation drift |
