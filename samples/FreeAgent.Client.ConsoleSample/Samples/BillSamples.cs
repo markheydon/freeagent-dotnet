@@ -93,15 +93,31 @@ internal sealed class BillSamples(SampleContext context) : IConsoleSampleProvide
     {
         var created = await CreateSampleBillAsync(cancellationToken, isPaidByHirePurchase: true);
 
-        SampleOutput.WriteHeader("Created hire purchase probe bill");
-        SampleOutput.WriteField("Id", created.ResourceId);
-        SampleOutput.WriteField("Reference", created.Reference);
-        SampleOutput.WriteField("Hire purchase", created.IsPaidByHirePurchase);
+        try
+        {
+            SampleOutput.WriteHeader("Created hire purchase probe bill");
+            SampleOutput.WriteField("Id", created.ResourceId);
+            SampleOutput.WriteField("Reference", created.Reference);
+            SampleOutput.WriteField("Hire purchase", created.IsPaidByHirePurchase);
 
-        await context.Client.Bills.DeleteBillAsync(created.ResourceId, cancellationToken);
+            var hirePurchases = await context.Client.HirePurchases.ListAsync(cancellationToken: cancellationToken);
+            var hirePurchase = hirePurchases.FirstOrDefault(h => h.BillId == created.ResourceId);
+            if (hirePurchase is not null)
+            {
+                var detail = await context.Client.HirePurchases.GetHirePurchaseAsync(
+                    hirePurchase.ResourceId,
+                    cancellationToken: cancellationToken);
+                SampleOutput.WriteField("Hire purchase ID", detail.ResourceId);
+                SampleOutput.WriteField("Hire purchase description", detail.Description);
+            }
+        }
+        finally
+        {
+            await DeleteProbeBillAsync(created.ResourceId, cancellationToken);
 
-        SampleOutput.WriteHeader("Deleted hire purchase probe bill");
-        SampleOutput.WriteField("Id", created.ResourceId);
+            SampleOutput.WriteHeader("Deleted hire purchase probe bill");
+            SampleOutput.WriteField("Id", created.ResourceId);
+        }
     }
 
     [ConsoleSample(Name = "Update bill line item", MutatesData = true)]

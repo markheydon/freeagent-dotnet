@@ -130,6 +130,7 @@ Re-run bootstrap (`--bootstrap-refresh-token`) and update the three repository s
 
 ## Related
 
+- [Smoke and test limitations](smoke-and-test-limitations.md) — blocked coverage, Turpinverse data gaps, and menu-only examples
 - [Console sample README](../../samples/FreeAgent.Client.ConsoleSample/README.md) — interactive examples and `--run-all`
 - [#126](https://github.com/markheydon/freeagent-dotnet/issues/126) — post-v1.0 API freshness policy
 - [#134](https://github.com/markheydon/freeagent-dotnet/issues/134) — linked-resource PUT sandbox verification

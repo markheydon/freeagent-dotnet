@@ -95,7 +95,7 @@ internal sealed class NoteSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Content", updated.Content);
     }
 
-    [ConsoleSample(Name = "Delete note", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Delete note", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DeleteNoteAsync(CancellationToken cancellationToken)
     {

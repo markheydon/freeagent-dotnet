@@ -52,7 +52,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteField("Group", category.GroupDescription);
     }
 
-    [ConsoleSample(Name = "Create income category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create income category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateIncomeCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
@@ -63,7 +63,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Update income category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Update income category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateIncomeCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
@@ -78,7 +78,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Create cost of sales category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create cost of sales category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateCostOfSalesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
@@ -94,7 +94,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Update cost of sales category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Update cost of sales category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateCostOfSalesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
@@ -119,7 +119,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Create admin expenses category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create admin expenses category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateAdminExpensesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
@@ -135,7 +135,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Update admin expenses category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Update admin expenses category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateAdminExpensesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
@@ -160,7 +160,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Create current asset category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create current asset category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateCurrentAssetCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
@@ -174,7 +174,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Update current asset category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Update current asset category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateCurrentAssetCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
@@ -195,7 +195,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Create liabilities category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create liabilities category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateLiabilitiesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
@@ -209,7 +209,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Update liabilities category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Update liabilities category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateLiabilitiesCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
@@ -230,7 +230,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Create equity category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create equity category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateEquityCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunCreateAndDeleteAsync(
@@ -241,7 +241,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
                 ct),
             cancellationToken);
 
-    [ConsoleSample(Name = "Update equity category and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Update equity category and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateEquityCategoryAndDeleteAsync(CancellationToken cancellationToken) =>
         await RunUpdateAndDeleteAsync(
@@ -275,7 +275,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
         Func<string, CancellationToken, Task<Category>> create,
         CancellationToken cancellationToken)
     {
-        var nominalCode = AllocateProbeNominalCode(minNominalCode, maxNominalCode);
+        var nominalCode = await AllocateProbeNominalCodeAsync(minNominalCode, maxNominalCode, cancellationToken);
         var created = await create(nominalCode, cancellationToken);
 
         try
@@ -300,7 +300,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
         Func<string, CancellationToken, Task<Category>> update,
         CancellationToken cancellationToken)
     {
-        var nominalCode = AllocateProbeNominalCode(minNominalCode, maxNominalCode);
+        var nominalCode = await AllocateProbeNominalCodeAsync(minNominalCode, maxNominalCode, cancellationToken);
         await create(nominalCode, cancellationToken);
 
         try
@@ -320,10 +320,31 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
         }
     }
 
-    private static string AllocateProbeNominalCode(int minInclusive, int maxInclusive)
+    private async Task<string> AllocateProbeNominalCodeAsync(
+        int minInclusive,
+        int maxInclusive,
+        CancellationToken cancellationToken)
     {
+        var sets = await context.Client.Categories.ListAsync(cancellationToken: cancellationToken);
+        var usedCodes = new HashSet<string>(
+            sets.AllCategories
+                .Select(category => category.NominalCode)
+                .Where(code => !string.IsNullOrWhiteSpace(code))
+                .Select(code => code!),
+            StringComparer.Ordinal);
+
         var range = maxInclusive - minInclusive + 1;
-        var offset = (int)(Math.Abs(DateTime.UtcNow.Ticks % range));
-        return (minInclusive + offset).ToString("D3", CultureInfo.InvariantCulture);
+        var startOffset = (int)(Math.Abs(DateTime.UtcNow.Ticks % range));
+        for (var attempt = 0; attempt < range; attempt++)
+        {
+            var code = (minInclusive + ((startOffset + attempt) % range)).ToString("D3", CultureInfo.InvariantCulture);
+            if (!usedCodes.Contains(code))
+            {
+                return code;
+            }
+        }
+
+        SampleContext.Skip($"no unused category nominal codes in range {minInclusive}-{maxInclusive}");
+        return string.Empty;
     }
 }

@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.Expenses;
 using FreeAgent.Client.Services.Expenses;
 using FreeAgent.Client.Tests.TestSupport;
@@ -214,6 +215,205 @@ public class ExpenseServiceTests
         Assert.Equal(2, created.Count);
         Assert.NotNull(body);
         Assert.Contains("\"expenses\":[", body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task GetExpenseAsync_ReturnsExpense()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.EndsWith("/expenses/7", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "expense": {
+                    "url": "https://api.freeagent.com/v2/expenses/7",
+                    "description": "Stationery"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ExpenseService(client);
+
+        var expense = await service.GetExpenseAsync(7);
+
+        Assert.Equal(7, expense.ResourceId);
+        Assert.Equal("Stationery", expense.Description);
+    }
+
+    [Fact]
+    public async Task GetExpenseAsync_WithHydration_FetchesUser()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "expense": {
+                    "url": "https://api.freeagent.com/v2/expenses/7",
+                    "user": "https://api.freeagent.com/v2/users/2"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "user": {
+                    "url": "https://api.freeagent.com/v2/users/2",
+                    "first_name": "Ada",
+                    "last_name": "Lovelace"
+                  }
+                }
+                """)
+            });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ExpenseService(client);
+
+        var expense = await service.GetExpenseAsync(7, new ExpenseGetOptions { IncludeUser = true });
+
+        Assert.Equal("Ada Lovelace", expense.User?.DisplayName);
+    }
+
+    [Fact]
+    public async Task UpdateExpenseAsync_PutsEnvelope()
+    {
+        string? body = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Equal(HttpMethod.Put, request.Method);
+            Assert.EndsWith("/expenses/12", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "expense": {
+                    "url": "https://api.freeagent.com/v2/expenses/12",
+                    "description": "Updated"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ExpenseService(client);
+
+        var updated = await service.UpdateExpenseAsync(12, new Expense
+        {
+            UserId = 1,
+            CategoryNominalCode = "285",
+            DatedOn = new DateOnly(2024, 3, 1),
+            GrossValue = -20m,
+            Description = "Updated"
+        });
+
+        Assert.Equal("Updated", updated.Description);
+        Assert.NotNull(body);
+        Assert.Contains("\"description\":\"Updated\"", body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task DeleteExpenseAsync_SendsDelete()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Equal(HttpMethod.Delete, request.Method);
+            Assert.EndsWith("/expenses/4", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ExpenseService(client);
+
+        await service.DeleteExpenseAsync(4);
+    }
+
+    [Fact]
+    public async Task GetMileageSettingsAsync_ReturnsSettings()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.EndsWith("/expenses/mileage_settings", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "mileage_settings": {
+                    "engine_type_and_size_options": [
+                      { "engine_type": "Petrol", "engine_size": "Up to 1400cc" }
+                    ]
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ExpenseService(client);
+
+        var settings = await service.GetMileageSettingsAsync();
+
+        Assert.NotNull(settings.EngineTypeAndSizeOptions);
+        Assert.Single(settings.EngineTypeAndSizeOptions!);
+    }
+
+    [Fact]
+    public async Task CreateExpenseAsync_WithAttachment_SerialisesAttachmentFields()
+    {
+        string? body = null;
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+            return new HttpResponseMessage(HttpStatusCode.Created)
+            {
+                Content = new StringContent("""
+                {
+                  "expense": {
+                    "url": "https://api.freeagent.com/v2/expenses/20"
+                  }
+                }
+                """)
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ExpenseService(client);
+
+        await service.CreateExpenseAsync(new Expense
+        {
+            UserId = 1,
+            CategoryNominalCode = "285",
+            DatedOn = new DateOnly(2024, 1, 1),
+            GrossValue = -5m,
+            Description = "Receipt",
+            AttachmentWrite = new ExpenseAttachmentWritePayload
+            {
+                Data = "aGVsbG8=",
+                FileName = "receipt.png",
+                ContentType = BillAttachmentContentType.Png,
+                Description = "Scan"
+            }
+        });
+
+        Assert.NotNull(body);
+        Assert.Contains("\"attachment\":", body, StringComparison.Ordinal);
+        Assert.Contains("\"data\":\"aGVsbG8=\"", body, StringComparison.Ordinal);
+        Assert.Contains("\"file_name\":\"receipt.png\"", body, StringComparison.Ordinal);
+        Assert.Contains("\"content_type\":\"image/png\"", body, StringComparison.Ordinal);
     }
 
     [Fact]

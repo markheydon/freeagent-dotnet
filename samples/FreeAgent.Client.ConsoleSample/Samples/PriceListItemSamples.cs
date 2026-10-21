@@ -22,50 +22,66 @@ internal sealed class PriceListItemSamples(SampleContext context) : IConsoleSamp
         SampleOutput.WriteRows(items, item => $"{item.ResourceId,8}  {item.Code}  {item.ItemType}  {item.Price}");
     }
 
-    [ConsoleSample(Name = "Get price list item detail")]
+    [ConsoleSample(Name = "Get price list item detail with probe create and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task GetPriceListItemDetailAsync(CancellationToken cancellationToken)
     {
-        var item = await context.Data.GetFirstPriceListItemAsync(cancellationToken);
-        var detail = await context.Client.PriceListItems.GetPriceListItemAsync(item.ResourceId, cancellationToken);
+        var (probeId, createdForProbe) = await ResolveProbePriceListItemIdAsync(cancellationToken);
+        try
+        {
+            var detail = await context.Client.PriceListItems.GetPriceListItemAsync(probeId, cancellationToken);
 
-        SampleOutput.WriteHeader("Price list item detail");
-        SampleOutput.WriteField("Id", detail.ResourceId);
-        SampleOutput.WriteField("Code", detail.Code);
-        SampleOutput.WriteField("Item type", detail.ItemType);
-        SampleOutput.WriteField("Price", detail.Price);
-        SampleOutput.WriteField("VAT status", detail.VatStatus);
+            SampleOutput.WriteHeader("Price list item detail");
+            SampleOutput.WriteField("Id", detail.ResourceId);
+            SampleOutput.WriteField("Code", detail.Code);
+            SampleOutput.WriteField("Item type", detail.ItemType);
+            SampleOutput.WriteField("Price", detail.Price);
+            SampleOutput.WriteField("VAT status", detail.VatStatus);
+        }
+        finally
+        {
+            if (createdForProbe)
+            {
+                await context.Client.PriceListItems.DeletePriceListItemAsync(probeId, cancellationToken);
+            }
+        }
     }
 
     [ConsoleSample(Name = "Update price list item description", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdatePriceListItemDescriptionAsync(CancellationToken cancellationToken)
     {
-        var item = await context.Data.GetFirstPriceListItemAsync(cancellationToken);
-        var updated = await context.Client.PriceListItems.UpdatePriceListItemAsync(item.ResourceId, new UpdatePriceListItemRequest
+        var (probeId, createdForProbe) = await ResolveProbePriceListItemIdAsync(cancellationToken);
+        try
         {
-            Description = $"{item.Description} (console sample touch)"
-        }, cancellationToken);
+            var existing = await context.Client.PriceListItems.GetPriceListItemAsync(probeId, cancellationToken);
+            var updated = await context.Client.PriceListItems.UpdatePriceListItemAsync(
+                probeId,
+                new UpdatePriceListItemRequest
+                {
+                    Description = $"{existing.Description} (console sample touch)"
+                },
+                cancellationToken);
 
-        SampleOutput.WriteHeader("Updated price list item");
-        SampleOutput.WriteField("Id", updated.ResourceId);
-        SampleOutput.WriteField("Code", updated.Code);
-        SampleOutput.WriteField("Description", updated.Description);
+            SampleOutput.WriteHeader("Updated price list item");
+            SampleOutput.WriteField("Id", updated.ResourceId);
+            SampleOutput.WriteField("Code", updated.Code);
+            SampleOutput.WriteField("Description", updated.Description);
+        }
+        finally
+        {
+            if (createdForProbe)
+            {
+                await context.Client.PriceListItems.DeletePriceListItemAsync(probeId, cancellationToken);
+            }
+        }
     }
 
     [ConsoleSample(Name = "Create probe price list item and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
-    private async Task CreateProbePriceListItemAsync(CancellationToken cancellationToken)
+    private async Task CreateProbePriceListItemAndDeleteAsync(CancellationToken cancellationToken)
     {
-        var created = await context.Client.PriceListItems.CreatePriceListItemAsync(new CreatePriceListItemRequest
-        {
-            Code = ProbeCode,
-            Description = "Console sample probe item",
-            Quantity = 1,
-            Price = 4.99m,
-            ItemType = InvoiceItemType.Products,
-            VatStatus = PriceListItemVatStatus.Standard
-        }, cancellationToken);
+        var created = await CreateProbePriceListItemRequestAsync(cancellationToken);
 
         SampleOutput.WriteHeader("Created price list item");
         SampleOutput.WriteField("Id", created.ResourceId);
@@ -75,4 +91,29 @@ internal sealed class PriceListItemSamples(SampleContext context) : IConsoleSamp
         Console.WriteLine();
         Console.WriteLine($"  Deleted probe price list item {created.ResourceId}.");
     }
+
+    private async Task<(long Id, bool CreatedForProbe)> ResolveProbePriceListItemIdAsync(CancellationToken cancellationToken)
+    {
+        var items = await context.Client.PriceListItems.ListAsync(cancellationToken: cancellationToken);
+        if (items.Count > 0)
+        {
+            return (items[0].ResourceId, false);
+        }
+
+        var created = await CreateProbePriceListItemRequestAsync(cancellationToken);
+        return (created.ResourceId, true);
+    }
+
+    private Task<PriceListItem> CreateProbePriceListItemRequestAsync(CancellationToken cancellationToken) =>
+        context.Client.PriceListItems.CreatePriceListItemAsync(
+            new CreatePriceListItemRequest
+            {
+                Code = $"{ProbeCode}-{DateTimeOffset.UtcNow:HHmmss}",
+                Description = "Console sample probe item",
+                Quantity = 1,
+                Price = 4.99m,
+                ItemType = InvoiceItemType.Products,
+                VatStatus = PriceListItemVatStatus.Standard
+            },
+            cancellationToken);
 }

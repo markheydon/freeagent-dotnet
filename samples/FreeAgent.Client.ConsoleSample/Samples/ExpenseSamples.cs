@@ -1,5 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
+using System.Reflection;
+using System.Text.Json.Serialization;
 using FreeAgent.Client;
+using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Models.Expenses;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
@@ -115,7 +119,7 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
             settings.EngineTypeAndSizeOptions?.Count ?? 0);
     }
 
-    [ConsoleSample(Name = "Create probe expense and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create probe expense and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeExpenseAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -131,11 +135,11 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Create probe mileage expense and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create probe mileage expense and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeMileageExpenseAndDeleteAsync(CancellationToken cancellationToken)
     {
-        var created = await CreateSampleMileageExpenseAsync(cancellationToken);
+        var created = await CreateSampleMileageExpenseForSmokeAsync(cancellationToken);
 
         SampleOutput.WriteHeader("Created probe mileage expense");
         SampleOutput.WriteField("Id", created.ResourceId);
@@ -147,7 +151,26 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Create probe expenses batch and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Update expense description and delete", MutatesData = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateExpenseDescriptionAndDeleteAsync(CancellationToken cancellationToken)
+    {
+        var created = await CreateSampleExpenseAsync(cancellationToken);
+        created.Description = $"{created.Description} (updated)";
+
+        var updated = await context.Client.Expenses.UpdateExpenseAsync(created.ResourceId, created, cancellationToken);
+
+        SampleOutput.WriteHeader("Updated probe expense");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+        SampleOutput.WriteField("Description", updated.Description);
+
+        await context.Client.Expenses.DeleteExpenseAsync(updated.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted probe expense");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+    }
+
+    [ConsoleSample(Name = "Create probe expenses batch and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeExpensesBatchAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -178,19 +201,98 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
     private async Task<Expense> CreateSampleMileageExpenseAsync(CancellationToken cancellationToken)
     {
         var user = await context.Data.GetFirstUserAsync(cancellationToken);
+        var datedOn = DateOnly.FromDateTime(DateTime.UtcNow);
+        var settings = await context.Client.Expenses.GetMileageSettingsAsync(cancellationToken);
+
         var expense = new Expense
         {
             UserId = user.ResourceId,
             IsMileageCategory = true,
-            DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+            DatedOn = datedOn,
             Mileage = 12m,
             VehicleType = ExpenseVehicleType.Car,
-            EngineType = ExpenseEngineType.Petrol,
-            EngineSize = "Up to 1400cc",
             Description = $"SDK probe mileage {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}"
         };
 
+        if (TryResolveMileageEngine(settings, datedOn, out var engineType, out var engineSize))
+        {
+            expense.EngineType = engineType;
+            expense.EngineSize = engineSize;
+        }
+        else
+        {
+            expense.VehicleType = ExpenseVehicleType.Bicycle;
+        }
+
         return await context.Client.Expenses.CreateExpenseAsync(expense, cancellationToken);
+    }
+
+    private async Task<Expense> CreateSampleMileageExpenseForSmokeAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await CreateSampleMileageExpenseAsync(cancellationToken);
+        }
+        catch (FreeAgentApiException ex) when (
+            ex.StatusCode == HttpStatusCode.BadRequest
+            && ex.Message.Contains("Mileage", StringComparison.OrdinalIgnoreCase))
+        {
+            SampleContext.Skip("sandbox account does not accept mileage category expenses");
+            throw;
+        }
+    }
+
+    private static bool TryResolveMileageEngine(
+        MileageSettings settings,
+        DateOnly datedOn,
+        out ExpenseEngineType engineType,
+        out string engineSize)
+    {
+        engineType = default;
+        engineSize = string.Empty;
+
+        var optionSet = settings.EngineTypeAndSizeOptions?
+            .FirstOrDefault(option => option.From <= datedOn && (option.To is null || option.To >= datedOn))
+            ?? settings.EngineTypeAndSizeOptions?.LastOrDefault();
+
+        if (optionSet?.Value is null || optionSet.Value.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var (engineTypeName, sizes) in optionSet.Value)
+        {
+            if (sizes.Count == 0)
+            {
+                continue;
+            }
+
+            var mappedEngineType = MapEngineTypeName(engineTypeName);
+            if (mappedEngineType is null)
+            {
+                continue;
+            }
+
+            engineType = mappedEngineType.Value;
+            engineSize = sizes[0];
+            return true;
+        }
+
+        return false;
+    }
+
+    private static ExpenseEngineType? MapEngineTypeName(string engineTypeName)
+    {
+        foreach (var field in typeof(ExpenseEngineType).GetFields(BindingFlags.Public | BindingFlags.Static))
+        {
+            var wireName = field.GetCustomAttribute<JsonStringEnumMemberNameAttribute>()?.Name ?? field.Name;
+            if (string.Equals(wireName, engineTypeName, StringComparison.Ordinal))
+            {
+                return (ExpenseEngineType)field.GetValue(null)!;
+            }
+        }
+
+        return null;
     }
 
     private async Task<Expense> BuildSampleExpenseAsync(CancellationToken cancellationToken)
