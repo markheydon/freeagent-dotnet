@@ -169,7 +169,7 @@
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
                                     ID: @_inspectedExplanation.ResourceId
                                 </MudChip>
-                                @if (!string.IsNullOrWhiteSpace(_inspectedExplanation.Type))
+                                @if (_inspectedExplanation.Type is not null)
                                 {
                                     <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@_inspectedExplanation.Type</MudChip>
                                 }
@@ -233,7 +233,7 @@
                 .Select((explanation, index) => new ExplanationRow(
                     index,
                     explanation.ResourceId,
-                    explanation.Type,
+                    explanation.Type?.ToString(),
                     explanation.Description,
                     explanation.DatedOn?.ToString("yyyy-MM-dd"),
                     explanation.GrossValue?.ToString(),

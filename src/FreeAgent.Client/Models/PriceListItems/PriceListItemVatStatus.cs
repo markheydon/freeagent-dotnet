@@ -23,5 +23,7 @@ public enum PriceListItemVatStatus
 
     /// <summary>Zero rate VAT.</summary>
     [JsonStringEnumMemberName("zero")]
-    Zero
+    Zero,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

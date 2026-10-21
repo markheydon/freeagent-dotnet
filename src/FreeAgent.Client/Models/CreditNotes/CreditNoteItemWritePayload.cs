@@ -40,7 +40,7 @@ internal sealed class CreditNoteItemWritePayload
     public InvoiceSalesTaxStatus? SalesTaxStatus { get; set; }
 
     [JsonPropertyName("second_sales_tax_status")]
-    public string? SecondSalesTaxStatus { get; set; }
+    public SecondSalesTaxStatus? SecondSalesTaxStatus { get; set; }
 
     [JsonPropertyName("stock_item")]
     [JsonConverter(typeof(WriteLinkJsonConverter<StockItemReference>))]

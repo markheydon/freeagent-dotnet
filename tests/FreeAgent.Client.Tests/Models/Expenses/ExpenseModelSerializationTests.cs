@@ -3,6 +3,7 @@ using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.Expenses;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Tests.Models.Expenses;
 
@@ -41,7 +42,7 @@ public class ExpenseModelSerializationTests
     }
 
     [Fact]
-    public void DeserializeExpense_MapsSecondSalesTaxStatusAsString()
+    public void DeserializeExpense_MapsSecondSalesTaxStatusWithUnknownKindAndWireValue()
     {
         const string json = """
             {
@@ -56,7 +57,9 @@ public class ExpenseModelSerializationTests
         var expense = JsonSerializer.Deserialize<Expense>(json, FreeAgentJsonSerializer.Options);
 
         Assert.NotNull(expense);
-        Assert.Equal("CUSTOM_TAX_CODE", expense!.SecondSalesTaxStatus);
+        Assert.NotNull(expense!.SecondSalesTaxStatus);
+        Assert.Equal(SecondSalesTaxStatusKind.Unknown, expense.SecondSalesTaxStatus.Value.Kind);
+        Assert.Equal("CUSTOM_TAX_CODE", expense.SecondSalesTaxStatus.Value.WireValue);
     }
 
     [Fact]

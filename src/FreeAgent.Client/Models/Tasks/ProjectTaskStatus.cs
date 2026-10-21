@@ -19,5 +19,7 @@ public enum ProjectTaskStatus
 
     /// <summary>Hidden task (wire value: "Hidden").</summary>
     [JsonStringEnumMemberName("Hidden")]
-    Hidden
+    Hidden,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

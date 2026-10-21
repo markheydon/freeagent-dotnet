@@ -15,5 +15,7 @@ public enum SalesTaxPeriodRegistrationStatus
 
     /// <summary>Registered for sales tax (wire value: "Registered").</summary>
     [JsonStringEnumMemberName("Registered")]
-    Registered
+    Registered,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

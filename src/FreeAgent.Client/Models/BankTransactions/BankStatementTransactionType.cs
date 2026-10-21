@@ -78,5 +78,7 @@ public enum BankStatementTransactionType
 
     /// <summary>Other debit or credit. Sign follows the amount. This is the API default when the field is omitted.</summary>
     [JsonStringEnumMemberName("OTHER")]
-    Other
+    Other,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

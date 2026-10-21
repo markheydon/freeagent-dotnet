@@ -299,5 +299,7 @@ public enum CurrencyCode
     ZAR,
     /// <summary>Zambian kwacha.</summary>
     [JsonStringEnumMemberName("ZMK")]
-    ZMK
+    ZMK,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

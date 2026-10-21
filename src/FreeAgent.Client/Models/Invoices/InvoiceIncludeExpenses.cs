@@ -15,5 +15,7 @@ public enum InvoiceIncludeExpenses
 
     /// <summary>Separate lines grouped by expense.</summary>
     [JsonStringEnumMemberName("billed_grouped_by_expense")]
-    BilledGroupedByExpense
+    BilledGroupedByExpense,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

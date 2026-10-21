@@ -27,6 +27,7 @@ public class CurrencyCodeTests
     public void EnumMembers_MatchDocumentedCurrencyList()
     {
         var actual = Enum.GetValues<CurrencyCode>()
+            .Where(code => code != CurrencyCode.Unknown)
             .Select(code => code.ToString())
             .OrderBy(code => code, StringComparer.Ordinal)
             .ToArray();
@@ -75,15 +76,22 @@ public class CurrencyCodeTests
     }
 
     [Fact]
-    public void Deserialize_UnknownCode_ThrowsJsonException()
+    public void Deserialize_UnknownCode_ReturnsUnknownMember()
     {
-        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<CurrencyCode>("\"XXX\""));
+        var parsed = JsonSerializer.Deserialize<CurrencyCode>("\"XXX\"");
+
+        Assert.Equal(CurrencyCode.Unknown, parsed);
     }
 
     public static IEnumerable<object[]> AllCurrencyCodes()
     {
         foreach (var code in Enum.GetValues<CurrencyCode>())
         {
+            if (code == CurrencyCode.Unknown)
+            {
+                continue;
+            }
+
             yield return [code, code.ToString()];
         }
     }

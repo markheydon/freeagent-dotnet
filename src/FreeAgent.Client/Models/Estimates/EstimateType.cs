@@ -19,5 +19,7 @@ public enum EstimateType
 
     /// <summary>Proposal document.</summary>
     [JsonStringEnumMemberName("Proposal")]
-    Proposal
+    Proposal,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

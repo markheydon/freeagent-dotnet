@@ -16,4 +16,6 @@ public enum PayrollStudentLoanDeductionsPlan
     /// <summary>Plan 2 student loan.</summary>
     [JsonStringEnumMemberName("Plan 2")]
     Plan2,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

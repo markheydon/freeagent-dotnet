@@ -19,5 +19,7 @@ public enum DepreciationMethod
 
     /// <summary>No depreciation ledgers are posted.</summary>
     [JsonStringEnumMemberName("no_depreciation")]
-    NoDepreciation
+    NoDepreciation,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

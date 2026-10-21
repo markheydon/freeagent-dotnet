@@ -31,5 +31,8 @@ internal enum CategoryGroup
 
     /// <summary>Equities category.</summary>
     [JsonStringEnumMemberName("equities")]
-    Equities
+    Equities,
+
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

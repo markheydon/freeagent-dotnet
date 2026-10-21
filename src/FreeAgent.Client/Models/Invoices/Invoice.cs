@@ -154,7 +154,7 @@ public sealed class Invoice : IFreeAgentResource
     /// Construction Industry Scheme rate band name.
     /// </summary>
     [JsonPropertyName("cis_rate")]
-    public string? CisRate { get; set; }
+    public CisDeductionRate? CisRate { get; set; }
 
     /// <summary>
     /// CIS deduction rate percentage.

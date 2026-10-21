@@ -65,5 +65,7 @@ public enum BankAccountType
     /// Stripe bank account (read-only integration type).
     /// </summary>
     [JsonStringEnumMemberName("StripeBankAccount")]
-    StripeBankAccount
+    StripeBankAccount,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

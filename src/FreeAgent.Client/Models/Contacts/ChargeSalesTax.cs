@@ -19,5 +19,7 @@ public enum ChargeSalesTax
 
     /// <summary>Never charge (wire value: "Never").</summary>
     [JsonStringEnumMemberName("Never")]
-    Never
+    Never,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

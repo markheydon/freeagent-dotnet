@@ -31,5 +31,7 @@ public enum CapitalAssetHistoryEventType
     /// Asset disposal event.
     /// </summary>
     [JsonStringEnumMemberName("disposal")]
-    Disposal
+    Disposal,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

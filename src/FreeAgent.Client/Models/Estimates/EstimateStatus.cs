@@ -31,5 +31,7 @@ public enum EstimateStatus
 
     /// <summary>Estimate converted to an invoice.</summary>
     [JsonStringEnumMemberName("Invoiced")]
-    Invoiced
+    Invoiced,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

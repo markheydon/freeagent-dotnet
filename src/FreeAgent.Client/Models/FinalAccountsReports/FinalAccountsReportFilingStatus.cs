@@ -32,4 +32,6 @@ public enum FinalAccountsReportFilingStatus
     /// <summary>Marked as filed manually.</summary>
     [JsonStringEnumMemberName("marked_as_filed")]
     MarkedAsFiled,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

@@ -18,5 +18,6 @@ public enum CurrentAssetTaxReportingName
     /// <summary>Prepayments and accrued income.</summary>
     [JsonStringEnumMemberName("prepayments_and_accrued_income")]
     PrepaymentsAndAccruedIncome,
-
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

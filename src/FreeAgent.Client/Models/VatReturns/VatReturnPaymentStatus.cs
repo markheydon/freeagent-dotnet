@@ -16,4 +16,6 @@ public enum VatReturnPaymentStatus
     /// <summary>Payment marked as paid.</summary>
     [JsonStringEnumMemberName("marked_as_paid")]
     MarkedAsPaid,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

@@ -82,7 +82,7 @@ public sealed class CreditNoteItem
     /// Second sales tax status for universal accounts.
     /// </summary>
     [JsonPropertyName("second_sales_tax_status")]
-    public string? SecondSalesTaxStatus { get; set; }
+    public SecondSalesTaxStatus? SecondSalesTaxStatus { get; set; }
 
     /// <summary>
     /// Whether the line item suffers a CIS deduction.

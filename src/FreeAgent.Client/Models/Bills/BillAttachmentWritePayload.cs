@@ -31,7 +31,10 @@ public enum BillAttachmentContentType
 
     /// <summary>PDF document.</summary>
     [JsonStringEnumMemberName("application/x-pdf")]
-    Pdf
+    Pdf,
+
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }
 
 /// <summary>

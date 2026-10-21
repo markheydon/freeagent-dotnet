@@ -40,7 +40,7 @@ internal sealed class BillItemWritePayload
     public BillSalesTaxStatus? SalesTaxStatus { get; set; }
 
     [JsonPropertyName("second_sales_tax_status")]
-    public string? SecondSalesTaxStatus { get; set; }
+    public SecondSalesTaxStatus? SecondSalesTaxStatus { get; set; }
 
     [JsonPropertyName("unit")]
     public BillItemUnit? Unit { get; set; }

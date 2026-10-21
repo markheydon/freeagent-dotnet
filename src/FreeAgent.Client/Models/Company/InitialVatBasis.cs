@@ -15,5 +15,7 @@ public enum InitialVatBasis
 
     /// <summary>Invoice basis (wire value: "Invoice").</summary>
     [JsonStringEnumMemberName("Invoice")]
-    Invoice
+    Invoice,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

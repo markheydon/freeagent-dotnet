@@ -106,5 +106,6 @@ public enum UniversalAndUsAdminExpensesTaxReportingName
     /// <summary>Wages.</summary>
     [JsonStringEnumMemberName("wages")]
     Wages,
-
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

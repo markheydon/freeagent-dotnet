@@ -19,5 +19,7 @@ public enum ProjectBudgetUnits
 
     /// <summary>Monetary budget unit (wire value: "Monetary").</summary>
     [JsonStringEnumMemberName("Monetary")]
-    Monetary
+    Monetary,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

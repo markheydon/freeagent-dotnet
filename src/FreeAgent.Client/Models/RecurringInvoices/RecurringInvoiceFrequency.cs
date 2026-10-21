@@ -43,5 +43,7 @@ public enum RecurringInvoiceFrequency
 
     /// <summary>Two yearly recurrence.</summary>
     [JsonStringEnumMemberName("2-Yearly")]
-    TwoYearly
+    TwoYearly,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

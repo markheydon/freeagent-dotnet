@@ -67,5 +67,7 @@ public enum InvoiceItemType
 
     /// <summary>Stock unit.</summary>
     [JsonStringEnumMemberName("Stock")]
-    Stock
+    Stock,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

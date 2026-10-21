@@ -77,7 +77,7 @@
                                 <MudItem xs="12" sm="6">
                                     <MudPaper Class="probe-card" Elevation="0">
                                         <MudText Typo="Typo.caption">State</MudText>
-                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_bankFeed.State)</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_bankFeed.State?.ToString())</MudText>
                                     </MudPaper>
                                 </MudItem>
                                 <MudItem xs="12" sm="6">

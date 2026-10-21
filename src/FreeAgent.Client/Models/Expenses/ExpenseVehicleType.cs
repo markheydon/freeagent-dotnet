@@ -19,5 +19,7 @@ public enum ExpenseVehicleType
 
     /// <summary>Bicycle.</summary>
     [JsonStringEnumMemberName("Bicycle")]
-    Bicycle
+    Bicycle,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

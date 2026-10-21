@@ -27,5 +27,7 @@ public enum CategoryAutoSalesTaxRate
 
     /// <summary>Exempt (income categories only).</summary>
     [JsonStringEnumMemberName("Exempt")]
-    Exempt
+    Exempt,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

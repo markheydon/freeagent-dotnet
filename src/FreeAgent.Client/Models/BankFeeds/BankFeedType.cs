@@ -19,5 +19,7 @@ public enum BankFeedType
     /// Open Banking bank feed.
     /// </summary>
     [JsonStringEnumMemberName("open_banking")]
-    OpenBanking
+    OpenBanking,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

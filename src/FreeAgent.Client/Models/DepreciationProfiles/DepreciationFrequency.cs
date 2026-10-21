@@ -15,5 +15,7 @@ public enum DepreciationFrequency
 
     /// <summary>Depreciation ledgers are posted annually.</summary>
     [JsonStringEnumMemberName("annually")]
-    Annually
+    Annually,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

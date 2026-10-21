@@ -19,5 +19,7 @@ public enum BillSalesTaxStatus
 
     /// <summary>Item is out of scope for sales tax.</summary>
     [JsonStringEnumMemberName("OUT_OF_SCOPE")]
-    OutOfScope
+    OutOfScope,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

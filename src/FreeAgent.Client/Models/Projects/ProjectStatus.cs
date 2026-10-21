@@ -23,5 +23,7 @@ public enum ProjectStatus
 
     /// <summary>Hidden project (wire value: "Hidden").</summary>
     [JsonStringEnumMemberName("Hidden")]
-    Hidden
+    Hidden,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

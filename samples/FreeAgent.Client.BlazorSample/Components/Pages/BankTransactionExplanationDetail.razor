@@ -133,7 +133,7 @@
                             <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
                                 <MudText Typo="Typo.h5">Result summary</MudText>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_explanation.ResourceId</MudChip>
-                                @if (!string.IsNullOrWhiteSpace(_explanation.Type))
+                                @if (_explanation.Type is not null)
                                 {
                                     <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@_explanation.Type</MudChip>
                                 }

@@ -47,5 +47,7 @@ public enum InvoiceStatus
 
     /// <summary>Part written-off invoice.</summary>
     [JsonStringEnumMemberName("Part written-off")]
-    PartWrittenOff
+    PartWrittenOff,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

@@ -151,7 +151,7 @@
             item.BankAccountId?.ToString() ?? "-",
             item.FeedType?.ToString() ?? "-",
             item.BankServiceName,
-            item.State))
+            item.State?.ToString()))
         .ToList() ?? [];
 
     private async Task LoadBankFeedsAsync()

@@ -19,5 +19,7 @@ public enum CisDeductionRate
 
     /// <summary>Higher rate (wire value: "cis_higher").</summary>
     [JsonStringEnumMemberName("cis_higher")]
-    Higher
+    Higher,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

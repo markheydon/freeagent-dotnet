@@ -19,5 +19,7 @@ public enum BillRebillType
 
     /// <summary>Rebill at a fixed price factor.</summary>
     [JsonStringEnumMemberName("price")]
-    Price
+    Price,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }

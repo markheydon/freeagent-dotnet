@@ -15,5 +15,7 @@ public enum InvoiceIncludeEstimates
 
     /// <summary>Separate lines grouped by estimate.</summary>
     [JsonStringEnumMemberName("billed_grouped_by_estimate")]
-    BilledGroupedByEstimate
+    BilledGroupedByEstimate,
+    /// <summary>Undocumented or future FreeAgent wire value.</summary>
+    Unknown
 }
