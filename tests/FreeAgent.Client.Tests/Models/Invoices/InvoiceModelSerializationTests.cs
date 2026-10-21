@@ -347,7 +347,7 @@ public class InvoiceModelSerializationTests
 
         Assert.NotNull(item);
         Assert.Equal(3, item!.StockItemId);
-        Assert.Null(item.StockItemResource);
+        Assert.Null(item.StockItem);
     }
 
     [Fact]
@@ -368,7 +368,7 @@ public class InvoiceModelSerializationTests
 
         Assert.NotNull(item);
         Assert.Equal(5, item!.StockItemId);
-        Assert.Equal("Widget stock", item.StockItemResource?.Description);
+        Assert.Equal("Widget stock", item.StockItem?.Description);
     }
 
     [Fact]

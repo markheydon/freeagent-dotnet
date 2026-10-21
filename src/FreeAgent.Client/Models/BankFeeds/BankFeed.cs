@@ -76,4 +76,14 @@ public sealed class BankFeed : IFreeAgentResource
     /// </summary>
     [JsonPropertyName("sca_expires_at")]
     public DateTimeOffset? ScaExpiresAt { get; set; }
+
+    /// <summary>
+    /// Attaches a hydrated bank account to this bank feed.
+    /// </summary>
+    /// <param name="bankAccount">Bank account details.</param>
+    internal void AttachBankAccount(BankAccount bankAccount)
+    {
+        ArgumentNullException.ThrowIfNull(bankAccount);
+        BankAccountLink = new ExpandableField<BankAccount>(bankAccount.Url, bankAccount);
+    }
 }

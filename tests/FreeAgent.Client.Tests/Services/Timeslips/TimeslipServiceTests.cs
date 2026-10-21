@@ -539,6 +539,44 @@ public class TimeslipServiceTests
     }
 
     [Fact]
+    public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydration_FetchesBilledOnInvoice()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "timeslip": {
+                    "url": "https://api.freeagent.com/v2/timeslips/25",
+                    "billed_on_invoice": "https://api.freeagent.com/v2/invoices/88"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/88",
+                    "reference": "BILLED"
+                  }
+                }
+                """)
+            });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        var timeslip = await service.GetTimeslipAsync(
+            25,
+            new TimeslipGetOptions { IncludeBilledOnInvoice = true });
+
+        Assert.Equal("BILLED", timeslip.BilledOnInvoice?.Reference);
+    }
+
+    [Fact]
     public async System.Threading.Tasks.Task GetTimeslipAsync_WithHydrationOptions_SkipsFetchWhenLinksAlreadyExpanded()
     {
         var requestCount = 0;

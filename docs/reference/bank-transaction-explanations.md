@@ -67,14 +67,22 @@ var explanations = await client.BankTransactionExplanations.ListAsync(
 Task<BankTransactionExplanation> GetBankTransactionExplanationAsync(
     long bankTransactionExplanationId,
     CancellationToken cancellationToken = default)
+
+Task<BankTransactionExplanation> GetBankTransactionExplanationAsync(
+    long bankTransactionExplanationId,
+    BankTransactionExplanationGetOptions? options,
+    CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
 | `bankTransactionExplanationId` | `long` | Yes | - | path `:id` |
+| `options` | `BankTransactionExplanationGetOptions?` | No | `null` | - |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/bank_transaction_explanations/:id`
+
+`BankTransactionExplanationGetOptions` exposes `Include*` flags for category, project, bank account, paid invoice, paid credit note, paid bill, paid user, direct contact, transfer bank account, and stock item links.
 
 **Sample:**
 

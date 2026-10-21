@@ -85,4 +85,4 @@ var stockItem = await client.StockItems.GetStockItemAsync(3);
 
 Typed URI reference for `stock_item` links on invoice lines, price list items, and other resources. Build with `client.Urls.StockItem(id)` or `StockItemReference.Parse(uri)`.
 
-**Breaking change:** `InvoiceItem.StockItem` and `CreditNoteItem.StockItem` are now `StockItemReference?` (replacing the previous `string?` write property). Read responses expose `StockItemId` and `StockItemResource` instead of `StockItemUri`.
+**Breaking change:** `InvoiceItem.StockItem` and `CreditNoteItem.StockItem` are now `StockItemReference?` (replacing the previous `string?` write property). Read responses expose `StockItemId` and nested `StockItem` instead of `StockItemUri`.

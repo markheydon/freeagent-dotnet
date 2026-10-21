@@ -1,3 +1,4 @@
+using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Models.BankFeeds;
 
@@ -46,7 +47,20 @@ public sealed class BankFeedsService
     /// <param name="bankFeedId">Bank feed identifier from the resource URL</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Bank feed details</returns>
-    public async Task<BankFeed> GetBankFeedAsync(long bankFeedId, CancellationToken cancellationToken = default)
+    public Task<BankFeed> GetBankFeedAsync(long bankFeedId, CancellationToken cancellationToken = default) =>
+        GetBankFeedAsync(bankFeedId, options: null, cancellationToken);
+
+    /// <summary>
+    /// Gets a single bank feed by identifier with optional linked-resource hydration.
+    /// </summary>
+    /// <param name="bankFeedId">Bank feed identifier from the resource URL</param>
+    /// <param name="options">Optional hydration settings</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Bank feed details</returns>
+    public async Task<BankFeed> GetBankFeedAsync(
+        long bankFeedId,
+        BankFeedGetOptions? options,
+        CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bankFeedId);
 
@@ -58,6 +72,12 @@ public sealed class BankFeedsService
         {
             throw new FreeAgentApiException("Bank feed data missing from API response");
         }
+
+        await LinkedResourceHydration.HydrateBankAccountAsync(
+            response.BankFeed,
+            _requestClient,
+            options?.IncludeBankAccount == true,
+            cancellationToken);
 
         return response.BankFeed;
     }

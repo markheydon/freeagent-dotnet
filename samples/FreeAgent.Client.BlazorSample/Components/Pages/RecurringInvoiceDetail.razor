@@ -181,7 +181,8 @@
                 new RecurringInvoiceGetOptions
                 {
                     IncludeContact = _includeContact,
-                    IncludeProject = _includeProject
+                    IncludeProject = _includeProject,
+                    IncludeBankAccount = true
                 });
 
             _loadedRecurringInvoiceId = _recurringInvoiceId;

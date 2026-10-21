@@ -181,7 +181,13 @@
             {
                 _bill = await client.Bills.GetBillAsync(
                     _billId.Value,
-                    new BillGetOptions { IncludeContact = true, IncludeProject = true });
+                    new BillGetOptions
+                    {
+                        IncludeContact = true,
+                        IncludeProject = true,
+                        IncludeRebillToProject = true,
+                        IncludeRebilledOnInvoice = true
+                    });
                 _isPaidByHirePurchase = _bill.IsPaidByHirePurchase ?? false;
                 _operationMessage = $"Loaded bill {_billId.Value}: {ValueOrFallback(_bill.Reference)}";
                 return $"bills/{_billId}";

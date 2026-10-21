@@ -82,7 +82,7 @@ Task<RecurringInvoice> GetRecurringInvoiceAsync(
 
 **HTTP:** `GET /v2/recurring_invoices/:id`
 
-When `options.IncludeContact` or `options.IncludeProject` is `true`, the SDK fetches linked resources when the response contains only URIs.
+When `options.IncludeContact`, `options.IncludeProject`, or `options.IncludeBankAccount` is `true`, the SDK fetches linked resources when the response contains only URIs.
 
 **Sample:**
 

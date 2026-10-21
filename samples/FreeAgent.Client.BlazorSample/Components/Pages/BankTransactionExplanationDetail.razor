@@ -237,7 +237,16 @@
         await RunOperationAsync(
             async client =>
             {
-                _explanation = await client.BankTransactionExplanations.GetBankTransactionExplanationAsync(_explanationId.Value);
+                _explanation = await client.BankTransactionExplanations.GetBankTransactionExplanationAsync(
+                    _explanationId.Value,
+                    new BankTransactionExplanationGetOptions
+                    {
+                        IncludeCategory = true,
+                        IncludeProject = true,
+                        IncludeBankAccount = true,
+                        IncludePaidInvoice = true,
+                        IncludePaidBill = true
+                    });
                 _operationMessage = $"Loaded explanation {_explanationId.Value}.";
                 return $"bank_transaction_explanations/{_explanationId}";
             },

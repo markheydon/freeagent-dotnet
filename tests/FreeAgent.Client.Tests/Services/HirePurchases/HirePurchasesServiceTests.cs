@@ -89,6 +89,39 @@ public class HirePurchasesServiceTests
     }
 
     [Fact]
+    public async Task GetHirePurchaseAsync_WithHydration_FetchesBill()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "hire_purchase": {
+                    "url": "https://api.freeagent.com/v2/hire_purchases/42",
+                    "bill": "https://api.freeagent.com/v2/bills/7"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "bill": {
+                    "url": "https://api.freeagent.com/v2/bills/7",
+                    "reference": "HP-BILL"
+                  }
+                }
+                """)
+            });
+
+        var service = CreateService(handler);
+        var hirePurchase = await service.GetHirePurchaseAsync(42, new HirePurchaseGetOptions { IncludeBill = true });
+
+        Assert.Equal("HP-BILL", hirePurchase.Bill?.Reference);
+    }
+
+    [Fact]
     public async Task GetHirePurchaseAsync_MissingPayload_Throws()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)

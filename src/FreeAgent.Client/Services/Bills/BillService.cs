@@ -222,6 +222,18 @@ public sealed class BillService
             options?.IncludeProject == true,
             cancellationToken);
 
+        await LinkedResourceHydration.HydrateRebillToProjectAsync(
+            response.Bill,
+            _requestClient,
+            options?.IncludeRebillToProject == true,
+            cancellationToken);
+
+        await LinkedResourceHydration.HydrateRebilledOnInvoiceAsync(
+            response.Bill,
+            _requestClient,
+            options?.IncludeRebilledOnInvoice == true,
+            cancellationToken);
+
         return response.Bill;
     }
 

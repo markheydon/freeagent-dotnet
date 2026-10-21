@@ -212,6 +212,12 @@ public sealed class InvoiceService
             options?.IncludeProject == true,
             cancellationToken);
 
+        await LinkedResourceHydration.HydrateBankAccountAsync(
+            response.Invoice,
+            _requestClient,
+            options?.IncludeBankAccount == true,
+            cancellationToken);
+
         return response.Invoice;
     }
 

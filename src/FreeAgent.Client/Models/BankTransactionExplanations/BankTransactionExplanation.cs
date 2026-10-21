@@ -5,6 +5,7 @@ using FreeAgent.Client.Models.BankTransactions;
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.Categories;
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
@@ -300,6 +301,18 @@ public sealed class BankTransactionExplanation : IFreeAgentResource
     public long? PaidCreditNoteId => GetPaidInvoiceLinkId("credit_notes");
 
     /// <summary>
+    /// Hydrated credit note when <c>paid_invoice</c> links to a credit note and <see cref="BankTransactionExplanationGetOptions.IncludePaidCreditNote"/> is used.
+    /// </summary>
+    [JsonIgnore]
+    internal ExpandableField<CreditNote>? PaidCreditNoteHydrationLink { get; set; }
+
+    /// <summary>
+    /// Credit note when returned nested on the wire or hydrated via <see cref="BankTransactionExplanationGetOptions.IncludePaidCreditNote"/>.
+    /// </summary>
+    [JsonIgnore]
+    public CreditNote? PaidCreditNote => PaidCreditNoteHydrationLink?.Value;
+
+    /// <summary>
     /// Foreign currency value when explaining a foreign currency invoice.
     /// </summary>
     [JsonPropertyName("foreign_currency_value")]
@@ -477,6 +490,66 @@ public sealed class BankTransactionExplanation : IFreeAgentResource
     /// </summary>
     [JsonPropertyName("updated_at")]
     public DateTimeOffset? UpdatedAt { get; set; }
+
+    internal void AttachCategory(Category category)
+    {
+        ArgumentNullException.ThrowIfNull(category);
+        CategoryLink = new ExpandableField<Category>(category.Url, category);
+    }
+
+    internal void AttachProject(Project project)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        ProjectLink = new ExpandableField<Project>(project.Url, project);
+    }
+
+    internal void AttachBankAccount(BankAccount bankAccount)
+    {
+        ArgumentNullException.ThrowIfNull(bankAccount);
+        BankAccountLink = new ExpandableField<BankAccount>(bankAccount.Url, bankAccount);
+    }
+
+    internal void AttachPaidInvoice(Invoice invoice)
+    {
+        ArgumentNullException.ThrowIfNull(invoice);
+        PaidInvoiceLink = new ExpandableField<Invoice>(invoice.Url, invoice);
+    }
+
+    internal void AttachPaidCreditNote(CreditNote creditNote)
+    {
+        ArgumentNullException.ThrowIfNull(creditNote);
+        PaidCreditNoteHydrationLink = new ExpandableField<CreditNote>(creditNote.Url, creditNote);
+    }
+
+    internal void AttachPaidBill(Bill bill)
+    {
+        ArgumentNullException.ThrowIfNull(bill);
+        PaidBillLink = new ExpandableField<Bill>(bill.Url, bill);
+    }
+
+    internal void AttachPaidUser(User user)
+    {
+        ArgumentNullException.ThrowIfNull(user);
+        PaidUserLink = new ExpandableField<User>(user.Url, user);
+    }
+
+    internal void AttachDirectContact(Contact contact)
+    {
+        ArgumentNullException.ThrowIfNull(contact);
+        DirectContactLink = new ExpandableField<Contact>(contact.Url, contact);
+    }
+
+    internal void AttachTransferBankAccount(BankAccount bankAccount)
+    {
+        ArgumentNullException.ThrowIfNull(bankAccount);
+        TransferBankAccountLink = new ExpandableField<BankAccount>(bankAccount.Url, bankAccount);
+    }
+
+    internal void AttachStockItem(StockItem stockItem)
+    {
+        ArgumentNullException.ThrowIfNull(stockItem);
+        StockItemLink = new ExpandableField<StockItem>(stockItem.Url, stockItem);
+    }
 
     private long? GetPaidInvoiceLinkId(string resourceSegment)
     {

@@ -19,4 +19,9 @@ public sealed class TimeslipGetOptions
     /// When <see langword="true"/>, fetches the linked user when the response contains only a user URI.
     /// </summary>
     public bool IncludeUser { get; init; }
+
+    /// <summary>
+    /// When <see langword="true"/>, fetches the billed invoice when the timeslip response contains only an invoice URI.
+    /// </summary>
+    public bool IncludeBilledOnInvoice { get; init; }
 }

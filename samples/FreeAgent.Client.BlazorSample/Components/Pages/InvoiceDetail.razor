@@ -195,7 +195,12 @@
             {
                 _invoice = await client.Invoices.GetInvoiceAsync(
                     _invoiceId.Value,
-                    new InvoiceGetOptions { IncludeContact = true, IncludeProject = true });
+                    new InvoiceGetOptions
+                    {
+                        IncludeContact = true,
+                        IncludeProject = true,
+                        IncludeBankAccount = true
+                    });
                 _operationMessage = $"Loaded invoice {_invoiceId.Value}: {ValueOrFallback(_invoice.Reference)}";
                 return $"invoices/{_invoiceId}";
             },

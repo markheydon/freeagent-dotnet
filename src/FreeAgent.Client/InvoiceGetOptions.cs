@@ -14,4 +14,9 @@ public sealed class InvoiceGetOptions
     /// When <see langword="true"/>, fetches the project when the invoice response contains only a project URI.
     /// </summary>
     public bool IncludeProject { get; init; }
+
+    /// <summary>
+    /// When <see langword="true"/>, fetches the bank account when the invoice response contains only a bank account URI.
+    /// </summary>
+    public bool IncludeBankAccount { get; init; }
 }

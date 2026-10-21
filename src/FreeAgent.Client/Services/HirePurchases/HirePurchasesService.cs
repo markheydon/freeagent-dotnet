@@ -1,3 +1,4 @@
+using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Models.HirePurchases;
 
@@ -45,7 +46,20 @@ public sealed class HirePurchasesService
     /// <param name="hirePurchaseId">Hire purchase identifier from the resource URL</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Hire purchase details</returns>
-    public async Task<HirePurchase> GetHirePurchaseAsync(long hirePurchaseId, CancellationToken cancellationToken = default)
+    public Task<HirePurchase> GetHirePurchaseAsync(long hirePurchaseId, CancellationToken cancellationToken = default) =>
+        GetHirePurchaseAsync(hirePurchaseId, options: null, cancellationToken);
+
+    /// <summary>
+    /// Gets a single hire purchase by identifier with optional linked-resource hydration.
+    /// </summary>
+    /// <param name="hirePurchaseId">Hire purchase identifier from the resource URL</param>
+    /// <param name="options">Optional hydration settings</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Hire purchase details</returns>
+    public async Task<HirePurchase> GetHirePurchaseAsync(
+        long hirePurchaseId,
+        HirePurchaseGetOptions? options,
+        CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(hirePurchaseId);
 
@@ -57,6 +71,24 @@ public sealed class HirePurchasesService
         {
             throw new FreeAgentApiException("Hire purchase data missing from API response");
         }
+
+        await LinkedResourceHydration.HydrateBillAsync(
+            response.HirePurchase,
+            _requestClient,
+            options?.IncludeBill == true,
+            cancellationToken);
+
+        await LinkedResourceHydration.HydrateLiabilitiesOverOneYearCategoryAsync(
+            response.HirePurchase,
+            _requestClient,
+            options?.IncludeLiabilitiesOverOneYearCategory == true,
+            cancellationToken);
+
+        await LinkedResourceHydration.HydrateLiabilitiesUnderOneYearCategoryAsync(
+            response.HirePurchase,
+            _requestClient,
+            options?.IncludeLiabilitiesUnderOneYearCategory == true,
+            cancellationToken);
 
         return response.HirePurchase;
     }

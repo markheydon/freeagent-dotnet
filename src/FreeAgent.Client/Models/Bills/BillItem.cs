@@ -167,7 +167,7 @@ public sealed class BillItem
     /// Stock item when returned nested on the wire.
     /// </summary>
     [JsonIgnore]
-    public StockItem? StockItemResource => StockItemLink?.Value;
+    public StockItem? StockItem => StockItemLink?.Value;
 
     /// <summary>
     /// Description of the stock item. Read-only when a stock item is set.

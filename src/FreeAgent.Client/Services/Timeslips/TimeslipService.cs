@@ -281,6 +281,12 @@ public sealed class TimeslipService
             options?.IncludeUser == true,
             cancellationToken);
 
+        await LinkedResourceHydration.HydrateBilledOnInvoiceAsync(
+            response.Timeslip,
+            _requestClient,
+            options?.IncludeBilledOnInvoice == true,
+            cancellationToken);
+
         return response.Timeslip;
     }
 

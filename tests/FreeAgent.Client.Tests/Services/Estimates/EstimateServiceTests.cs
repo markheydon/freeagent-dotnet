@@ -648,6 +648,42 @@ public class EstimateServiceTests
     }
 
     [Fact]
+    public async Task GetEstimateAsync_WithHydration_FetchesLinkedInvoice()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "estimate": {
+                    "url": "https://api.freeagent.com/v2/estimates/42",
+                    "invoice": "https://api.freeagent.com/v2/invoices/99"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/99",
+                    "reference": "EST-INV"
+                  }
+                }
+                """)
+            });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new EstimateService(client);
+
+        var estimate = await service.GetEstimateAsync(42, new EstimateGetOptions { IncludeInvoice = true });
+
+        Assert.Equal("EST-INV", estimate.Invoice?.Reference);
+    }
+
+    [Fact]
     public async Task ListAutoPagingAsync_YieldsAllPages()
     {
         var page = 0;

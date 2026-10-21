@@ -45,14 +45,22 @@ var hirePurchases = await client.HirePurchases.ListAsync();
 
 ```csharp
 Task<HirePurchase> GetHirePurchaseAsync(long hirePurchaseId, CancellationToken cancellationToken = default)
+
+Task<HirePurchase> GetHirePurchaseAsync(
+    long hirePurchaseId,
+    HirePurchaseGetOptions? options,
+    CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
 | `hirePurchaseId` | `long` | Yes | - | path `:id` |
+| `options` | `HirePurchaseGetOptions?` | No | `null` | - |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/hire_purchases/:id`
+
+Optional hydration: `IncludeBill`, `IncludeLiabilitiesOverOneYearCategory`, `IncludeLiabilitiesUnderOneYearCategory`.
 
 **Sample:**
 

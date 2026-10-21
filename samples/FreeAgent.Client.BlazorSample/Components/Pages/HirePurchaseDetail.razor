@@ -149,7 +149,14 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _hirePurchase = await client.HirePurchases.GetHirePurchaseAsync(_hirePurchaseId.Value);
+            _hirePurchase = await client.HirePurchases.GetHirePurchaseAsync(
+                _hirePurchaseId.Value,
+                new HirePurchaseGetOptions
+                {
+                    IncludeBill = true,
+                    IncludeLiabilitiesOverOneYearCategory = true,
+                    IncludeLiabilitiesUnderOneYearCategory = true
+                });
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
