@@ -19,6 +19,7 @@ using FreeAgent.Client.Services.CreditNotes;
 using FreeAgent.Client.Services.EmailAddresses;
 using FreeAgent.Client.Services.Estimates;
 using FreeAgent.Client.Services.Expenses;
+using FreeAgent.Client.Services.FinalAccountsReports;
 using FreeAgent.Client.Services.HirePurchases;
 using FreeAgent.Client.Services.IncomeTaxReturns;
 using FreeAgent.Client.Services.Invoices;
@@ -227,6 +228,11 @@ public sealed class FreeAgentClient : IDisposable
     public SelfAssessmentReturnsService SelfAssessmentReturns { get; }
 
     /// <summary>
+    /// Final accounts reports API service.
+    /// </summary>
+    public FinalAccountsReportsService FinalAccountsReports { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -319,6 +325,7 @@ public sealed class FreeAgentClient : IDisposable
         CorporationTaxReturns = new CorporationTaxReturnsService(_httpClient);
         IncomeTaxReturns = new IncomeTaxReturnsService(_httpClient);
         SelfAssessmentReturns = new SelfAssessmentReturnsService(_httpClient);
+        FinalAccountsReports = new FinalAccountsReportsService(_httpClient);
     }
 
     /// <summary>

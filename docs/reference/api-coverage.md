@@ -38,6 +38,7 @@ For how resources relate to each other and a suggested implementation order, see
 | [Corporation tax returns](corporation-tax-returns.md) | `client.CorporationTaxReturns` | [Corporation tax returns](https://dev.freeagent.com/docs/corporation_tax_returns) |
 | [Income tax returns](income-tax-returns.md) | `client.IncomeTaxReturns` | [Income tax returns](https://dev.freeagent.com/docs/income_tax_returns) |
 | [Self assessment returns](self-assessment-returns.md) | `client.SelfAssessmentReturns` | [Self assessment returns](https://dev.freeagent.com/docs/self_assessment_returns) |
+| [Final accounts reports](final-accounts-reports.md) | `client.FinalAccountsReports` | [Final accounts reports](https://dev.freeagent.com/docs/final_accounts_reports) |
 | [Depreciation profiles](depreciation-profiles.md) | `CapitalAssetPurchaseWrite` / `DepreciationProfile` | [Depreciation profiles](https://dev.freeagent.com/docs/depreciation_profiles) |
 | [Bank accounts](bank-accounts.md) | `client.BankAccounts` | [Bank accounts](https://dev.freeagent.com/docs/bank_accounts) |
 | [Bank feeds](bank-feeds.md) | `client.BankFeeds` | [Bank feeds](https://dev.freeagent.com/docs/bank_feeds) |
