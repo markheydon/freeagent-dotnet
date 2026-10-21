@@ -1,7 +1,7 @@
 using System.Globalization;
 using FreeAgent.Client.Infrastructure.Http;
-using BalanceSheetModel = FreeAgent.Client.Models.BalanceSheet.BalanceSheet;
 using FreeAgent.Client.Models.BalanceSheet;
+using BalanceSheetModel = FreeAgent.Client.Models.BalanceSheet.BalanceSheet;
 
 namespace FreeAgent.Client.Services.BalanceSheet;
 
