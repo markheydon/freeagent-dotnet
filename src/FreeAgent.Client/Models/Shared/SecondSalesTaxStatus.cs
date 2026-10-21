@@ -115,7 +115,7 @@ public sealed class SecondSalesTaxStatusJsonConverter : JsonConverter<SecondSale
         var wire = reader.GetString();
         if (string.IsNullOrWhiteSpace(wire))
         {
-            return default;
+            throw new JsonException($"Cannot parse empty value for {nameof(SecondSalesTaxStatus)}.");
         }
 
         return SecondSalesTaxStatus.FromWire(wire);
