@@ -1,4 +1,5 @@
 @page "/journal-sets"
+@using System.Globalization
 @using FreeAgent.Client.Models.JournalSets
 @using FreeAgent.Client.BlazorSample.Services
 @inject TokenStore TokenStore
@@ -160,7 +161,7 @@
         _error = null;
         _wireApiResponse = string.Empty;
 
-        const string diagnosticsEndpoint = "journal_sets";
+        var diagnosticsEndpoint = BuildDiagnosticsEndpoint();
 
         try
         {
@@ -241,6 +242,30 @@
         {
             _loading = false;
         }
+    }
+
+    private string BuildDiagnosticsEndpoint()
+    {
+        var query = new List<string>();
+
+        if (_fromDate is DateTime from)
+        {
+            query.Add($"from_date={DateOnly.FromDateTime(from).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
+        }
+
+        if (_toDate is DateTime to)
+        {
+            query.Add($"to_date={DateOnly.FromDateTime(to).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(_tag))
+        {
+            query.Add($"tag={Uri.EscapeDataString(_tag)}");
+        }
+
+        return query.Count == 0
+            ? "journal_sets"
+            : $"journal_sets?{string.Join('&', query)}";
     }
 
     private void InspectRowAsync(int index)
