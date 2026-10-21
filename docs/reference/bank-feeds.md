@@ -45,14 +45,22 @@ var bankFeeds = await client.BankFeeds.ListAsync();
 
 ```csharp
 Task<BankFeed> GetBankFeedAsync(long bankFeedId, CancellationToken cancellationToken = default)
+
+Task<BankFeed> GetBankFeedAsync(
+    long bankFeedId,
+    BankFeedGetOptions? options,
+    CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
 | `bankFeedId` | `long` | Yes | - | path `:id` |
+| `options` | `BankFeedGetOptions?` | No | `null` | - |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/bank_feeds/:id`
+
+When `options.IncludeBankAccount` is `true`, the SDK fetches the bank account when the response contains only a URI.
 
 **Sample:**
 

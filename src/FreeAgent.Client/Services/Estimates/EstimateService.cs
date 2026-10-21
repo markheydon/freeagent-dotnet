@@ -239,6 +239,12 @@ public sealed class EstimateService
             options?.IncludeProject == true,
             cancellationToken);
 
+        await LinkedResourceHydration.HydrateInvoiceAsync(
+            response.Estimate,
+            _requestClient,
+            options?.IncludeInvoice == true,
+            cancellationToken);
+
         return response.Estimate;
     }
 

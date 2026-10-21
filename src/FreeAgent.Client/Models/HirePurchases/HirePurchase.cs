@@ -91,4 +91,22 @@ public sealed class HirePurchase : IFreeAgentResource
     /// </summary>
     [JsonIgnore]
     public Category? LiabilitiesUnderOneYearCategory => LiabilitiesUnderOneYearCategoryLink?.Value;
+
+    internal void AttachBill(Bill bill)
+    {
+        ArgumentNullException.ThrowIfNull(bill);
+        BillLink = new ExpandableField<Bill>(bill.Url, bill);
+    }
+
+    internal void AttachLiabilitiesOverOneYearCategory(Category category)
+    {
+        ArgumentNullException.ThrowIfNull(category);
+        LiabilitiesOverOneYearCategoryLink = new ExpandableField<Category>(category.Url, category);
+    }
+
+    internal void AttachLiabilitiesUnderOneYearCategory(Category category)
+    {
+        ArgumentNullException.ThrowIfNull(category);
+        LiabilitiesUnderOneYearCategoryLink = new ExpandableField<Category>(category.Url, category);
+    }
 }

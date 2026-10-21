@@ -118,7 +118,7 @@ The official FreeAgent docs show a singular `price_list_item` path for delete; t
 | `CategoryNominalCode` | `string?` | `category` (URI) |
 | `Category` | `Category?` | nested `category` |
 | `StockItemId` | `long?` | `stock_item` (URI) |
-| `StockItemResource` | `StockItem?` | nested `stock_item` |
+| `StockItem` | `StockItem?` | nested `stock_item` |
 
 ### CreatePriceListItemRequest / UpdatePriceListItemRequest
 

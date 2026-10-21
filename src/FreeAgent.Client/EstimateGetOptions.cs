@@ -14,4 +14,9 @@ public sealed class EstimateGetOptions
     /// When <see langword="true"/>, fetches the project when the estimate response contains only a project URI.
     /// </summary>
     public bool IncludeProject { get; init; }
+
+    /// <summary>
+    /// When <see langword="true"/>, fetches the linked invoice when the estimate response contains only an invoice URI.
+    /// </summary>
+    public bool IncludeInvoice { get; init; }
 }

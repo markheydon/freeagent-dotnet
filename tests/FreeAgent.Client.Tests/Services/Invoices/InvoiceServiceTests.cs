@@ -485,6 +485,42 @@ public class InvoiceServiceTests
     }
 
     [Fact]
+    public async Task GetInvoiceAsync_WithHydration_FetchesBankAccount()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/42",
+                    "bank_account": "https://api.freeagent.com/v2/bank_accounts/5"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "bank_account": {
+                    "url": "https://api.freeagent.com/v2/bank_accounts/5",
+                    "name": "Current account"
+                  }
+                }
+                """)
+            });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        var invoice = await service.GetInvoiceAsync(42, new InvoiceGetOptions { IncludeBankAccount = true });
+
+        Assert.Equal("Current account", invoice.BankAccount?.Name);
+    }
+
+    [Fact]
     public async Task ListAutoPagingAsync_YieldsAllPages()
     {
         var page = 0;

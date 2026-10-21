@@ -83,7 +83,7 @@ Layers describe **dependency pressure**, not a mandatory backlog. A resource in 
 
 Sales and Purchases are implemented. See [API coverage](../reference/api-coverage.md) for the current SDK surface, and [Sales cluster SDK patterns](api-entity-map/sales.md#sales-cluster-sdk-patterns) for the transition, line-item, PDF, and email patterns those resources share.
 
-**Banking** is the next dependency-heavy cluster. **Bank accounts** and **bank transactions** are implemented (`client.BankAccounts`, `client.BankTransactions`). Bank transaction explanations are still outstanding. Explanations connect payments back to invoices and bills (`paid_invoice`, `paid_bill`).
+**Banking** is implemented (`client.BankAccounts`, `client.BankTransactions`, `client.BankTransactionExplanations`, `client.BankFeeds`). Explanations connect payments back to invoices and bills (`paid_invoice`, `paid_bill`).
 
 Links that stay opaque until later clusters include `property` (landlord companies only) and capital-asset URIs on expenses.
 

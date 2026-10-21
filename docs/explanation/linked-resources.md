@@ -164,6 +164,26 @@ await client.Projects.UpdateProjectAsync(
 
 Line item updates require `InvoiceItem.ItemId`. The SDK maps this from the wire `id` attribute or from a line-item `url` when present.
 
+Estimates, timeslips, and bills expose read-only invoice links after conversion or billing:
+
+| Resource | Read property | Hydration flag |
+|----------|---------------|----------------|
+| `Estimate` | `Invoice`, `InvoiceId` | `EstimateGetOptions.IncludeInvoice` |
+| `Timeslip` | `BilledOnInvoice`, `BilledOnInvoiceId` | `TimeslipGetOptions.IncludeBilledOnInvoice` |
+| `Bill` | `RebilledOnInvoice`, `RebilledOnInvoiceId`, `RebilledOnInvoiceItemId` | `BillGetOptions.IncludeRebilledOnInvoice` (invoice URIs only) |
+
+`BillGetOptions.IncludeRebillToProject` hydrates the rebill target project (`RebillToProject` / `RebillToProjectId`), distinct from the bill's optional billing `Project`.
+
+Sales documents support remittance bank account hydration on single GET:
+
+| Resource | Flag |
+|----------|------|
+| `Invoice` | `InvoiceGetOptions.IncludeBankAccount` |
+| `CreditNote` | `CreditNoteGetOptions.IncludeBankAccount` |
+| `RecurringInvoice` | `RecurringInvoiceGetOptions.IncludeBankAccount` |
+
+Bank transaction explanations, bank feeds, and hire purchases accept `*GetOptions` on GET with `Include*` flags for category, project, bank account, paid invoice or bill, and other documented URI targets. See the API coverage reference for each service.
+
 ## List filters and inbound URLs
 
 List methods accept typed `*Reference` parameters **or** `long? *Id` sugar parameters — supply one, not both. Use `client.Urls` to build references when you have an id from a webhook payload or external system:

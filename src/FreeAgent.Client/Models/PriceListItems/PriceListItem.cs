@@ -114,7 +114,7 @@ public sealed class PriceListItem : IFreeAgentResource
     /// Stock item when returned nested on the wire.
     /// </summary>
     [JsonIgnore]
-    public StockItem? StockItemResource => StockItemLink?.Value;
+    public StockItem? StockItem => StockItemLink?.Value;
 
     /// <summary>
     /// Creation timestamp (UTC).

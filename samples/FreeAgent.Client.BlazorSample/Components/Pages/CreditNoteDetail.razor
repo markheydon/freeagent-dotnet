@@ -186,7 +186,12 @@
             {
                 _creditNote = await client.CreditNotes.GetCreditNoteAsync(
                     _creditNoteId.Value,
-                    new CreditNoteGetOptions { IncludeContact = true, IncludeProject = true });
+                    new CreditNoteGetOptions
+                    {
+                        IncludeContact = true,
+                        IncludeProject = true,
+                        IncludeBankAccount = true
+                    });
                 _operationMessage = $"Loaded credit note {_creditNoteId.Value}: {ValueOrFallback(_creditNote.Reference)}";
                 return $"credit_notes/{_creditNoteId}";
             },

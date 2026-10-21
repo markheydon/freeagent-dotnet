@@ -169,6 +169,12 @@ public sealed class RecurringInvoiceService
             options?.IncludeProject == true,
             cancellationToken);
 
+        await LinkedResourceHydration.HydrateBankAccountAsync(
+            response.RecurringInvoice,
+            _requestClient,
+            options?.IncludeBankAccount == true,
+            cancellationToken);
+
         return response.RecurringInvoice;
     }
 

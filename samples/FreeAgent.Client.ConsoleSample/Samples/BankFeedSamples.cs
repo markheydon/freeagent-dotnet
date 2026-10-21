@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using FreeAgent.Client;
 using FreeAgent.Client.Models.BankFeeds;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
@@ -34,7 +35,10 @@ internal sealed class BankFeedSamples(SampleContext context) : IConsoleSamplePro
         }
 
         var bankFeedId = bankFeeds[0].ResourceId;
-        var detail = await context.Client.BankFeeds.GetBankFeedAsync(bankFeedId, cancellationToken);
+        var detail = await context.Client.BankFeeds.GetBankFeedAsync(
+            bankFeedId,
+            new BankFeedGetOptions { IncludeBankAccount = true },
+            cancellationToken);
 
         SampleOutput.WriteHeader("Bank feed detail");
         SampleOutput.WriteField("Id", detail.ResourceId);

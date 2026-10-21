@@ -50,6 +50,34 @@ public class BillModelSerializationTests
     }
 
     [Fact]
+    public void DeserializeBill_MapsRebilledInvoiceAndItemIdsFromUri()
+    {
+        const string invoiceItemJson = """
+            {
+              "url": "https://api.freeagent.com/v2/bills/1",
+              "rebilled_on_invoice_item": "https://api.freeagent.com/v2/invoice_items/17"
+            }
+            """;
+        const string invoiceJson = """
+            {
+              "url": "https://api.freeagent.com/v2/bills/2",
+              "rebilled_on_invoice_item": "https://api.freeagent.com/v2/invoices/9"
+            }
+            """;
+
+        var fromItem = JsonSerializer.Deserialize<Bill>(invoiceItemJson, FreeAgentJsonSerializer.Options);
+        var fromInvoice = JsonSerializer.Deserialize<Bill>(invoiceJson, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(fromItem);
+        Assert.Equal(17, fromItem!.RebilledOnInvoiceItemId);
+        Assert.Null(fromItem.RebilledOnInvoiceId);
+
+        Assert.NotNull(fromInvoice);
+        Assert.Equal(9, fromInvoice!.RebilledOnInvoiceId);
+        Assert.Null(fromInvoice.RebilledOnInvoiceItemId);
+    }
+
+    [Fact]
     public void DeserializeBillItem_MapsBillIdFromBillLink()
     {
         const string json = """

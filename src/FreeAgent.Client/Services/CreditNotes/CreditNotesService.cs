@@ -213,6 +213,12 @@ public sealed class CreditNotesService
             options?.IncludeProject == true,
             cancellationToken);
 
+        await LinkedResourceHydration.HydrateBankAccountAsync(
+            response.CreditNote,
+            _requestClient,
+            options?.IncludeBankAccount == true,
+            cancellationToken);
+
         return response.CreditNote;
     }
 

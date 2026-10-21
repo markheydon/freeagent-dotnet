@@ -161,6 +161,42 @@ public class BillServiceTests
     }
 
     [Fact]
+    public async Task GetBillAsync_WithHydration_FetchesRebilledInvoice()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "bill": {
+                    "url": "https://api.freeagent.com/v2/bills/42",
+                    "rebilled_on_invoice_item": "https://api.freeagent.com/v2/invoices/99"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/99",
+                    "reference": "REBILL"
+                  }
+                }
+                """)
+            });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new BillService(client);
+
+        var bill = await service.GetBillAsync(42, new BillGetOptions { IncludeRebilledOnInvoice = true });
+
+        Assert.Equal("REBILL", bill.RebilledOnInvoice?.Reference);
+    }
+
+    [Fact]
     public async Task GetBillAsync_MissingPayload_Throws()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)

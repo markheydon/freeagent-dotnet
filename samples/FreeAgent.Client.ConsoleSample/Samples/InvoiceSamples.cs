@@ -78,7 +78,12 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         var invoice = await context.Data.GetFirstInvoiceAsync(cancellationToken);
         var detail = await context.Client.Invoices.GetInvoiceAsync(
             invoice.ResourceId,
-            new InvoiceGetOptions { IncludeContact = true, IncludeProject = true },
+            new InvoiceGetOptions
+            {
+                IncludeContact = true,
+                IncludeProject = true,
+                IncludeBankAccount = true
+            },
             cancellationToken);
 
         SampleOutput.WriteHeader("Invoice detail");

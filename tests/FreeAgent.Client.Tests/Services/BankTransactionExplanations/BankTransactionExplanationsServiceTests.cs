@@ -84,6 +84,44 @@ public class BankTransactionExplanationsServiceTests
     }
 
     [Fact]
+    public async System.Threading.Tasks.Task GetBankTransactionExplanationAsync_WithHydration_FetchesPaidInvoice()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "bank_transaction_explanation": {
+                    "url": "https://api.freeagent.com/v2/bank_transaction_explanations/20",
+                    "paid_invoice": "https://api.freeagent.com/v2/invoices/55"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "invoice": {
+                    "url": "https://api.freeagent.com/v2/invoices/55",
+                    "reference": "PAID"
+                  }
+                }
+                """)
+            });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new BankTransactionExplanationsService(client);
+
+        var explanation = await service.GetBankTransactionExplanationAsync(
+            20,
+            new BankTransactionExplanationGetOptions { IncludePaidInvoice = true });
+
+        Assert.Equal("PAID", explanation.PaidInvoice?.Reference);
+    }
+
+    [Fact]
     public async System.Threading.Tasks.Task CreateCategoryBankTransactionExplanationAsync_SerialisesExpectedPayload()
     {
         string? body = null;

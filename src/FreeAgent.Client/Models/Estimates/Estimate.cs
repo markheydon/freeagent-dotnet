@@ -92,6 +92,12 @@ public sealed class Estimate : IFreeAgentResource
     internal ExpandableField<Invoice>? InvoiceLink { get; set; }
 
     /// <summary>
+    /// Invoice when returned nested on the wire or hydrated via <see cref="EstimateGetOptions.IncludeInvoice"/>.
+    /// </summary>
+    [JsonIgnore]
+    public Invoice? Invoice => InvoiceLink?.Value;
+
+    /// <summary>
     /// Invoice identifier parsed from the estimate response.
     /// </summary>
     [JsonIgnore]
@@ -216,5 +222,15 @@ public sealed class Estimate : IFreeAgentResource
     {
         ArgumentNullException.ThrowIfNull(project);
         ProjectLink = new ExpandableField<Project>(project.Url, project);
+    }
+
+    /// <summary>
+    /// Attaches a hydrated invoice to this estimate.
+    /// </summary>
+    /// <param name="invoice">Invoice details.</param>
+    internal void AttachInvoice(Invoice invoice)
+    {
+        ArgumentNullException.ThrowIfNull(invoice);
+        InvoiceLink = new ExpandableField<Invoice>(invoice.Url, invoice);
     }
 }

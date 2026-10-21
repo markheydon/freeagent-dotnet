@@ -124,6 +124,39 @@ public class BankFeedsServiceTests
     }
 
     [Fact]
+    public async Task GetBankFeedAsync_WithHydration_FetchesBankAccount()
+    {
+        var handler = new QueueHttpMessageHandler(
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "bank_feed": {
+                    "url": "https://api.freeagent.com/v2/bank_feeds/7",
+                    "bank_account": "https://api.freeagent.com/v2/bank_accounts/22"
+                  }
+                }
+                """)
+            },
+            _ => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""
+                {
+                  "bank_account": {
+                    "url": "https://api.freeagent.com/v2/bank_accounts/22",
+                    "name": "Business account"
+                  }
+                }
+                """)
+            });
+
+        var service = CreateService(handler);
+        var bankFeed = await service.GetBankFeedAsync(7, new BankFeedGetOptions { IncludeBankAccount = true });
+
+        Assert.Equal("Business account", bankFeed.BankAccount?.Name);
+    }
+
+    [Fact]
     public async Task GetBankFeedAsync_InvalidId_Throws()
     {
         var service = CreateService(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)));

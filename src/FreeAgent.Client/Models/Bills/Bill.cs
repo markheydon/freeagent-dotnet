@@ -299,10 +299,22 @@ public sealed class Bill : IFreeAgentResource
     internal ExpandableField<Invoice>? RebilledOnInvoiceLink { get; set; }
 
     /// <summary>
-    /// Invoice identifier when the bill has been rebilled. Read-only on the wire.
+    /// Invoice when returned nested on the wire or hydrated via <see cref="BillGetOptions.IncludeRebilledOnInvoice"/>.
     /// </summary>
     [JsonIgnore]
-    public long? RebilledOnInvoiceId => RebilledOnInvoiceLink?.Id;
+    public Invoice? RebilledOnInvoice => RebilledOnInvoiceLink?.Value;
+
+    /// <summary>
+    /// Invoice identifier when <c>rebilled_on_invoice_item</c> links to an invoice. Read-only on the wire.
+    /// </summary>
+    [JsonIgnore]
+    public long? RebilledOnInvoiceId => GetRebilledLinkId("invoices");
+
+    /// <summary>
+    /// Invoice line item identifier when <c>rebilled_on_invoice_item</c> links to an invoice item. Read-only on the wire.
+    /// </summary>
+    [JsonIgnore]
+    public long? RebilledOnInvoiceItemId => GetRebilledLinkId("invoice_items");
 
     /// <summary>
     /// Bill line items.
@@ -352,5 +364,41 @@ public sealed class Bill : IFreeAgentResource
     {
         ArgumentNullException.ThrowIfNull(project);
         ProjectLink = new ExpandableField<Project>(project.Url, project);
+    }
+
+    /// <summary>
+    /// Attaches a hydrated rebill target project to this bill.
+    /// </summary>
+    /// <param name="project">Project details.</param>
+    internal void AttachRebillToProject(Project project)
+    {
+        ArgumentNullException.ThrowIfNull(project);
+        RebillToProjectLink = new ExpandableField<Project>(project.Url, project);
+    }
+
+    /// <summary>
+    /// Attaches a hydrated invoice to this bill.
+    /// </summary>
+    /// <param name="invoice">Invoice details.</param>
+    internal void AttachRebilledOnInvoice(Invoice invoice)
+    {
+        ArgumentNullException.ThrowIfNull(invoice);
+        RebilledOnInvoiceLink = new ExpandableField<Invoice>(invoice.Url, invoice);
+    }
+
+    private long? GetRebilledLinkId(string resourceSegment)
+    {
+        if (RebilledOnInvoiceLink?.Uri is not string uri)
+        {
+            return null;
+        }
+
+        if (!uri.Contains($"/{resourceSegment}/", StringComparison.OrdinalIgnoreCase)
+            && !uri.EndsWith($"/{resourceSegment}", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return RebilledOnInvoiceLink.Id;
     }
 }

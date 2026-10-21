@@ -1,15 +1,23 @@
+using FreeAgent.Client.Models.BankAccounts;
+using FreeAgent.Client.Models.BankFeeds;
+using FreeAgent.Client.Models.BankTransactionExplanations;
 using FreeAgent.Client.Models.Bills;
+using FreeAgent.Client.Models.Categories;
 using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.CreditNoteReconciliations;
 using FreeAgent.Client.Models.CreditNotes;
 using FreeAgent.Client.Models.Estimates;
+using FreeAgent.Client.Models.HirePurchases;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Notes;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.RecurringInvoices;
+using FreeAgent.Client.Models.StockItems;
 using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Models.Timeslips;
 using FreeAgent.Client.Models.Users;
+using FreeAgent.Client.Services.Categories;
+
 namespace FreeAgent.Client.Infrastructure.Http;
 
 /// <summary>
@@ -461,6 +469,422 @@ internal static class LinkedResourceHydration
             }
 
             note.AttachProject(response.Project);
+        }
+    }
+
+    public static async System.Threading.Tasks.Task HydrateInvoiceAsync(
+        Estimate estimate,
+        IFreeAgentRequestClient requestClient,
+        bool includeInvoice,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(estimate);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeInvoice || estimate.Invoice is not null || estimate.InvoiceId is not long invoiceId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<InvoiceResponse>($"invoices/{invoiceId}", cancellationToken);
+
+        if (response.Invoice is null)
+        {
+            throw new FreeAgentApiException("Invoice data missing from API response");
+        }
+
+        estimate.AttachInvoice(response.Invoice);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateBilledOnInvoiceAsync(
+        Timeslip timeslip,
+        IFreeAgentRequestClient requestClient,
+        bool includeBilledOnInvoice,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(timeslip);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeBilledOnInvoice
+            || timeslip.BilledOnInvoice is not null
+            || timeslip.BilledOnInvoiceId is not long invoiceId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<InvoiceResponse>($"invoices/{invoiceId}", cancellationToken);
+
+        if (response.Invoice is null)
+        {
+            throw new FreeAgentApiException("Invoice data missing from API response");
+        }
+
+        timeslip.AttachBilledOnInvoice(response.Invoice);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateRebillToProjectAsync(
+        Bill bill,
+        IFreeAgentRequestClient requestClient,
+        bool includeRebillToProject,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(bill);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeRebillToProject
+            || bill.RebillToProject is not null
+            || bill.RebillToProjectId is not long projectId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<ProjectResponse>($"projects/{projectId}", cancellationToken);
+
+        if (response.Project is null)
+        {
+            throw new FreeAgentApiException("Project data missing from API response");
+        }
+
+        bill.AttachRebillToProject(response.Project);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateRebilledOnInvoiceAsync(
+        Bill bill,
+        IFreeAgentRequestClient requestClient,
+        bool includeRebilledOnInvoice,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(bill);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeRebilledOnInvoice
+            || bill.RebilledOnInvoice is not null
+            || bill.RebilledOnInvoiceId is not long invoiceId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<InvoiceResponse>($"invoices/{invoiceId}", cancellationToken);
+
+        if (response.Invoice is null)
+        {
+            throw new FreeAgentApiException("Invoice data missing from API response");
+        }
+
+        bill.AttachRebilledOnInvoice(response.Invoice);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateBankAccountAsync(
+        Invoice invoice,
+        IFreeAgentRequestClient requestClient,
+        bool includeBankAccount,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(invoice);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeBankAccount || invoice.BankAccount is not null || invoice.BankAccountId is not long bankAccountId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<BankAccountResponse>($"bank_accounts/{bankAccountId}", cancellationToken);
+
+        if (response.BankAccount is null)
+        {
+            throw new FreeAgentApiException("Bank account data missing from API response");
+        }
+
+        invoice.AttachBankAccount(response.BankAccount);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateBankAccountAsync(
+        CreditNote creditNote,
+        IFreeAgentRequestClient requestClient,
+        bool includeBankAccount,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(creditNote);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeBankAccount || creditNote.BankAccount is not null || creditNote.BankAccountId is not long bankAccountId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<BankAccountResponse>($"bank_accounts/{bankAccountId}", cancellationToken);
+
+        if (response.BankAccount is null)
+        {
+            throw new FreeAgentApiException("Bank account data missing from API response");
+        }
+
+        creditNote.AttachBankAccount(response.BankAccount);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateBankAccountAsync(
+        RecurringInvoice recurringInvoice,
+        IFreeAgentRequestClient requestClient,
+        bool includeBankAccount,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(recurringInvoice);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeBankAccount
+            || recurringInvoice.BankAccount is not null
+            || recurringInvoice.BankAccountId is not long bankAccountId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<BankAccountResponse>($"bank_accounts/{bankAccountId}", cancellationToken);
+
+        if (response.BankAccount is null)
+        {
+            throw new FreeAgentApiException("Bank account data missing from API response");
+        }
+
+        recurringInvoice.AttachBankAccount(response.BankAccount);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateBankAccountAsync(
+        BankFeed bankFeed,
+        IFreeAgentRequestClient requestClient,
+        bool includeBankAccount,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(bankFeed);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeBankAccount || bankFeed.BankAccount is not null || bankFeed.BankAccountId is not long bankAccountId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<BankAccountResponse>($"bank_accounts/{bankAccountId}", cancellationToken);
+
+        if (response.BankAccount is null)
+        {
+            throw new FreeAgentApiException("Bank account data missing from API response");
+        }
+
+        bankFeed.AttachBankAccount(response.BankAccount);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateBillAsync(
+        HirePurchase hirePurchase,
+        IFreeAgentRequestClient requestClient,
+        bool includeBill,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(hirePurchase);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeBill || hirePurchase.Bill is not null || hirePurchase.BillId is not long billId)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<BillResponse>($"bills/{billId}", cancellationToken);
+
+        if (response.Bill is null)
+        {
+            throw new FreeAgentApiException("Bill data missing from API response");
+        }
+
+        hirePurchase.AttachBill(response.Bill);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateLiabilitiesOverOneYearCategoryAsync(
+        HirePurchase hirePurchase,
+        IFreeAgentRequestClient requestClient,
+        bool includeCategory,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(hirePurchase);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeCategory
+            || hirePurchase.LiabilitiesOverOneYearCategory is not null
+            || hirePurchase.LiabilitiesOverOneYearCategoryNominalCode is not string nominalCode)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<CategorySingleResponse>(
+            $"categories/{nominalCode}",
+            cancellationToken);
+        var category = CategoryResponseMapper.ToCategory(response);
+        hirePurchase.AttachLiabilitiesOverOneYearCategory(category);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateLiabilitiesUnderOneYearCategoryAsync(
+        HirePurchase hirePurchase,
+        IFreeAgentRequestClient requestClient,
+        bool includeCategory,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(hirePurchase);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (!includeCategory
+            || hirePurchase.LiabilitiesUnderOneYearCategory is not null
+            || hirePurchase.LiabilitiesUnderOneYearCategoryNominalCode is not string nominalCode)
+        {
+            return;
+        }
+
+        var response = await requestClient.GetAsync<CategorySingleResponse>(
+            $"categories/{nominalCode}",
+            cancellationToken);
+        var category = CategoryResponseMapper.ToCategory(response);
+        hirePurchase.AttachLiabilitiesUnderOneYearCategory(category);
+    }
+
+    public static async System.Threading.Tasks.Task HydrateBankTransactionExplanationAsync(
+        BankTransactionExplanation explanation,
+        IFreeAgentRequestClient requestClient,
+        BankTransactionExplanationGetOptions? options,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(explanation);
+        ArgumentNullException.ThrowIfNull(requestClient);
+
+        if (options is null)
+        {
+            return;
+        }
+
+        if (options.IncludeCategory
+            && explanation.Category is null
+            && explanation.CategoryNominalCode is string categoryCode)
+        {
+            var categoryResponse = await requestClient.GetAsync<CategorySingleResponse>(
+                $"categories/{categoryCode}",
+                cancellationToken);
+            explanation.AttachCategory(CategoryResponseMapper.ToCategory(categoryResponse));
+        }
+
+        if (options.IncludeProject && explanation.Project is null && explanation.ProjectId is long projectId)
+        {
+            var projectResponse = await requestClient.GetAsync<ProjectResponse>($"projects/{projectId}", cancellationToken);
+            if (projectResponse.Project is null)
+            {
+                throw new FreeAgentApiException("Project data missing from API response");
+            }
+
+            explanation.AttachProject(projectResponse.Project);
+        }
+
+        if (options.IncludeBankAccount
+            && explanation.BankAccount is null
+            && explanation.BankAccountId is long bankAccountId)
+        {
+            var bankAccountResponse = await requestClient.GetAsync<BankAccountResponse>(
+                $"bank_accounts/{bankAccountId}",
+                cancellationToken);
+            if (bankAccountResponse.BankAccount is null)
+            {
+                throw new FreeAgentApiException("Bank account data missing from API response");
+            }
+
+            explanation.AttachBankAccount(bankAccountResponse.BankAccount);
+        }
+
+        if (options.IncludePaidInvoice
+            && explanation.PaidInvoice is null
+            && explanation.PaidInvoiceId is long paidInvoiceId)
+        {
+            var invoiceResponse = await requestClient.GetAsync<InvoiceResponse>(
+                $"invoices/{paidInvoiceId}",
+                cancellationToken);
+            if (invoiceResponse.Invoice is null)
+            {
+                throw new FreeAgentApiException("Invoice data missing from API response");
+            }
+
+            explanation.AttachPaidInvoice(invoiceResponse.Invoice);
+        }
+
+        if (options.IncludePaidCreditNote
+            && explanation.PaidCreditNote is null
+            && explanation.PaidCreditNoteId is long paidCreditNoteId)
+        {
+            var creditNoteResponse = await requestClient.GetAsync<Models.CreditNotes.CreditNoteResponse>(
+                $"credit_notes/{paidCreditNoteId}",
+                cancellationToken);
+            if (creditNoteResponse.CreditNote is null)
+            {
+                throw new FreeAgentApiException("Credit note data missing from API response");
+            }
+
+            explanation.AttachPaidCreditNote(creditNoteResponse.CreditNote);
+        }
+
+        if (options.IncludePaidBill && explanation.PaidBill is null && explanation.PaidBillId is long paidBillId)
+        {
+            var billResponse = await requestClient.GetAsync<BillResponse>($"bills/{paidBillId}", cancellationToken);
+            if (billResponse.Bill is null)
+            {
+                throw new FreeAgentApiException("Bill data missing from API response");
+            }
+
+            explanation.AttachPaidBill(billResponse.Bill);
+        }
+
+        if (options.IncludePaidUser && explanation.PaidUser is null && explanation.PaidUserId is long paidUserId)
+        {
+            var userResponse = await requestClient.GetAsync<UserResponse>($"users/{paidUserId}", cancellationToken);
+            if (userResponse.User is null)
+            {
+                throw new FreeAgentApiException("User data missing from API response");
+            }
+
+            explanation.AttachPaidUser(userResponse.User);
+        }
+
+        if (options.IncludeDirectContact
+            && explanation.DirectContact is null
+            && explanation.DirectContactId is long directContactId)
+        {
+            var contactResponse = await requestClient.GetAsync<ContactResponse>(
+                $"contacts/{directContactId}",
+                cancellationToken);
+            if (contactResponse.Contact is null)
+            {
+                throw new FreeAgentApiException("Contact data missing from API response");
+            }
+
+            explanation.AttachDirectContact(contactResponse.Contact);
+        }
+
+        if (options.IncludeTransferBankAccount
+            && explanation.TransferBankAccount is null
+            && explanation.TransferBankAccountId is long transferBankAccountId)
+        {
+            var transferResponse = await requestClient.GetAsync<BankAccountResponse>(
+                $"bank_accounts/{transferBankAccountId}",
+                cancellationToken);
+            if (transferResponse.BankAccount is null)
+            {
+                throw new FreeAgentApiException("Bank account data missing from API response");
+            }
+
+            explanation.AttachTransferBankAccount(transferResponse.BankAccount);
+        }
+
+        if (options.IncludeStockItem && explanation.StockItem is null && explanation.StockItemId is long stockItemId)
+        {
+            var stockResponse = await requestClient.GetAsync<StockItemResponse>(
+                $"stock_items/{stockItemId}",
+                cancellationToken);
+            if (stockResponse.StockItem is null)
+            {
+                throw new FreeAgentApiException("Stock item data missing from API response");
+            }
+
+            explanation.AttachStockItem(stockResponse.StockItem);
         }
     }
 }

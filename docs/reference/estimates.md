@@ -95,7 +95,7 @@ Task<Estimate> GetEstimateAsync(
 
 **HTTP:** `GET /v2/estimates/:id`
 
-When `options.IncludeContact` or `options.IncludeProject` is `true`, the SDK fetches linked resources when the response contains only URIs.
+When `options.IncludeContact`, `options.IncludeProject`, or `options.IncludeInvoice` is `true`, the SDK fetches linked resources when the response contains only URIs.
 
 ---
 

@@ -211,7 +211,12 @@
             {
                 _estimate = await client.Estimates.GetEstimateAsync(
                     _estimateId.Value,
-                    new EstimateGetOptions { IncludeContact = true, IncludeProject = true });
+                    new EstimateGetOptions
+                    {
+                        IncludeContact = true,
+                        IncludeProject = true,
+                        IncludeInvoice = true
+                    });
                 _operationMessage = $"Loaded estimate {_estimateId.Value}: {ValueOrFallback(_estimate.Reference)}";
                 return $"estimates/{_estimateId}";
             },

@@ -89,8 +89,21 @@ public sealed class BankTransactionExplanationsService
     /// <param name="bankTransactionExplanationId">Explanation identifier from the resource URL.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Bank transaction explanation details.</returns>
+    public Task<BankTransactionExplanation> GetBankTransactionExplanationAsync(
+        long bankTransactionExplanationId,
+        CancellationToken cancellationToken = default) =>
+        GetBankTransactionExplanationAsync(bankTransactionExplanationId, options: null, cancellationToken);
+
+    /// <summary>
+    /// Gets a single bank transaction explanation by identifier with optional linked-resource hydration.
+    /// </summary>
+    /// <param name="bankTransactionExplanationId">Explanation identifier from the resource URL.</param>
+    /// <param name="options">Optional hydration settings.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Bank transaction explanation details.</returns>
     public async Task<BankTransactionExplanation> GetBankTransactionExplanationAsync(
         long bankTransactionExplanationId,
+        BankTransactionExplanationGetOptions? options,
         CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bankTransactionExplanationId);
@@ -103,6 +116,12 @@ public sealed class BankTransactionExplanationsService
         {
             throw new FreeAgentApiException("Bank transaction explanation data missing from API response");
         }
+
+        await LinkedResourceHydration.HydrateBankTransactionExplanationAsync(
+            explanation,
+            _requestClient,
+            options,
+            cancellationToken);
 
         return explanation;
     }

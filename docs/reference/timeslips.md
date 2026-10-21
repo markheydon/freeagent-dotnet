@@ -123,7 +123,7 @@ Task<Timeslip> GetTimeslipAsync(
 
 **HTTP:** `GET /v2/timeslips/:id`
 
-When `options.IncludeProjectTask`, `IncludeProject`, or `IncludeUser` is `true`, the SDK fetches the linked resource if the response contains only a URI.
+When `options.IncludeProjectTask`, `IncludeProject`, `IncludeUser`, or `IncludeBilledOnInvoice` is `true`, the SDK fetches the linked resource if the response contains only a URI.
 
 **Sample:**
 

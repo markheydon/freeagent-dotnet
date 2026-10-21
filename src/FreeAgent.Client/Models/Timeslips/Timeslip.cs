@@ -105,6 +105,12 @@ public class Timeslip : IFreeAgentResource
     internal ExpandableField<Invoice>? BilledOnInvoiceLink { get; set; }
 
     /// <summary>
+    /// Invoice when returned nested on the wire or hydrated via <see cref="TimeslipGetOptions.IncludeBilledOnInvoice"/>.
+    /// </summary>
+    [JsonIgnore]
+    public Invoice? BilledOnInvoice => BilledOnInvoiceLink?.Value;
+
+    /// <summary>
     /// Invoice identifier when the timeslip has been billed. Read-only on the wire.
     /// </summary>
     [JsonIgnore]
@@ -187,5 +193,15 @@ public class Timeslip : IFreeAgentResource
     {
         ArgumentNullException.ThrowIfNull(user);
         UserLink = new ExpandableField<User>(user.Url, user);
+    }
+
+    /// <summary>
+    /// Attaches a hydrated invoice to this timeslip.
+    /// </summary>
+    /// <param name="invoice">Invoice details.</param>
+    internal void AttachBilledOnInvoice(Invoice invoice)
+    {
+        ArgumentNullException.ThrowIfNull(invoice);
+        BilledOnInvoiceLink = new ExpandableField<Invoice>(invoice.Url, invoice);
     }
 }

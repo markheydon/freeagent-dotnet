@@ -27,7 +27,7 @@ public class PriceListItemModelSerializationTests
         Assert.NotNull(item);
         Assert.Equal(InvoiceItemType.Stock, item!.ItemType);
         Assert.Equal(3, item.StockItemId);
-        Assert.Null(item.StockItemResource);
+        Assert.Null(item.StockItem);
     }
 
     [Fact]
@@ -52,6 +52,6 @@ public class PriceListItemModelSerializationTests
 
         Assert.NotNull(item);
         Assert.Equal(3, item!.StockItemId);
-        Assert.Equal("Widget stock", item.StockItemResource?.Description);
+        Assert.Equal("Widget stock", item.StockItem?.Description);
     }
 }

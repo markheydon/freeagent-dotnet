@@ -93,7 +93,7 @@ Task<Bill> GetBillAsync(
 
 **HTTP:** `GET /v2/bills/:id`
 
-When `options.IncludeContact` or `options.IncludeProject` is `true`, the SDK fetches linked resources when the response contains only URIs.
+When `options.IncludeContact`, `options.IncludeProject`, `options.IncludeRebillToProject`, or `options.IncludeRebilledOnInvoice` is `true`, the SDK fetches linked resources when the response contains only URIs. `IncludeRebilledOnInvoice` applies when `rebilled_on_invoice_item` is an invoice URI (not an invoice item URI).
 
 ---
 

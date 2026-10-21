@@ -63,7 +63,8 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
             {
                 IncludeProjectTask = true,
                 IncludeProject = true,
-                IncludeUser = true
+                IncludeUser = true,
+                IncludeBilledOnInvoice = true
             },
             cancellationToken);
 

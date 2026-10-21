@@ -360,4 +360,14 @@ public sealed class CreditNote : IFreeAgentResource
         ArgumentNullException.ThrowIfNull(project);
         ProjectLink = new ExpandableField<Project>(project.Url, project);
     }
+
+    /// <summary>
+    /// Attaches a hydrated bank account to this credit note.
+    /// </summary>
+    /// <param name="bankAccount">Bank account details.</param>
+    internal void AttachBankAccount(BankAccount bankAccount)
+    {
+        ArgumentNullException.ThrowIfNull(bankAccount);
+        BankAccountLink = new ExpandableField<BankAccount>(bankAccount.Url, bankAccount);
+    }
 }

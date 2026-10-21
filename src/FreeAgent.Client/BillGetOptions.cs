@@ -14,4 +14,14 @@ public sealed class BillGetOptions
     /// When <see langword="true"/>, fetches the project when the bill response contains only a project URI.
     /// </summary>
     public bool IncludeProject { get; init; }
+
+    /// <summary>
+    /// When <see langword="true"/>, fetches the rebill target project when the bill response contains only a rebill project URI.
+    /// </summary>
+    public bool IncludeRebillToProject { get; init; }
+
+    /// <summary>
+    /// When <see langword="true"/>, fetches the rebilled invoice when the bill response contains an invoice URI (not an invoice item URI).
+    /// </summary>
+    public bool IncludeRebilledOnInvoice { get; init; }
 }

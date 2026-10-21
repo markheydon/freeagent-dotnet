@@ -88,7 +88,7 @@ public class CreditNoteModelSerializationTests
 
         Assert.NotNull(item);
         Assert.Equal(3, item!.StockItemId);
-        Assert.Null(item.StockItemResource);
+        Assert.Null(item.StockItem);
     }
 
     [Fact]

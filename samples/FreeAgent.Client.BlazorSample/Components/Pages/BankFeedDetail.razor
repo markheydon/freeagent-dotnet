@@ -150,7 +150,9 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _bankFeed = await client.BankFeeds.GetBankFeedAsync(_bankFeedId.Value);
+            _bankFeed = await client.BankFeeds.GetBankFeedAsync(
+                _bankFeedId.Value,
+                new BankFeedGetOptions { IncludeBankAccount = true });
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,

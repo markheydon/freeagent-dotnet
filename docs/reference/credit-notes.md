@@ -89,7 +89,7 @@ Task<CreditNote> GetCreditNoteAsync(
 
 **HTTP:** `GET /v2/credit_notes/:id`
 
-When `options.IncludeContact` or `options.IncludeProject` is `true`, the SDK fetches linked resources when the response contains only URIs.
+When `options.IncludeContact`, `options.IncludeProject`, or `options.IncludeBankAccount` is `true`, the SDK fetches linked resources when the response contains only URIs.
 
 ---
 
