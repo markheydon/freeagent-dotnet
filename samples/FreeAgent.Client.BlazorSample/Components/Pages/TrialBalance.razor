@@ -1,0 +1,167 @@
+@page "/trial-balance"
+@using FreeAgent.Client.Models.TrialBalance
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Trial balance - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Trial balance summary"
+                         CallUnderTest="TrialBalanceService.GetSummaryAsync(...) / GetOpeningBalancesAsync()"
+                         Description="Load trial balance summary lines for optional date filters, or opening balances."
+                         EndpointPath="/v2/accounting/trial_balance/summary"
+                         DocsUrl="https://dev.freeagent.com/docs/trial_balance" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Label="From date (optional)" @bind-Date="_fromDate" Clearable="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Label="To date (optional)" @bind-Date="_toDate" Clearable="true" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               Disabled="_loading"
+                               OnClick="LoadSummaryAsync">
+                        Fetch trial balance
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                               Disabled="_loading"
+                               OnClick="LoadOpeningBalancesAsync">
+                        Fetch opening balances
+                    </MudButton>
+                </MudStack>
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_lines is not null)
+                {
+                    <MudText Typo="Typo.body2">@(_lines.Count) line(s) returned.</MudText>
+                }
+
+                @if (_probe is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="First TrialBalanceLine model fields" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private IReadOnlyList<TrialBalanceLine>? _lines;
+    private ModelProbeSnapshot? _probe;
+    private string _wireApiResponse = string.Empty;
+    private DateTime? _fromDate;
+    private DateTime? _toDate;
+
+    private async Task LoadSummaryAsync()
+    {
+        var from = _fromDate is null ? (DateOnly?)null : DateOnly.FromDateTime(_fromDate.Value);
+        var to = _toDate is null ? (DateOnly?)null : DateOnly.FromDateTime(_toDate.Value);
+        await LoadAsync(
+            async client => await client.TrialBalance.GetSummaryAsync(from, to),
+            BuildDiagnosticsEndpoint(from, to, openingBalances: false));
+    }
+
+    private async Task LoadOpeningBalancesAsync()
+    {
+        await LoadAsync(
+            client => client.TrialBalance.GetOpeningBalancesAsync(),
+            "accounting/trial_balance/summary/opening_balances");
+    }
+
+    private async Task LoadAsync(
+        Func<FreeAgent.Client.FreeAgentClient, Task<IReadOnlyList<TrialBalanceLine>>> fetch,
+        string diagnosticsEndpoint)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _lines = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _lines = await fetch(client);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+
+            if (_lines.Count > 0)
+            {
+                _probe = ModelWireDiagnostics.Build(_lines[0], _wireApiResponse, envelopeProperty: "trial_balance_summary");
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string BuildDiagnosticsEndpoint(DateOnly? from, DateOnly? to, bool openingBalances)
+    {
+        if (openingBalances)
+        {
+            return "accounting/trial_balance/summary/opening_balances";
+        }
+
+        var parts = new List<string>();
+        if (from is not null)
+        {
+            parts.Add($"from_date={from.Value:yyyy-MM-dd}");
+        }
+
+        if (to is not null)
+        {
+            parts.Add($"to_date={to.Value:yyyy-MM-dd}");
+        }
+
+        return parts.Count == 0
+            ? "accounting/trial_balance/summary"
+            : $"accounting/trial_balance/summary?{string.Join("&", parts)}";
+    }
+}
