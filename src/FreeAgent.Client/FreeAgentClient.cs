@@ -7,6 +7,7 @@ using FreeAgent.Client.Services.BankTransactions;
 using FreeAgent.Client.Services.Bills;
 using FreeAgent.Client.Services.CapitalAssetTypes;
 using FreeAgent.Client.Services.Categories;
+using FreeAgent.Client.Services.CisBands;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
 using FreeAgent.Client.Services.CreditNoteReconciliations;
@@ -161,6 +162,11 @@ public sealed class FreeAgentClient : IDisposable
     public CapitalAssetTypesService CapitalAssetTypes { get; }
 
     /// <summary>
+    /// CIS bands API service.
+    /// </summary>
+    public CisBandsService CisBands { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -242,6 +248,7 @@ public sealed class FreeAgentClient : IDisposable
         StockItems = new StockItemsService(_httpClient);
         PriceListItems = new PriceListItemsService(_httpClient);
         CapitalAssetTypes = new CapitalAssetTypesService(_httpClient);
+        CisBands = new CisBandsService(_httpClient);
     }
 
     /// <summary>
