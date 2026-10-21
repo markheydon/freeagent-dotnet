@@ -28,6 +28,7 @@ using FreeAgent.Client.Services.PriceListItems;
 using FreeAgent.Client.Services.ProfitAndLoss;
 using FreeAgent.Client.Services.Projects;
 using FreeAgent.Client.Services.RecurringInvoices;
+using FreeAgent.Client.Services.SalesTaxPeriods;
 using FreeAgent.Client.Services.SelfAssessmentReturns;
 using FreeAgent.Client.Services.StockItems;
 using FreeAgent.Client.Services.Tasks;
@@ -233,6 +234,11 @@ public sealed class FreeAgentClient : IDisposable
     public FinalAccountsReportsService FinalAccountsReports { get; }
 
     /// <summary>
+    /// Sales tax periods API service.
+    /// </summary>
+    public SalesTaxPeriodsService SalesTaxPeriods { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -326,6 +332,7 @@ public sealed class FreeAgentClient : IDisposable
         IncomeTaxReturns = new IncomeTaxReturnsService(_httpClient);
         SelfAssessmentReturns = new SelfAssessmentReturnsService(_httpClient);
         FinalAccountsReports = new FinalAccountsReportsService(_httpClient);
+        SalesTaxPeriods = new SalesTaxPeriodsService(_httpClient);
     }
 
     /// <summary>

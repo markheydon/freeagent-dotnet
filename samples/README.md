@@ -156,6 +156,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/self-assessment-returns/detail](https://localhost:5001/self-assessment-returns/detail?userId=&amp;periodEndsOn=YYYY-MM-DD) | Self assessment return GET and mark-as transitions | Parallel probe surface for `self_assessment_returns` docs |
 | [/final-accounts-reports](https://localhost:5001/final-accounts-reports) | `FinalAccountsReportsService.ListAsync()` | Limited-company note when empty |
 | [/final-accounts-reports/detail](https://localhost:5001/final-accounts-reports/detail?periodEndsOn=YYYY-MM-DD) | `GetAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()` | Filing transitions only; `ExcludeFromRunAll` on mutating console examples |
+| [/sales-tax-periods](https://localhost:5001/sales-tax-periods) | `SalesTaxPeriodsService.ListAsync()` | US/universal companies; per-row mapping |
+| [/sales-tax-periods/detail](https://localhost:5001/sales-tax-periods/detail?id=123) | `GetSalesTaxPeriodAsync()`, `CreateSalesTaxPeriodAsync()`, `UpdateSalesTaxPeriodAsync()`, `DeleteSalesTaxPeriodAsync()` | Probe upsert by name `SDK-PROBE-STP`; mutating console examples `ExcludeFromRunAll` |
 
 Contributors adding endpoints should follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md).
 

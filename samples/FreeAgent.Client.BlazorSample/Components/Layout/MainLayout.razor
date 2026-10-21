@@ -281,6 +281,12 @@
                 <MudNavLink Href="/final-accounts-reports/detail" Icon="@Icons.Material.Filled.Edit">
                     Final accounts report detail
                 </MudNavLink>
+                <MudNavLink Href="/sales-tax-periods" Icon="@Icons.Material.Filled.Receipt">
+                    Sales tax periods list
+                </MudNavLink>
+                <MudNavLink Href="/sales-tax-periods/detail" Icon="@Icons.Material.Filled.Edit">
+                    Sales tax period CRUD
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Sales catalogue" Icon="@Icons.Material.Filled.Inventory2" Expanded="@IsSalesCatalogueRoute">
@@ -486,7 +492,9 @@
         || CurrentPath.Equals("self-assessment-returns", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("self-assessment-returns/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("final-accounts-reports", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.StartsWith("final-accounts-reports/", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.StartsWith("final-accounts-reports/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("sales-tax-periods", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("sales-tax-periods/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsSalesCatalogueRoute =>
         CurrentPath.Equals("stock-items", StringComparison.OrdinalIgnoreCase)
