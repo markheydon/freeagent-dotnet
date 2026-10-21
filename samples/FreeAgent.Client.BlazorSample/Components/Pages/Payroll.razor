@@ -173,19 +173,20 @@
     }, $"payroll/{_taxYearEnd}");
 
     private Task MarkPaymentPaidAsync() => RunMutationAsync(
-        client => client.Payroll.MarkPaymentAsPaidAsync(_taxYearEnd, _selectedPaymentDueOn!.Value),
-        $"payroll/{_taxYearEnd}/payments/{_selectedPaymentDueOn:yyyy-MM-dd}/mark_as_paid");
+        client => client.Payroll.MarkPaymentAsPaidAsync(_taxYearEnd, _selectedPaymentDueOn!.Value));
 
     private Task MarkPaymentUnpaidAsync() => RunMutationAsync(
-        client => client.Payroll.MarkPaymentAsUnpaidAsync(_taxYearEnd, _selectedPaymentDueOn!.Value),
-        $"payroll/{_taxYearEnd}/payments/{_selectedPaymentDueOn:yyyy-MM-dd}/mark_as_unpaid");
+        client => client.Payroll.MarkPaymentAsUnpaidAsync(_taxYearEnd, _selectedPaymentDueOn!.Value));
 
-    private async Task RunMutationAsync(Func<FreeAgent.Client.FreeAgentClient, Task<PayrollTaxYear>> action, string diagnosticsEndpoint)
+    private async Task RunMutationAsync(Func<FreeAgent.Client.FreeAgentClient, Task<PayrollTaxYear>> action)
     {
         await RunAsync(async client =>
         {
             _taxYear = await action(client);
-        }, diagnosticsEndpoint);
+            _inspectedPeriod = null;
+            _inspectedProbe = null;
+            _inspectedPeriodIndex = null;
+        }, $"payroll/{_taxYearEnd}");
     }
 
     private async Task RunAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action, string diagnosticsEndpoint)
