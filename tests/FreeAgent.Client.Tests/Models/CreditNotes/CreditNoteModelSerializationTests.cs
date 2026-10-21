@@ -146,7 +146,7 @@ public class CreditNoteModelSerializationTests
               "dated_on": "2024-03-18",
               "payment_terms_in_days": 14
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
         creditNote.ContactId = 3;
 
         var payload = CreditNoteWritePayload.FromCreditNote(creditNote, FreeAgentEnvironment.Production);

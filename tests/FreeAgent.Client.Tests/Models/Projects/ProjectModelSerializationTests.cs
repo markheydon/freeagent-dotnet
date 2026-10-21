@@ -118,7 +118,7 @@ public class ProjectModelSerializationTests
               "contact": "https://api.freeagent.com/v2/contacts/8",
               "name": "Example"
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
 
         var payload = ProjectWritePayload.FromProject(project, FreeAgentEnvironment.Production);
 
@@ -134,7 +134,7 @@ public class ProjectModelSerializationTests
               "contact": "https://api.freeagent.com/v2/contacts/8",
               "name": "Example"
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
         project.ContactId = 3;
 
         var payload = ProjectWritePayload.FromProject(project, FreeAgentEnvironment.Production);

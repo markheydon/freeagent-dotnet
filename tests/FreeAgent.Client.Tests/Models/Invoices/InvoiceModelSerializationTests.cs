@@ -170,7 +170,7 @@ public class InvoiceModelSerializationTests
               "dated_on": "2024-03-18",
               "payment_terms_in_days": 14
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
         invoice.ContactId = 3;
 
         var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);

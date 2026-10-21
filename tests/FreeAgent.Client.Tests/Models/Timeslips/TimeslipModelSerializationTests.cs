@@ -110,7 +110,7 @@ public class TimeslipModelSerializationTests
               "dated_on": "2011-08-15",
               "hours": "1.5"
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
 
         var payload = TimeslipWritePayload.FromTimeslip(timeslip, FreeAgentEnvironment.Production);
 
@@ -132,7 +132,7 @@ public class TimeslipModelSerializationTests
               "billed_on_invoice": "https://api.freeagent.com/v2/invoices/7",
               "hours": "2.0"
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
 
         var json = JsonSerializer.Serialize(TimeslipWritePayload.FromTimeslip(timeslip, FreeAgentEnvironment.Production));
 
