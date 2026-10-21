@@ -89,8 +89,8 @@ using var client = new FreeAgentClient(token.AccessToken, environment);
 var company = await client.Company.GetCompanyAsync();
 Console.WriteLine($"{company.Name} ({company.Currency})");
 
-// Model types (for example Contact) are in the same namespace:
-var page = await client.Contacts.ListAsync(contact: ContactReference.FromId(42));
+// Model types such as Contact are in the same namespace — no extra usings:
+var page = await client.Contacts.ListAsync();
 ```
 
 For automatic token refresh within a session:
