@@ -27,6 +27,7 @@ using FreeAgent.Client.Services.RecurringInvoices;
 using FreeAgent.Client.Services.StockItems;
 using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Services.Timeslips;
+using FreeAgent.Client.Services.TrialBalance;
 using FreeAgent.Client.Services.Users;
 
 namespace FreeAgent.Client;
@@ -185,6 +186,11 @@ public sealed class FreeAgentClient : IDisposable
     public BalanceSheetService BalanceSheet { get; }
 
     /// <summary>
+    /// Trial balance report API service.
+    /// </summary>
+    public TrialBalanceService TrialBalance { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -270,6 +276,7 @@ public sealed class FreeAgentClient : IDisposable
         CisSettings = new CisSettingsService(_httpClient);
         ProfitAndLoss = new ProfitAndLossService(_httpClient);
         BalanceSheet = new BalanceSheetService(_httpClient);
+        TrialBalance = new TrialBalanceService(_httpClient);
     }
 
     /// <summary>
