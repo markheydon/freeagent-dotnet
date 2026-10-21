@@ -28,7 +28,7 @@ These gaps are not fixed by seeding alone; they need API capability, new SDK res
 |------|--------|
 | `TakeDirectDebitPaymentAsync` | Requires an invoice and contact with a live direct-debit mandate; not creatable via the public API. |
 | `CreateStockBankTransactionExplanationAsync` | Needs a stock item id; [stock items](../reference/stock-items.md) are read-only in the SDK. |
-| `CreateCapitalAssetDisposalBankTransactionExplanationAsync` | Needs a disposed-asset id; no capital-asset resource in the SDK. |
+| `CreateCapitalAssetDisposalBankTransactionExplanationAsync` | Needs a disposed capital asset id (`client.CapitalAssets` with `view=disposed`, or dispose in the sandbox UI). Smoke does not create or dispose assets end-to-end. |
 | `CreateLandlordPropertyBankTransactionExplanationAsync` | Needs a property URI; no property resource in the SDK. |
 | Recurring invoice writes | API is read-only; see [recurring invoices](../reference/recurring-invoices.md). |
 | Stock item writes | Read-only API; SDK exposes list and get only. |
@@ -60,6 +60,7 @@ Turpinverse seeds contacts, projects, tasks, sales documents, notes, and timesli
 | Credit note reconciliations | Not seeded | Optional canon reconciliation, or rely on create probe in `--run-all`. |
 | Price list items | Not seeded | Turpinverse canon PLI optional; console **get/update** create probe `SDK-CONSOLE-PLI` when the list is empty. |
 | Hire purchases | Not seeded | Turpinverse HP bill optional; console **get detail** and hire-purchase bill probe fetch HP before bill delete. |
+| Capital assets | Not seeded | Created via capital expenses or explanations; console **get detail with history** skips when the list is empty. |
 | Recurring invoices | API cannot create | Manual sandbox UI or accept skip on get-by-id when list is empty. |
 | Stock items | Read-only API | Manual catalogue in sandbox or accept skip on get-by-id. |
 | Bank feeds | Connection out of scope | List-only smoke; get when empty prints a message and passes. |

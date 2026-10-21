@@ -85,7 +85,7 @@ Sales and Purchases are implemented. See [API coverage](../reference/api-coverag
 
 **Banking** is implemented (`client.BankAccounts`, `client.BankTransactions`, `client.BankTransactionExplanations`, `client.BankFeeds`). Explanations connect payments back to invoices and bills (`paid_invoice`, `paid_bill`).
 
-Links that stay opaque until later clusters include `property` (landlord companies only) and capital-asset URIs on expenses.
+Links that stay opaque until later clusters include `property` (landlord companies only). Capital asset URIs on expenses and explanations map to [`client.CapitalAssets`](../reference/capital-assets.md).
 
 When you add or retrofit an SDK endpoint, check the relevant cluster page and update it if the official docs expose a URI link not yet shown.
 

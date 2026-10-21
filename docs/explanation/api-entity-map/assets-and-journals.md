@@ -53,7 +53,7 @@ Capital asset history events may link to an expense, bill, or bank transaction e
 
 | Resource | Official docs | SDK |
 |----------|---------------|-----|
-| Capital assets | [Capital assets](https://dev.freeagent.com/docs/capital_assets) | Not yet |
+| Capital assets | [Capital assets](https://dev.freeagent.com/docs/capital_assets) | [`client.CapitalAssets`](../../reference/capital-assets.md) |
 | Capital asset types | [Capital asset types](https://dev.freeagent.com/docs/capital_asset_types) | [`client.CapitalAssetTypes`](../../reference/capital-asset-types.md) |
 | Depreciation profiles | [Depreciation profiles](https://dev.freeagent.com/docs/depreciation_profiles) | [Typed nested models](../../reference/depreciation-profiles.md) (no REST resource) |
 | Journal sets | [Journal sets](https://dev.freeagent.com/docs/journal_sets) | Not yet |

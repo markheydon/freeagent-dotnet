@@ -7,9 +7,6 @@ namespace FreeAgent.Client.Models.Shared;
 /// <summary>
 /// Typed reference to a FreeAgent capital asset resource URI.
 /// </summary>
-/// <remarks>
-/// Full capital asset operations are not yet implemented in the SDK.
-/// </remarks>
 [JsonConverter(typeof(CapitalAssetReferenceJsonConverter))]
 public readonly record struct CapitalAssetReference : IResourceReference
 {
