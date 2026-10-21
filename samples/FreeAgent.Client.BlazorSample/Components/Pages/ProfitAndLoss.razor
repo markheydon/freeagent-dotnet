@@ -1,0 +1,159 @@
+@page "/profit-and-loss"
+@using FreeAgent.Client.Models.ProfitAndLoss
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Profit and loss - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Profit and loss summary"
+                         CallUnderTest="ProfitAndLossService.GetSummaryAsync(...)"
+                         Description="Load profit and loss summary for the default accounting year to date, or optional date range or accounting period filters."
+                         EndpointPath="/v2/accounting/profit_and_loss/summary"
+                         DocsUrl="https://dev.freeagent.com/docs/profit_and_loss" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudText Typo="Typo.body2" Class="hero-copy">
+                    Leave filters empty to use FreeAgent defaults (current accounting year to date). Date periods must be within 12 months or a single accounting year per API rules.
+                </MudText>
+
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Label="From date (optional)" @bind-Date="_fromDate" Clearable="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Label="To date (optional)" @bind-Date="_toDate" Clearable="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="_accountingPeriod"
+                                      Label="Accounting period (optional)"
+                                      Placeholder="2024/25"
+                                      HelperText="Format YYYY/YY when used instead of dates" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.CloudDownload"
+                           Disabled="_loading"
+                           OnClick="LoadSummaryAsync">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Running…</span>
+                    }
+                    else
+                    {
+                        <span>Fetch P&amp;L summary</span>
+                    }
+                </MudButton>
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_probe is not null && _summary is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All ProfitAndLossSummary model fields" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private ProfitAndLossSummary? _summary;
+    private ModelProbeSnapshot? _probe;
+    private string _wireApiResponse = string.Empty;
+    private DateTime? _fromDate;
+    private DateTime? _toDate;
+    private string? _accountingPeriod;
+
+    private async Task LoadSummaryAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _summary = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        var from = _fromDate is null ? (DateOnly?)null : DateOnly.FromDateTime(_fromDate.Value);
+        var to = _toDate is null ? (DateOnly?)null : DateOnly.FromDateTime(_toDate.Value);
+        var accountingPeriod = string.IsNullOrWhiteSpace(_accountingPeriod) ? null : _accountingPeriod.Trim();
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _summary = await client.ProfitAndLoss.GetSummaryAsync(from, to, accountingPeriod);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                BuildDiagnosticsEndpoint(from, to, accountingPeriod));
+
+            _probe = ModelWireDiagnostics.Build(_summary, _wireApiResponse, envelopeProperty: "profit_and_loss_summary");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string BuildDiagnosticsEndpoint(DateOnly? from, DateOnly? to, string? accountingPeriod)
+    {
+        var parts = new List<string>();
+        if (from is not null)
+        {
+            parts.Add($"from_date={from.Value:yyyy-MM-dd}");
+        }
+
+        if (to is not null)
+        {
+            parts.Add($"to_date={to.Value:yyyy-MM-dd}");
+        }
+
+        if (accountingPeriod is not null)
+        {
+            parts.Add($"accounting_period={Uri.EscapeDataString(accountingPeriod)}");
+        }
+
+        return parts.Count == 0
+            ? "accounting/profit_and_loss/summary"
+            : $"accounting/profit_and_loss/summary?{string.Join("&", parts)}";
+    }
+}

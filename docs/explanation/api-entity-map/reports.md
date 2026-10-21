@@ -20,7 +20,7 @@ Use the [Foundations](foundations.md), [Sales](sales.md), [Purchases](purchases.
 
 | Resource | Official docs | SDK | Typical inputs |
 |----------|---------------|-----|----------------|
-| Profit &amp; loss | [Profit &amp; loss](https://dev.freeagent.com/docs/profit_and_loss) | Not yet | Date range |
+| Profit &amp; loss | [Profit &amp; loss](https://dev.freeagent.com/docs/profit_and_loss) | `client.ProfitAndLoss` | Date range |
 | Balance sheet | [Balance sheet](https://dev.freeagent.com/docs/balance_sheet) | Not yet | As-of date |
 | Trial balance | [Trial balance](https://dev.freeagent.com/docs/trial_balance) | Not yet | Date range |
 | Cashflow | [Cashflow](https://dev.freeagent.com/docs/cashflow) | Not yet | Date range |
