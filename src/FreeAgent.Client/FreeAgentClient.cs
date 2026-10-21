@@ -20,6 +20,7 @@ using FreeAgent.Client.Services.EmailAddresses;
 using FreeAgent.Client.Services.Estimates;
 using FreeAgent.Client.Services.Expenses;
 using FreeAgent.Client.Services.HirePurchases;
+using FreeAgent.Client.Services.IncomeTaxReturns;
 using FreeAgent.Client.Services.Invoices;
 using FreeAgent.Client.Services.Notes;
 using FreeAgent.Client.Services.PriceListItems;
@@ -209,6 +210,11 @@ public sealed class FreeAgentClient : IDisposable
     public CorporationTaxReturnsService CorporationTaxReturns { get; }
 
     /// <summary>
+    /// Income tax returns API service.
+    /// </summary>
+    public IncomeTaxReturnsService IncomeTaxReturns { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -298,6 +304,7 @@ public sealed class FreeAgentClient : IDisposable
         Cashflow = new CashflowService(_httpClient);
         VatReturns = new VatReturnsService(_httpClient);
         CorporationTaxReturns = new CorporationTaxReturnsService(_httpClient);
+        IncomeTaxReturns = new IncomeTaxReturnsService(_httpClient);
     }
 
     /// <summary>
