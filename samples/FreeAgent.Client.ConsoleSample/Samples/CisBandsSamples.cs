@@ -14,7 +14,7 @@ internal sealed class CisBandsSamples(SampleContext context) : IConsoleSamplePro
     private async Task ListCisBandsAsync(CancellationToken cancellationToken)
     {
         var company = await context.Client.Company.GetCompanyAsync(cancellationToken);
-        if (company.CisSubcontractor != true)
+        if (company.CisSubcontractor != true && company.CisEnabled != true)
         {
             SampleContext.Skip("company is not enrolled in CIS for subcontractors");
         }
