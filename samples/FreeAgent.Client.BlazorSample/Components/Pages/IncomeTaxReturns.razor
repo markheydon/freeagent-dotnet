@@ -1,0 +1,235 @@
+@page "/income-tax-returns"
+@using FreeAgent.Client
+@using FreeAgent.Client.Models.IncomeTaxReturns
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Income tax returns - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Income tax returns"
+                         CallUnderTest="IncomeTaxReturnsService.ListAsync(userId)"
+                         Description="List income tax return periods for a user. Uses the self_assessment_returns wire path. Sole traders and partnerships may return data; limited companies without SA may return an empty list."
+                         EndpointPath="/v2/users/:user_id/self_assessment_returns"
+                         DocsUrl="https://dev.freeagent.com/docs/income_tax_returns" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    The probe resolves the authenticated user via <code>users/me</code>. Pass <code>?userId=</code> to target another staff user when your access level allows.
+                </MudAlert>
+
+                <MudNumericField @bind-Value="_userId"
+                                 Label="User id"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 Min="1" />
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_loading"
+                           OnClick="LoadListAsync">
+                    List income tax returns
+                </MudButton>
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_returns is not null)
+                {
+                    @if (_returns.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No income tax returns returned. Skip these probes when the connected user does not file self assessment.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>Period ends</MudTh>
+                                    <MudTh>Filing status</MudTh>
+                                    <MudTh>Payments</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Period ends">@context.PeriodEndsOn</MudTd>
+                                    <MudTd DataLabel="Filing status">@context.FilingStatus</MudTd>
+                                    <MudTd DataLabel="Payments">@context.PaymentCount</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectRowAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            @if (context.PeriodEndsOn is not null && _userId is not null)
+                                            {
+                                                <MudButton Variant="Variant.Outlined"
+                                                           Color="Color.Primary"
+                                                           Size="Size.Small"
+                                                           Href="@GetDetailHref(_userId.Value, context.PeriodEndsOn.Value)">
+                                                    Open detail
+                                                </MudButton>
+                                            }
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedReturn is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="IncomeTaxReturn fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "userId")]
+    public long? UserIdQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private long? _userId;
+    private IReadOnlyList<IncomeTaxReturn>? _returns;
+    private List<IncomeTaxReturnRow> _rows = [];
+    private int _inspectedIndex = -1;
+    private IncomeTaxReturn? _inspectedReturn;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private string _wireApiResponse = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (UserIdQuery is > 0)
+        {
+            _userId = UserIdQuery;
+        }
+    }
+
+    private async Task LoadListAsync()
+    {
+        await RunAsync(async client =>
+        {
+            if (_userId is null or <= 0)
+            {
+                var current = await client.Users.GetCurrentUserAsync();
+                if (!current.TryGetResourceId(out var resolvedId))
+                {
+                    throw new InvalidOperationException("Could not parse user id from users/me.");
+                }
+
+                _userId = resolvedId;
+            }
+
+            _returns = await client.IncomeTaxReturns.ListAsync(_userId.Value);
+            _rows = _returns
+                .Select((item, index) => new IncomeTaxReturnRow(index, item))
+                .ToList();
+            _inspectedIndex = -1;
+            _inspectedReturn = null;
+            _inspectedProbe = null;
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                TokenStore.GetToken()!.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                $"users/{_userId}/self_assessment_returns");
+
+            if (_returns.Count > 0)
+            {
+                InspectRowAsync(0);
+            }
+        });
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_returns is null || index < 0 || index >= _returns.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedReturn = _returns[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "self_assessment_returns", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedReturn, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(
+            _inspectedReturn,
+            _wireApiResponse,
+            envelopeProperty: "self_assessment_returns");
+    }
+
+    private static string GetDetailHref(long userId, DateOnly periodEndsOn) =>
+        $"/income-tax-returns/detail?userId={userId}&periodEndsOn={periodEndsOn:yyyy-MM-dd}";
+
+    private async Task RunAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+            _wireApiResponse = string.Empty;
+            _inspectedProbe = null;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private sealed record IncomeTaxReturnRow(int Index, IncomeTaxReturn Item)
+    {
+        public DateOnly? PeriodEndsOn => Item.PeriodEndsOn;
+
+        public IncomeTaxReturnFilingStatus? FilingStatus => Item.FilingStatus;
+
+        public int PaymentCount => Item.Payments?.Count ?? 0;
+    }
+}

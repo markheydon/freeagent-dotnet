@@ -263,6 +263,18 @@
                 <MudNavLink Href="/corporation-tax-returns/detail" Icon="@Icons.Material.Filled.Edit">
                     Corporation tax return detail
                 </MudNavLink>
+                <MudNavLink Href="/income-tax-returns" Icon="@Icons.Material.Filled.Assignment">
+                    Income tax returns
+                </MudNavLink>
+                <MudNavLink Href="/income-tax-returns/detail" Icon="@Icons.Material.Filled.Edit">
+                    Income tax return detail
+                </MudNavLink>
+                <MudNavLink Href="/self-assessment-returns" Icon="@Icons.Material.Filled.AssignmentInd">
+                    Self assessment returns
+                </MudNavLink>
+                <MudNavLink Href="/self-assessment-returns/detail" Icon="@Icons.Material.Filled.Edit">
+                    Self assessment return detail
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Sales catalogue" Icon="@Icons.Material.Filled.Inventory2" Expanded="@IsSalesCatalogueRoute">
@@ -462,7 +474,11 @@
         || CurrentPath.StartsWith("transactions/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("vat-returns", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("corporation-tax-returns", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.StartsWith("corporation-tax-returns/", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.StartsWith("corporation-tax-returns/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("income-tax-returns", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("income-tax-returns/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("self-assessment-returns", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("self-assessment-returns/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsSalesCatalogueRoute =>
         CurrentPath.Equals("stock-items", StringComparison.OrdinalIgnoreCase)

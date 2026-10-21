@@ -20,12 +20,14 @@ using FreeAgent.Client.Services.EmailAddresses;
 using FreeAgent.Client.Services.Estimates;
 using FreeAgent.Client.Services.Expenses;
 using FreeAgent.Client.Services.HirePurchases;
+using FreeAgent.Client.Services.IncomeTaxReturns;
 using FreeAgent.Client.Services.Invoices;
 using FreeAgent.Client.Services.Notes;
 using FreeAgent.Client.Services.PriceListItems;
 using FreeAgent.Client.Services.ProfitAndLoss;
 using FreeAgent.Client.Services.Projects;
 using FreeAgent.Client.Services.RecurringInvoices;
+using FreeAgent.Client.Services.SelfAssessmentReturns;
 using FreeAgent.Client.Services.StockItems;
 using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Services.Timeslips;
@@ -215,6 +217,16 @@ public sealed class FreeAgentClient : IDisposable
     public CorporationTaxReturnsService CorporationTaxReturns { get; }
 
     /// <summary>
+    /// Income tax returns API service.
+    /// </summary>
+    public IncomeTaxReturnsService IncomeTaxReturns { get; }
+
+    /// <summary>
+    /// Self assessment returns API service.
+    /// </summary>
+    public SelfAssessmentReturnsService SelfAssessmentReturns { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -305,6 +317,8 @@ public sealed class FreeAgentClient : IDisposable
         Transactions = new TransactionsService(_httpClient);
         VatReturns = new VatReturnsService(_httpClient);
         CorporationTaxReturns = new CorporationTaxReturnsService(_httpClient);
+        IncomeTaxReturns = new IncomeTaxReturnsService(_httpClient);
+        SelfAssessmentReturns = new SelfAssessmentReturnsService(_httpClient);
     }
 
     /// <summary>
