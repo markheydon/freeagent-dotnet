@@ -248,6 +248,12 @@
                 <MudNavLink Href="/cashflow" Icon="@Icons.Material.Filled.SwapVert">
                     Cashflow
                 </MudNavLink>
+                <MudNavLink Href="/transactions" Icon="@Icons.Material.Filled.Receipt">
+                    Transactions
+                </MudNavLink>
+                <MudNavLink Href="/transactions/detail" Icon="@Icons.Material.Filled.Visibility">
+                    Transaction detail
+                </MudNavLink>
                 <MudNavLink Href="/vat-returns" Icon="@Icons.Material.Filled.ReceiptLong">
                     VAT returns
                 </MudNavLink>
@@ -452,6 +458,8 @@
         || CurrentPath.Equals("balance-sheet", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("trial-balance", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("cashflow", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("transactions", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("transactions/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("vat-returns", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("corporation-tax-returns", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("corporation-tax-returns/", StringComparison.OrdinalIgnoreCase);

@@ -145,6 +145,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/balance-sheet](https://localhost:5001/balance-sheet) | `BalanceSheetService.GetAsync()` / `GetOpeningBalancesAsync()` | As-of date query, wire-to-model mapping |
 | [/trial-balance](https://localhost:5001/trial-balance) | `TrialBalanceService.GetSummaryAsync()` / `GetOpeningBalancesAsync()` | Date range query, wire-to-model mapping |
 | [/cashflow](https://localhost:5001/cashflow) | `CashflowService.GetAsync()` | Date range query, wire-to-model mapping |
+| [/transactions](https://localhost:5001/transactions) | `TransactionsService.ListAsync()` | Per-row mapping inspection, date and nominal-code filters |
+| [/transactions/detail](https://localhost:5001/transactions/detail?id=1) | `TransactionsService.GetAsync()` | GET probe, `?id=` deep links, progress bar |
 | [/vat-returns](https://localhost:5001/vat-returns) | `VatReturnsService.ListAsync()` / `GetAsync(periodEndsOn)` | List + period detail fetch, wire-to-model mapping |
 | [/corporation-tax-returns](https://localhost:5001/corporation-tax-returns) | `CorporationTaxReturnsService.ListAsync()` | Per-row mapping inspection; limited-company note when empty |
 | [/corporation-tax-returns/detail](https://localhost:5001/corporation-tax-returns/detail?periodEndsOn=YYYY-MM-DD) | `GetAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()`, `MarkAsPaidAsync()`, `MarkAsUnpaidAsync()` | `?periodEndsOn=` deep links, all mark-as transitions, progress bar |

@@ -29,6 +29,7 @@ using FreeAgent.Client.Services.RecurringInvoices;
 using FreeAgent.Client.Services.StockItems;
 using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Services.Timeslips;
+using FreeAgent.Client.Services.Transactions;
 using FreeAgent.Client.Services.TrialBalance;
 using FreeAgent.Client.Services.Users;
 using FreeAgent.Client.Services.VatReturns;
@@ -199,6 +200,11 @@ public sealed class FreeAgentClient : IDisposable
     public CashflowService Cashflow { get; }
 
     /// <summary>
+    /// Accounting transactions report API service.
+    /// </summary>
+    public TransactionsService Transactions { get; }
+
+    /// <summary>
     /// VAT returns API service.
     /// </summary>
     public VatReturnsService VatReturns { get; }
@@ -296,6 +302,7 @@ public sealed class FreeAgentClient : IDisposable
         BalanceSheet = new BalanceSheetService(_httpClient);
         TrialBalance = new TrialBalanceService(_httpClient);
         Cashflow = new CashflowService(_httpClient);
+        Transactions = new TransactionsService(_httpClient);
         VatReturns = new VatReturnsService(_httpClient);
         CorporationTaxReturns = new CorporationTaxReturnsService(_httpClient);
     }
