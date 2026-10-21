@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Bills;
+using FreeAgent.Client.Models.DepreciationProfiles;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.BankTransactionExplanations;
@@ -95,6 +96,9 @@ internal sealed class BankTransactionExplanationWritePayload
     [JsonPropertyName("asset_life_years")]
     public string? AssetLifeYears { get; set; }
 
+    [JsonPropertyName("capital_asset")]
+    public CapitalAssetPurchaseWritePayload? CapitalAsset { get; set; }
+
     [JsonPropertyName("disposed_asset")]
     public CapitalAssetReference? DisposedAsset { get; set; }
 
@@ -140,7 +144,8 @@ internal sealed class BankTransactionExplanationWritePayload
             TransferBankAccount = LinkedResourceWriteMapper.ToBankAccountReference(environment, request.TransferBankAccountId),
             StockItem = LinkedResourceWriteMapper.ToStockItemReference(environment, request.StockItemId),
             StockAlteringQuantity = request.StockAlteringQuantity,
-            AssetLifeYears = request.AssetLifeYears,
+            AssetLifeYears = request.CapitalAssetPurchase is null ? request.AssetLifeYears : null,
+            CapitalAsset = CapitalAssetPurchaseWritePayload.FromWrite(request.CapitalAssetPurchase),
             DisposedAsset = LinkedResourceWriteMapper.ToCapitalAssetReference(environment, request.DisposedAssetId),
             PropertyUri = request.PropertyUri,
             DirectContact = LinkedResourceWriteMapper.ToContactReference(environment, request.DirectContactId)

@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Bills;
+using FreeAgent.Client.Models.DepreciationProfiles;
 
 namespace FreeAgent.Client.Models.BankTransactionExplanations;
 
@@ -141,6 +142,11 @@ public sealed class UpdateBankTransactionExplanationRequest
     /// Deprecated asset life years for capital purchases.
     /// </summary>
     public string? AssetLifeYears { get; set; }
+
+    /// <summary>
+    /// Capital asset purchase attributes when updating with a depreciation profile.
+    /// </summary>
+    public CapitalAssetPurchaseWrite? CapitalAssetPurchase { get; set; }
 
     /// <summary>
     /// Disposed capital asset identifier.

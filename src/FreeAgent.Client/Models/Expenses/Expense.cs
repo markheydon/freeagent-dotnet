@@ -3,6 +3,7 @@ using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.Categories;
+using FreeAgent.Client.Models.DepreciationProfiles;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
@@ -344,6 +345,12 @@ public sealed class Expense : IFreeAgentResource
     /// </summary>
     [JsonPropertyName("capital_asset")]
     public string? CapitalAssetUri { get; set; }
+
+    /// <summary>
+    /// Capital asset purchase attributes for create and update requests.
+    /// </summary>
+    [JsonIgnore]
+    public CapitalAssetPurchaseWrite? CapitalAssetPurchase { get; set; }
 
     /// <summary>
     /// Deprecated depreciation schedule hint. Prefer fetching the linked capital asset.

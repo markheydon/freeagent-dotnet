@@ -27,6 +27,7 @@ For how resources relate to each other and a suggested implementation order, see
 | [Credit note reconciliations](credit-note-reconciliations.md) | `client.CreditNoteReconciliations` | [Credit note reconciliations](https://dev.freeagent.com/docs/credit_note_reconciliations) |
 | [Bills](bills.md) | `client.Bills` | [Bills](https://dev.freeagent.com/docs/bills) |
 | [Capital asset types](capital-asset-types.md) | `client.CapitalAssetTypes` | [Capital asset types](https://dev.freeagent.com/docs/capital_asset_types) |
+| [Depreciation profiles](depreciation-profiles.md) | `CapitalAssetPurchaseWrite` / `DepreciationProfile` | [Depreciation profiles](https://dev.freeagent.com/docs/depreciation_profiles) |
 | [Bank accounts](bank-accounts.md) | `client.BankAccounts` | [Bank accounts](https://dev.freeagent.com/docs/bank_accounts) |
 | [Bank feeds](bank-feeds.md) | `client.BankFeeds` | [Bank feeds](https://dev.freeagent.com/docs/bank_feeds) |
 | [Bank transaction explanations](bank-transaction-explanations.md) | `client.BankTransactionExplanations` | [Bank transaction explanations](https://dev.freeagent.com/docs/bank_transaction_explanations) |

@@ -1,5 +1,6 @@
 using FreeAgent.Client.Models.BankTransactionExplanations;
 using FreeAgent.Client.Models.Bills;
+using FreeAgent.Client.Models.DepreciationProfiles;
 
 namespace FreeAgent.Client.BlazorSample.Services;
 
@@ -17,6 +18,7 @@ public enum BankTransactionExplanationWriteProbeVariant
     CreateTransfer,
     CreateStock,
     CreateCapitalAssetPurchase,
+    CreateCapitalAssetPurchaseWithDepreciationProfile,
     CreateCapitalAssetDisposal,
     CreateLandlordProperty,
     CreateOpeningBalance
@@ -77,6 +79,8 @@ public static class BankTransactionExplanationWriteProbeSupport
             "BankTransactionExplanationsService.CreateStockBankTransactionExplanationAsync",
         BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetPurchase =>
             "BankTransactionExplanationsService.CreateCapitalAssetPurchaseBankTransactionExplanationAsync",
+        BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetPurchaseWithDepreciationProfile =>
+            "CreateCapitalAssetPurchaseBankTransactionExplanationRequest.CreateWithDepreciationProfile",
         BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetDisposal =>
             "BankTransactionExplanationsService.CreateCapitalAssetDisposalBankTransactionExplanationAsync",
         BankTransactionExplanationWriteProbeVariant.CreateLandlordProperty =>
@@ -186,6 +190,16 @@ public static class BankTransactionExplanationWriteProbeSupport
                         datedOn,
                         grossValue,
                         description: "SDK probe capital asset purchase"),
+                    cancellationToken),
+            BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetPurchaseWithDepreciationProfile =>
+                await client.BankTransactionExplanations.CreateCapitalAssetPurchaseBankTransactionExplanationAsync(
+                    CreateCapitalAssetPurchaseBankTransactionExplanationRequest.CreateWithDepreciationProfile(
+                        context.BankTransactionId,
+                        context.CategoryNominalCode,
+                        datedOn,
+                        grossValue,
+                        CapitalAssetPurchaseWrite.StraightLine(10, DepreciationFrequency.Annually),
+                        description: "SDK probe capital asset purchase with depreciation profile"),
                     cancellationToken),
             BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetDisposal =>
                 await client.BankTransactionExplanations.CreateCapitalAssetDisposalBankTransactionExplanationAsync(

@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Bills;
+using FreeAgent.Client.Models.DepreciationProfiles;
 
 namespace FreeAgent.Client.Models.BankTransactionExplanations;
 
@@ -364,6 +365,8 @@ public sealed class CreateCapitalAssetPurchaseBankTransactionExplanationRequest 
 
     internal string? AssetLifeYears { get; private init; }
 
+    internal CapitalAssetPurchaseWrite? CapitalAssetPurchase { get; private init; }
+
     /// <summary>
     /// Creates a capital asset purchase explanation.
     /// </summary>
@@ -383,6 +386,32 @@ public sealed class CreateCapitalAssetPurchaseBankTransactionExplanationRequest 
             BankTransactionId = bankTransactionId,
             CategoryNominalCode = categoryNominalCode,
             AssetLifeYears = assetLifeYears,
+            DatedOn = datedOn,
+            GrossValue = grossValue,
+            Description = description
+        };
+    }
+
+    /// <summary>
+    /// Creates a capital asset purchase explanation with a typed depreciation profile.
+    /// </summary>
+    public static CreateCapitalAssetPurchaseBankTransactionExplanationRequest CreateWithDepreciationProfile(
+        long bankTransactionId,
+        string categoryNominalCode,
+        DateOnly datedOn,
+        decimal grossValue,
+        CapitalAssetPurchaseWrite capitalAssetPurchase,
+        string? description = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bankTransactionId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(categoryNominalCode);
+        ArgumentNullException.ThrowIfNull(capitalAssetPurchase);
+
+        return new CreateCapitalAssetPurchaseBankTransactionExplanationRequest
+        {
+            BankTransactionId = bankTransactionId,
+            CategoryNominalCode = categoryNominalCode,
+            CapitalAssetPurchase = capitalAssetPurchase,
             DatedOn = datedOn,
             GrossValue = grossValue,
             Description = description

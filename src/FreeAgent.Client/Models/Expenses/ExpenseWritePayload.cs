@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Bills;
+using FreeAgent.Client.Models.DepreciationProfiles;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Expenses;
@@ -124,6 +125,9 @@ internal sealed class ExpenseWritePayload
     [JsonPropertyName("have_vat_receipt")]
     public bool? HaveVatReceipt { get; set; }
 
+    [JsonPropertyName("capital_asset")]
+    public CapitalAssetPurchaseWritePayload? CapitalAsset { get; set; }
+
     public static ExpenseWritePayload FromExpense(Expense expense, FreeAgentEnvironment environment)
     {
         ArgumentNullException.ThrowIfNull(expense);
@@ -191,7 +195,8 @@ internal sealed class ExpenseWritePayload
             InitialRateMileage = expense.InitialRateMileage,
             ReclaimMileageRate = expense.ReclaimMileageRate,
             RebillMileageRate = expense.RebillMileageRate,
-            HaveVatReceipt = expense.HaveVatReceipt
+            HaveVatReceipt = expense.HaveVatReceipt,
+            CapitalAsset = CapitalAssetPurchaseWritePayload.FromWrite(expense.CapitalAssetPurchase)
         };
     }
 }
