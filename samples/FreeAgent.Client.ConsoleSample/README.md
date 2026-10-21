@@ -143,7 +143,7 @@ Examples marked **(mutates)** write to the connected account.
 | Depreciation profiles | Deserialize straight line profile; deserialize reducing balance profile; build no depreciation purchase helper |
 | CIS bands | List CIS bands |
 | CIS settings | Get CIS settings; **(mutates, menu-only)** round-trip CIS prior deductions update |
-| Payroll | List payroll periods for current tax year end; list payslips for first period; **(mutates, menu-only)** mark first payment paid then unpaid |
+| Payroll | List payroll periods for current tax year end; list payslips for first period; **(mutates)** mark previous liability payment paid then unpaid (skips until at least two periods have payslips — not Turpinverse-seedable; see smoke limitations) |
 | Payroll profiles | List profiles for current tax year end; list profile for first user |
 | Profit and loss | Get profit and loss summary |
 | Balance sheet | Get balance sheet; Get balance sheet opening balances |

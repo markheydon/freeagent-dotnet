@@ -191,6 +191,7 @@ The sample app provides developer tooling pages under **Developer Tools** in the
 - **Purpose:** One-click sandbox population before probe pages or console `--run-all` smoke.
 - **Sandbox-only:** Restricted to sandbox OAuth sessions, matching the console `--seed-turpinverse` guard.
 - **Idempotent upsert:** Matches existing records by stable keys; does not delete stale sandbox data.
+- **Payroll gap:** Turpinverse does not seed RTI payroll (periods, payslips, or liability payments). The payroll API is read-only except mark-as-paid/unpaid. For console smoke on `Mark previous liability payment paid then unpaid`, run at least two pay periods with payslips in the sandbox UI first. See [Smoke and test limitations](../docs/contributing/smoke-and-test-limitations.md).
 
 Per-resource CRUD probe pages still expose individual Turpinverse seed buttons for targeted runs.
 

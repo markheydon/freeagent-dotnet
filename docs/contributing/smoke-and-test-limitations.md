@@ -35,6 +35,7 @@ These gaps are not fixed by seeding alone; they need API capability, new SDK res
 | Bank feed connect or refresh | Bank-aggregator OAuth; out of SDK scope; see [bank feeds](../reference/bank-feeds.md). |
 | `ConvertEstimateToInvoiceAsync` / `ConvertToCreditNoteAsync` in smoke | Creates converted documents that are not deleted in a simple probe lifecycle; kept menu-only. |
 | `SendCreditNoteEmailAsync` on an existing credit note | Sends email for Turpinverse canon data; trial limits; no probe create/delete (unlike invoice send on a draft probe). |
+| Payroll RTI periods and payslips | Read-only API; pay runs are created in the FreeAgent UI, not via the SDK. Turpinverse cannot seed them today. |
 
 **Unit tests:** create variants for bank transaction explanations and `UpdateBankTransactionExplanationAsync` are covered in `BankTransactionExplanationsServiceTests`. Live smoke for most explanation **shapes** beyond category create-and-delete is still optional follow-up.
 
@@ -64,6 +65,7 @@ Turpinverse seeds contacts, projects, tasks, sales documents, notes, and timesli
 | Recurring invoices | API cannot create | Manual sandbox UI or accept skip on get-by-id when list is empty. |
 | Stock items | Read-only API | Manual catalogue in sandbox or accept skip on get-by-id. |
 | Bank feeds | Connection out of scope | List-only smoke; get when empty prints a message and passes. |
+| Payroll periods and payslips (RTI) | Not seeded; [payroll API](../reference/payroll.md) is read-only | Cannot upsert via Turpinverse or SDK. CI sandbox needs at least **two** pay periods with payslips (run payroll in the FreeAgent UI) before **Mark previous liability payment paid then unpaid** can run. Future Turpinverse work: documented sandbox playbook (users, profiles, two filed periods) or upstream fixture when create APIs exist. |
 
 ## Conditional skips (account configuration)
 
@@ -79,6 +81,8 @@ Some examples run in `--run-all` but may **skip** when the sandbox account lacks
 | Mark invoice as scheduled | Missing invoice email template or account cannot schedule |
 | Update credit note reconciliation | Probe gross value ≤ 1 (cannot decrement for update test) |
 | Update/delete estimate item | Created item has no id in API response |
+| Mark previous liability payment paid then unpaid | Fewer than two payroll periods with payslips, or no unpaid liability payment due between the previous and latest of those periods |
+| List payslips for first payroll period | No payroll periods returned for the current UK tax year end |
 
 ## Credit note reconciliation update
 

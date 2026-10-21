@@ -3,6 +3,10 @@ namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 /// <summary>
 /// Identifies a Turpinverse bulk seed stage in dependency order.
 /// </summary>
+/// <remarks>
+/// Payroll RTI (periods, payslips) is not a stage: the payroll API is read-only except liability mark-as-paid.
+/// See <c>docs/contributing/smoke-and-test-limitations.md</c> (Turpinverse and sandbox data gaps).
+/// </remarks>
 public enum TurpinverseSeedStage
 {
     Contacts,
