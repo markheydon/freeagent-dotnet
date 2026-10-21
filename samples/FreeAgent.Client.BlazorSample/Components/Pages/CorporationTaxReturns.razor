@@ -1,0 +1,212 @@
+@page "/corporation-tax-returns"
+@using FreeAgent.Client.Models.CorporationTaxReturns
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Corporation tax returns - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Corporation tax returns"
+                         CallUnderTest="CorporationTaxReturnsService.ListAsync()"
+                         Description="List corporation tax return periods. Limited companies only — sole traders and partnerships may return an empty list or errors. Use Inspect mapping per row, then open detail to exercise mark-as transitions."
+                         EndpointPath="/v2/corporation_tax_returns"
+                         DocsUrl="https://dev.freeagent.com/docs/corporation_tax_returns" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    Corporation tax returns apply to limited companies. If your sandbox company cannot file CT, the list may be empty — that is expected.
+                </MudAlert>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_loading"
+                           OnClick="LoadListAsync">
+                    List corporation tax returns
+                </MudButton>
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_returns is not null)
+                {
+                    @if (_returns.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No corporation tax returns returned. Connect a limited company sandbox, or skip CT probes on this account.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>Period ends</MudTh>
+                                    <MudTh>Filing status</MudTh>
+                                    <MudTh>Payment status</MudTh>
+                                    <MudTh>Amount due</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Period ends">@context.PeriodEndsOn</MudTd>
+                                    <MudTd DataLabel="Filing status">@context.FilingStatus</MudTd>
+                                    <MudTd DataLabel="Payment status">@ValueOrDash(context.PaymentStatus?.ToString())</MudTd>
+                                    <MudTd DataLabel="Amount due">@context.AmountDue</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectRowAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            @if (context.PeriodEndsOn is not null)
+                                            {
+                                                <MudButton Variant="Variant.Outlined"
+                                                           Color="Color.Primary"
+                                                           Size="Size.Small"
+                                                           Href="@GetDetailHref(context.PeriodEndsOn.Value)">
+                                                    Open detail
+                                                </MudButton>
+                                            }
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedReturn is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="CorporationTaxReturn fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private IReadOnlyList<CorporationTaxReturn>? _returns;
+    private List<CorporationTaxReturnRow> _rows = [];
+    private int _inspectedIndex = -1;
+    private CorporationTaxReturn? _inspectedReturn;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private string _wireApiResponse = string.Empty;
+
+    private async Task LoadListAsync()
+    {
+        await RunAsync(async client =>
+        {
+            _returns = await client.CorporationTaxReturns.ListAsync();
+            _rows = _returns
+                .Select((item, index) => new CorporationTaxReturnRow(index, item))
+                .ToList();
+            _inspectedIndex = -1;
+            _inspectedReturn = null;
+            _inspectedProbe = null;
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                TokenStore.GetToken()!.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "corporation_tax_returns");
+
+            if (_returns.Count > 0)
+            {
+                InspectRowAsync(0);
+            }
+        });
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_returns is null || index < 0 || index >= _returns.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedReturn = _returns[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "corporation_tax_returns", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedReturn, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(
+            _inspectedReturn,
+            _wireApiResponse,
+            envelopeProperty: "corporation_tax_returns");
+    }
+
+    private static string GetDetailHref(DateOnly periodEndsOn) =>
+        $"/corporation-tax-returns/detail?periodEndsOn={periodEndsOn:yyyy-MM-dd}";
+
+    private static string ValueOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private async Task RunAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+            _wireApiResponse = string.Empty;
+            _inspectedProbe = null;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private sealed record CorporationTaxReturnRow(int Index, CorporationTaxReturn Item)
+    {
+        public DateOnly? PeriodEndsOn => Item.PeriodEndsOn;
+
+        public CorporationTaxReturnFilingStatus? FilingStatus => Item.FilingStatus;
+
+        public CorporationTaxReturnPaymentStatus? PaymentStatus => Item.PaymentStatus;
+
+        public decimal? AmountDue => Item.AmountDue;
+    }
+}

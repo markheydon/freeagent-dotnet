@@ -28,7 +28,7 @@ Use the [Foundations](foundations.md), [Sales](sales.md), [Purchases](purchases.
 | VAT returns | [VAT returns](https://dev.freeagent.com/docs/vat_returns) | `client.VatReturns` | Period |
 | Sales tax | [Sales tax](https://dev.freeagent.com/docs/sales_tax) | Not yet | Configuration / periods |
 | Sales tax periods | [Sales tax periods](https://dev.freeagent.com/docs/sales_tax_periods) | Not yet | Period |
-| Corporation tax returns | [Corporation tax returns](https://dev.freeagent.com/docs/corporation_tax_returns) | Not yet | Period |
+| Corporation tax returns | [Corporation tax returns](https://dev.freeagent.com/docs/corporation_tax_returns) | `client.CorporationTaxReturns` | Period |
 | Income tax returns | [Income tax returns](https://dev.freeagent.com/docs/income_tax_returns) | Not yet | Period |
 | Self assessment returns | [Self assessment returns](https://dev.freeagent.com/docs/self_assessment_returns) | Not yet | Period |
 | Final accounts reports | [Final accounts reports](https://dev.freeagent.com/docs/final_accounts_reports) | Not yet | Period |

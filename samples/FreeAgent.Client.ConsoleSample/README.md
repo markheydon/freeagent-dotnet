@@ -90,7 +90,7 @@ dotnet run
 ### What happens
 
 1. The app completes OAuth (browser flow or token from environment variables).
-2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Capital asset types, Depreciation profiles, CIS bands, CIS settings, Profit and loss, Balance sheet, Trial balance, Cashflow, VAT returns, Stock items, Price list items).
+2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Capital asset types, Depreciation profiles, CIS bands, CIS settings, Profit and loss, Balance sheet, Trial balance, Cashflow, VAT returns, Corporation tax returns, Stock items, Price list items).
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
@@ -145,6 +145,7 @@ Examples marked **(mutates)** write to the connected account.
 | Trial balance | Get trial balance summary; Get trial balance opening balances |
 | Cashflow | Get cashflow summary |
 | VAT returns | List VAT returns; Get VAT return detail |
+| Corporation tax returns | List corporation tax returns; Get corporation tax return detail; **(mutates, menu-only)** mark as filed/unfiled/paid/unpaid |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
 | Bank accounts | List bank accounts; list standard accounts; get detail; create variants; update and delete (sandbox) |
 | Bank feeds | List bank feeds; get bank feed detail |

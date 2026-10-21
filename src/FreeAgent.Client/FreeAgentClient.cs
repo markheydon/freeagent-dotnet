@@ -13,6 +13,7 @@ using FreeAgent.Client.Services.CisBands;
 using FreeAgent.Client.Services.CisSettings;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
+using FreeAgent.Client.Services.CorporationTaxReturns;
 using FreeAgent.Client.Services.CreditNoteReconciliations;
 using FreeAgent.Client.Services.CreditNotes;
 using FreeAgent.Client.Services.EmailAddresses;
@@ -203,6 +204,11 @@ public sealed class FreeAgentClient : IDisposable
     public VatReturnsService VatReturns { get; }
 
     /// <summary>
+    /// Corporation tax returns API service.
+    /// </summary>
+    public CorporationTaxReturnsService CorporationTaxReturns { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -291,6 +297,7 @@ public sealed class FreeAgentClient : IDisposable
         TrialBalance = new TrialBalanceService(_httpClient);
         Cashflow = new CashflowService(_httpClient);
         VatReturns = new VatReturnsService(_httpClient);
+        CorporationTaxReturns = new CorporationTaxReturnsService(_httpClient);
     }
 
     /// <summary>
