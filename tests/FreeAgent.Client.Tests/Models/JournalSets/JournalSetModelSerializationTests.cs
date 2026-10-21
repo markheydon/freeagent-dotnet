@@ -70,4 +70,32 @@ public class JournalSetModelSerializationTests
 
         Assert.Contains("\"_destroy\":true", json, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void SerializeCreatePayload_OmitsHistoricalBankAccountOnJournalEntry()
+    {
+        var entry = JsonSerializer.Deserialize<JournalEntry>("""
+            {
+              "category": "https://api.freeagent.com/v2/categories/001",
+              "description": "Historical bank row",
+              "debit_value": "10.0",
+              "bank_account": "https://api.freeagent.com/v2/bank_accounts/3"
+            }
+            """, FreeAgentJsonSerializer.Options)!;
+
+        var payload = JournalSetWritePayload.FromCreate(
+            new CreateJournalSetRequest
+            {
+                Description = "Correction",
+                DatedOn = new DateOnly(2026, 1, 15),
+                JournalEntries = [entry]
+            },
+            FreeAgentEnvironment.Production);
+
+        var json = JsonSerializer.Serialize(
+            new JournalSetRequest<JournalSetWritePayload> { JournalSet = payload },
+            FreeAgentJsonSerializer.Options);
+
+        Assert.DoesNotContain("bank_account", json, StringComparison.Ordinal);
+    }
 }

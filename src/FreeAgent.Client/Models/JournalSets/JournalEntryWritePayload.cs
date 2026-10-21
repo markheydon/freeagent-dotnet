@@ -38,10 +38,6 @@ internal sealed class JournalEntryWritePayload
     [JsonPropertyName("stock_altering_quantity")]
     public int? StockAlteringQuantity { get; set; }
 
-    [JsonPropertyName("bank_account")]
-    [JsonConverter(typeof(WriteLinkJsonConverter<BankAccountReference>))]
-    public WriteLink<BankAccountReference>? BankAccount { get; set; }
-
     [JsonPropertyName("capital_asset_type")]
     [JsonConverter(typeof(WriteLinkJsonConverter<CapitalAssetTypeReference>))]
     public WriteLink<CapitalAssetTypeReference>? CapitalAssetType { get; set; }
@@ -109,11 +105,6 @@ internal sealed class JournalEntryWritePayload
                 entry.StockItemLinkId,
                 omit: entry.Destroy == true),
             StockAlteringQuantity = entry.Destroy == true ? null : entry.StockAlteringQuantity,
-            BankAccount = LinkedResourceWriteMapper.ResolveBankAccountReference(
-                environment,
-                entry.BankAccountIdBacking,
-                entry.BankAccountLinkId,
-                omit: entry.Destroy == true),
             CapitalAssetType = LinkedResourceWriteMapper.ResolveCapitalAssetTypeReference(
                 environment,
                 entry.CapitalAssetTypeIdBacking,
