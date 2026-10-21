@@ -160,8 +160,8 @@
                 _period = await client.SalesTaxPeriods.GetSalesTaxPeriodAsync(_salesTaxPeriodId.Value);
                 ApplyPeriodToForm(_period);
                 _operationMessage = $"Loaded sales tax period {_period.ResourceId}.";
+                return $"sales_tax_periods/{_period.ResourceId}";
             },
-            $"sales_tax_periods/{_salesTaxPeriodId}",
             "sales_tax_period");
     }
 
@@ -183,7 +183,7 @@
                 {
                     _period = await client.SalesTaxPeriods.UpdateSalesTaxPeriodAsync(match.ResourceId, new UpdateSalesTaxPeriodRequest
                     {
-                        SalesTaxName = _salesTaxName,
+                        SalesTaxName = ProbeName,
                         SalesTaxRegistrationStatus = _registrationStatus,
                         SalesTaxRate1 = _salesTaxRate1,
                         SalesTaxRate2 = _salesTaxRate2,
@@ -192,13 +192,14 @@
                         SalesTaxRegistrationNumber = _registrationNumber
                     });
                     _salesTaxPeriodId = _period.ResourceId;
+                    _salesTaxName = _period.SalesTaxName ?? ProbeName;
                     _operationMessage = $"Updated existing probe period {_period.ResourceId} (name {ProbeName}).";
                 }
                 else
                 {
                     _period = await client.SalesTaxPeriods.CreateSalesTaxPeriodAsync(new CreateSalesTaxPeriodRequest
                     {
-                        SalesTaxName = _salesTaxName,
+                        SalesTaxName = ProbeName,
                         SalesTaxRegistrationStatus = _registrationStatus.Value,
                         SalesTaxRate1 = _salesTaxRate1,
                         SalesTaxRate2 = _salesTaxRate2,
@@ -207,10 +208,12 @@
                         SalesTaxRegistrationNumber = _registrationNumber
                     });
                     _salesTaxPeriodId = _period.ResourceId;
+                    _salesTaxName = _period.SalesTaxName ?? ProbeName;
                     _operationMessage = $"Created probe period {_period.ResourceId} (name {ProbeName}).";
                 }
+
+                return $"sales_tax_periods/{_period.ResourceId}";
             },
-            _salesTaxPeriodId is > 0 ? $"sales_tax_periods/{_salesTaxPeriodId}" : "sales_tax_periods",
             "sales_tax_period");
     }
 
@@ -235,8 +238,8 @@
                     SalesTaxRegistrationNumber = _registrationNumber
                 });
                 _operationMessage = $"Updated sales tax period {_period.ResourceId}.";
+                return $"sales_tax_periods/{_period.ResourceId}";
             },
-            $"sales_tax_periods/{_salesTaxPeriodId}",
             "sales_tax_period");
     }
 
@@ -254,9 +257,10 @@
                 _period = null;
                 _probe = null;
                 _operationMessage = $"Deleted sales tax period {_salesTaxPeriodId}.";
+                return null;
             },
-            $"sales_tax_periods/{_salesTaxPeriodId}",
-            envelopeProperty: null);
+            envelopeProperty: null,
+            fetchWirePayload: false);
     }
 
     private void ApplyPeriodToForm(SalesTaxPeriod period)
@@ -271,9 +275,9 @@
     }
 
     private async Task RunOperationAsync(
-        Func<FreeAgent.Client.FreeAgentClient, Task> operation,
-        string diagnosticsEndpoint,
-        string? envelopeProperty)
+        Func<FreeAgent.Client.FreeAgentClient, Task<string?>> action,
+        string? envelopeProperty,
+        bool fetchWirePayload = true)
     {
         var token = TokenStore.GetToken();
         if (token is null)
@@ -284,30 +288,38 @@
 
         _loading = true;
         _error = null;
-        _wireApiResponse = string.Empty;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
 
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            await operation(client);
+            var diagnosticsEndpoint = await action(client);
 
-            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
-                token.AccessToken,
-                TokenStore.ConnectedEnvironment,
-                diagnosticsEndpoint);
-
-            if (_period is not null && envelopeProperty is not null)
+            if (fetchWirePayload && _period is not null && envelopeProperty is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
             {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
                 _probe = ModelWireDiagnostics.Build(_period, _wireApiResponse, envelopeProperty: envelopeProperty);
             }
         }
         catch (FreeAgentApiException ex)
         {
             _error = $"API error: {ex.Message}";
-            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
-                token.AccessToken,
-                TokenStore.ConnectedEnvironment,
-                diagnosticsEndpoint);
+            if (fetchWirePayload && _salesTaxPeriodId is > 0)
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    $"sales_tax_periods/{_salesTaxPeriodId}");
+            }
         }
         catch (Exception ex)
         {
