@@ -67,7 +67,12 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
         var estimate = await context.Data.GetFirstEstimateAsync(cancellationToken);
         var detail = await context.Client.Estimates.GetEstimateAsync(
             estimate.ResourceId,
-            new EstimateGetOptions { IncludeContact = true, IncludeProject = true },
+            new EstimateGetOptions
+            {
+                IncludeContact = true,
+                IncludeProject = true,
+                IncludeInvoice = true
+            },
             cancellationToken);
 
         SampleOutput.WriteHeader("Estimate detail");

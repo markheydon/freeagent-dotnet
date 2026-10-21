@@ -84,6 +84,14 @@ The full `BankTransactionExplanation` type moved from `FreeAgent.Client.Models.B
 
 Use `client.BankTransactionExplanations` for list, get, create (per documented variant), update, and delete. Explanation create, update, and delete are no longer implied by `BankTransactionsService` alone.
 
+### Line item nested `StockItem` read property
+
+On read models, the hydrated stock item on invoice, credit note, bill, and price list line items is now `StockItem?` named `StockItem` (replacing `StockItemResource`). `StockItemId` is unchanged for writes and for parsing link URIs from GET responses.
+
+### Linked-resource hydration on GET
+
+Several resources gained optional `*GetOptions` flags for second-hop hydration (for example `BillGetOptions.IncludeRebilledOnInvoice`, `TimeslipGetOptions.IncludeBilledOnInvoice`, `BankTransactionExplanationGetOptions`). List endpoints are unchanged; hydration applies only to single-resource `Get*Async` overloads that accept options.
+
 ### Contacts list returns full `Contact` models
 
 Contact list methods now return `Contact` instead of the removed `ContactSummary` type. Update any code that depended on the slimmer list shape.

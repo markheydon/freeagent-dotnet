@@ -48,7 +48,13 @@ internal sealed class BillSamples(SampleContext context) : IConsoleSampleProvide
         var bill = await context.Data.GetFirstBillAsync(cancellationToken);
         var detail = await context.Client.Bills.GetBillAsync(
             bill.ResourceId,
-            new BillGetOptions { IncludeContact = true, IncludeProject = true },
+            new BillGetOptions
+            {
+                IncludeContact = true,
+                IncludeProject = true,
+                IncludeRebillToProject = true,
+                IncludeRebilledOnInvoice = true
+            },
             cancellationToken);
 
         SampleOutput.WriteHeader("Bill detail");

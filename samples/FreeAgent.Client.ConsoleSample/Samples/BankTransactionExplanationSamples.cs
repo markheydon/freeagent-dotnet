@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using FreeAgent.Client;
 using FreeAgent.Client.Models.BankTransactionExplanations;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
@@ -31,6 +32,14 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         var explanation = await context.Data.GetFirstBankTransactionExplanationAsync(cancellationToken);
         var detail = await context.Client.BankTransactionExplanations.GetBankTransactionExplanationAsync(
             explanation.ResourceId,
+            new BankTransactionExplanationGetOptions
+            {
+                IncludeCategory = true,
+                IncludeProject = true,
+                IncludeBankAccount = true,
+                IncludePaidInvoice = true,
+                IncludePaidBill = true
+            },
             cancellationToken);
 
         SampleOutput.WriteHeader("Bank transaction explanation detail");

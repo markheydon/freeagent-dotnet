@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using FreeAgent.Client;
 using FreeAgent.Client.Models.HirePurchases;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
@@ -26,7 +27,15 @@ internal sealed class HirePurchaseSamples(SampleContext context) : IConsoleSampl
     private async Task GetHirePurchaseDetailAsync(CancellationToken cancellationToken)
     {
         var hirePurchase = await context.Data.GetFirstHirePurchaseAsync(cancellationToken);
-        var detail = await context.Client.HirePurchases.GetHirePurchaseAsync(hirePurchase.ResourceId, cancellationToken);
+        var detail = await context.Client.HirePurchases.GetHirePurchaseAsync(
+            hirePurchase.ResourceId,
+            new HirePurchaseGetOptions
+            {
+                IncludeBill = true,
+                IncludeLiabilitiesOverOneYearCategory = true,
+                IncludeLiabilitiesUnderOneYearCategory = true
+            },
+            cancellationToken);
 
         SampleOutput.WriteHeader("Hire purchase detail");
         SampleOutput.WriteField("Id", detail.ResourceId);
