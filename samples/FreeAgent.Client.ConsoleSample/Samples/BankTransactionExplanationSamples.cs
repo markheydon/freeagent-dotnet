@@ -53,7 +53,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         SampleOutput.WriteField("Bank account ID", detail.BankAccountId);
     }
 
-    [ConsoleSample(Name = "Create category explanation and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create category explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateCategoryExplanationAndDeleteAsync(CancellationToken cancellationToken)
     {

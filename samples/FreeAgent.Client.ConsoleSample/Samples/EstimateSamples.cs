@@ -234,7 +234,7 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
         }
     }
 
-    [ConsoleSample(Name = "Send estimate email (template)", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Send estimate email (template)", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task SendEstimateEmailAsync(CancellationToken cancellationToken)
     {
@@ -242,17 +242,25 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
 
         try
         {
-            await context.Client.Estimates.SendEstimateEmailAsync(
-                draft.ResourceId,
-                new SendEstimateEmailRequest
-                {
-                    Email = new EstimateEmailDetails { UseTemplate = true }
-                },
-                cancellationToken);
+            try
+            {
+                await context.Client.Estimates.SendEstimateEmailAsync(
+                    draft.ResourceId,
+                    new SendEstimateEmailRequest
+                    {
+                        Email = new EstimateEmailDetails { UseTemplate = true }
+                    },
+                    cancellationToken);
 
-            SampleOutput.WriteHeader("Sent estimate email");
-            SampleOutput.WriteField("Estimate ID", draft.ResourceId);
-            SampleOutput.WriteField("Template", true);
+                SampleOutput.WriteHeader("Sent estimate email");
+                SampleOutput.WriteField("Estimate ID", draft.ResourceId);
+                SampleOutput.WriteField("Template", true);
+            }
+            catch (FreeAgentApiException ex) when (InvoiceEmailSendPrecondition.IsFailure(ex))
+            {
+                SampleContext.Skip(
+                    "sandbox estimate email trial allowance exhausted (FreeAgent free-trial email limit)");
+            }
         }
         finally
         {
@@ -343,7 +351,7 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
         }
     }
 
-    [ConsoleSample(Name = "Delete estimate item", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Delete estimate item", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DeleteEstimateItemAsync(CancellationToken cancellationToken)
     {
@@ -381,7 +389,7 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
         }
     }
 
-    [ConsoleSample(Name = "Update estimate default additional text", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Update estimate default additional text", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateDefaultAdditionalTextAsync(CancellationToken cancellationToken)
     {
@@ -402,7 +410,7 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
         }
     }
 
-    [ConsoleSample(Name = "Delete estimate default additional text", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Delete estimate default additional text", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DeleteDefaultAdditionalTextAsync(CancellationToken cancellationToken)
     {
@@ -434,7 +442,7 @@ internal sealed class EstimateSamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteField("Status", converted.Status);
     }
 
-    [ConsoleSample(Name = "Duplicate probe estimate and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Duplicate probe estimate and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DuplicateProbeEstimateAndDeleteAsync(CancellationToken cancellationToken)
     {

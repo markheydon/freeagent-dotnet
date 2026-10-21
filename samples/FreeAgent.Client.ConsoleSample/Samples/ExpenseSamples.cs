@@ -115,7 +115,7 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
             settings.EngineTypeAndSizeOptions?.Count ?? 0);
     }
 
-    [ConsoleSample(Name = "Create probe expense and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create probe expense and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeExpenseAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -131,7 +131,7 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Create probe mileage expense and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create probe mileage expense and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeMileageExpenseAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -147,7 +147,26 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Id", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Create probe expenses batch and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Update expense description and delete", MutatesData = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task UpdateExpenseDescriptionAndDeleteAsync(CancellationToken cancellationToken)
+    {
+        var created = await CreateSampleExpenseAsync(cancellationToken);
+        created.Description = $"{created.Description} (updated)";
+
+        var updated = await context.Client.Expenses.UpdateExpenseAsync(created.ResourceId, created, cancellationToken);
+
+        SampleOutput.WriteHeader("Updated probe expense");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+        SampleOutput.WriteField("Description", updated.Description);
+
+        await context.Client.Expenses.DeleteExpenseAsync(updated.ResourceId, cancellationToken);
+
+        SampleOutput.WriteHeader("Deleted probe expense");
+        SampleOutput.WriteField("Id", updated.ResourceId);
+    }
+
+    [ConsoleSample(Name = "Create probe expenses batch and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeExpensesBatchAndDeleteAsync(CancellationToken cancellationToken)
     {

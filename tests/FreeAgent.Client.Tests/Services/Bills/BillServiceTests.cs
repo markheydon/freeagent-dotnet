@@ -310,6 +310,55 @@ public class BillServiceTests
     }
 
     [Fact]
+    public async Task ListAutoPagingAsync_YieldsAllPages()
+    {
+        var handler = new QueueHttpMessageHandler(
+            request =>
+            {
+                Assert.Contains("page=1", request.RequestUri!.Query);
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "bills": [
+                        { "url": "https://api.freeagent.com/v2/bills/1" },
+                        { "url": "https://api.freeagent.com/v2/bills/2" }
+                      ]
+                    }
+                    """)
+                };
+                response.Headers.TryAddWithoutValidation("X-Total-Count", "3");
+                return response;
+            },
+            request =>
+            {
+                Assert.Contains("page=2", request.RequestUri!.Query);
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""
+                    {
+                      "bills": [
+                        { "url": "https://api.freeagent.com/v2/bills/3" }
+                      ]
+                    }
+                    """)
+                };
+            });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new BillService(client);
+
+        var ids = new List<long>();
+        await foreach (var bill in service.ListAutoPagingAsync(perPage: 2))
+        {
+            ids.Add(bill.ResourceId);
+        }
+
+        Assert.Equal([1, 2, 3], ids);
+    }
+
+    [Fact]
     public async Task DeleteBillAsync_SendsDelete()
     {
         var handler = new QueueHttpMessageHandler(request =>

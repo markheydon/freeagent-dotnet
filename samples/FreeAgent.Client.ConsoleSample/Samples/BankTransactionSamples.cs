@@ -87,7 +87,7 @@ internal sealed class BankTransactionSamples(SampleContext context) : IConsoleSa
         SampleOutput.WriteField("Explanations", detail.BankTransactionExplanations?.Count ?? 0);
     }
 
-    [ConsoleSample(Name = "Upload statement line and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Upload statement line and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UploadStatementAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -135,7 +135,7 @@ internal sealed class BankTransactionSamples(SampleContext context) : IConsoleSa
         SampleOutput.WriteField("Deleted", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Upload statement file and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Upload statement file and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UploadStatementFileAsync(CancellationToken cancellationToken)
     {

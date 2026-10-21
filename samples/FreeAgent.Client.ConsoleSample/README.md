@@ -133,9 +133,9 @@ Examples marked **(mutates)** write to the connected account.
 | Recurring invoices | List recurring invoices; stream all recurring invoices via ListAutoPagingAsync; list recurring invoices filtered by contact; get recurring invoice by id |
 | Credit notes | List credit notes; stream all credit notes via ListAutoPagingAsync; list credit notes filtered by contact; get credit note by id; **(mutates)** create probe credit note and delete; **(mutates)** update credit note comments; **(mutates)** mark credit note as sent/draft; get credit note PDF; **(mutates)** send credit note email (template) |
 | Bills | List bills; list bills filtered by contact; get bill by id; **(mutates)** create probe bill and delete; **(mutates)** create hire purchase probe bill and delete; **(mutates)** update bill line item |
-| Hire purchases | List hire purchases; get hire purchase detail |
-| Expenses | List expenses; stream all expenses; list recent expenses; list expenses for project; get expense detail; get mileage settings; **(mutates)** create probe expense and delete; **(mutates)** create probe mileage expense and delete; **(mutates)** create probe expenses batch and delete |
-| Attachments | Get attachment detail; **(mutates)** delete attachment |
+| Hire purchases | List hire purchases; get hire purchase detail (creates hire-purchase probe bill when none exist) |
+| Expenses | List expenses; stream all expenses; list recent expenses; list expenses for project; get expense detail; get mileage settings; **(mutates)** create probe expense and delete; **(mutates)** create probe mileage expense and delete; **(mutates)** create probe expenses batch and delete; **(mutates)** update expense description and delete |
+| Attachments | Get attachment detail; **(mutates)** create expense with attachment, get and delete |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
 | Bank accounts | List bank accounts; list standard accounts; get detail; create variants; update and delete (sandbox) |
 | Bank feeds | List bank feeds; get bank feed detail |
@@ -244,7 +244,7 @@ Client ID and secret are still required (user secrets or environment variables).
 
 `--category` requires `--run-all` (for example `--run-all --category Contacts`).
 
-Examples marked `ExcludeFromRunAll` (such as **Stream all contacts**) appear in the interactive menu only.
+Examples marked `ExcludeFromRunAll` (such as **Stream all contacts**) appear in the interactive menu only. For why some operations stay menu-only or cannot be smoke-tested, see [Smoke and test limitations](../../docs/contributing/smoke-and-test-limitations.md).
 
 ### CI integration
 

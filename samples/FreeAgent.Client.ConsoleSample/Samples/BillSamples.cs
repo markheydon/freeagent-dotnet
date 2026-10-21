@@ -98,6 +98,17 @@ internal sealed class BillSamples(SampleContext context) : IConsoleSampleProvide
         SampleOutput.WriteField("Reference", created.Reference);
         SampleOutput.WriteField("Hire purchase", created.IsPaidByHirePurchase);
 
+        var hirePurchases = await context.Client.HirePurchases.ListAsync(cancellationToken: cancellationToken);
+        var hirePurchase = hirePurchases.FirstOrDefault(h => h.BillId == created.ResourceId);
+        if (hirePurchase is not null)
+        {
+            var detail = await context.Client.HirePurchases.GetHirePurchaseAsync(
+                hirePurchase.ResourceId,
+                cancellationToken: cancellationToken);
+            SampleOutput.WriteField("Hire purchase ID", detail.ResourceId);
+            SampleOutput.WriteField("Hire purchase description", detail.Description);
+        }
+
         await context.Client.Bills.DeleteBillAsync(created.ResourceId, cancellationToken);
 
         SampleOutput.WriteHeader("Deleted hire purchase probe bill");

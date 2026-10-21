@@ -275,7 +275,7 @@ internal sealed class InvoiceSamples(SampleContext context) : IConsoleSampleProv
         SampleOutput.WriteField("Result", "Deleted");
     }
 
-    [ConsoleSample(Name = "Delete invoice", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Delete invoice", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task DeleteInvoiceAsync(CancellationToken cancellationToken)
     {

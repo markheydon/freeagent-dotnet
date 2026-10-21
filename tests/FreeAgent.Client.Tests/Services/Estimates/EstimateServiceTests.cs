@@ -524,6 +524,82 @@ public class EstimateServiceTests
     }
 
     [Fact]
+    public async Task MarkEstimateAsDraftAsync_PutsTransitionEndpoint()
+    {
+        var estimate = await AssertTransitionAsync(
+            "mark_as_draft",
+            EstimateStatus.Draft,
+            service => service.MarkEstimateAsDraftAsync(5));
+
+        Assert.Equal(EstimateStatus.Draft, estimate.Status);
+    }
+
+    [Fact]
+    public async Task MarkEstimateAsApprovedAsync_PutsTransitionEndpoint()
+    {
+        var estimate = await AssertTransitionAsync(
+            "mark_as_approved",
+            EstimateStatus.Approved,
+            service => service.MarkEstimateAsApprovedAsync(5));
+
+        Assert.Equal(EstimateStatus.Approved, estimate.Status);
+    }
+
+    [Fact]
+    public async Task MarkEstimateAsRejectedAsync_PutsTransitionEndpoint()
+    {
+        var estimate = await AssertTransitionAsync(
+            "mark_as_rejected",
+            EstimateStatus.Rejected,
+            service => service.MarkEstimateAsRejectedAsync(5));
+
+        Assert.Equal(EstimateStatus.Rejected, estimate.Status);
+    }
+
+    [Fact]
+    public async Task DefaultAdditionalText_UpdateDelete_UseExpectedRoutes()
+    {
+        var calls = new List<string>();
+        HttpResponseMessage Respond(HttpRequestMessage request)
+        {
+            calls.Add($"{request.Method} {request.RequestUri!.AbsolutePath}");
+            if (request.Method == HttpMethod.Put)
+            {
+                var body = request.Content!.ReadAsStringAsync().GetAwaiter().GetResult();
+                Assert.Contains("Valid for 30 days", body, StringComparison.Ordinal);
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""{ "default_additional_text": "Valid for 30 days" }""")
+                };
+            }
+
+            if (request.Method == HttpMethod.Get)
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent("""{ "default_additional_text": "Original" }""")
+                };
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK);
+        }
+
+        var handler = new QueueHttpMessageHandler(Respond, Respond, Respond);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new EstimateService(client);
+
+        await service.GetDefaultAdditionalTextAsync();
+        var updated = await service.UpdateDefaultAdditionalTextAsync("Valid for 30 days");
+        await service.DeleteDefaultAdditionalTextAsync();
+
+        Assert.Equal("Valid for 30 days", updated);
+        Assert.Contains("PUT /v2/estimates/default_additional_text", calls);
+        Assert.Contains("DELETE /v2/estimates/default_additional_text", calls);
+    }
+
+    [Fact]
     public async Task GetDefaultAdditionalTextAsync_ReturnsText()
     {
         var handler = new QueueHttpMessageHandler(request =>
@@ -840,5 +916,42 @@ public class EstimateServiceTests
         var service = new EstimateService(client);
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetEstimatePdfAsync(1));
+    }
+
+    private static async Task<Estimate> AssertTransitionAsync(
+        string transition,
+        EstimateStatus status,
+        Func<EstimateService, Task<Estimate>> invoke)
+    {
+        var statusJson = status.ToString();
+        Func<HttpRequestMessage, HttpResponseMessage> respond = request =>
+        {
+            if (request.Method == HttpMethod.Put)
+            {
+                Assert.EndsWith($"/estimates/5/transitions/{transition}", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+                return new HttpResponseMessage(HttpStatusCode.OK);
+            }
+
+            Assert.EndsWith("/estimates/5", request.RequestUri!.AbsolutePath, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent($$"""
+                {
+                  "estimate": {
+                    "url": "https://api.freeagent.com/v2/estimates/5",
+                    "status": "{{statusJson}}"
+                  }
+                }
+                """)
+            };
+        };
+
+        var handler = new QueueHttpMessageHandler(respond, respond);
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new EstimateService(client);
+
+        return await invoke(service);
     }
 }

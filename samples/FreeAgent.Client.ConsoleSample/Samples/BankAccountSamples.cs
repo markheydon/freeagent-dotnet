@@ -57,7 +57,7 @@ internal sealed class BankAccountSamples(SampleContext context) : IConsoleSample
         SampleOutput.WriteField("Current balance", detail.CurrentBalance);
     }
 
-    [ConsoleSample(Name = "Create standard bank account and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create standard bank account and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateStandardBankAccountAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -74,7 +74,7 @@ internal sealed class BankAccountSamples(SampleContext context) : IConsoleSample
         SampleOutput.WriteField("Deleted", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Create credit card account and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create credit card account and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateCreditCardBankAccountAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -91,7 +91,7 @@ internal sealed class BankAccountSamples(SampleContext context) : IConsoleSample
         SampleOutput.WriteField("Deleted", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Update bank account and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Update bank account and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateBankAccountAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -113,7 +113,7 @@ internal sealed class BankAccountSamples(SampleContext context) : IConsoleSample
         SampleOutput.WriteField("Deleted", created.ResourceId);
     }
 
-    [ConsoleSample(Name = "Create e-commerce account and delete", ExcludeFromRunAll = true, MutatesData = true)]
+    [ConsoleSample(Name = "Create e-commerce account and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateEcommerceBankAccountAndDeleteAsync(CancellationToken cancellationToken)
     {
