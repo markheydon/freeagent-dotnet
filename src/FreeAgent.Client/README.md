@@ -36,10 +36,6 @@ Reflection-based `System.Text.Json` is used for API and OAuth traffic. File-base
 
 ```csharp
 using FreeAgent.Client;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Tasks;
-
 // Sandbox or Production - use the same value for OAuth and API calls.
 var environment = FreeAgentEnvironment.Sandbox;
 var oauthClient = new FreeAgentOAuthClient(clientId, clientSecret, redirectUri, environment);
@@ -66,8 +62,6 @@ The following flow chains ids from each response into the next create call:
 const long contactId = 42;
 
 // 2. Create a project for that contact
-using FreeAgent.Client.Models.Projects;
-
 var project = await client.Projects.CreateProjectAsync(new Project
 {
     Name = "Website redesign",
@@ -87,8 +81,6 @@ var withContact = await client.Projects.GetProjectAsync(
 var organisation = withContact.Contact!.OrganisationName;
 
 // 3. Create a task under the project (parent scoped via query param)
-using FreeAgent.Client.Models.Tasks;
-
 var task = await client.ProjectTasks.CreateProjectTaskAsync(projectId, new ProjectTask
 {
     Name = "Planning",
@@ -98,8 +90,6 @@ var task = await client.ProjectTasks.CreateProjectTaskAsync(projectId, new Proje
 var taskId = task.ResourceId;
 
 // 4. Log time against the task
-using FreeAgent.Client.Models.Timeslips;
-
 await client.Timeslips.CreateTimeslipAsync(new Timeslip
 {
     ProjectTaskId = taskId,
@@ -110,8 +100,6 @@ await client.Timeslips.CreateTimeslipAsync(new Timeslip
 });
 
 // 5. Raise a draft invoice for the contact
-using FreeAgent.Client.Models.Invoices;
-
 await client.Invoices.CreateInvoiceAsync(new Invoice
 {
     ContactId = contactId,

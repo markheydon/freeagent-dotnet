@@ -1,7 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.ProfitAndLoss;
-
 namespace FreeAgent.Client.Tests.Models.ProfitAndLoss;
 
 public class ProfitAndLossSummaryModelSerializationTests

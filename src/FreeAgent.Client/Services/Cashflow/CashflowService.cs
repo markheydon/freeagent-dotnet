@@ -1,7 +1,6 @@
 using System.Globalization;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.Cashflow;
-using CashflowModel = FreeAgent.Client.Models.Cashflow.Cashflow;
+using CashflowModel = global::FreeAgent.Client.Cashflow;
 
 namespace FreeAgent.Client.Services.Cashflow;
 

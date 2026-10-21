@@ -1,5 +1,4 @@
 using FreeAgent.Client;
-using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Samples.Shared.Seeding;
 
 namespace FreeAgent.Client.BlazorSample.Services;

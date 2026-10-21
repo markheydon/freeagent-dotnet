@@ -1,8 +1,6 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.BankAccounts;
-
-namespace FreeAgent.Client.Models.BankFeeds;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent bank feed connected to a bank account.

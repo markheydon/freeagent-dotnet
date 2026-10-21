@@ -1,8 +1,6 @@
 using System.Text.Json;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.JournalSets;
-
 namespace FreeAgent.Client.Tests.Models.JournalSets;
 
 public class JournalSetModelSerializationTests

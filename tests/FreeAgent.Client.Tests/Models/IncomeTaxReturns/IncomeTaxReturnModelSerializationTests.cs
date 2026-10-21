@@ -1,7 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.IncomeTaxReturns;
-
 namespace FreeAgent.Client.Tests.Models.IncomeTaxReturns;
 
 public class IncomeTaxReturnModelSerializationTests

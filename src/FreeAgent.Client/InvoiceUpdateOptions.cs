@@ -1,7 +1,7 @@
 namespace FreeAgent.Client;
 
 /// <summary>
-/// Options for <see cref="Services.Invoices.InvoiceService.UpdateInvoiceAsync(long, Models.Invoices.Invoice, InvoiceUpdateOptions?, System.Threading.CancellationToken)"/>.
+/// Options for <see cref="Services.Invoices.InvoiceService.UpdateInvoiceAsync(long, Invoice, InvoiceUpdateOptions?, System.Threading.CancellationToken)"/>.
 /// </summary>
 public sealed class InvoiceUpdateOptions
 {

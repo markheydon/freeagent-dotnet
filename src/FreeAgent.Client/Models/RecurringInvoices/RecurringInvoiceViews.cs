@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.RecurringInvoices;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// View filter constants for recurring invoice list requests.

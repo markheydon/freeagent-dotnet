@@ -36,8 +36,6 @@ Task<IReadOnlyList<User>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Users;
-
 var staff = await client.Users.ListAsync(UserViews.ActiveStaff);
 ```
 

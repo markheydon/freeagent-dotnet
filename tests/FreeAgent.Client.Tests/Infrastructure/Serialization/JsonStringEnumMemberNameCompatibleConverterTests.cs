@@ -1,7 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Invoices;
-
 namespace FreeAgent.Client.Tests.Infrastructure.Serialization;
 
 public class JsonStringEnumMemberNameCompatibleConverterTests

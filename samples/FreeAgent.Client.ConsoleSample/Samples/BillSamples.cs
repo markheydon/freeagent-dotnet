@@ -1,8 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using FreeAgent.Client;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

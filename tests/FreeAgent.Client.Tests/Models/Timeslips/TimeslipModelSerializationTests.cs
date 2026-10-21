@@ -1,7 +1,5 @@
 using System.Globalization;
 using System.Text.Json;
-using FreeAgent.Client.Models.Timeslips;
-
 namespace FreeAgent.Client.Tests.Models.Timeslips;
 
 public class TimeslipModelSerializationTests

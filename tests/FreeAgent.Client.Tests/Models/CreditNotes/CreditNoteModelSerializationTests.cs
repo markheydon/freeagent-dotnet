@@ -1,10 +1,6 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Tests.Models.CreditNotes;
 
 public class CreditNoteModelSerializationTests

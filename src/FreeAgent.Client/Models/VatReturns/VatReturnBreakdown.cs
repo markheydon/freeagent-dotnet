@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.VatReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// VAT return breakdown with titled rows.

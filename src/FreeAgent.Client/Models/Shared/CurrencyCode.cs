@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Shared;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents ISO 4217 currency codes supported by FreeAgent.

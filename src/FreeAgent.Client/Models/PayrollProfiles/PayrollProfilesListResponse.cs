@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.PayrollProfiles;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// API response envelope for payroll profiles in a tax year.

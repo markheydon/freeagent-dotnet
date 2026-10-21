@@ -1,7 +1,5 @@
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.Estimates;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Request envelope for creating an estimate item.

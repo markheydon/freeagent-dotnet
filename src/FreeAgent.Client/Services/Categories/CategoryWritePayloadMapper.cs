@@ -1,5 +1,3 @@
-using FreeAgent.Client.Models.Categories;
-
 namespace FreeAgent.Client.Services.Categories;
 
 internal static class CategoryWritePayloadMapper

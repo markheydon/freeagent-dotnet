@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.SalesTaxPeriods;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable sales tax period attributes for create and update requests.

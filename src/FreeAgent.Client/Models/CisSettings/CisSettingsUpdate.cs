@@ -1,6 +1,4 @@
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.CisSettings;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Partial update for CIS settings. Unspecified sections are left unchanged; specified null clears registration.

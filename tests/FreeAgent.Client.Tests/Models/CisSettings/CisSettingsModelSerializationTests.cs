@@ -1,7 +1,6 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Contacts;
-using CisSettingsModel = FreeAgent.Client.Models.CisSettings.CisSettings;
+using CisSettingsModel = global::FreeAgent.Client.CisSettings;
 
 namespace FreeAgent.Client.Tests.Models.CisSettings;
 

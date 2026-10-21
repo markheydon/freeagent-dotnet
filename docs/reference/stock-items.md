@@ -36,8 +36,6 @@ Task<IReadOnlyList<StockItem>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.StockItems;
-
 var stockItems = await client.StockItems.ListAsync(sort: StockItemSortOptions.Description);
 ```
 

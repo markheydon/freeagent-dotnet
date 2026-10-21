@@ -1,5 +1,4 @@
 @page "/payroll"
-@using FreeAgent.Client.Models.Payroll
 @using FreeAgent.Client.BlazorSample.Services
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
@@ -143,7 +142,7 @@
     private string _wireApiResponse = string.Empty;
     private int _taxYearEnd = DateTime.UtcNow.Month >= 4 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
     private PayrollTaxYear? _taxYear;
-    private FreeAgent.Client.Models.Payroll.PayrollPeriod? _inspectedPeriod;
+    private PayrollPeriod? _inspectedPeriod;
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedPeriodIndex;
     private DateOnly? _selectedPaymentDueOn;

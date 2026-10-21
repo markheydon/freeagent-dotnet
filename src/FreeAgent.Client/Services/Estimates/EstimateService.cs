@@ -4,10 +4,6 @@ using System.Text.Json;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.EcMoss;
-using FreeAgent.Client.Models.Estimates;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Services.Estimates;
 
 /// <summary>

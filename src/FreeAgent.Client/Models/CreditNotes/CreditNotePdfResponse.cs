@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.CreditNotes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// PDF payload returned by the credit note PDF endpoint.

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.BalanceSheet;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// API envelope for balance sheet responses.

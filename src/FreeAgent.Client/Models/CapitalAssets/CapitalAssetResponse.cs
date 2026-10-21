@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.CapitalAssets;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for a single capital asset API response.

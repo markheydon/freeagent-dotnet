@@ -53,8 +53,6 @@ Required request fields: `sales_tax_name`, `sales_tax_registration_status`, `sal
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.SalesTaxPeriods;
-
 var period = await client.SalesTaxPeriods.CreateSalesTaxPeriodAsync(new CreateSalesTaxPeriodRequest
 {
     SalesTaxName = "Sales Tax",

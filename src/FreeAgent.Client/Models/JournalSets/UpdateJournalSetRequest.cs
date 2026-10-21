@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.JournalSets;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Attributes for updating a journal set.

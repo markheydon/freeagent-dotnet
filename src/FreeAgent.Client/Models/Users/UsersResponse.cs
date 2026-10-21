@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Users;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for users list API responses.

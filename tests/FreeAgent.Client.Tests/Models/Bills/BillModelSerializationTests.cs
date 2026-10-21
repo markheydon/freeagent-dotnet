@@ -1,9 +1,6 @@
 using System.Text.Json;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Tests.Models.Bills;
 
 public class BillModelSerializationTests

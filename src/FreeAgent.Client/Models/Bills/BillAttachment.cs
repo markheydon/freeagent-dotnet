@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Bills;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Attachment metadata returned on bill read responses.

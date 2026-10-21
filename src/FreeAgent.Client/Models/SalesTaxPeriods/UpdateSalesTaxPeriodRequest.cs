@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.SalesTaxPeriods;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Attributes for updating a sales tax period.

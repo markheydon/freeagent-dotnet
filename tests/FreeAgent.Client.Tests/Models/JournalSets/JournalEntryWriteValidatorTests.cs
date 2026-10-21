@@ -1,5 +1,3 @@
-using FreeAgent.Client.Models.JournalSets;
-
 namespace FreeAgent.Client.Tests.Models.JournalSets;
 
 public class JournalEntryWriteValidatorTests

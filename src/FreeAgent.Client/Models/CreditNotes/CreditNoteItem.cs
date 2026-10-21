@@ -1,13 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.StockItems;
-
-namespace FreeAgent.Client.Models.CreditNotes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a line item on a FreeAgent credit note.

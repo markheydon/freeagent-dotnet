@@ -1,11 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.HirePurchases;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent hire purchase linked to an originating bill.

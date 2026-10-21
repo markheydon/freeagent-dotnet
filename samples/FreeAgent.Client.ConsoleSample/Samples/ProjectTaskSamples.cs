@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using FreeAgent.Client.Models.Tasks;
-using ProjectTaskStatus = FreeAgent.Client.Models.Tasks.ProjectTaskStatus;
+using FreeAgent.Client;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
@@ -92,7 +91,7 @@ internal sealed class ProjectTaskSamples(SampleContext context) : IConsoleSample
                 IsBillable = true,
                 Status = ProjectTaskStatus.Active,
                 BillingRate = 0m,
-                BillingPeriod = Models.Tasks.ProjectTaskBillingPeriod.Hour
+                BillingPeriod = ProjectTaskBillingPeriod.Hour
             },
             cancellationToken);
     }

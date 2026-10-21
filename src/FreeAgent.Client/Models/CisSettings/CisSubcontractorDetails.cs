@@ -1,7 +1,5 @@
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Models.Contacts;
-
-namespace FreeAgent.Client.Models.CisSettings;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Company CIS subcontractor registration details.

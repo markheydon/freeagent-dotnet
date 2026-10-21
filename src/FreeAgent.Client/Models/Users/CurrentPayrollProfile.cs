@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Users;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Read-only payroll profile subsection returned on user GET when payroll is configured for the current tax year.

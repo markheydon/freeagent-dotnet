@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Estimates;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// View filter constants for estimate list requests.

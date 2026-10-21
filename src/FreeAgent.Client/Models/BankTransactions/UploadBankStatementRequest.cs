@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.BankTransactions;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// JSON statement upload: an array of bank transaction lines.

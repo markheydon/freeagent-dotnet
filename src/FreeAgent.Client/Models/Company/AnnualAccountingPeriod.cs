@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Company;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a single annual accounting period for a company.

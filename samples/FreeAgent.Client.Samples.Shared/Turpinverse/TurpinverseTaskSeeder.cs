@@ -1,7 +1,4 @@
 using FreeAgent.Client;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Tasks;
-
 namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>
@@ -105,7 +102,7 @@ public sealed class TurpinverseTaskSeeder
         {
             Name = taskName,
             IsBillable = true,
-            Status = Models.Tasks.ProjectTaskStatus.Active,
+            Status = ProjectTaskStatus.Active,
             BillingRate = project.NormalBillingRate ?? 0m,
             BillingPeriod = project.BillingPeriod == ProjectBillingPeriod.Day
                 ? ProjectTaskBillingPeriod.Day

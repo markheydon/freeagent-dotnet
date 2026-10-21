@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Shared;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Second sales tax status on universal accounts (wire field <c>second_sales_tax_status</c>).

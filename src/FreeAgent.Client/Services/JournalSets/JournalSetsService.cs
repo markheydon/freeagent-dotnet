@@ -1,8 +1,6 @@
 using System.Globalization;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.JournalSets;
-
 namespace FreeAgent.Client.Services.JournalSets;
 
 /// <summary>

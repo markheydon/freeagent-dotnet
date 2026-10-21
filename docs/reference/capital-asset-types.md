@@ -53,8 +53,6 @@ Required request field: `name`.
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.CapitalAssetTypes;
-
 var type = await client.CapitalAssetTypes.CreateCapitalAssetTypeAsync(new CreateCapitalAssetTypeRequest
 {
     Name = "Workshop equipment"

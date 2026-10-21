@@ -1,7 +1,3 @@
-using FreeAgent.Client.Models.BankTransactionExplanations;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.DepreciationProfiles;
-
 namespace FreeAgent.Client.BlazorSample.Services;
 
 /// <summary>

@@ -1,5 +1,3 @@
-using FreeAgent.Client.Models.Contacts;
-
 namespace FreeAgent.Client.Tests.Models.Contacts;
 
 public class ContactResourceIdTests

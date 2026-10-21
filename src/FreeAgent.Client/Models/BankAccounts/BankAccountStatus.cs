@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.BankAccounts;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Whether a bank account is visible in FreeAgent.

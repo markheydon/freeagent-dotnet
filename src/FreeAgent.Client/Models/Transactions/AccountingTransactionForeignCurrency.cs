@@ -1,7 +1,5 @@
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.Transactions;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Foreign-currency amounts on an accounting transaction when the currency differs from the company currency.

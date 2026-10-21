@@ -1,6 +1,6 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using BalanceSheetModel = FreeAgent.Client.Models.BalanceSheet.BalanceSheet;
+using BalanceSheetModel = global::FreeAgent.Client.BalanceSheet;
 
 namespace FreeAgent.Client.Tests.Models.BalanceSheet;
 

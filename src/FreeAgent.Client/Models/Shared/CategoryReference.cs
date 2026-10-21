@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Shared;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Typed reference to a FreeAgent category resource URI.

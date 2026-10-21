@@ -1,6 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using FreeAgent.Client.Models.Notes;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

@@ -59,8 +59,6 @@ The nested `current_payroll_profile` on [Users](users.md) is a smaller read-only
 ## Sample
 
 ```csharp
-using FreeAgent.Client.Models.Shared;
-
 var taxYearEnd = 2021;
 var profiles = await client.PayrollProfiles.ListAsync(taxYearEnd);
 

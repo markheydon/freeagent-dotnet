@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.CorporationTaxReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Response envelope for a single corporation tax return.

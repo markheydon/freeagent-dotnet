@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Payroll;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Student loan plan type on a payslip.

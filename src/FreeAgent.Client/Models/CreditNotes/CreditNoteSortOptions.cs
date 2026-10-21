@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.CreditNotes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Sort field constants for credit note list requests.

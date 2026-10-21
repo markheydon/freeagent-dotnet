@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.BankTransactions;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Statement upload <c>transaction_type</c> values.

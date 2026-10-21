@@ -48,8 +48,6 @@ Task<PaginatedResponse<RecurringInvoice>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.RecurringInvoices;
-
 var page = await client.RecurringInvoices.ListAsync(
     view: RecurringInvoiceViews.Active,
     contactId: 42);

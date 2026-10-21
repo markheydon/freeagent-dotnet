@@ -1,10 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.StockItems;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent stock item.

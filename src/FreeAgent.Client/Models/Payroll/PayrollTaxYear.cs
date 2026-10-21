@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Payroll;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Payroll periods and liability payments for a tax year.

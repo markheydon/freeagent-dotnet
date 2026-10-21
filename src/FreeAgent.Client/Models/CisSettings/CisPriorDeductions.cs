@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.CisSettings;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// CIS deductions suffered before the company started using FreeAgent.

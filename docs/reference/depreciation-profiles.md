@@ -10,7 +10,7 @@ Typed depreciation profile shapes nested under `capital_asset` when creating or 
 
 | | |
 |---|---|
-| **SDK types** | `DepreciationProfile`, `CapitalAssetPurchaseWrite`, `DepreciationMethod`, `DepreciationFrequency` in `FreeAgent.Client.Models.DepreciationProfiles` |
+| **SDK types** | `DepreciationProfile`, `CapitalAssetPurchaseWrite`, `DepreciationMethod`, `DepreciationFrequency` in `FreeAgent.Client` |
 | **FreeAgent docs** | [dev.freeagent.com/docs/depreciation_profiles](https://dev.freeagent.com/docs/depreciation_profiles) |
 | **Sample app** | `/depreciation-profiles` (wire mapping), bank transaction explanation CRUD (capital asset purchase with profile) |
 

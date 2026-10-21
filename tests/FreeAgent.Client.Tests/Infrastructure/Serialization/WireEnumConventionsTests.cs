@@ -1,8 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Company;
-
 namespace FreeAgent.Client.Tests.Infrastructure.Serialization;
 
 public class WireEnumConventionsTests

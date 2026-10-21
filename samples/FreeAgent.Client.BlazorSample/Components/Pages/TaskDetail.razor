@@ -1,5 +1,4 @@
 @page "/tasks/detail"
-@using FreeAgent.Client.Models.Tasks
 @using FreeAgent.Client.Samples.Shared.Turpinverse
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
@@ -305,7 +304,7 @@
                 {
                     Name = $"SDK probe task {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}",
                     IsBillable = true,
-                    Status = Models.Tasks.ProjectTaskStatus.Active,
+                    Status = ProjectTaskStatus.Active,
                     BillingRate = 0m,
                     BillingPeriod = ProjectTaskBillingPeriod.Hour
                 });

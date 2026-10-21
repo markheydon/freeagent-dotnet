@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.CapitalAssetTypes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent capital asset type.

@@ -58,8 +58,6 @@ Timeslips link to task, project, and user resources:
 | `ProjectTask`, `Project`, `User` | When the API returns nested objects **or** when you request hydration on single GET |
 
 ```csharp
-using FreeAgent.Client.Models.Timeslips;
-
 var timeslip = await client.Timeslips.CreateTimeslipAsync(new Timeslip
 {
     ProjectTaskId = 1,
@@ -121,8 +119,6 @@ Invoices link to contacts, projects, bank accounts, and line-item categories:
 | `CategoryNominalCode` | Category link on line items |
 
 ```csharp
-using FreeAgent.Client.Models.Invoices;
-
 var invoice = await client.Invoices.CreateInvoiceAsync(new Invoice
 {
     ContactId = 42,

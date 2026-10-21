@@ -1,7 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Categories;
-
 namespace FreeAgent.Client.Tests.Infrastructure.Serialization;
 
 public class NullableBooleanJsonConverterTests

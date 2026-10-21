@@ -4,9 +4,6 @@ using System.Text;
 using System.Text.Json;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.BankTransactionExplanations;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.DepreciationProfiles;
 using FreeAgent.Client.Services.BankTransactionExplanations;
 using FreeAgent.Client.Tests.TestSupport;
 

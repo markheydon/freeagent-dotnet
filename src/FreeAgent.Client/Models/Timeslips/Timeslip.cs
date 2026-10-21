@@ -1,13 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.Tasks;
-using FreeAgent.Client.Models.Users;
-
-namespace FreeAgent.Client.Models.Timeslips;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent timeslip.

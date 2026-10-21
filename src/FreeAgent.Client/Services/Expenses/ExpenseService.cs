@@ -2,13 +2,6 @@ using System.Globalization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.Expenses;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.StockItems;
-using FreeAgent.Client.Models.Users;
 using FreeAgent.Client.Services.Categories;
 
 namespace FreeAgent.Client.Services.Expenses;

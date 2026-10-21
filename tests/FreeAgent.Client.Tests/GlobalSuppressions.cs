@@ -5,4 +5,4 @@ using System.Diagnostics.CodeAnalysis;
     "CA1716:Identifiers should not match keywords",
     Scope = "namespace",
     Target = "~N:FreeAgent.Client.Tests.Models.Shared",
-    Justification = "Mirrors FreeAgent.Client.Models.Shared per CONVENTIONS.md.")]
+    Justification = "Mirrors Models/Shared folder layout per CONVENTIONS.md.")]

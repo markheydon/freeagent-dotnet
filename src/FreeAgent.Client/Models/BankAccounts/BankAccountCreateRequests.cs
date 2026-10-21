@@ -1,6 +1,4 @@
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.BankAccounts;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Request attributes for creating a standard bank account.

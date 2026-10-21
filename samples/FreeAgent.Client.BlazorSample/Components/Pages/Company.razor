@@ -1,4 +1,5 @@
 @page "/company"
+@using CompanyModel = global::FreeAgent.Client.Company
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
 @inject ApiDiagnosticsService ApiDiagnostics
@@ -117,7 +118,7 @@
 @code {
     private bool _loading;
     private string? _error;
-    private FreeAgent.Client.Models.Company.Company? _company;
+    private CompanyModel? _company;
     private ModelProbeSnapshot? _probe;
     private string _wireApiResponse = string.Empty;
 

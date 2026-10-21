@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Contacts;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Invoice and estimate language locale for a contact.

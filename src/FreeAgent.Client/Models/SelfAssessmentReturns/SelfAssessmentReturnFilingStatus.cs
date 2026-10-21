@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.SelfAssessmentReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Self assessment return filing status values returned by FreeAgent.

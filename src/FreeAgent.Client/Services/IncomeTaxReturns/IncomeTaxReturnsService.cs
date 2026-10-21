@@ -1,8 +1,6 @@
 using System.Globalization;
 using System.Net.Http;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.IncomeTaxReturns;
-
 namespace FreeAgent.Client.Services.IncomeTaxReturns;
 
 /// <summary>

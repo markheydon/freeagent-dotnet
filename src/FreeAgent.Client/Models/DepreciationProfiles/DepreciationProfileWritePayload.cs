@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.DepreciationProfiles;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable depreciation profile attributes nested under <c>capital_asset</c>.

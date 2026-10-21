@@ -1,7 +1,5 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.EmailAddresses;
-
 namespace FreeAgent.Client.Services.EmailAddresses;
 
 /// <summary>

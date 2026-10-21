@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.BankTransactions;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// File statement upload (OFX, QIF, or a supported CSV).

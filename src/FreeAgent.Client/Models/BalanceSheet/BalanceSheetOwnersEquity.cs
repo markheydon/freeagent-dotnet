@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.BalanceSheet;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Owner's equity section of the balance sheet.

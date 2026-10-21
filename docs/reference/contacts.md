@@ -48,8 +48,6 @@ Task<PaginatedResponse<Contact>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Contacts;
-
 var page = await client.Contacts.ListAsync(
     page: 1,
     perPage: 25,

@@ -1,7 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using FreeAgent.Client.Models.CisSettings;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

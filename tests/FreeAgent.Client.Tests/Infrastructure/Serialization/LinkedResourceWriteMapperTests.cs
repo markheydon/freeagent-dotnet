@@ -1,7 +1,5 @@
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Tests.Infrastructure.Serialization;
 
 public class LinkedResourceWriteMapperTests

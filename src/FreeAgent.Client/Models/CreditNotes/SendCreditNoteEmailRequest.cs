@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.CreditNotes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Email attachment payload for sending a credit note by email.

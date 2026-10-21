@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Expenses;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Vehicle type for a mileage expense.

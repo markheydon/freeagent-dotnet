@@ -1,21 +1,3 @@
-using FreeAgent.Client.Models.BankAccounts;
-using FreeAgent.Client.Models.BankFeeds;
-using FreeAgent.Client.Models.BankTransactionExplanations;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Models.CreditNoteReconciliations;
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.Estimates;
-using FreeAgent.Client.Models.HirePurchases;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Notes;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.RecurringInvoices;
-using FreeAgent.Client.Models.StockItems;
-using FreeAgent.Client.Models.Tasks;
-using FreeAgent.Client.Models.Timeslips;
-using FreeAgent.Client.Models.Users;
 using FreeAgent.Client.Services.Categories;
 
 namespace FreeAgent.Client.Infrastructure.Http;
@@ -423,7 +405,7 @@ internal static class LinkedResourceHydration
             return;
         }
 
-        var response = await requestClient.GetAsync<Models.CreditNotes.CreditNoteResponse>($"credit_notes/{creditNoteId}", cancellationToken);
+        var response = await requestClient.GetAsync<CreditNoteResponse>($"credit_notes/{creditNoteId}", cancellationToken);
 
         if (response.CreditNote is null)
         {
@@ -811,7 +793,7 @@ internal static class LinkedResourceHydration
             && explanation.PaidCreditNote is null
             && explanation.PaidCreditNoteId is long paidCreditNoteId)
         {
-            var creditNoteResponse = await requestClient.GetAsync<Models.CreditNotes.CreditNoteResponse>(
+            var creditNoteResponse = await requestClient.GetAsync<CreditNoteResponse>(
                 $"credit_notes/{paidCreditNoteId}",
                 cancellationToken);
             if (creditNoteResponse.CreditNote is null)

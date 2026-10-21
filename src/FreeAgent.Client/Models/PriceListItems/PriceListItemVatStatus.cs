@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.PriceListItems;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// UK VAT status values for price list items.

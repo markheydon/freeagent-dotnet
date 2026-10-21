@@ -1,7 +1,5 @@
 using System.Globalization;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.Transactions;
-
 namespace FreeAgent.Client.Services.Transactions;
 
 /// <summary>

@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.CapitalAssets;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Documented <c>type</c> values on capital asset history entries.

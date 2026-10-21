@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.PriceListItems;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for price list item write API requests.

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.FinalAccountsReports;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Response envelope for a single final accounts report.

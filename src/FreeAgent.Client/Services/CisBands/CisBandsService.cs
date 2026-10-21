@@ -1,6 +1,4 @@
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.CisBands;
-
 namespace FreeAgent.Client.Services.CisBands;
 
 /// <summary>

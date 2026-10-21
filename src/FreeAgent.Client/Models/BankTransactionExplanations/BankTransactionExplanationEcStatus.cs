@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.BankTransactionExplanations;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// VAT status values for bank transaction explanations.

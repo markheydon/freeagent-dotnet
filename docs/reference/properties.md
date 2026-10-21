@@ -53,8 +53,6 @@ Required request field: `address1`.
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Properties;
-
 var property = await client.Properties.CreatePropertyAsync(new CreatePropertyRequest
 {
     Address1 = "221B Baker Street",

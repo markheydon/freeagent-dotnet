@@ -1,6 +1,4 @@
 using FreeAgent.Client;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Tests.Models.Shared;
 
 public class ContactReferenceTests

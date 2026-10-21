@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.BalanceSheet;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Balance sheet figures for an accounting period or opening balances.

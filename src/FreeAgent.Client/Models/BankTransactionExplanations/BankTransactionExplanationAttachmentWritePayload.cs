@@ -1,7 +1,5 @@
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Models.Bills;
-
-namespace FreeAgent.Client.Models.BankTransactionExplanations;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable attachment attributes for bank transaction explanation create and update requests.

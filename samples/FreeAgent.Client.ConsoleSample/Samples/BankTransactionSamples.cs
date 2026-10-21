@@ -1,7 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using FreeAgent.Client.Models.BankTransactions;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

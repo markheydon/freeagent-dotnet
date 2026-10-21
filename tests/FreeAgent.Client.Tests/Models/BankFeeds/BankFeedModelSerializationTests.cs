@@ -1,8 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.BankFeeds;
-
 namespace FreeAgent.Client.Tests.Models.BankFeeds;
 
 public class BankFeedModelSerializationTests

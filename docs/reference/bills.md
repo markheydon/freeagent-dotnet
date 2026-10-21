@@ -64,8 +64,6 @@ Task<PaginatedResponse<Bill>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Bills;
-
 var page = await client.Bills.ListAsync(
     view: BillViews.Open,
     contactId: 42,

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Company;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents the mileage unit system used by a FreeAgent company.

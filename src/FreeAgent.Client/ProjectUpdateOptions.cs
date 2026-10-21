@@ -1,7 +1,7 @@
 namespace FreeAgent.Client;
 
 /// <summary>
-/// Options for <see cref="Services.Projects.ProjectService.UpdateProjectAsync(long, Models.Projects.Project, ProjectUpdateOptions?, System.Threading.CancellationToken)"/>.
+/// Options for <see cref="Services.Projects.ProjectService.UpdateProjectAsync(long, Project, ProjectUpdateOptions?, System.Threading.CancellationToken)"/>.
 /// </summary>
 public sealed class ProjectUpdateOptions
 {

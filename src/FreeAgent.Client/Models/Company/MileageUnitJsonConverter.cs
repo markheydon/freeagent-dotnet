@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Company;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Handles mileage unit wire values, including US and UK spellings of kilometres.

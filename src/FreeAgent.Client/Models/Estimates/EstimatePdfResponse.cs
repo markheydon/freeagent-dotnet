@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Estimates;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// PDF payload returned by the estimate PDF endpoint.

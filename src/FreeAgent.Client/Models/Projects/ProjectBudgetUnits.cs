@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Projects;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Project budget unit values returned by FreeAgent.

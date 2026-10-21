@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.SelfAssessmentReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A user self assessment return period.

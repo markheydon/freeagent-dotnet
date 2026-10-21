@@ -1,9 +1,6 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Models.Projects;
-
-namespace FreeAgent.Client.Models.Notes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent note attached to a contact or project.

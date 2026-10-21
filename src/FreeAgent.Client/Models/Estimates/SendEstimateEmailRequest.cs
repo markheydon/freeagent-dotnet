@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Estimates;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Email attachment payload for sending an estimate by email.

@@ -103,8 +103,6 @@ Task<CreditNoteReconciliation> CreateCreditNoteReconciliationAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.CreditNoteReconciliations;
-
 var created = await client.CreditNoteReconciliations.CreateCreditNoteReconciliationAsync(
     CreateCreditNoteReconciliationRequest.Create(
         grossValue: 100m,

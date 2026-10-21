@@ -1,19 +1,6 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.BankAccounts;
-using FreeAgent.Client.Models.BankTransactions;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.EcMoss;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.StockItems;
-using FreeAgent.Client.Models.Users;
-
-namespace FreeAgent.Client.Models.BankTransactionExplanations;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent bank transaction explanation.

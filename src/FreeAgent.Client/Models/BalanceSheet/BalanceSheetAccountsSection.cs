@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.BalanceSheet;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A balance sheet section that lists nominal accounts (for example current assets or current liabilities).

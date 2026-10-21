@@ -2,8 +2,6 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.Expenses;
 using FreeAgent.Client.Services.Expenses;
 using FreeAgent.Client.Tests.TestSupport;
 

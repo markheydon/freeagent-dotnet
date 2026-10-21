@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.BankAccounts;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for bank accounts list API responses.

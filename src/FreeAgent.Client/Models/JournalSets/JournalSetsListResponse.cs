@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.JournalSets;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Response wrapper for journal set list requests.

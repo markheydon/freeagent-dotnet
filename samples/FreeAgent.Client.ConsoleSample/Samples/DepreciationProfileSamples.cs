@@ -1,8 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.DepreciationProfiles;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

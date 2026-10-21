@@ -1,12 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Models.EcMoss;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.CreditNotes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable credit note attributes for create and update requests.

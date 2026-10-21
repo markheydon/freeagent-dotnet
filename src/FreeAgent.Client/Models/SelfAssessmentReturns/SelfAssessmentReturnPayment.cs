@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.SelfAssessmentReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A payment line on an self assessment return.

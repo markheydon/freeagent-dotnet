@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.PriceListItems;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Sort field values for listing price list items.

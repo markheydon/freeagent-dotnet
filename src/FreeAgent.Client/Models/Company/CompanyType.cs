@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Company;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents the legal type of a FreeAgent company.

@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Shared;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Sales tax rate on purchase resources: a percentage or the literal Auto wire value.

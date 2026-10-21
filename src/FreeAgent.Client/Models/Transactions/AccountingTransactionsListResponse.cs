@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Transactions;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Response envelope for listing accounting transactions.

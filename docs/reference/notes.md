@@ -128,8 +128,6 @@ Task<Note> CreateContactNoteAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Notes;
-
 var note = await client.Notes.CreateContactNoteAsync(
     42,
     CreateContactNoteRequest.Create("Follow up next week"));

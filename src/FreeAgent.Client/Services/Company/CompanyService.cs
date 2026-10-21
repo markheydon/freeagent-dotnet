@@ -1,7 +1,6 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.Company;
-using CompanyModel = FreeAgent.Client.Models.Company.Company;
+using CompanyModel = global::FreeAgent.Client.Company;
 
 namespace FreeAgent.Client.Services.Company;
 

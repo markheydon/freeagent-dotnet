@@ -1,11 +1,6 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.BankAccounts;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.Users;
-
-namespace FreeAgent.Client.Models.TrialBalance;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A single trial balance summary line for a category account.

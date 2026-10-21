@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Contacts;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent contact.

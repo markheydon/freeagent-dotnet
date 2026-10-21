@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.DepreciationProfiles;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable <c>capital_asset</c> namespace for purchase-related entities.

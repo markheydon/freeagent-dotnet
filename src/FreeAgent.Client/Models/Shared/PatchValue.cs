@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Shared;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Optional field for partial PUT payloads: unspecified keys are omitted, specified null clears the section.

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Contacts;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Request envelope for creating or updating a contact.

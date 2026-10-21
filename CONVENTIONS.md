@@ -153,12 +153,11 @@ tests/
 ```
 
 **Namespace layout:**
-- `FreeAgent.Client` - top-level consumer namespace (`FreeAgentClient`, `PaginatedResponse<T>`, `*GetOptions`)
+- `FreeAgent.Client` - top-level consumer namespace (`FreeAgentClient`, `PaginatedResponse<T>`, `*GetOptions`, and all public request/response/resource model types)
 - `FreeAgent.Client.Infrastructure.Authentication` - OAuth types
 - `FreeAgent.Client.Infrastructure.Configuration` - FreeAgentEnvironment, FreeAgentEnvironmentEndpoints
 - `FreeAgent.Client.Infrastructure.Http` - HTTP client, exceptions, pagination helpers
-- `FreeAgent.Client.Models.[Resource]` - resource models (Attachments, BankAccounts, Bills, Categories, Company, Contacts, CreditNotes, CreditNoteReconciliations, EmailAddresses, Estimates, Expenses, HirePurchases, Invoices, Notes, PriceListItems, Projects, RecurringInvoices, Shared, StockItems, Tasks, Timeslips, Users)
-- `FreeAgent.Client.Services.[Resource]` - resource services (Attachments, Bills, Categories, Company, Contacts, CreditNotes, CreditNoteReconciliations, EmailAddresses, Estimates, Expenses, HirePurchases, Invoices, Notes, PriceListItems, Projects, RecurringInvoices, StockItems, Tasks, Timeslips, Users)
+- `FreeAgent.Client.Services.[Resource]` - resource service implementations (not required at call sites; use `FreeAgentClient` properties)
 
 **Key naming rules (unchanged):**
 - Service: [Resource]Service (CompanyService, ContactService)
@@ -171,9 +170,9 @@ tests/
 
 
 **New conventions:**
-- Models must be grouped by resource under Models/[Resource]/ with namespace FreeAgent.Client.Models.[Resource]
-- Cross-resource shared primitives go in Models/Shared/ if needed in future
-- All infrastructure plumbing goes under Infrastructure/ and uses internal/public as appropriate, never leaked into the top-level package namespace except for types that are part of the public SDK contract (for example `PaginatedResponse<T>`)
+- Model source files must be grouped by resource under `Models/[Resource]/` (and cross-resource primitives under `Models/Shared/`), but the public namespace is always `FreeAgent.Client` — folders organise the codebase, not caller usings
+- Do not reintroduce per-resource `FreeAgent.Client.Models.*` namespaces without an ADR
+- All infrastructure plumbing goes under `Infrastructure/` and uses internal/public as appropriate; infrastructure types stay out of the primary consumer namespace except where they are deliberate public SDK contract (for example `PaginatedResponse<T>`)
 - Resource services take `IFreeAgentRequestClient` internally; do not introduce a shared public `ServiceBase` unless an ADR says otherwise
 - Each resource service and any service-local helpers, options, or types must be placed in a resource-named subfolder under Services/ (e.g., Services/Invoices/ for invoice-related services and helpers). This keeps resource logic and extensions together and discoverable.
 ---

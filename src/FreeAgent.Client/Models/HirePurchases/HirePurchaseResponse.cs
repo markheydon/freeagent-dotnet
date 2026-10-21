@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.HirePurchases;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for a single hire purchase API response.

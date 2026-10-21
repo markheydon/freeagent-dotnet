@@ -1,9 +1,6 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.Transactions;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A ledger transaction from the FreeAgent accounting transactions report.

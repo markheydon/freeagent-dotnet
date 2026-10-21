@@ -3,8 +3,6 @@ using System.Net.Http;
 using System.Text.Json;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.BankAccounts;
-using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Services.BankAccounts;
 using FreeAgent.Client.Tests.TestSupport;
 

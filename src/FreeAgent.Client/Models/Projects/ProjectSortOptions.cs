@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Projects;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Sort field values for listing projects.

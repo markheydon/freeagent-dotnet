@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Properties;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Attributes for updating a landlord property.

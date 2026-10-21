@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.SalesTaxPeriods;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for a single sales tax period API response.

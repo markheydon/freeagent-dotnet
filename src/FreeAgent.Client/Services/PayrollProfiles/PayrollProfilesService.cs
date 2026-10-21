@@ -1,7 +1,4 @@
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.PayrollProfiles;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Services.PayrollProfiles;
 
 /// <summary>

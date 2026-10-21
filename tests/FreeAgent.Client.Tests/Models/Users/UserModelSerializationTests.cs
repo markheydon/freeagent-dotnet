@@ -1,7 +1,5 @@
 using System.Globalization;
 using System.Text.Json;
-using FreeAgent.Client.Models.Users;
-
 namespace FreeAgent.Client.Tests.Models.Users;
 
 public class UserModelSerializationTests

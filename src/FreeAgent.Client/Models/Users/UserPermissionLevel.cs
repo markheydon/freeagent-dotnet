@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Users;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// FreeAgent permission levels for user resources.

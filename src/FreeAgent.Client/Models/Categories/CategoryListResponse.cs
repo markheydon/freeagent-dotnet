@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Categories;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Response envelope for listing categories.

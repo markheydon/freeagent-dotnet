@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Users;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable user attributes for create and update requests.

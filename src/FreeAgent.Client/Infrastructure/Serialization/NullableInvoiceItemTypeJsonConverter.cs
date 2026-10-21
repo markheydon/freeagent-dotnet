@@ -1,7 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Models.Invoices;
-
 namespace FreeAgent.Client.Infrastructure.Serialization;
 
 /// <summary>

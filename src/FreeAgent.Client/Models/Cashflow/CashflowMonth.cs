@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Cashflow;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Cashflow total for a calendar month within a cashflow summary.

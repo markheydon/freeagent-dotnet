@@ -1,7 +1,5 @@
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Users;
-
 namespace FreeAgent.Client.Services.Users;
 
 /// <summary>

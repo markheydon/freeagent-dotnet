@@ -1,5 +1,3 @@
-using FreeAgent.Client.Models.Categories;
-
 namespace FreeAgent.Client.Tests.Models.Categories;
 
 public class CategorySetsTests

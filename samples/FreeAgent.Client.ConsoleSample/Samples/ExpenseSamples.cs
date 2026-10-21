@@ -4,8 +4,6 @@ using System.Reflection;
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.Expenses;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

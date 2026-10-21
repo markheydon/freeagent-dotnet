@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.StockItems;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Sort field values for listing stock items.

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.CisSettings;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Company CIS contractor registration details.

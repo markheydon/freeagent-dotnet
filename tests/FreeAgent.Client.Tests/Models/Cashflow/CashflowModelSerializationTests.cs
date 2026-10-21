@@ -1,6 +1,6 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using CashflowModel = FreeAgent.Client.Models.Cashflow.Cashflow;
+using CashflowModel = global::FreeAgent.Client.Cashflow;
 
 namespace FreeAgent.Client.Tests.Models.Cashflow;
 

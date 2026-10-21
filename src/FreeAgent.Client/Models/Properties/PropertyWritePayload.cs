@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Properties;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable property attributes for create and update requests.

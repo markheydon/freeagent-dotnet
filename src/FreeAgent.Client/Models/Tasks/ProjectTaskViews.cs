@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Tasks;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// View filter values for listing tasks.

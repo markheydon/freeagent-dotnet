@@ -1,7 +1,5 @@
 using System.Globalization;
 using System.Text.Json;
-using FreeAgent.Client.Models.Attachments;
-
 namespace FreeAgent.Client.Tests.Models.Attachments;
 
 public class AttachmentModelSerializationTests

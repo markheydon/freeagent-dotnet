@@ -1,6 +1,4 @@
 using FreeAgent.Client;
-using FreeAgent.Client.Models.Contacts;
-
 namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>

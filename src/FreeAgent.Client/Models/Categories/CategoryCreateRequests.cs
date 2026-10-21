@@ -1,6 +1,6 @@
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Categories;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Request attributes for creating an income category (nominal codes 001–049). Uniqueness within the account is validated by FreeAgent.

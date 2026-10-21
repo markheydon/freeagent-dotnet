@@ -1,7 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.TrialBalance;
-
 namespace FreeAgent.Client.Tests.Models.TrialBalance;
 
 public class TrialBalanceLineModelSerializationTests

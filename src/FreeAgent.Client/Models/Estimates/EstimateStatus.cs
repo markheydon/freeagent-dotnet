@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Estimates;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Estimate status values returned by FreeAgent.

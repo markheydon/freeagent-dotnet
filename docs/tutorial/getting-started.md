@@ -79,11 +79,18 @@ var token = await oauthClient.ExchangeCodeForTokenAsync(authorizationCode);
 
 ## Create a client and call the API
 
+A single `using FreeAgent.Client;` covers the client, list options, OAuth types, and all request/response models — you do not need per-resource model namespaces.
+
 ```csharp
+using FreeAgent.Client;
+
 using var client = new FreeAgentClient(token.AccessToken, environment);
 
 var company = await client.Company.GetCompanyAsync();
 Console.WriteLine($"{company.Name} ({company.Currency})");
+
+// Model types (for example Contact) are in the same namespace:
+var page = await client.Contacts.ListAsync(contact: ContactReference.FromId(42));
 ```
 
 For automatic token refresh within a session:

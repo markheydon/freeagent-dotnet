@@ -10,7 +10,7 @@ Typed ISO 4217 currency codes for wire values on implemented models.
 
 | | |
 |---|---|
-| **SDK type** | `CurrencyCode` in `FreeAgent.Client.Models.Shared` |
+| **SDK type** | `CurrencyCode` in `FreeAgent.Client` |
 | **FreeAgent docs** | [dev.freeagent.com/docs/currencies](https://dev.freeagent.com/docs/currencies) |
 
 FreeAgent documents supported currency codes but does **not** expose a `/v2/currencies` REST resource. There is no `CurrenciesService`.
