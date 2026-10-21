@@ -141,6 +141,13 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/users](https://localhost:5001/users) | `UserService.ListAsync()` | Per-row mapping inspection, view filters |
 | [/users/detail](https://localhost:5001/users/detail) | `GetUserAsync()`, `GetCurrentUserAsync()`, `CreateUserAsync()`, `UpdateUserAsync()`, `UpdateCurrentUserAsync()`, `DeleteUserAsync()` | CRUD probes, personal profile endpoints, progress bar |
 | [/email-addresses](https://localhost:5001/email-addresses) | `EmailAddressesService.ListAsync()` | Per-row mapping inspection, list output |
+| [/profit-and-loss](https://localhost:5001/profit-and-loss) | `ProfitAndLossService.GetSummaryAsync()` | Date range query, wire-to-model mapping |
+| [/balance-sheet](https://localhost:5001/balance-sheet) | `BalanceSheetService.GetAsync()` / `GetOpeningBalancesAsync()` | As-of date query, wire-to-model mapping |
+| [/trial-balance](https://localhost:5001/trial-balance) | `TrialBalanceService.GetSummaryAsync()` / `GetOpeningBalancesAsync()` | Date range query, wire-to-model mapping |
+| [/cashflow](https://localhost:5001/cashflow) | `CashflowService.GetAsync()` | Date range query, wire-to-model mapping |
+| [/vat-returns](https://localhost:5001/vat-returns) | `VatReturnsService.ListAsync()` / `GetAsync(periodEndsOn)` | List + period detail fetch, wire-to-model mapping |
+| [/corporation-tax-returns](https://localhost:5001/corporation-tax-returns) | `CorporationTaxReturnsService.ListAsync()` | Per-row mapping inspection; limited-company note when empty |
+| [/corporation-tax-returns/detail](https://localhost:5001/corporation-tax-returns/detail?periodEndsOn=YYYY-MM-DD) | `GetAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()`, `MarkAsPaidAsync()`, `MarkAsUnpaidAsync()` | `?periodEndsOn=` deep links, all mark-as transitions, progress bar |
 
 Contributors adding endpoints should follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md).
 
