@@ -15,11 +15,6 @@ on:
 permissions:
   contents: read
 
-# TEMP: skip live console smoke while reports batch stories #95–#101 land (timeouts / sandbox rate limits).
-# Remove this env block (or set to "false") and delete the matching note in docs/contributing/ci-sandbox-smoke.md.
-env:
-  FREEAGENT_BATCH_SKIP_SMOKE: "true"
-
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -50,11 +45,11 @@ jobs:
           EVENT: ${{ github.event_name }}
           ACTOR: ${{ github.actor }}
           PATHS_SMOKE: ${{ steps.paths.outputs.smoke }}
-          FREEAGENT_BATCH_SKIP_SMOKE: ${{ env.FREEAGENT_BATCH_SKIP_SMOKE }}
+          FREEAGENT_BATCH_SKIP_SMOKE: ${{ vars.FREEAGENT_BATCH_SKIP_SMOKE }}
         run: |
           if [[ "$FREEAGENT_BATCH_SKIP_SMOKE" == "true" ]]; then
             echo "run_smoke=false" >> "$GITHUB_OUTPUT"
-            echo "Sandbox smoke skipped — FREEAGENT_BATCH_SKIP_SMOKE is enabled (temporary batch bypass; re-enable after stories #96–#101)."
+            echo "Sandbox smoke skipped — repository variable FREEAGENT_BATCH_SKIP_SMOKE is true."
             exit 0
           fi
 

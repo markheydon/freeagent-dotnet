@@ -79,11 +79,21 @@ gh secret set FREEAGENT_CLIENT_SECRET --repo markheydon/freeagent-dotnet
 gh secret set FREEAGENT_REFRESH_TOKEN --repo markheydon/freeagent-dotnet
 ```
 
-## Temporary batch bypass
+## Skipping smoke via repository variable
 
-While a batch of reports-cluster endpoint stories ([#95](https://github.com/markheydon/freeagent-dotnet/issues/95)–[#101](https://github.com/markheydon/freeagent-dotnet/issues/101)) is landing, CI may set workflow env `FREEAGENT_BATCH_SKIP_SMOKE` to `"true"` in [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml). That forces `run_smoke=false` for all triggers (including weekly schedule and `workflow_dispatch`), so merges are not blocked by the 25-minute smoke job or sandbox rate limits.
+Repository administrators can set an Actions **variable** named `FREEAGENT_BATCH_SKIP_SMOKE` (Settings → Secrets and variables → Actions → Variables):
 
-**Re-enable smoke after the batch:** remove the `env:` block (or set `FREEAGENT_BATCH_SKIP_SMOKE` to `"false"`) and delete this section.
+| Value | Effect |
+|-------|--------|
+| Unset or `false` | Normal smoke eligibility rules apply (see below). |
+| `true` | Forces `run_smoke=false` for every trigger, including weekly schedule and `workflow_dispatch`. |
+
+Use this when you need to land a batch of changes without running the live 25-minute console smoke job (for example sandbox rate limits). Set the variable back to `false` or delete it before relying on CI smoke again.
+
+```bash
+gh variable set FREEAGENT_BATCH_SKIP_SMOKE --repo markheydon/freeagent-dotnet --body true
+gh variable set FREEAGENT_BATCH_SKIP_SMOKE --repo markheydon/freeagent-dotnet --body false
+```
 
 ## How the workflow behaves
 
