@@ -20,6 +20,7 @@ using FreeAgent.Client.Services.HirePurchases;
 using FreeAgent.Client.Services.Invoices;
 using FreeAgent.Client.Services.Notes;
 using FreeAgent.Client.Services.PriceListItems;
+using FreeAgent.Client.Services.ProfitAndLoss;
 using FreeAgent.Client.Services.Projects;
 using FreeAgent.Client.Services.RecurringInvoices;
 using FreeAgent.Client.Services.StockItems;
@@ -173,6 +174,11 @@ public sealed class FreeAgentClient : IDisposable
     public CisSettingsService CisSettings { get; }
 
     /// <summary>
+    /// Profit and loss report API service.
+    /// </summary>
+    public ProfitAndLossService ProfitAndLoss { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -256,6 +262,7 @@ public sealed class FreeAgentClient : IDisposable
         CapitalAssetTypes = new CapitalAssetTypesService(_httpClient);
         CisBands = new CisBandsService(_httpClient);
         CisSettings = new CisSettingsService(_httpClient);
+        ProfitAndLoss = new ProfitAndLossService(_httpClient);
     }
 
     /// <summary>
