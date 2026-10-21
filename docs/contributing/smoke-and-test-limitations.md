@@ -71,6 +71,7 @@ Some examples run in `--run-all` but may **skip** when the sandbox account lacks
 
 | Example | Skip reason |
 |---------|-------------|
+| List sales tax periods | Company is not a US or universal company type (UK and other types receive `404` from the API) |
 | List CIS bands | Company not enrolled in CIS for subcontractors (`cis_subcontractor` and `cis_enabled` are not true) |
 | Get CIS settings | CIS not enabled for the company (`cis_enabled` is not true) |
 | Send invoice email (template) | FreeAgent free-trial email limit |

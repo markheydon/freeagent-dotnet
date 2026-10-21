@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using FreeAgent.Client.Samples.Shared;
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>
@@ -13,6 +14,7 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task ListSalesTaxPeriodsAsync(CancellationToken cancellationToken)
     {
+        await EnsureSalesTaxPeriodsSupportedAsync(cancellationToken);
         var periods = await context.Client.SalesTaxPeriods.ListAsync(cancellationToken);
 
         SampleOutput.WriteHeader($"Sales tax periods ({periods.Count})");
@@ -24,6 +26,7 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task GetSalesTaxPeriodDetailAsync(CancellationToken cancellationToken)
     {
+        await EnsureSalesTaxPeriodsSupportedAsync(cancellationToken);
         var (probeId, createdForProbe) = await ResolveProbeSalesTaxPeriodIdAsync(cancellationToken);
         try
         {
@@ -50,6 +53,7 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateSalesTaxPeriodAsync(CancellationToken cancellationToken)
     {
+        await EnsureSalesTaxPeriodsSupportedAsync(cancellationToken);
         var (probeId, createdForProbe) = await ResolveProbeSalesTaxPeriodIdAsync(cancellationToken);
         try
         {
@@ -96,5 +100,15 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
             cancellationToken);
 
         return (created.ResourceId, true);
+    }
+
+    private async Task EnsureSalesTaxPeriodsSupportedAsync(CancellationToken cancellationToken)
+    {
+        var company = await context.Client.Company.GetCompanyAsync(cancellationToken);
+        if (!CompanySalesTaxPeriodSupport.SupportsSalesTaxPeriods(company.Type))
+        {
+            SampleContext.Skip(
+                "sales tax periods API applies to US and universal companies only (connected company is not supported)");
+        }
     }
 }

@@ -6,7 +6,7 @@ nav_order: 32
 
 # Sales tax periods
 
-List, create, update, and delete sales tax periods for US and universal companies.
+List, create, update, and delete sales tax periods for US and universal companies. UK and other company types receive `404 Not Found` from this API; the console `--run-all` example skips when the connected company is not supported.
 
 | | |
 |---|---|

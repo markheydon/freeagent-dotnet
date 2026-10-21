@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using FreeAgent.Client.Samples.Shared.Probes;
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>
@@ -100,18 +101,13 @@ internal sealed class JournalSetSamples(SampleContext context) : IConsoleSampleP
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeJournalSetAsync(CancellationToken cancellationToken)
     {
+        var userId = await ResolveCurrentUserIdAsync(cancellationToken);
         var created = await context.Client.JournalSets.CreateJournalSetAsync(
-            new CreateJournalSetRequest
-            {
-                Description = ProbeDescription,
-                DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
-                Tag = ProbeTag,
-                JournalEntries =
-                [
-                    new JournalEntry { CategoryNominalCode = "001", DebitValue = -1.00m },
-                    new JournalEntry { CategoryNominalCode = "901", DebitValue = 1.00m }
-                ]
-            },
+            JournalSetWriteProbeSupport.BuildCreateRequest(
+                ProbeDescription,
+                ProbeTag,
+                userId,
+                DateOnly.FromDateTime(DateTime.UtcNow)),
             cancellationToken);
 
         SampleOutput.WriteHeader("Created probe journal set");
@@ -130,20 +126,26 @@ internal sealed class JournalSetSamples(SampleContext context) : IConsoleSampleP
             return (items[0].ResourceId, false);
         }
 
+        var userId = await ResolveCurrentUserIdAsync(cancellationToken);
         var created = await context.Client.JournalSets.CreateJournalSetAsync(
-            new CreateJournalSetRequest
-            {
-                Description = ProbeDescription,
-                DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
-                Tag = ProbeTag,
-                JournalEntries =
-                [
-                    new JournalEntry { CategoryNominalCode = "001", DebitValue = -1.00m },
-                    new JournalEntry { CategoryNominalCode = "901", DebitValue = 1.00m }
-                ]
-            },
+            JournalSetWriteProbeSupport.BuildCreateRequest(
+                ProbeDescription,
+                ProbeTag,
+                userId,
+                DateOnly.FromDateTime(DateTime.UtcNow)),
             cancellationToken);
 
         return (created.ResourceId, true);
+    }
+
+    private async Task<long> ResolveCurrentUserIdAsync(CancellationToken cancellationToken)
+    {
+        var user = await context.Client.Users.GetCurrentUserAsync(cancellationToken);
+        if (!user.TryGetResourceId(out var userId))
+        {
+            SampleContext.Skip("connected user is missing a parseable resource id");
+        }
+
+        return userId;
     }
 }
