@@ -90,7 +90,7 @@ dotnet run
 ### What happens
 
 1. The app completes OAuth (browser flow or token from environment variables).
-2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Capital asset types, Depreciation profiles, Stock items, Price list items).
+2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Capital asset types, Depreciation profiles, CIS bands, Stock items, Price list items).
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
@@ -138,6 +138,7 @@ Examples marked **(mutates)** write to the connected account.
 | Attachments | Get attachment detail; **(mutates)** create expense with attachment, get and delete |
 | Capital asset types | List capital asset types; **(mutates)** get capital asset type detail with probe create and delete; **(mutates)** update capital asset type name; **(mutates)** create probe capital asset type and delete |
 | Depreciation profiles | Deserialize straight line profile; deserialize reducing balance profile; build no depreciation purchase helper |
+| CIS bands | List CIS bands |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
 | Bank accounts | List bank accounts; list standard accounts; get detail; create variants; update and delete (sandbox) |
 | Bank feeds | List bank feeds; get bank feed detail |

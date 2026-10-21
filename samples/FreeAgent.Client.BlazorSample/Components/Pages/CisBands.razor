@@ -1,0 +1,199 @@
+@page "/cis-bands"
+@using FreeAgent.Client.Models.CisBands
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>CIS bands - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="CIS bands endpoint"
+                         Title="CIS bands list"
+                         CallUnderTest="CisBandsService.ListAsync(...)"
+                         Description="Load Construction Industry Scheme bands configured for the company. Only available when the company is enrolled in CIS for Subcontractors."
+                         EndpointPath="/v2/cis_bands"
+                         DocsUrl="https://dev.freeagent.com/docs/cis_bands" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Load available CIS bands and inspect wire-to-model mapping per row. Band <code>name</code> values align with
+                        <code>CisDeductionRate</code> on contacts and invoices.
+                    </MudText>
+
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.CloudDownload"
+                               Disabled="_loading"
+                               OnClick="LoadCisBandsAsync">
+                        @if (_loading)
+                        {
+                            <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Loading…</span>
+                        }
+                        else
+                        {
+                            <span>Load CIS bands</span>
+                        }
+                    </MudButton>
+                </MudStack>
+
+                @if (_items is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_items.Count CIS band@(_items.Count == 1 ? "" : "s") loaded
+                    </MudChip>
+
+                    @if (_items.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No CIS bands returned. Confirm the company is enrolled in CIS for Subcontractors.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>Name</MudTh>
+                                    <MudTh>Deduction rate</MudTh>
+                                    <MudTh>Nominal code</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Name"><code>@context.Name</code></MudTd>
+                                    <MudTd DataLabel="Deduction rate">@context.DeductionRate</MudTd>
+                                    <MudTd DataLabel="Nominal code">@ValueOrDash(context.NominalCode)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => InspectRowAsync(context.Index))">
+                                            Inspect mapping
+                                        </MudButton>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedItem is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All CisBand model fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private IReadOnlyList<CisBand>? _items;
+    private CisBand? _inspectedItem;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+
+    private IReadOnlyList<CisBandRow> _rows => _items?
+        .Select(static (item, index) => new CisBandRow(
+            index,
+            item.Name?.ToString() ?? "-",
+            item.DeductionRate?.ToString() ?? "-",
+            item.NominalCode))
+        .ToList() ?? [];
+
+    private async Task LoadCisBandsAsync()
+    {
+        _items = null;
+        _inspectedItem = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        const string diagnosticsEndpoint = "cis_bands";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _items = await client.CisBands.ListAsync();
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_items is null || index < 0 || index >= _items.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedItem = _items[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "available_bands", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, _wireApiResponse, envelopeProperty: "available_bands");
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private sealed record CisBandRow(int Index, string Name, string DeductionRate, string? NominalCode);
+}

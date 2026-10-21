@@ -224,6 +224,9 @@
                 <MudNavLink Href="/depreciation-profiles" Icon="@Icons.Material.Filled.TrendingDown">
                     Depreciation profiles
                 </MudNavLink>
+                <MudNavLink Href="/cis-bands" Icon="@Icons.Material.Filled.AllInclusive">
+                    CIS bands list
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Sales catalogue" Icon="@Icons.Material.Filled.Inventory2" Expanded="@IsSalesCatalogueRoute">
@@ -409,7 +412,8 @@
     private bool IsAssetsAndJournalsRoute =>
         CurrentPath.Equals("capital-asset-types", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("capital-asset-types/", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.Equals("depreciation-profiles", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.Equals("depreciation-profiles", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("cis-bands", StringComparison.OrdinalIgnoreCase);
 
     private bool IsSalesCatalogueRoute =>
         CurrentPath.Equals("stock-items", StringComparison.OrdinalIgnoreCase)
