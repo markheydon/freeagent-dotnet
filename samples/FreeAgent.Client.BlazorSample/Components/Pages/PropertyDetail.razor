@@ -1,0 +1,338 @@
+@page "/properties/detail"
+@using FreeAgent.Client.Models.Company
+@using FreeAgent.Client.Models.Properties
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Property detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Properties endpoint"
+                         Title="Get, create, update, and delete properties"
+                         CallUnderTest="PropertiesService.GetPropertyAsync / CreatePropertyAsync / UpdatePropertyAsync / DeletePropertyAsync"
+                         Description="Exercises landlord property CRUD with wire-to-model diagnostics. Only available for UkUnincorporatedLandlord companies."
+                         EndpointPath="/v2/properties/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/properties" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_companyTypeWarning is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_companyTypeWarning</MudAlert>
+                }
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick an ID from the <MudLink Href="/properties">properties list</MudLink>, or pass <code>?id=12345</code>.
+                        <strong>Create probe property</strong> upserts by stable address line 1 <code>@ProbeAddress1</code>.
+                    </MudText>
+                    <MudNumericField @bind-Value="_propertyId" @bind-Value:after="OnPropertyIdChanged" Label="Property ID" Min="1" />
+                    <MudTextField @bind-Value="_address1" Label="Address line 1" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudTextField @bind-Value="_address2" Label="Address line 2" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudTextField @bind-Value="_address3" Label="Address line 3" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudTextField @bind-Value="_town" Label="Town" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudTextField @bind-Value="_region" Label="Region" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudTextField @bind-Value="_postcode" Label="Postcode" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _propertyId is null or < 1"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetPropertyAsync">Get property</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading || string.IsNullOrWhiteSpace(_address1)"
+                                   OnClick="CreateProbePropertyAsync">Create probe property</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _propertyId is null or < 1"
+                                   OnClick="UpdatePropertyAsync">Update property</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _propertyId is null or < 1"
+                                   OnClick="DeletePropertyAsync">Delete property</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _item is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All LandlordProperty model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_item.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_item.Address1)</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Run an operation above to load property diagnostics.</MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private const string ProbeAddress1 = "SDK-PROBE-PROPERTY";
+
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? PropertyIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _companyTypeWarning;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private long? _propertyId;
+    private LandlordProperty? _item;
+    private ModelProbeSnapshot? _probe;
+
+    private string _address1 = ProbeAddress1;
+    private string? _address2 = "Probe annex";
+    private string? _address3;
+    private string? _town = "Sampletown";
+    private string? _region = "Sampleshire";
+    private string? _postcode = "SW1A 1AA";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (PropertyIdFromQuery is > 0)
+        {
+            _propertyId = PropertyIdFromQuery;
+        }
+
+        if (TokenStore.IsConnected)
+        {
+            await RefreshCompanyTypeWarningAsync();
+        }
+    }
+
+    private void OnPropertyIdChanged()
+    {
+        _item = null;
+        _probe = null;
+        _error = null;
+        _operationMessage = null;
+    }
+
+    private async Task RefreshCompanyTypeWarningAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            return;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var company = await client.Company.GetCompanyAsync();
+            if (company.Type != CompanyType.UkUnincorporatedLandlord)
+            {
+                _companyTypeWarning =
+                    $"Connected company type is {company.Type?.ToString() ?? "unknown"} (not UkUnincorporatedLandlord). Property writes may fail.";
+            }
+            else
+            {
+                _companyTypeWarning = null;
+            }
+        }
+        catch
+        {
+            _companyTypeWarning = "Could not load company type to verify landlord eligibility.";
+        }
+    }
+
+    private async Task GetPropertyAsync()
+    {
+        if (_propertyId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(async client =>
+        {
+            _item = await client.Properties.GetPropertyAsync(_propertyId.Value);
+            BindFromItem(_item);
+            _operationMessage = $"Loaded property {_item.ResourceId}.";
+            return $"properties/{_item.ResourceId}";
+        });
+    }
+
+    private async Task CreateProbePropertyAsync()
+    {
+        await RunOperationAsync(async client =>
+        {
+            var existing = await client.Properties.ListAsync();
+            var match = existing.FirstOrDefault(item => string.Equals(item.Address1, ProbeAddress1, StringComparison.Ordinal));
+
+            if (match is not null)
+            {
+                _item = await client.Properties.UpdatePropertyAsync(match.ResourceId, BuildUpdateRequest());
+                _propertyId = _item.ResourceId;
+                BindFromItem(_item);
+                _operationMessage = $"Refreshed existing probe property {_item.ResourceId} (address1 {ProbeAddress1}).";
+            }
+            else
+            {
+                _item = await client.Properties.CreatePropertyAsync(BuildCreateRequest());
+                _propertyId = _item.ResourceId;
+                BindFromItem(_item);
+                _operationMessage = $"Created probe property {_item.ResourceId} (address1 {ProbeAddress1}).";
+            }
+
+            return $"properties/{_item.ResourceId}";
+        });
+    }
+
+    private async Task UpdatePropertyAsync()
+    {
+        if (_propertyId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(async client =>
+        {
+            _item = await client.Properties.UpdatePropertyAsync(_propertyId.Value, BuildUpdateRequest());
+            BindFromItem(_item);
+            _operationMessage = $"Updated property {_item.ResourceId}.";
+            return $"properties/{_item.ResourceId}";
+        });
+    }
+
+    private async Task DeletePropertyAsync()
+    {
+        if (_propertyId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _propertyId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.Properties.DeletePropertyAsync(deletedId);
+                _item = null;
+                _probe = null;
+                _operationMessage = $"Deleted property {deletedId}.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private CreatePropertyRequest BuildCreateRequest() => new()
+    {
+        Address1 = _address1,
+        Address2 = _address2,
+        Address3 = _address3,
+        Town = _town,
+        Region = _region,
+        Postcode = _postcode
+    };
+
+    private UpdatePropertyRequest BuildUpdateRequest() => new()
+    {
+        Address1 = _address1,
+        Address2 = _address2,
+        Address3 = _address3,
+        Town = _town,
+        Region = _region,
+        Postcode = _postcode
+    };
+
+    private void BindFromItem(LandlordProperty item)
+    {
+        _address1 = item.Address1 ?? ProbeAddress1;
+        _address2 = item.Address2;
+        _address3 = item.Address3;
+        _town = item.Town;
+        _region = item.Region;
+        _postcode = item.Postcode;
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgent.Client.FreeAgentClient, Task<string?>> action,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await RefreshCompanyTypeWarningAsync();
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _item is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_item, _wireApiResponse, envelopeProperty: "property");
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            if (fetchWirePayload && _propertyId is > 0)
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    $"properties/{_propertyId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

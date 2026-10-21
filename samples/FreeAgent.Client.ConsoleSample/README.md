@@ -90,7 +90,7 @@ dotnet run
 ### What happens
 
 1. The app completes OAuth (browser flow or token from environment variables).
-2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Capital assets, Capital asset types, Journal sets, Depreciation profiles, CIS bands, CIS settings, Profit and loss, Balance sheet, Trial balance, Cashflow, Transactions, VAT returns, Corporation tax returns, Income tax returns, Self assessment returns, Final accounts reports, Sales tax periods, EC VAT MOSS, Stock items, Price list items).
+2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Capital assets, Capital asset types, Journal sets, Properties, Depreciation profiles, CIS bands, CIS settings, Profit and loss, Balance sheet, Trial balance, Cashflow, Transactions, VAT returns, Corporation tax returns, Income tax returns, Self assessment returns, Final accounts reports, Sales tax periods, EC VAT MOSS, Stock items, Price list items).
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
@@ -139,6 +139,7 @@ Examples marked **(mutates)** write to the connected account.
 | Capital assets | List capital assets; get capital asset detail with history |
 | Capital asset types | List capital asset types; **(mutates)** get capital asset type detail with probe create and delete; **(mutates)** update capital asset type name; **(mutates)** create probe capital asset type and delete |
 | Journal sets | List journal sets; get opening balances journal set; **(mutates)** get journal set detail with probe create and delete; **(mutates)** create probe journal set and delete |
+| Properties | List properties (skips when company is not `UkUnincorporatedLandlord`); **(mutates)** get property detail with probe create and delete; **(mutates)** update property address; **(mutates)** create probe property and delete |
 | Depreciation profiles | Deserialize straight line profile; deserialize reducing balance profile; build no depreciation purchase helper |
 | CIS bands | List CIS bands |
 | CIS settings | Get CIS settings; **(mutates, menu-only)** round-trip CIS prior deductions update |

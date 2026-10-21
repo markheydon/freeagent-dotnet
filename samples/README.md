@@ -124,6 +124,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/capital-asset-types/detail](https://localhost:5001/capital-asset-types/detail) | `GetCapitalAssetTypeAsync()`, `CreateCapitalAssetTypeAsync()`, `UpdateCapitalAssetTypeAsync()`, `DeleteCapitalAssetTypeAsync()` | CRUD probes, probe upsert by name, progress bar |
 | [/journal-sets](https://localhost:5001/journal-sets) | `JournalSetsService.ListAsync()`, `GetOpeningBalancesAsync()` | Per-row mapping inspection, date/tag filters, opening balances |
 | [/journal-sets/detail](https://localhost:5001/journal-sets/detail) | `GetJournalSetAsync()`, `CreateJournalSetAsync()`, `UpdateJournalSetAsync()`, `DeleteJournalSetAsync()` | CRUD probes, tagged probe upsert, balancing entry pair, progress bar |
+| [/properties](https://localhost:5001/properties) | `PropertiesService.ListAsync()` | Per-row mapping inspection; landlord company-type warning |
+| [/properties/detail](https://localhost:5001/properties/detail) | `GetPropertyAsync()`, `CreatePropertyAsync()`, `UpdatePropertyAsync()`, `DeletePropertyAsync()` | CRUD probes, stable address1 upsert, progress bar |
 | [/expenses](https://localhost:5001/expenses) | `ExpenseService.ListAsync()` and `ListAutoPagingAsync()` | Per-row mapping inspection, view and project filters |
 | [/expenses/detail](https://localhost:5001/expenses/detail) | `GetExpenseAsync()`, `CreateExpenseAsync()`, `CreateExpensesAsync()`, `UpdateExpenseAsync()`, `DeleteExpenseAsync()`, `GetMileageSettingsAsync()` | CRUD probes, category and mileage variants, batch create, progress bar |
 | [/bank-accounts](https://localhost:5001/bank-accounts) | `BankAccountsService.ListAsync()` | Per-row mapping inspection, view filter |

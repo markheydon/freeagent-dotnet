@@ -233,6 +233,12 @@
                 <MudNavLink Href="/journal-sets/detail" Icon="@Icons.Material.Filled.Edit">
                     Journal set CRUD
                 </MudNavLink>
+                <MudNavLink Href="/properties" Icon="@Icons.Material.Filled.HomeWork">
+                    Properties list
+                </MudNavLink>
+                <MudNavLink Href="/properties/detail" Icon="@Icons.Material.Filled.Edit">
+                    Property CRUD
+                </MudNavLink>
                 <MudNavLink Href="/depreciation-profiles" Icon="@Icons.Material.Filled.TrendingDown">
                     Depreciation profiles
                 </MudNavLink>
@@ -491,6 +497,8 @@
         || CurrentPath.StartsWith("capital-asset-types/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("journal-sets", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("journal-sets/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("properties", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("properties/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("depreciation-profiles", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("cis-bands", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("cis-settings", StringComparison.OrdinalIgnoreCase)
