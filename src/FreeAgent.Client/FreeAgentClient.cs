@@ -27,6 +27,8 @@ using FreeAgent.Client.Services.IncomeTaxReturns;
 using FreeAgent.Client.Services.Invoices;
 using FreeAgent.Client.Services.JournalSets;
 using FreeAgent.Client.Services.Notes;
+using FreeAgent.Client.Services.Payroll;
+using FreeAgent.Client.Services.PayrollProfiles;
 using FreeAgent.Client.Services.PriceListItems;
 using FreeAgent.Client.Services.ProfitAndLoss;
 using FreeAgent.Client.Services.Projects;
@@ -263,6 +265,16 @@ public sealed class FreeAgentClient : IDisposable
     public EcMossService EcMoss { get; }
 
     /// <summary>
+    /// Payroll API service.
+    /// </summary>
+    public PayrollService Payroll { get; }
+
+    /// <summary>
+    /// Payroll profiles API service.
+    /// </summary>
+    public PayrollProfilesService PayrollProfiles { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -361,6 +373,8 @@ public sealed class FreeAgentClient : IDisposable
         FinalAccountsReports = new FinalAccountsReportsService(_httpClient);
         SalesTaxPeriods = new SalesTaxPeriodsService(_httpClient);
         EcMoss = new EcMossService(_httpClient);
+        Payroll = new PayrollService(_httpClient);
+        PayrollProfiles = new PayrollProfilesService(_httpClient);
     }
 
     /// <summary>

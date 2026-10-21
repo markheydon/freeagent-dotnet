@@ -1,0 +1,195 @@
+@page "/payroll-profiles"
+@using FreeAgent.Client.Models.PayrollProfiles
+@using FreeAgent.Client.Models.Shared
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Payroll profiles - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Payroll profiles endpoint"
+                         Title="Payroll profiles for tax year"
+                         CallUnderTest="PayrollProfilesService.ListAllProfilesForTaxYearAsync(...) / ListProfilesForUserAsync(...)"
+                         Description="Read payroll profiles for a UK tax year end, optionally filtered to one user."
+                         EndpointPath="/v2/payroll_profiles/:year"
+                         DocsUrl="https://dev.freeagent.com/docs/payroll_profiles" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudNumericField @bind-Value="_taxYearEnd" Label="Tax year end" Min="2000" Max="2100" />
+                <MudNumericField @bind-Value="_filterUserId" Label="Optional user id filter" Min="1" Clearable="true" />
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                           OnClick="LoadProfilesAsync">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Loading…</span>
+                    }
+                    else
+                    {
+                        <span>Load profiles</span>
+                    }
+                </MudButton>
+
+                @if (_profiles is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_profiles.Count profile@(_profiles.Count == 1 ? "" : "s") loaded
+                    </MudChip>
+
+                    @if (_profiles.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No payroll profiles returned. Confirm payroll is configured for the tax year.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>User id</MudTh>
+                                    <MudTh>Reference</MudTh>
+                                    <MudTh>Title</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="User id">@ValueOrDash(context.UserId)</MudTd>
+                                    <MudTd DataLabel="Reference">@ValueOrDash(context.PayrollReference)</MudTd>
+                                    <MudTd DataLabel="Title">@ValueOrDash(context.Title)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => InspectRowAsync(context.Index))">
+                                            Inspect mapping
+                                        </MudButton>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedProfile is not null && _inspectedProbe is not null)
+                {
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="PayrollProfile fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private int _taxYearEnd = DateTime.UtcNow.Month >= 4 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
+    private long? _filterUserId;
+    private IReadOnlyList<PayrollProfile>? _profiles;
+    private PayrollProfile? _inspectedProfile;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+
+    private IReadOnlyList<ProfileRow> _rows => _profiles?
+        .Select(static (item, index) => new ProfileRow(
+            index,
+            item.UserId?.ToString(),
+            item.PayrollReference,
+            item.Title))
+        .ToList() ?? [];
+
+    private async Task LoadProfilesAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _inspectedProfile = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+
+        var diagnosticsEndpoint = _filterUserId is null
+            ? $"payroll_profiles/{_taxYearEnd}"
+            : $"payroll_profiles/{_taxYearEnd}?user={Uri.EscapeDataString(UserReference.ForEnvironment(TokenStore.ConnectedEnvironment, _filterUserId.Value).Uri)}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+
+            _profiles = _filterUserId is null
+                ? await client.PayrollProfiles.ListAllProfilesForTaxYearAsync(_taxYearEnd)
+                : await client.PayrollProfiles.ListProfilesForUserAsync(
+                    _taxYearEnd,
+                    UserReference.ForEnvironment(TokenStore.ConnectedEnvironment, _filterUserId.Value));
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_profiles is null || index < 0 || index >= _profiles.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedProfile = _profiles[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "profiles", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedProfile, wireItem);
+        }
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private sealed record ProfileRow(int Index, string? UserId, string? PayrollReference, string? Title);
+}

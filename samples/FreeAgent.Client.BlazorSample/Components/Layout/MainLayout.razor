@@ -251,6 +251,15 @@
                 <MudNavLink Href="/cis-settings/detail" Icon="@Icons.Material.Filled.Edit">
                     CIS settings CRUD
                 </MudNavLink>
+                <MudNavLink Href="/payroll" Icon="@Icons.Material.Filled.Payments">
+                    Payroll tax year
+                </MudNavLink>
+                <MudNavLink Href="/payroll/period" Icon="@Icons.Material.Filled.Receipt">
+                    Payroll period payslips
+                </MudNavLink>
+                <MudNavLink Href="/payroll-profiles" Icon="@Icons.Material.Filled.Person">
+                    Payroll profiles
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Reports" Icon="@Icons.Material.Filled.Assessment" Expanded="@IsReportsRoute">
@@ -502,7 +511,10 @@
         || CurrentPath.Equals("depreciation-profiles", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("cis-bands", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("cis-settings", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.StartsWith("cis-settings/", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.StartsWith("cis-settings/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("payroll", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("payroll/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("payroll-profiles", StringComparison.OrdinalIgnoreCase);
 
     private bool IsReportsRoute =>
         CurrentPath.Equals("profit-and-loss", StringComparison.OrdinalIgnoreCase)

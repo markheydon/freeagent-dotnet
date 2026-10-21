@@ -58,8 +58,8 @@ Capital asset history events may link to an expense, bill, or bank transaction e
 | Depreciation profiles | [Depreciation profiles](https://dev.freeagent.com/docs/depreciation_profiles) | [Typed nested models](../../reference/depreciation-profiles.md) (no REST resource) |
 | Journal sets | [Journal sets](https://dev.freeagent.com/docs/journal_sets) | [`client.JournalSets`](../../reference/journal-sets.md) |
 | Properties | [Properties](https://dev.freeagent.com/docs/properties) | [`client.Properties`](../../reference/properties.md) |
-| Payroll | [Payroll](https://dev.freeagent.com/docs/payroll) | Not yet |
-| Payroll profiles | [Payroll profiles](https://dev.freeagent.com/docs/payroll_profiles) | Not yet |
+| Payroll | [Payroll](https://dev.freeagent.com/docs/payroll) | [`client.Payroll`](../../reference/payroll.md) |
+| Payroll profiles | [Payroll profiles](https://dev.freeagent.com/docs/payroll_profiles) | [`client.PayrollProfiles`](../../reference/payroll-profiles.md) |
 | CIS bands | [CIS bands](https://dev.freeagent.com/docs/cis_bands) | Implemented |
 | CIS settings | [CIS settings](https://dev.freeagent.com/docs/cis_settings) | Implemented |
 
