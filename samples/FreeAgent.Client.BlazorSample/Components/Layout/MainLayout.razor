@@ -214,6 +214,15 @@
                 </MudNavLink>
             </MudNavGroup>
 
+            <MudNavGroup Title="Assets and journals" Icon="@Icons.Material.Filled.AccountBalanceWallet" Expanded="@IsAssetsAndJournalsRoute">
+                <MudNavLink Href="/capital-asset-types" Icon="@Icons.Material.Filled.AllInclusive">
+                    Capital asset types list
+                </MudNavLink>
+                <MudNavLink Href="/capital-asset-types/detail" Icon="@Icons.Material.Filled.Edit">
+                    Capital asset type CRUD
+                </MudNavLink>
+            </MudNavGroup>
+
             <MudNavGroup Title="Sales catalogue" Icon="@Icons.Material.Filled.Inventory2" Expanded="@IsSalesCatalogueRoute">
                 <MudNavLink Href="/stock-items" Icon="@Icons.Material.Filled.AllInclusive">
                     Stock items list
@@ -393,6 +402,10 @@
         || CurrentPath.StartsWith("bank-transactions/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("bank-transaction-explanations", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("bank-transaction-explanations/", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsAssetsAndJournalsRoute =>
+        CurrentPath.Equals("capital-asset-types", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("capital-asset-types/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsSalesCatalogueRoute =>
         CurrentPath.Equals("stock-items", StringComparison.OrdinalIgnoreCase)
