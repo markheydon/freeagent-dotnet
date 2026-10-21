@@ -108,6 +108,31 @@ public class PropertiesServiceTests
     }
 
     [Fact]
+    public async Task CreatePropertyAsync_OmitsCountryFromRequestBody()
+    {
+        var handler = CreatePostHandler(body =>
+        {
+            Assert.DoesNotContain("\"country\"", body, StringComparison.Ordinal);
+        }, """
+            {
+              "property": {
+                "url": "https://api.freeagent.com/v2/properties/7",
+                "address1": "221B Baker Street",
+                "country": "United Kingdom"
+              }
+            }
+            """);
+
+        var service = CreateService(handler);
+        await service.CreatePropertyAsync(new CreatePropertyRequest
+        {
+            Address1 = "221B Baker Street",
+            Town = "London",
+            Postcode = "NW1 6XE"
+        });
+    }
+
+    [Fact]
     public async Task UpdatePropertyAsync_SerialisesAddress2()
     {
         var handler = CreatePutHandler(6, body =>

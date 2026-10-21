@@ -34,9 +34,4 @@ public sealed class CreatePropertyRequest
     /// Postcode of the property address.
     /// </summary>
     public string? Postcode { get; set; }
-
-    /// <summary>
-    /// Country of the property address. The API defaults to United Kingdom and does not allow overriding it.
-    /// </summary>
-    public string? Country { get; set; }
 }

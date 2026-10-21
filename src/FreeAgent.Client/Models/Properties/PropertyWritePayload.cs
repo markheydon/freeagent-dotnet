@@ -39,8 +39,7 @@ internal sealed class PropertyWritePayload
             Address3 = request.Address3,
             Town = request.Town,
             Region = request.Region,
-            Postcode = request.Postcode,
-            Country = request.Country
+            Postcode = request.Postcode
         };
     }
 
