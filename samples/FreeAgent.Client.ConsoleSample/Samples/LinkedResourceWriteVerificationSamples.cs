@@ -2,10 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using FreeAgent.Client;
 using FreeAgent.Client.ConsoleSample;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

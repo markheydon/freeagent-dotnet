@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.RecurringInvoices;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Recurring invoice status values returned by FreeAgent.

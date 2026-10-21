@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Cashflow;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Incoming or outgoing cashflow totals with per-month breakdown.

@@ -1,7 +1,5 @@
 #if NET10_0
 using FreeAgent.Client.Samples.Shared.Turpinverse;
-using FreeAgent.Client.Models.Contacts;
-
 namespace FreeAgent.Client.Tests.Sample;
 
 public class TurpinverseContactMapperTests

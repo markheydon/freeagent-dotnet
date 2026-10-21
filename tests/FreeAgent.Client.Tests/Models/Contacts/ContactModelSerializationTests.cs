@@ -1,8 +1,5 @@
 using System.Globalization;
 using System.Text.Json;
-using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Tests.Models.Contacts;
 
 public class ContactModelSerializationTests

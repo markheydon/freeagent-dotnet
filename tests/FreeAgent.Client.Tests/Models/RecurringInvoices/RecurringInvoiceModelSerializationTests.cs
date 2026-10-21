@@ -1,8 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.RecurringInvoices;
-
 namespace FreeAgent.Client.Tests.Models.RecurringInvoices;
 
 public class RecurringInvoiceModelSerializationTests

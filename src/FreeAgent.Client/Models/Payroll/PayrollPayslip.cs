@@ -1,8 +1,6 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Users;
-
-namespace FreeAgent.Client.Models.Payroll;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Payslip amounts for a user in a payroll period.

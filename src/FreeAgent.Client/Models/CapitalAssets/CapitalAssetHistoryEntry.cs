@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.CapitalAssets;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A lifecycle event on a capital asset, returned when <c>include_history=true</c>.

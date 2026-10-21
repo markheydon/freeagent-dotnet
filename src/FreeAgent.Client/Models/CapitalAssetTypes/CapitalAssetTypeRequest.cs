@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.CapitalAssetTypes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for capital asset type write API requests.

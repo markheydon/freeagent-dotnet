@@ -1,11 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using FreeAgent.Client;
-using FreeAgent.Client.Models.CreditNoteReconciliations;
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

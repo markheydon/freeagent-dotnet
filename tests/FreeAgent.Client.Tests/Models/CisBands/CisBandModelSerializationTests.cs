@@ -1,8 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.CisBands;
-using FreeAgent.Client.Models.Contacts;
-
 namespace FreeAgent.Client.Tests.Models.CisBands;
 
 public class CisBandModelSerializationTests

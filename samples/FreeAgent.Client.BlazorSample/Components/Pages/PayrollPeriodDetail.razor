@@ -1,6 +1,5 @@
 @page "/payroll/period"
 @using System.Text.Json
-@using FreeAgent.Client.Models.Payroll
 @using FreeAgent.Client.BlazorSample.Services
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
@@ -106,7 +105,7 @@
 
     private int _taxYearEnd = DateTime.UtcNow.Month >= 4 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
     private int _periodNumber;
-    private FreeAgent.Client.Models.Payroll.PayrollPeriod? _period;
+    private PayrollPeriod? _period;
     private PayrollPayslip? _inspectedPayslip;
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;

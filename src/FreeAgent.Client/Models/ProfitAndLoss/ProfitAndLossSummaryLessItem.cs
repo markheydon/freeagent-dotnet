@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.ProfitAndLoss;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A line subtracted from operating profit when calculating retained profit.

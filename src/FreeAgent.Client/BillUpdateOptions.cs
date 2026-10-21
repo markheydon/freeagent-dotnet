@@ -1,7 +1,7 @@
 namespace FreeAgent.Client;
 
 /// <summary>
-/// Options for <see cref="Services.Bills.BillService.UpdateBillAsync(long, Models.Bills.Bill, BillUpdateOptions?, System.Threading.CancellationToken)"/>.
+/// Options for <see cref="Services.Bills.BillService.UpdateBillAsync(long, Bill, BillUpdateOptions?, System.Threading.CancellationToken)"/>.
 /// </summary>
 public sealed class BillUpdateOptions
 {

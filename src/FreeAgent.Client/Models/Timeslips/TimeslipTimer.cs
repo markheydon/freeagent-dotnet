@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Timeslips;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Running timer state on a timeslip.

@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.CorporationTaxReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Corporation tax return filing status values returned by FreeAgent.

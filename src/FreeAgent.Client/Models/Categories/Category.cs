@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Categories;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent chart-of-accounts category.

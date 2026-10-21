@@ -1,7 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.HirePurchases;
-
 namespace FreeAgent.Client.Tests.Models.HirePurchases;
 
 public class HirePurchaseModelSerializationTests

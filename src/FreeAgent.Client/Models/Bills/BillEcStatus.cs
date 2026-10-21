@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Bills;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Bill VAT status values for reporting purposes.

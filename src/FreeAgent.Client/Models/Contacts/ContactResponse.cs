@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Contacts;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for a single contact API response.

@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Notes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Request attributes for creating a note on a contact.

@@ -1,14 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.BankAccounts;
-using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Models.EcMoss;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.RecurringInvoices;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent recurring invoice profile.
@@ -224,7 +217,7 @@ public sealed class RecurringInvoice : IFreeAgentResource
     /// <summary>
     /// Whether to display the project name in the Other Information section.
     /// Read-only today. When create/update operations are added to the SDK, apply the same
-    /// draft-only write rules as <see cref="Invoices.Invoice.ShowProjectName"/> (gate on
+    /// draft-only write rules as <see cref="Invoice.ShowProjectName"/> (gate on
     /// <see cref="RecurringStatus"/> <c>Draft</c>).
     /// </summary>
     [JsonPropertyName("show_project_name")]

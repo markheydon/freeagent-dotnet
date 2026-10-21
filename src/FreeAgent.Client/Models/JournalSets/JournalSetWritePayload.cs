@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Configuration;
 
-namespace FreeAgent.Client.Models.JournalSets;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable journal set attributes for create and update requests.

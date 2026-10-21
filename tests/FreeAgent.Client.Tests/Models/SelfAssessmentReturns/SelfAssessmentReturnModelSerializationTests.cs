@@ -1,7 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.SelfAssessmentReturns;
-
 namespace FreeAgent.Client.Tests.Models.SelfAssessmentReturns;
 
 public class SelfAssessmentReturnModelSerializationTests

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Properties;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Request envelope for property create and update operations.

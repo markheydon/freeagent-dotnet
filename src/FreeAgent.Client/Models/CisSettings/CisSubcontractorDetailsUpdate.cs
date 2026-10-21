@@ -1,8 +1,5 @@
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.CisSettings;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Subcontractor section for a partial CIS settings update.

@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.EcMoss;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// EU member state country name for EC VAT MOSS <c>place_of_supply</c> and MOSS sales tax rate lookups.

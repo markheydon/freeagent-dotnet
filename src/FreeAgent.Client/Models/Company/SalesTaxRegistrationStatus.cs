@@ -1,7 +1,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Company;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents company sales tax registration status values returned by FreeAgent.

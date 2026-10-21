@@ -1,7 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.PriceListItems;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

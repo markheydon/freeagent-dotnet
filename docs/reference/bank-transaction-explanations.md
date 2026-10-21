@@ -111,8 +111,6 @@ Use `CreateCategoryBankTransactionExplanationRequest.ForExistingTransaction(...)
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.BankTransactionExplanations;
-
 var created = await client.BankTransactionExplanations.CreateCategoryBankTransactionExplanationAsync(
     CreateCategoryBankTransactionExplanationRequest.WithNewTransaction(
         bankAccountId: bankAccountId,

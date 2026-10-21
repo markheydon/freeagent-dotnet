@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.ProfitAndLoss;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Response envelope for profit and loss summary requests.

@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.IncomeTaxReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Income tax return filing status values returned by FreeAgent.

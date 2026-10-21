@@ -1,6 +1,4 @@
-using FreeAgent.Client.Models.Invoices;
-
-namespace FreeAgent.Client.Models.PriceListItems;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Attributes for creating a price list item.

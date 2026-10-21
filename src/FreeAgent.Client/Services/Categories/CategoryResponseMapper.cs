@@ -1,6 +1,4 @@
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.Categories;
-
 namespace FreeAgent.Client.Services.Categories;
 
 internal static class CategoryResponseMapper

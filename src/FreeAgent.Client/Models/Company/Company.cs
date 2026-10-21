@@ -1,8 +1,6 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.Company;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a company in FreeAgent.

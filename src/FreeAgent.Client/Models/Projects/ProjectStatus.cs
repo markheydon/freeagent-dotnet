@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Projects;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Project status values returned by FreeAgent.

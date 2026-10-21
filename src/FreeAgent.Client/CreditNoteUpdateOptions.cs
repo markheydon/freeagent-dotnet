@@ -1,7 +1,7 @@
 namespace FreeAgent.Client;
 
 /// <summary>
-/// Options for <see cref="Services.CreditNotes.CreditNotesService.UpdateCreditNoteAsync(long, Models.CreditNotes.CreditNote, CreditNoteUpdateOptions?, System.Threading.CancellationToken)"/>.
+/// Options for <see cref="Services.CreditNotes.CreditNotesService.UpdateCreditNoteAsync(long, CreditNote, CreditNoteUpdateOptions?, System.Threading.CancellationToken)"/>.
 /// </summary>
 public sealed class CreditNoteUpdateOptions
 {

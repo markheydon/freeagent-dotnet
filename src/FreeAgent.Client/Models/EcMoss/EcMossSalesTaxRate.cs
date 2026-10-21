@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.EcMoss;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// EC VAT MOSS sales tax rate band returned by the MOSS rates lookup.

@@ -3,8 +3,6 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.Timeslips;
 using FreeAgent.Client.Services.Timeslips;
 using FreeAgent.Client.Tests.TestSupport;
 

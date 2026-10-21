@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.DepreciationProfiles;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Capital asset purchase attributes for create and update requests on expenses, bill items, and bank transaction explanations.

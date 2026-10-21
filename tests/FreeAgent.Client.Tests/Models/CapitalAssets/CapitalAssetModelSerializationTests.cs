@@ -1,8 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.CapitalAssets;
-using FreeAgent.Client.Models.DepreciationProfiles;
-
 namespace FreeAgent.Client.Tests.Models.CapitalAssets;
 
 public class CapitalAssetModelSerializationTests

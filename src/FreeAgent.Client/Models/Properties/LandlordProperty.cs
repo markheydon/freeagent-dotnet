@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Properties;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent landlord property (rental unit address).

@@ -1,8 +1,6 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.BankAccounts;
-
 namespace FreeAgent.Client.Services.BankAccounts;
 
 /// <summary>

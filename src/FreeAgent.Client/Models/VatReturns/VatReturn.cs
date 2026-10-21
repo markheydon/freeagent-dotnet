@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.VatReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A company VAT return period.

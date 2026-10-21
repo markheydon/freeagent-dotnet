@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Users;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// View filter values for <c>GET /v2/users</c>.

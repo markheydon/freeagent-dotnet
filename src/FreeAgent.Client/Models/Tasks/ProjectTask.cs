@@ -1,10 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.Tasks;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent task belonging to a project.

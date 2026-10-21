@@ -2,8 +2,6 @@ using System.Globalization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.CreditNoteReconciliations;
-
 namespace FreeAgent.Client.Services.CreditNoteReconciliations;
 
 /// <summary>

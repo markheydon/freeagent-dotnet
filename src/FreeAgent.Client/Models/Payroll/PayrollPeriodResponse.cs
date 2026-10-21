@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Payroll;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// API response envelope for a single payroll period with payslips.

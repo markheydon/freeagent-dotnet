@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Payroll;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Payroll period metadata and optional payslips for the period.

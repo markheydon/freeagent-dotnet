@@ -1,11 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.Estimates;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a line item on a FreeAgent estimate.

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Projects;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for project create and update request payloads.

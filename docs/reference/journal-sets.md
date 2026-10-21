@@ -72,8 +72,6 @@ Required request fields: `Description`, `JournalEntries` (balancing debits). Set
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.JournalSets;
-
 var journalSet = await client.JournalSets.CreateJournalSetAsync(new CreateJournalSetRequest
 {
     Description = "Sales correction",

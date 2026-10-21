@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.IncomeTaxReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A payment line on an income tax return.

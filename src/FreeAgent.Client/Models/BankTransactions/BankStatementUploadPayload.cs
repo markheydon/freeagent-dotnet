@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.BankTransactions;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wire envelope for a JSON statement upload. The API expects <c>{ "statement": [ ... ] }</c>.

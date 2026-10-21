@@ -3,9 +3,6 @@ using System.Net.Http;
 using System.Text;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.CisSettings;
-using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Services.CisSettings;
 using FreeAgent.Client.Tests.TestSupport;
 

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.VatReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A payment or refund line on a VAT return.

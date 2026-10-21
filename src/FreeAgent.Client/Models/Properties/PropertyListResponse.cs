@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Properties;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Response envelope for a list of properties.

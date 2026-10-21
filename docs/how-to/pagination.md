@@ -14,8 +14,6 @@ Use when you need explicit control over page number and page size (`per_page` ma
 
 ```csharp
 using FreeAgent.Client;
-using FreeAgent.Client.Models.Contacts;
-
 var page = await client.Contacts.ListAsync(
     page: 1,
     perPage: 25,
@@ -44,8 +42,6 @@ The Contacts list supports `view`, `sort`, and `updated_since` query parameters.
 
 ```csharp
 using FreeAgent.Client;
-using FreeAgent.Client.Models.Contacts;
-
 var page = await client.Contacts.ListAsync(
     page: 1,
     perPage: 25,

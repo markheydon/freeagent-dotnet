@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.TrialBalance;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// API envelope for trial balance summary responses.

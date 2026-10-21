@@ -1,6 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Categories;
 using FreeAgent.Client.Services.Categories;
 
 namespace FreeAgent.Client.Tests.Models.Categories;

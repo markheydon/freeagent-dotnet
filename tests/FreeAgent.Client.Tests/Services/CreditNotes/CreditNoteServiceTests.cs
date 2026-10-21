@@ -3,9 +3,6 @@ using System.Net.Http;
 using System.Text;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Services.CreditNotes;
 using FreeAgent.Client.Tests.TestSupport;
 

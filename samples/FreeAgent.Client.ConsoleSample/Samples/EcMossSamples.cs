@@ -1,6 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using FreeAgent.Client.Models.EcMoss;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

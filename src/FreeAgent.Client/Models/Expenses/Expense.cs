@@ -1,16 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.DepreciationProfiles;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.StockItems;
-using FreeAgent.Client.Models.Users;
-
-namespace FreeAgent.Client.Models.Expenses;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent expense.

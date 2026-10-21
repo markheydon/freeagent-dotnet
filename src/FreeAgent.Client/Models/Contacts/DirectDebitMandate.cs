@@ -1,7 +1,5 @@
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.Contacts;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// GoCardless direct debit mandate details for a contact.

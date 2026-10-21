@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.StockItems;
 using FreeAgent.Client.Services.StockItems;
 using FreeAgent.Client.Tests.TestSupport;
 

@@ -36,8 +36,6 @@ Task<IReadOnlyList<BankAccount>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.BankAccounts;
-
 var bankAccounts = await client.BankAccounts.ListAsync(BankAccountViews.StandardBankAccounts);
 ```
 
@@ -111,8 +109,6 @@ Each create method maps to `POST /v2/bank_accounts` with a variant-specific payl
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.BankAccounts;
-
 var standard = await client.BankAccounts.CreateStandardBankAccountAsync(
     CreateStandardBankAccountRequest.Create("Business current account", openingBalance: 0m));
 

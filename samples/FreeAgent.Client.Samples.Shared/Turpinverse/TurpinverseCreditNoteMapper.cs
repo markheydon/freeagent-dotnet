@@ -1,7 +1,3 @@
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>

@@ -1,8 +1,4 @@
-using FreeAgent.Client.Models.BankTransactionExplanations;
-using FreeAgent.Client.Models.Estimates;
-using FreeAgent.Client.Models.Invoices;
-
-namespace FreeAgent.Client.Models.EcMoss;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Documented EC VAT MOSS write constraints from FreeAgent sales tax guidance.

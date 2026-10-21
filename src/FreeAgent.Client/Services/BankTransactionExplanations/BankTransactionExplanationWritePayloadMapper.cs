@@ -1,8 +1,5 @@
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.BankTransactionExplanations;
-using FreeAgent.Client.Models.DepreciationProfiles;
-
 namespace FreeAgent.Client.Services.BankTransactionExplanations;
 
 /// <summary>

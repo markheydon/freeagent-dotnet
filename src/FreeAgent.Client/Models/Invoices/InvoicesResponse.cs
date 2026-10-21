@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Invoices;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Response envelope for a paginated invoice list.

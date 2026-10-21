@@ -1,11 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.CreditNoteReconciliations;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent credit note reconciliation between an invoice and a credit note.

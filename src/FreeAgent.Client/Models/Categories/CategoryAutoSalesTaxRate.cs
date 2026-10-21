@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Categories;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Automatic sales tax rate assigned to a category.

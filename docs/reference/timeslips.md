@@ -62,8 +62,6 @@ Task<PaginatedResponse<Timeslip>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Timeslips;
-
 var page = await client.Timeslips.ListAsync(
     view: TimeslipViews.Unbilled,
     fromDate: new DateOnly(2024, 1, 1),
@@ -156,8 +154,6 @@ Task<Timeslip> CreateTimeslipAsync(Timeslip timeslip, CancellationToken cancella
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Timeslips;
-
 var timeslip = await client.Timeslips.CreateTimeslipAsync(new Timeslip
 {
     ProjectTaskId = 1,

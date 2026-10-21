@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Expenses;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Mileage configuration returned by the expenses API.

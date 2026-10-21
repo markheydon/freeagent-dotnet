@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.CapitalAssetTypes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable capital asset type attributes for create and update requests.

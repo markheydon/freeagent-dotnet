@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Categories;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// All category sets returned by the list categories endpoint.

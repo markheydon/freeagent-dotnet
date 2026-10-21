@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.CreditNoteReconciliations;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Response envelope for a single credit note reconciliation.

@@ -1,8 +1,4 @@
 using FreeAgent.Client;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.Tasks;
-using FreeAgent.Client.Models.Timeslips;
-
 namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>

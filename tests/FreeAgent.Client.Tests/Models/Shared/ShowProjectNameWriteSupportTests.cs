@@ -1,7 +1,3 @@
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Tests.Models.Shared;
 
 public class ShowProjectNameWriteSupportTests

@@ -40,8 +40,6 @@ Task<IReadOnlyList<CapitalAsset>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.CapitalAssets;
-
 var disposed = await client.CapitalAssets.ListAsync(
     CapitalAssetView.Disposed,
     includeHistory: true);

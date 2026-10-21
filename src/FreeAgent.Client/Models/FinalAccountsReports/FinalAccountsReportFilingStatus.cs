@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.FinalAccountsReports;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Final accounts report filing status values returned by FreeAgent.

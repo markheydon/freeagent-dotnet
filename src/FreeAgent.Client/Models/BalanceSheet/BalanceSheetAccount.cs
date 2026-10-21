@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.BalanceSheet;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A nominal account line on the balance sheet.

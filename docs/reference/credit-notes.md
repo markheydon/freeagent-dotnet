@@ -60,8 +60,6 @@ Task<PaginatedResponse<CreditNote>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.CreditNotes;
-
 var page = await client.CreditNotes.ListAsync(
     view: CreditNoteViews.Open,
     contactId: 42,

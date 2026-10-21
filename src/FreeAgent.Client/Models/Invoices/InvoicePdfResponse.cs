@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Invoices;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// PDF payload returned by the invoice PDF endpoint.

@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Projects;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// View filter values for listing projects.

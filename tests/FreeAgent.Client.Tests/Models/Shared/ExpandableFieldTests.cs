@@ -1,8 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Models.Projects;
-
 namespace FreeAgent.Client.Tests.Models.Shared;
 
 public class ExpandableFieldTests

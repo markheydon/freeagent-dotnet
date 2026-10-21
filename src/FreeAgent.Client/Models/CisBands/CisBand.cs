@@ -1,7 +1,5 @@
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Models.Contacts;
-
-namespace FreeAgent.Client.Models.CisBands;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// A Construction Industry Scheme band available to the company.

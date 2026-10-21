@@ -3,11 +3,6 @@ using System.Text;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.EcMoss;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Services.Invoices;
 
 /// <summary>
@@ -463,7 +458,7 @@ public sealed class InvoiceService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(invoiceId);
 
-        var response = await _requestClient.PutAsync<Models.CreditNotes.CreditNoteResponse>(
+        var response = await _requestClient.PutAsync<CreditNoteResponse>(
             $"invoices/{invoiceId}/transitions/convert_to_credit_note",
             EmptyJsonContent,
             cancellationToken);

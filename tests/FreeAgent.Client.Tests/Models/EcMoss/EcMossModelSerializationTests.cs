@@ -1,8 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.EcMoss;
-using FreeAgent.Client.Models.Invoices;
-
 namespace FreeAgent.Client.Tests.Models.EcMoss;
 
 public class EcMossModelSerializationTests

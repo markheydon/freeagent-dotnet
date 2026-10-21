@@ -2,8 +2,6 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.BankAccounts;
-using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Services.BankAccounts;
 
 namespace FreeAgent.Client.Tests.Models.BankAccounts;

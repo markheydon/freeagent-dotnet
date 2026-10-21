@@ -1,8 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using FreeAgent.Client.Models.Categories;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Infrastructure.Serialization;
 
 /// <summary>

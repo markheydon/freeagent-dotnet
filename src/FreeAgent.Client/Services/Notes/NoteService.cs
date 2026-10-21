@@ -1,9 +1,6 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Notes;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Services.Notes;
 
 /// <summary>

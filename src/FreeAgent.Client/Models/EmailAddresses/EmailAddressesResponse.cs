@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.EmailAddresses;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for verified sender email addresses API responses.

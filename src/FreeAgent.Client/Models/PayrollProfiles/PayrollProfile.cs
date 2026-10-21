@@ -1,8 +1,6 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Users;
-
-namespace FreeAgent.Client.Models.PayrollProfiles;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Read-only payroll profile for a user in a tax year.

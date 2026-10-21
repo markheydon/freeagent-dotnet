@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Attachments;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent attachment fetched by identifier.

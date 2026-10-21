@@ -1,7 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.FinalAccountsReports;
-
 namespace FreeAgent.Client.Tests.Models.FinalAccountsReports;
 
 public class FinalAccountsReportModelSerializationTests

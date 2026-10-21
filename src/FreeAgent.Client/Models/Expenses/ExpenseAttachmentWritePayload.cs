@@ -1,8 +1,6 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Bills;
-
-namespace FreeAgent.Client.Models.Expenses;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable attachment attributes for expense create and update requests.

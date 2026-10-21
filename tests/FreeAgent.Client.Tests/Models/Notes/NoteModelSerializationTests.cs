@@ -1,6 +1,4 @@
 using System.Text.Json;
-using FreeAgent.Client.Models.Notes;
-
 namespace FreeAgent.Client.Tests.Models.Notes;
 
 public class NoteModelSerializationTests

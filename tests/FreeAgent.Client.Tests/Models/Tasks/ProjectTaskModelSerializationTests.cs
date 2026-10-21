@@ -1,7 +1,5 @@
 using System.Text.Json;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.Tasks;
-using FreeAgentProjectTaskStatus = FreeAgent.Client.Models.Tasks.ProjectTaskStatus;
+using FreeAgentProjectTaskStatus = global::FreeAgent.Client.ProjectTaskStatus;
 
 namespace FreeAgent.Client.Tests.Models.Tasks;
 

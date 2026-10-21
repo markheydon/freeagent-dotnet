@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.DepreciationProfiles;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// How often depreciation ledgers are posted for a capital asset.

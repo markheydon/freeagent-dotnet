@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.DepreciationProfiles;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Depreciation profile nested under a capital asset on API responses.

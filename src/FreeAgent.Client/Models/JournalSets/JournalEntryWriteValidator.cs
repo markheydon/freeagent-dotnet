@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace FreeAgent.Client.Models.JournalSets;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Fail-fast checks for journal entry writes using constraints stated in the FreeAgent journal sets docs.

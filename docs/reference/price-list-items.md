@@ -60,9 +60,6 @@ Required request fields: `code`, `quantity`, `item_type`, `description`, `price`
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.PriceListItems;
-
 var item = await client.PriceListItems.CreatePriceListItemAsync(new CreatePriceListItemRequest
 {
     Code = "A001",

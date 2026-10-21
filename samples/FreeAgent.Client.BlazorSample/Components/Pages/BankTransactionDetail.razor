@@ -1,5 +1,4 @@
 @page "/bank-transactions/detail"
-@using FreeAgent.Client.Models.BankTransactions
 @using FreeAgent.Client.BlazorSample.Services
 @using Microsoft.AspNetCore.Components.Forms
 @inject TokenStore TokenStore
@@ -339,7 +338,7 @@
         _bankTransactionId = _transaction.ResourceId;
         _probeFromList = true;
         var bankAccountUri = Uri.EscapeDataString(
-            FreeAgent.Client.Models.Shared.BankAccountReference.ForEnvironment(
+            BankAccountReference.ForEnvironment(
                 TokenStore.ConnectedEnvironment,
                 _bankAccountId!.Value).Uri);
         return $"bank_transactions?bank_account={bankAccountUri}&last_uploaded=true&page=1&per_page=25";

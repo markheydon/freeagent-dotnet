@@ -1,6 +1,4 @@
 using FreeAgent.Client.Infrastructure.Configuration;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Tests.Models.Shared;
 
 public class AttachmentReferenceTests

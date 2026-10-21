@@ -3,10 +3,6 @@ using System.Text;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.EcMoss;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Services.CreditNotes;
 
 /// <summary>

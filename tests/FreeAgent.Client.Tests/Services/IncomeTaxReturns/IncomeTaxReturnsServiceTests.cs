@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.IncomeTaxReturns;
 using FreeAgent.Client.Services.IncomeTaxReturns;
 using FreeAgent.Client.Tests.TestSupport;
 

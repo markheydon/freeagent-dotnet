@@ -1,9 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.DepreciationProfiles;
-
-namespace FreeAgent.Client.Models.CapitalAssets;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Represents a FreeAgent capital asset.

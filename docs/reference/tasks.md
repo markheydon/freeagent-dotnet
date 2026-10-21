@@ -50,8 +50,6 @@ Task<PaginatedResponse<ProjectTask>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Tasks;
-
 var page = await client.ProjectTasks.ListAsync(
     view: ProjectTaskViews.Active,
     projectId: 42,

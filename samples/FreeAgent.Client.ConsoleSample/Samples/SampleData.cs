@@ -1,23 +1,3 @@
-using FreeAgent.Client.Models.BankAccounts;
-using FreeAgent.Client.Models.BankTransactionExplanations;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.Contacts;
-using FreeAgent.Client.Models.CreditNoteReconciliations;
-using FreeAgent.Client.Models.CreditNotes;
-using FreeAgent.Client.Models.Estimates;
-using FreeAgent.Client.Models.Expenses;
-using FreeAgent.Client.Models.HirePurchases;
-using FreeAgent.Client.Models.Invoices;
-using FreeAgent.Client.Models.Notes;
-using FreeAgent.Client.Models.PriceListItems;
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.RecurringInvoices;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.StockItems;
-using FreeAgent.Client.Models.Tasks;
-using FreeAgent.Client.Models.Timeslips;
-using FreeAgent.Client.Models.Users;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

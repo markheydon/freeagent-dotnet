@@ -1,6 +1,6 @@
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Categories;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Request attributes for updating an income category (nominal codes 001–049).

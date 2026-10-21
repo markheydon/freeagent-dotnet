@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.CapitalAssetTypes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Attributes for updating a capital asset type.

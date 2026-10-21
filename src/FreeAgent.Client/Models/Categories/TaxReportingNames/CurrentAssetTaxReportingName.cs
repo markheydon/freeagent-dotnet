@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Categories;
+namespace FreeAgent.Client;
 
 /// <summary>Tax reporting name wire values for current asset categories (all company types).</summary>
 [JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<CurrentAssetTaxReportingName>))]

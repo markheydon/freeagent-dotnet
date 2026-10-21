@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Expenses;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Whether mileage is reclaimed at the Approved Mileage Allowance Payments (AMAP) rate.

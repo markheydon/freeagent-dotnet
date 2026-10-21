@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.StockItems;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for stock items list API responses.

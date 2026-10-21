@@ -1,7 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using FreeAgent.Client;
-using FreeAgent.Client.Models.SelfAssessmentReturns;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.Properties;
 using FreeAgent.Client.Services.Properties;
 using FreeAgent.Client.Tests.TestSupport;
 

@@ -60,8 +60,6 @@ Task<PaginatedResponse<Invoice>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Invoices;
-
 var page = await client.Invoices.ListAsync(
     view: InvoiceViews.Open,
     contactId: 42,

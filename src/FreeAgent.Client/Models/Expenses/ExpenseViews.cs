@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Expenses;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// View filter values for listing expenses.

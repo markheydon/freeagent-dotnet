@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Timeslips;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for single timeslip API responses.

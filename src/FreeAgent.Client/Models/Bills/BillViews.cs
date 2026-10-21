@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Bills;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// View filter constants for bill list requests.

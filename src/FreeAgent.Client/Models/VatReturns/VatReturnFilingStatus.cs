@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.VatReturns;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// VAT return filing status values returned by FreeAgent.

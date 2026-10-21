@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.CapitalAssets;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Documented <c>view</c> query values for listing capital assets.

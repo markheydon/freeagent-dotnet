@@ -1,9 +1,6 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.CreditNoteReconciliations;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Tests.Models.CreditNoteReconciliations;
 
 public class CreditNoteReconciliationModelSerializationTests

@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Attachments;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for single attachment API responses.

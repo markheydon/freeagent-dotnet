@@ -1,9 +1,6 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.DepreciationProfiles;
-using FreeAgent.Client.Models.Expenses;
-
 namespace FreeAgent.Client.Tests.Models.DepreciationProfiles;
 
 public class DepreciationProfileModelSerializationTests

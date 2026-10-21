@@ -1,7 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.SalesTaxPeriods;
-
 namespace FreeAgent.Client.Tests.Models.SalesTaxPeriods;
 
 public class SalesTaxPeriodModelSerializationTests

@@ -2,8 +2,6 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.CisBands;
-using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Services.CisBands;
 using FreeAgent.Client.Tests.TestSupport;
 

@@ -1,6 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using FreeAgent.Client.Models.CapitalAssetTypes;
-
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>

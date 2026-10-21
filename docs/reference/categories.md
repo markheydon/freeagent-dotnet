@@ -106,8 +106,6 @@ await client.Categories.CreateEquityCategoryAsync(equity);
 Use company-type-specific factories. Each factory requires `taxReportingName` (typed enum), `allowableForTax`, and optionally `autoSalesTaxRate`:
 
 ```csharp
-using FreeAgent.Client.Models.Categories;
-
 var request = CreateCostOfSalesCategoryRequest.ForUkLimitedCompany(
     description: "Materials",
     nominalCode: "100",

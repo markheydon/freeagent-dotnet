@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.RecurringInvoices;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Response envelope for single recurring invoice operations.

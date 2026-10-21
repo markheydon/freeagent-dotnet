@@ -1,6 +1,3 @@
-using FreeAgent.Client.Models.Projects;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Samples.Shared.Turpinverse;
 
 /// <summary>

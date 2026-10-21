@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.BankAccounts;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Bank account type returned by the FreeAgent API.

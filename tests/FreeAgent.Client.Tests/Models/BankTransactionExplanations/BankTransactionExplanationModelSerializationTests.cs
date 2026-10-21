@@ -1,8 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.BankTransactionExplanations;
-using FreeAgent.Client.Models.Bills;
-
 namespace FreeAgent.Client.Tests.Models.BankTransactionExplanations;
 
 public class BankTransactionExplanationModelSerializationTests

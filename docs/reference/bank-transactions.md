@@ -62,8 +62,6 @@ Task<PaginatedResponse<BankTransaction>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.BankTransactions;
-
 var page = await client.BankTransactions.ListAsync(
     bankAccountId: bankAccountId,
     view: BankTransactionView.Unexplained);

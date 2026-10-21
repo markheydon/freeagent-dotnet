@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.JournalSets;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Attributes for creating a journal set.

@@ -41,9 +41,6 @@ Unspecified sections are omitted from the request. Use `PatchValue.Set<T>(null)`
 **Sample (deregister contractor):**
 
 ```csharp
-using FreeAgent.Client.Models.CisSettings;
-using FreeAgent.Client.Models.Shared;
-
 var settings = await client.CisSettings.UpdateCisSettingsAsync(new CisSettingsUpdate
 {
     ContractorDetails = PatchValue.Set<CisContractorDetails>(null)

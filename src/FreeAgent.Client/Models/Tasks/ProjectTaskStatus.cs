@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Tasks;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Task status values returned by FreeAgent.

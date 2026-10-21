@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Tasks;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for task create and update request payloads.

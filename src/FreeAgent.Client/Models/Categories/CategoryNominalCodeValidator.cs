@@ -1,6 +1,6 @@
 using System.Globalization;
 
-namespace FreeAgent.Client.Models.Categories;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Validates documented nominal-code ranges for typed category create and update requests.

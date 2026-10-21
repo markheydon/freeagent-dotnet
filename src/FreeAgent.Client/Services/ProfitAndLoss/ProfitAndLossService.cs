@@ -1,7 +1,5 @@
 using System.Globalization;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.ProfitAndLoss;
-
 namespace FreeAgent.Client.Services.ProfitAndLoss;
 
 /// <summary>

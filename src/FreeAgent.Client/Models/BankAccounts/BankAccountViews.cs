@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.BankAccounts;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Documented <c>view</c> query values for listing bank accounts.

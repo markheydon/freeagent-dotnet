@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.Notes;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Wrapper for note create and update request payloads.

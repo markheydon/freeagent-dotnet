@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Timeslips;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Documented view filters for timeslip list endpoints.

@@ -1,7 +1,4 @@
 using System.Text.Json;
-using FreeAgent.Client.Models.Company;
-using FreeAgent.Client.Models.Shared;
-
 namespace FreeAgent.Client.Tests.Models.Shared;
 
 public class CurrencyCodeTests

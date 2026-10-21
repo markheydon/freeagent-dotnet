@@ -1,9 +1,4 @@
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.DepreciationProfiles;
-using FreeAgent.Client.Models.EcMoss;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.BankTransactionExplanations;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Request attributes for updating a bank transaction explanation.

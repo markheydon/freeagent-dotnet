@@ -1,7 +1,5 @@
 using System.Text.Json;
 using FreeAgent.Client.BlazorSample.Services;
-using FreeAgent.Client.Models.Contacts;
-
 namespace FreeAgent.Client.Tests.Sample;
 
 public class ModelWireDiagnosticsTests

@@ -1,8 +1,6 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using FreeAgent.Client.Models.CisSettings;
-
 namespace FreeAgent.Client.Infrastructure.Serialization;
 
 /// <summary>

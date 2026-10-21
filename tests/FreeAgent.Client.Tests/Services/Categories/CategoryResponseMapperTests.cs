@@ -1,5 +1,4 @@
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.Categories;
 using FreeAgent.Client.Services.Categories;
 
 namespace FreeAgent.Client.Tests.Services.Categories;

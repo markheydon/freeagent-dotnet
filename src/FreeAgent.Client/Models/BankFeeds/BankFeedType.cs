@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.BankFeeds;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// How a bank feed imports transactions into a bank account.

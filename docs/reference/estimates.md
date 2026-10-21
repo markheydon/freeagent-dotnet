@@ -66,8 +66,6 @@ Task<PaginatedResponse<Estimate>> ListAsync(
 **Sample:**
 
 ```csharp
-using FreeAgent.Client.Models.Estimates;
-
 var page = await client.Estimates.ListAsync(
     view: EstimateViews.Draft,
     contactId: 42,

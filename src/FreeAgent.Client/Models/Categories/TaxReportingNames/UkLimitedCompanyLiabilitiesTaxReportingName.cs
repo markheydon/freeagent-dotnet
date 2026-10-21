@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Serialization;
 
-namespace FreeAgent.Client.Models.Categories;
+namespace FreeAgent.Client;
 
 /// <summary>Tax reporting name wire values for liabilities categories on UK limited companies.</summary>
 [JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<UkLimitedCompanyLiabilitiesTaxReportingName>))]

@@ -1,11 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
-using FreeAgent.Client.Models.Bills;
-using FreeAgent.Client.Models.DepreciationProfiles;
-using FreeAgent.Client.Models.Shared;
-
-namespace FreeAgent.Client.Models.Expenses;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Writable expense attributes for create and update requests.

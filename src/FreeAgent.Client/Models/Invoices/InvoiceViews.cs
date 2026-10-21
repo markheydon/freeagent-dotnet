@@ -1,4 +1,4 @@
-namespace FreeAgent.Client.Models.Invoices;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// View filter constants for invoice list requests.

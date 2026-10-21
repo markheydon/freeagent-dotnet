@@ -26,6 +26,15 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP comp
 
 ## Recent breaking changes (alpha)
 
+### Model namespace flattening
+
+All public model types now live in `FreeAgent.Client` alongside `FreeAgentClient` and `*GetOptions`. Remove every `using FreeAgent.Client.Models.*;` directive.
+
+- `DefaultAdditionalTextResponse` / `DefaultAdditionalTextRequest` for invoices and estimates are a single shared pair (identical wire shape).
+- The unused duplicate `CreditNoteResponse` type under the invoice models folder was removed; use `CreditNoteResponse` from the credit notes API surface.
+
+Historical note: an earlier alpha release moved `BankTransactionExplanation` from a bank-transactions model namespace into its own resource folder; that type is now simply `FreeAgent.Client.BankTransactionExplanation`.
+
 ### Typed wire enums and unknown-tolerant deserialisation
 
 - Remaining string wire fields are now typed: `SecondSalesTaxStatus`, `CisDeductionRate?` for `cis_rate`, `BankTransactionExplanationType?` for explanation `type`, `BankFeedState?` for feed `state`, and `BillAttachmentContentType?` on read-model attachments.
@@ -83,12 +92,6 @@ Task-related public API members now use the `ProjectTask` prefix to align with t
 | `TimeslipGetOptions.IncludeTask` | `TimeslipGetOptions.IncludeProjectTask` |
 
 Wire JSON property names (`task`, `tasks`) are unchanged.
-
-### Bank transaction explanation model namespace
-
-The full `BankTransactionExplanation` type moved from `FreeAgent.Client.Models.BankTransactions` to `FreeAgent.Client.Models.BankTransactionExplanations` when the standalone explanations resource was implemented. Nested explanations on `BankTransaction.BankTransactionExplanations` still use the same type; update `using` directives and any fully qualified type references.
-
-Use `client.BankTransactionExplanations` for list, get, create (per documented variant), update, and delete. Explanation create, update, and delete are no longer implied by `BankTransactionsService` alone.
 
 ### Line item nested `StockItem` read property
 

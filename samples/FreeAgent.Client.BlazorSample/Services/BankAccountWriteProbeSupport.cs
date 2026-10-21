@@ -1,5 +1,3 @@
-using FreeAgent.Client.Models.BankAccounts;
-
 namespace FreeAgent.Client.BlazorSample.Services;
 
 /// <summary>

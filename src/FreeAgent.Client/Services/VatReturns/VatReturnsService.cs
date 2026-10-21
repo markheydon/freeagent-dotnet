@@ -1,7 +1,5 @@
 using System.Globalization;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.VatReturns;
-
 namespace FreeAgent.Client.Services.VatReturns;
 
 /// <summary>

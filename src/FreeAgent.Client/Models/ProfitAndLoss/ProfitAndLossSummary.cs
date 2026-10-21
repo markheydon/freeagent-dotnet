@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace FreeAgent.Client.Models.ProfitAndLoss;
+namespace FreeAgent.Client;
 
 /// <summary>
 /// Profit and loss summary for a date range or accounting period.

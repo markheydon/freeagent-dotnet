@@ -2,11 +2,9 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.Shared;
-using FreeAgent.Client.Models.Tasks;
 using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Tests.TestSupport;
-using FreeAgentProjectTaskStatus = FreeAgent.Client.Models.Tasks.ProjectTaskStatus;
+using FreeAgentProjectTaskStatus = global::FreeAgent.Client.ProjectTaskStatus;
 
 namespace FreeAgent.Client.Tests.Services.Tasks;
 

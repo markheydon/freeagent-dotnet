@@ -1,7 +1,5 @@
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
-using FreeAgent.Client.Models.HirePurchases;
-
 namespace FreeAgent.Client.Services.HirePurchases;
 
 /// <summary>
