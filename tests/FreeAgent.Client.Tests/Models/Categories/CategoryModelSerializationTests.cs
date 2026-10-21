@@ -19,7 +19,7 @@ public class CategoryModelSerializationTests
 
         Assert.Equal(wireValue, document.RootElement.GetProperty("auto_sales_tax_rate").GetString());
 
-        var deserialized = JsonSerializer.Deserialize<Category>(json);
+        var deserialized = JsonSerializer.Deserialize<Category>(json, FreeAgentJsonTestSupport.Options);
         Assert.Equal(value, deserialized!.AutoSalesTaxRate);
     }
 

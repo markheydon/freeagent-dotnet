@@ -18,7 +18,7 @@ public class TimeslipModelSerializationTests
         }
         """;
 
-        var timeslip = JsonSerializer.Deserialize<Timeslip>(json);
+        var timeslip = JsonSerializer.Deserialize<Timeslip>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(25, timeslip!.ResourceId);
         Assert.Equal(new DateOnly(2011, 8, 15), timeslip.DatedOn);
@@ -39,7 +39,7 @@ public class TimeslipModelSerializationTests
         }
         """;
 
-        var timeslip = JsonSerializer.Deserialize<Timeslip>(json);
+        var timeslip = JsonSerializer.Deserialize<Timeslip>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.True(timeslip!.Timer!.Running);
         Assert.Equal(
@@ -59,7 +59,7 @@ public class TimeslipModelSerializationTests
         }
         """;
 
-        var timeslip = JsonSerializer.Deserialize<Timeslip>(json);
+        var timeslip = JsonSerializer.Deserialize<Timeslip>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(3, timeslip!.ProjectTaskId);
         Assert.Null(timeslip.ProjectTask);
@@ -91,7 +91,7 @@ public class TimeslipModelSerializationTests
         }
         """;
 
-        var timeslip = JsonSerializer.Deserialize<Timeslip>(json);
+        var timeslip = JsonSerializer.Deserialize<Timeslip>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal("Nested Task", timeslip!.ProjectTask!.Name);
         Assert.Equal("Nested Project", timeslip.Project!.Name);
@@ -110,7 +110,7 @@ public class TimeslipModelSerializationTests
               "dated_on": "2011-08-15",
               "hours": "1.5"
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
 
         var payload = TimeslipWritePayload.FromTimeslip(timeslip, FreeAgentEnvironment.Production);
 
@@ -132,7 +132,7 @@ public class TimeslipModelSerializationTests
               "billed_on_invoice": "https://api.freeagent.com/v2/invoices/7",
               "hours": "2.0"
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
 
         var json = JsonSerializer.Serialize(TimeslipWritePayload.FromTimeslip(timeslip, FreeAgentEnvironment.Production));
 

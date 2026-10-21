@@ -89,7 +89,7 @@ public class EstimateModelSerializationTests
               "dated_on": "2024-03-18",
               "reference": "EST-001"
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
         estimate.ContactId = 3;
 
         var payload = EstimateWritePayload.FromEstimate(estimate, FreeAgentEnvironment.Production);

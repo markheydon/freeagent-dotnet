@@ -1,6 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace FreeAgent.Client.Infrastructure.Serialization;
 
@@ -9,11 +8,7 @@ namespace FreeAgent.Client.Infrastructure.Serialization;
 /// </summary>
 internal static class FreeAgentJsonSerializer
 {
-    internal static readonly JsonSerializerOptions Options = new()
-    {
-        PropertyNamingPolicy = null,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
+    internal static JsonSerializerOptions Options => FreeAgentJsonSerializerOptions.Default;
 
     /// <summary>
     /// Creates JSON HTTP content for a request body.

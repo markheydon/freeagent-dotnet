@@ -7,7 +7,9 @@ public class ExpandableFieldTests
     [Fact]
     public void Deserialize_StringUri_SetsUriOnly()
     {
-        var field = JsonSerializer.Deserialize<ExpandableField<Contact>>("\"https://api.freeagent.com/v2/contacts/5\"");
+        var field = JsonSerializer.Deserialize<ExpandableField<Contact>>(
+            "\"https://api.freeagent.com/v2/contacts/5\"",
+            FreeAgentJsonTestSupport.Options);
 
         Assert.Equal("https://api.freeagent.com/v2/contacts/5", field!.Uri);
         Assert.Null(field.Value);
@@ -25,7 +27,7 @@ public class ExpandableFieldTests
         }
         """;
 
-        var field = JsonSerializer.Deserialize<ExpandableField<Contact>>(json);
+        var field = JsonSerializer.Deserialize<ExpandableField<Contact>>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal("https://api.freeagent.com/v2/contacts/8", field!.Uri);
         Assert.Equal("Expanded Org", field.Value!.OrganisationName);
@@ -45,7 +47,7 @@ public class ExpandableFieldTests
         }
         """;
 
-        var project = JsonSerializer.Deserialize<Project>(json);
+        var project = JsonSerializer.Deserialize<Project>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal("Public Org", project!.Contact!.OrganisationName);
     }

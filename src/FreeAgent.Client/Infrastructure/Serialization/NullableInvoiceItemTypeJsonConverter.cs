@@ -27,7 +27,7 @@ internal sealed class NullableInvoiceItemTypeJsonConverter : JsonConverter<Invoi
             return null;
         }
 
-        var encoded = JsonSerializer.Serialize(value);
+        var encoded = JsonSerializer.Serialize(value, options);
         var encodedBytes = System.Text.Encoding.UTF8.GetBytes(encoded);
         var enumReader = new Utf8JsonReader(encodedBytes);
         enumReader.Read();

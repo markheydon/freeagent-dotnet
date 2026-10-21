@@ -2,6 +2,7 @@ using System.Net;
 using System.Text.Json;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client.Infrastructure.Serialization;
 
 namespace FreeAgent.Client.Infrastructure.Http;
 
@@ -34,10 +35,7 @@ internal class FreeAgentHttpClient : IDisposable, IFreeAgentRequestClient
     private bool _disposed;
 
     // Cached to avoid allocating a new instance per call (CA1869)
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
+    private static readonly JsonSerializerOptions JsonOptions = FreeAgentJsonSerializerOptions.Default;
 
     private readonly record struct InitializationContext(
         HttpClient HttpClient,

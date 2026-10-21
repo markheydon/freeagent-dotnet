@@ -14,7 +14,7 @@ public class UserModelSerializationTests
     [InlineData("\"Accountant\"", UserRole.Accountant)]
     public void UserRole_DeserializesWireValues(string wireValue, UserRole expected)
     {
-        var user = JsonSerializer.Deserialize<User>($$"""{ "role": {{wireValue}} }""");
+        var user = JsonSerializer.Deserialize<User>($$"""{ "role": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, user!.Role);
     }
@@ -36,7 +36,7 @@ public class UserModelSerializationTests
     [InlineData(8, UserPermissionLevel.Full)]
     public void UserPermissionLevel_DeserializesIntegerValues(int wireValue, UserPermissionLevel expected)
     {
-        var user = JsonSerializer.Deserialize<User>($$"""{ "permission_level": {{wireValue}} }""");
+        var user = JsonSerializer.Deserialize<User>($$"""{ "permission_level": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, user!.PermissionLevel);
     }
@@ -53,7 +53,7 @@ public class UserModelSerializationTests
         }
         """;
 
-        var user = JsonSerializer.Deserialize<User>(json);
+        var user = JsonSerializer.Deserialize<User>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.NotNull(user!.CurrentPayrollProfile);
         Assert.Equal(1000.5m, user.CurrentPayrollProfile.TotalPayInPreviousEmployment);

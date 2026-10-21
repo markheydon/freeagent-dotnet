@@ -12,7 +12,7 @@ public class ProjectModelSerializationTests
     [InlineData("\"Hidden\"", ProjectStatus.Hidden)]
     public void ProjectStatus_DeserializesWireValues(string wireValue, ProjectStatus expected)
     {
-        var project = JsonSerializer.Deserialize<Project>($$"""{ "status": {{wireValue}} }""");
+        var project = JsonSerializer.Deserialize<Project>($$"""{ "status": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, project!.Status);
     }
@@ -23,7 +23,7 @@ public class ProjectModelSerializationTests
     [InlineData("\"Monetary\"", ProjectBudgetUnits.Monetary)]
     public void ProjectBudgetUnits_DeserializesWireValues(string wireValue, ProjectBudgetUnits expected)
     {
-        var project = JsonSerializer.Deserialize<Project>($$"""{ "budget_units": {{wireValue}} }""");
+        var project = JsonSerializer.Deserialize<Project>($$"""{ "budget_units": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, project!.BudgetUnits);
     }
@@ -33,7 +33,7 @@ public class ProjectModelSerializationTests
     [InlineData("\"day\"", ProjectBillingPeriod.Day)]
     public void ProjectBillingPeriod_DeserializesWireValues(string wireValue, ProjectBillingPeriod expected)
     {
-        var project = JsonSerializer.Deserialize<Project>($$"""{ "billing_period": {{wireValue}} }""");
+        var project = JsonSerializer.Deserialize<Project>($$"""{ "billing_period": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, project!.BillingPeriod);
     }
@@ -62,7 +62,7 @@ public class ProjectModelSerializationTests
         }
         """;
 
-        var project = JsonSerializer.Deserialize<Project>(json);
+        var project = JsonSerializer.Deserialize<Project>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal("https://api.freeagent.com/v2/projects/1", project!.Url);
         Assert.Null(project.Contact);
@@ -91,7 +91,7 @@ public class ProjectModelSerializationTests
         }
         """;
 
-        var project = JsonSerializer.Deserialize<Project>(json);
+        var project = JsonSerializer.Deserialize<Project>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(9, project!.ContactId);
         Assert.Equal("Nested Org", project.Contact!.OrganisationName);
@@ -118,7 +118,7 @@ public class ProjectModelSerializationTests
               "contact": "https://api.freeagent.com/v2/contacts/8",
               "name": "Example"
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
 
         var payload = ProjectWritePayload.FromProject(project, FreeAgentEnvironment.Production);
 
@@ -134,7 +134,7 @@ public class ProjectModelSerializationTests
               "contact": "https://api.freeagent.com/v2/contacts/8",
               "name": "Example"
             }
-            """)!;
+            """, FreeAgentJsonTestSupport.Options)!;
         project.ContactId = 3;
 
         var payload = ProjectWritePayload.FromProject(project, FreeAgentEnvironment.Production);
@@ -185,7 +185,7 @@ public class ProjectModelSerializationTests
     [Fact]
     public void Deserialize_WritePayload_AllowsNullContact()
     {
-        var payload = JsonSerializer.Deserialize<ProjectWritePayload>("""{ "name": "Example", "contact": null }""");
+        var payload = JsonSerializer.Deserialize<ProjectWritePayload>("""{ "name": "Example", "contact": null }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Null(payload!.Contact);
     }

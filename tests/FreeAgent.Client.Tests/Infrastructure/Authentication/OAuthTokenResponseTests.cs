@@ -82,8 +82,8 @@ public class OAuthTokenResponseTests
             ExpiresAtUtc = DateTimeOffset.UtcNow.AddMinutes(42)
         };
 
-        var json = JsonSerializer.Serialize(original);
-        var restored = JsonSerializer.Deserialize<OAuthTokenResponse>(json);
+        var json = JsonSerializer.Serialize(original, FreeAgentJsonTestSupport.Options);
+        var restored = JsonSerializer.Deserialize<OAuthTokenResponse>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.NotNull(restored);
         Assert.Equal(original.ExpiresAtUtc, restored!.ExpiresAtUtc);

@@ -40,7 +40,7 @@ public class CurrencyCodeTests
         var json = JsonSerializer.Serialize(code);
         Assert.Equal($"\"{wireValue}\"", json);
 
-        var parsed = JsonSerializer.Deserialize<CurrencyCode>($"\"{wireValue}\"");
+        var parsed = JsonSerializer.Deserialize<CurrencyCode>($"\"{wireValue}\"", FreeAgentJsonTestSupport.Options);
         Assert.Equal(code, parsed);
     }
 
@@ -53,7 +53,7 @@ public class CurrencyCodeTests
         }
         """;
 
-        var company = JsonSerializer.Deserialize<Company>(json);
+        var company = JsonSerializer.Deserialize<Company>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(CurrencyCode.AED, company!.Currency);
     }
@@ -67,7 +67,7 @@ public class CurrencyCodeTests
         }
         """;
 
-        var company = JsonSerializer.Deserialize<Company>(json);
+        var company = JsonSerializer.Deserialize<Company>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(CurrencyCode.GBP, company!.Currency);
     }
@@ -75,7 +75,7 @@ public class CurrencyCodeTests
     [Fact]
     public void Deserialize_UnknownCode_ReturnsUnknownMember()
     {
-        var parsed = JsonSerializer.Deserialize<CurrencyCode>("\"XXX\"");
+        var parsed = JsonSerializer.Deserialize<CurrencyCode>("\"XXX\"", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(CurrencyCode.Unknown, parsed);
     }

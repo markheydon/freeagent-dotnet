@@ -26,11 +26,11 @@ dotnet add package FreeAgent.Client
 | Host | Status |
 |------|--------|
 | SDK-style `.csproj` apps (web, worker, console) | **Supported** — recommended path |
-| File-based apps (`#:package`, .NET 10+) | **Workaround required** until [#175](https://github.com/markheydon/freeagent-dotnet/issues/175) |
+| File-based apps (`#:package`, .NET 10+) | **Supported** — source-generated JSON metadata |
 | `PublishTrimmed` / aggressive trimming | **Not supported yet** |
 | Native AOT publish (`PublishAot`) | **Not supported yet** |
 
-Reflection-based `System.Text.Json` is used for API and OAuth traffic. File-based apps need `#:property JsonSerializerIsReflectionEnabledByDefault=true` until [#175](https://github.com/markheydon/freeagent-dotnet/issues/175); trim and Native AOT publish are tracked under [#173](https://github.com/markheydon/freeagent-dotnet/issues/173). See [getting started — host compatibility](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started/#host-compatibility).
+API and OAuth traffic use `System.Text.Json` with source-generated metadata. File-based apps do not need `JsonSerializerIsReflectionEnabledByDefault`. Trim and Native AOT publish are tracked under [#173](https://github.com/markheydon/freeagent-dotnet/issues/173). See [getting started — host compatibility](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started/#host-compatibility).
 
 ## Quick start
 
