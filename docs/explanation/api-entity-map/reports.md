@@ -24,7 +24,7 @@ Use the [Foundations](foundations.md), [Sales](sales.md), [Purchases](purchases.
 | Balance sheet | [Balance sheet](https://dev.freeagent.com/docs/balance_sheet) | `client.BalanceSheet` | As-of date |
 | Trial balance | [Trial balance](https://dev.freeagent.com/docs/trial_balance) | `client.TrialBalance` | Date range |
 | Cashflow | [Cashflow](https://dev.freeagent.com/docs/cashflow) | `client.Cashflow` | Date range |
-| Transactions | [Transactions](https://dev.freeagent.com/docs/transactions) | Not yet | Date range, category filters |
+| Transactions | [Transactions](https://dev.freeagent.com/docs/transactions) | `client.Transactions` | Date range, category filters |
 | VAT returns | [VAT returns](https://dev.freeagent.com/docs/vat_returns) | `client.VatReturns` | Period |
 | Sales tax | [Sales tax](https://dev.freeagent.com/docs/sales_tax) | Not yet | Configuration / periods |
 | Sales tax periods | [Sales tax periods](https://dev.freeagent.com/docs/sales_tax_periods) | Not yet | Period |

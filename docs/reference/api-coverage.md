@@ -33,6 +33,7 @@ For how resources relate to each other and a suggested implementation order, see
 | [Balance sheet](balance-sheet.md) | `client.BalanceSheet` | [Balance sheet](https://dev.freeagent.com/docs/balance_sheet) |
 | [Trial balance](trial-balance.md) | `client.TrialBalance` | [Trial balance](https://dev.freeagent.com/docs/trial_balance) |
 | [Cashflow](cashflow.md) | `client.Cashflow` | [Cashflow](https://dev.freeagent.com/docs/cashflow) |
+| [Transactions](transactions.md) | `client.Transactions` | [Transactions](https://dev.freeagent.com/docs/transactions) |
 | [VAT returns](vat-returns.md) | `client.VatReturns` | [VAT returns](https://dev.freeagent.com/docs/vat_returns) |
 | [Corporation tax returns](corporation-tax-returns.md) | `client.CorporationTaxReturns` | [Corporation tax returns](https://dev.freeagent.com/docs/corporation_tax_returns) |
 | [Income tax returns](income-tax-returns.md) | `client.IncomeTaxReturns` | [Income tax returns](https://dev.freeagent.com/docs/income_tax_returns) |

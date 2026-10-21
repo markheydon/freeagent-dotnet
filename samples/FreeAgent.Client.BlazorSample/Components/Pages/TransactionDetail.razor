@@ -1,0 +1,181 @@
+@page "/transactions/detail"
+@using FreeAgent.Client.Models.Transactions
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Transaction detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Get a single transaction"
+                         CallUnderTest="TransactionsService.GetAccountingTransactionAsync"
+                         Description="Read-only detail probe for one accounting transaction with wire-to-model diagnostics."
+                         EndpointPath="/v2/accounting/transactions/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/transactions" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick a transaction ID from the <MudLink Href="/transactions">transactions list</MudLink>, or pass <code>?id=1</code> in the URL.
+                    </MudText>
+                    <MudNumericField @bind-Value="_transactionId" @bind-Value:after="OnTransactionIdChanged" Label="Transaction ID" Min="1" />
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _transactionId is null or < 1"
+                               StartIcon="@Icons.Material.Filled.CloudDownload"
+                               OnClick="GetTransactionAsync">Get transaction</MudButton>
+                </MudStack>
+
+                @if (_probe is not null && _transaction is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All AccountingTransaction model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_transaction.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@_transaction.NominalCode</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                        <HighlightContent>
+                            <MudGrid Spacing="2">
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Dated on</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_transaction.DatedOn?.ToString("yyyy-MM-dd") ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Description</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_transaction.Description)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Category</MudText>
+                                        <MudText Typo="Typo.subtitle1">@ValueOrFallback(_transaction.CategoryName)</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudPaper Class="probe-card" Elevation="0">
+                                        <MudText Typo="Typo.caption">Debit value</MudText>
+                                        <MudText Typo="Typo.subtitle1">@(_transaction.DebitValue?.ToString("0.00") ?? "Not returned")</MudText>
+                                    </MudPaper>
+                                </MudItem>
+                            </MudGrid>
+                        </HighlightContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null)
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Run <strong>Get transaction</strong> to load diagnostics.</MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? TransactionIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private long? _transactionId;
+    private AccountingTransaction? _transaction;
+    private ModelProbeSnapshot? _probe;
+
+    protected override void OnParametersSet()
+    {
+        if (TransactionIdFromQuery is > 0)
+        {
+            _transactionId = TransactionIdFromQuery;
+        }
+    }
+
+    private void OnTransactionIdChanged()
+    {
+        _transaction = null;
+        _probe = null;
+        _error = null;
+    }
+
+    private async Task GetTransactionAsync()
+    {
+        if (_transactionId is null or < 1)
+        {
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+        _transaction = null;
+        _probe = null;
+
+        var diagnosticsEndpoint = $"accounting/transactions/{_transactionId}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _transaction = await client.Transactions.GetAccountingTransactionAsync(_transactionId.Value);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+
+            _probe = ModelWireDiagnostics.Build(_transaction, _wireApiResponse, envelopeProperty: "transaction");
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}

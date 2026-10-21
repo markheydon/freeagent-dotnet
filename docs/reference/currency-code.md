@@ -22,6 +22,7 @@ FreeAgent documents supported currency codes but does **not** expose a `/v2/curr
 | `Company` | `Currency` |
 | `DirectDebitMandate` | `Currency` |
 | `Project` | `Currency` |
+| `AccountingTransactionForeignCurrency` | `CurrencyCode` |
 
 Additional resources will use `CurrencyCode` for currency fields as they are implemented.
 
