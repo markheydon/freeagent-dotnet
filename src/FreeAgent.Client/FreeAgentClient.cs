@@ -27,6 +27,7 @@ using FreeAgent.Client.Services.PriceListItems;
 using FreeAgent.Client.Services.ProfitAndLoss;
 using FreeAgent.Client.Services.Projects;
 using FreeAgent.Client.Services.RecurringInvoices;
+using FreeAgent.Client.Services.SelfAssessmentReturns;
 using FreeAgent.Client.Services.StockItems;
 using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Services.Timeslips;
@@ -215,6 +216,11 @@ public sealed class FreeAgentClient : IDisposable
     public IncomeTaxReturnsService IncomeTaxReturns { get; }
 
     /// <summary>
+    /// Self assessment returns API service.
+    /// </summary>
+    public SelfAssessmentReturnsService SelfAssessmentReturns { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -305,6 +311,7 @@ public sealed class FreeAgentClient : IDisposable
         VatReturns = new VatReturnsService(_httpClient);
         CorporationTaxReturns = new CorporationTaxReturnsService(_httpClient);
         IncomeTaxReturns = new IncomeTaxReturnsService(_httpClient);
+        SelfAssessmentReturns = new SelfAssessmentReturnsService(_httpClient);
     }
 
     /// <summary>
