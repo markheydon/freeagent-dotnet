@@ -25,6 +25,7 @@ using FreeAgent.Client.Services.FinalAccountsReports;
 using FreeAgent.Client.Services.HirePurchases;
 using FreeAgent.Client.Services.IncomeTaxReturns;
 using FreeAgent.Client.Services.Invoices;
+using FreeAgent.Client.Services.JournalSets;
 using FreeAgent.Client.Services.Notes;
 using FreeAgent.Client.Services.PriceListItems;
 using FreeAgent.Client.Services.ProfitAndLoss;
@@ -181,6 +182,11 @@ public sealed class FreeAgentClient : IDisposable
     public CapitalAssetTypesService CapitalAssetTypes { get; }
 
     /// <summary>
+    /// Journal sets API service.
+    /// </summary>
+    public JournalSetsService JournalSets { get; }
+
+    /// <summary>
     /// CIS bands API service.
     /// </summary>
     public CisBandsService CisBands { get; }
@@ -333,6 +339,7 @@ public sealed class FreeAgentClient : IDisposable
         PriceListItems = new PriceListItemsService(_httpClient);
         CapitalAssets = new CapitalAssetsService(_httpClient);
         CapitalAssetTypes = new CapitalAssetTypesService(_httpClient);
+        JournalSets = new JournalSetsService(_httpClient);
         CisBands = new CisBandsService(_httpClient);
         CisSettings = new CisSettingsService(_httpClient);
         ProfitAndLoss = new ProfitAndLossService(_httpClient);

@@ -64,6 +64,55 @@ internal static class LinkedResourceWriteMapper
     public static CapitalAssetTypeReference? ToCapitalAssetTypeReference(FreeAgentEnvironment environment, long? capitalAssetTypeId) =>
         capitalAssetTypeId is long id ? CapitalAssetTypeReference.ForEnvironment(environment, id) : null;
 
+    public static PropertyReference? ToPropertyReference(FreeAgentEnvironment environment, long? propertyId) =>
+        propertyId is long id ? PropertyReference.ForEnvironment(environment, id) : null;
+
+    public static WriteLink<CapitalAssetTypeReference>? ResolveCapitalAssetTypeReference(
+        FreeAgentEnvironment environment,
+        in SettableLinkId backing,
+        long? linkId,
+        bool omit = false)
+    {
+        if (omit)
+        {
+            return null;
+        }
+
+        if (backing.IsExplicitlySet)
+        {
+            return backing.Get(fromLink: null) is long id
+                ? new WriteLink<CapitalAssetTypeReference> { Value = CapitalAssetTypeReference.ForEnvironment(environment, id) }
+                : new WriteLink<CapitalAssetTypeReference> { IsCleared = true };
+        }
+
+        return linkId is long roundTripped
+            ? new WriteLink<CapitalAssetTypeReference> { Value = CapitalAssetTypeReference.ForEnvironment(environment, roundTripped) }
+            : null;
+    }
+
+    public static WriteLink<PropertyReference>? ResolvePropertyReference(
+        FreeAgentEnvironment environment,
+        in SettableLinkId backing,
+        long? linkId,
+        bool omit = false)
+    {
+        if (omit)
+        {
+            return null;
+        }
+
+        if (backing.IsExplicitlySet)
+        {
+            return backing.Get(fromLink: null) is long id
+                ? new WriteLink<PropertyReference> { Value = PropertyReference.ForEnvironment(environment, id) }
+                : new WriteLink<PropertyReference> { IsCleared = true };
+        }
+
+        return linkId is long roundTripped
+            ? new WriteLink<PropertyReference> { Value = PropertyReference.ForEnvironment(environment, roundTripped) }
+            : null;
+    }
+
     public static WriteLink<ContactReference>? ResolveContactReference(
         FreeAgentEnvironment environment,
         in SettableLinkId backing,

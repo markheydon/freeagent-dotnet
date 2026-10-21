@@ -1,0 +1,294 @@
+@page "/journal-sets"
+@using System.Globalization
+@using FreeAgent.Client.Models.JournalSets
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Journal sets - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Journal sets endpoint"
+                         Title="Journal sets list"
+                         CallUnderTest="JournalSetsService.ListAsync(...) / GetOpeningBalancesAsync(...)"
+                         Description="Load journal sets with optional filters, inspect wire-to-model mapping per row, and open opening balances or CRUD."
+                         EndpointPath="/v2/journal_sets"
+                         DocsUrl="https://dev.freeagent.com/docs/journal_sets" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Filter by date range, <c>updated_since</c>, or tag. Use
+                        <MudLink Href="/journal-sets/detail">Journal set CRUD</MudLink> for create, update, and delete.
+                    </MudText>
+                    <MudDatePicker @bind-Date="_fromDate" Label="From date" Clearable="true" />
+                    <MudDatePicker @bind-Date="_toDate" Label="To date" Clearable="true" />
+                    <MudTextField @bind-Value="_tag" Label="Tag filter" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="LoadJournalSetsAsync">
+                            @if (_loading)
+                            {
+                                <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Loading…</span>
+                            }
+                            else
+                            {
+                                <span>Load journal sets</span>
+                            }
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="LoadOpeningBalancesAsync">Load opening balances</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_openingBalances is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Info">Opening balances loaded</MudChip>
+                    <ModelProbeResults Snapshot="_openingProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="Opening balances journal set" />
+                }
+
+                @if (_items is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_items.Count journal set@(_items.Count == 1 ? "" : "s") loaded
+                    </MudChip>
+
+                    @if (_items.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">No journal sets returned.</MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Date</MudTh>
+                                    <MudTh>Description</MudTh>
+                                    <MudTh>Tag</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID">@context.Id</MudTd>
+                                    <MudTd DataLabel="Date">@ValueOrDash(context.DatedOn)</MudTd>
+                                    <MudTd DataLabel="Description">@ValueOrDash(context.Description)</MudTd>
+                                    <MudTd DataLabel="Tag">@ValueOrDash(context.Tag)</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1">
+                                            <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="@(() => InspectRowAsync(context.Index))">Inspect</MudButton>
+                                            <MudButton Size="Size.Small" Variant="Variant.Text" Href="@GetCrudHref(context.Id)">CRUD</MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedItem is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All JournalSet model fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private IReadOnlyList<JournalSet>? _items;
+    private JournalSet? _inspectedItem;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private JournalSet? _openingBalances;
+    private ModelProbeSnapshot? _openingProbe;
+    private DateTime? _fromDate;
+    private DateTime? _toDate;
+    private string? _tag;
+
+    private IReadOnlyList<JournalSetRow> _rows => _items?
+        .Select(static (item, index) => new JournalSetRow(
+            index,
+            item.ResourceId,
+            item.DatedOn?.ToString("yyyy-MM-dd"),
+            item.Description,
+            item.Tag))
+        .ToList() ?? [];
+
+    private async Task LoadJournalSetsAsync()
+    {
+        _items = null;
+        _inspectedItem = null;
+        _inspectedProbe = null;
+        _openingBalances = null;
+        _openingProbe = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var diagnosticsEndpoint = BuildDiagnosticsEndpoint();
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _items = await client.JournalSets.ListAsync(
+                fromDate: _fromDate is DateTime from ? DateOnly.FromDateTime(from) : null,
+                toDate: _toDate is DateTime to ? DateOnly.FromDateTime(to) : null,
+                tag: string.IsNullOrWhiteSpace(_tag) ? null : _tag);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task LoadOpeningBalancesAsync()
+    {
+        _items = null;
+        _inspectedItem = null;
+        _inspectedProbe = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        const string diagnosticsEndpoint = "journal_sets/opening_balances";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _openingBalances = await client.JournalSets.GetOpeningBalancesAsync();
+            _openingProbe = ModelWireDiagnostics.Build(_openingBalances, "{}");
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+
+            _openingProbe = ModelWireDiagnostics.Build(_openingBalances, _wireApiResponse, envelopeProperty: "journal_set");
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string BuildDiagnosticsEndpoint()
+    {
+        var query = new List<string>();
+
+        if (_fromDate is DateTime from)
+        {
+            query.Add($"from_date={DateOnly.FromDateTime(from).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
+        }
+
+        if (_toDate is DateTime to)
+        {
+            query.Add($"to_date={DateOnly.FromDateTime(to).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(_tag))
+        {
+            query.Add($"tag={Uri.EscapeDataString(_tag)}");
+        }
+
+        return query.Count == 0
+            ? "journal_sets"
+            : $"journal_sets?{string.Join('&', query)}";
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_items is null || index < 0 || index >= _items.Count)
+        {
+            return;
+        }
+
+        _inspectedItem = _items[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "journal_sets", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedItem, _wireApiResponse, envelopeProperty: "journal_sets");
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string GetCrudHref(long id) => $"/journal-sets/detail?id={id}";
+
+    private sealed record JournalSetRow(int Index, long Id, string? DatedOn, string? Description, string? Tag);
+}

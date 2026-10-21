@@ -1,0 +1,285 @@
+@page "/journal-sets/detail"
+@using FreeAgent.Client.Models.JournalSets
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Journal set detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Journal sets endpoint"
+                         Title="Get, create, update, and delete journal sets"
+                         CallUnderTest="JournalSetsService.GetJournalSetAsync / CreateJournalSetAsync / UpdateJournalSetAsync / DeleteJournalSetAsync"
+                         Description="Exercises journal set CRUD with wire-to-model diagnostics after each successful call."
+                         EndpointPath="/v2/journal_sets/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/journal_sets" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick an ID from the <MudLink Href="/journal-sets">journal sets list</MudLink>, or pass <code>?id=12345</code>.
+                        <strong>Create probe set</strong> upserts by tag <code>@ProbeTag</code> with two balancing lines (categories 001 and 901).
+                    </MudText>
+                    <MudNumericField @bind-Value="_journalSetId" @bind-Value:after="OnJournalSetIdChanged" Label="Journal set ID" Min="1" />
+                    <MudTextField @bind-Value="_description" Label="Description" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudDatePicker @bind-Date="_datedOn" Label="Dated on" Clearable="true" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _journalSetId is null or < 1"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetJournalSetAsync">Get set</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateProbeSetAsync">Create probe set</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _journalSetId is null or < 1"
+                                   OnClick="UpdateJournalSetAsync">Update description</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _journalSetId is null or < 1"
+                                   OnClick="DeleteJournalSetAsync">Delete set</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _item is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All JournalSet model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_item.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_item.Description)</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Run an operation above to load journal set diagnostics.</MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private const string ProbeTag = "SDK-PROBE-JOURNAL-SET";
+    private const string ProbeDescription = "SDK probe journal set";
+
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? JournalSetIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private long? _journalSetId;
+    private JournalSet? _item;
+    private ModelProbeSnapshot? _probe;
+    private string _description = ProbeDescription;
+    private DateTime? _datedOn = DateTime.Today;
+
+    protected override void OnParametersSet()
+    {
+        if (JournalSetIdFromQuery is > 0)
+        {
+            _journalSetId = JournalSetIdFromQuery;
+        }
+    }
+
+    private void OnJournalSetIdChanged()
+    {
+        _item = null;
+        _probe = null;
+        _error = null;
+        _operationMessage = null;
+    }
+
+    private async Task GetJournalSetAsync()
+    {
+        if (_journalSetId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(async client =>
+        {
+            _item = await client.JournalSets.GetJournalSetAsync(_journalSetId.Value);
+            _description = _item.Description ?? ProbeDescription;
+            _datedOn = _item.DatedOn is DateOnly dated ? dated.ToDateTime(TimeOnly.MinValue) : _datedOn;
+            _operationMessage = $"Loaded journal set {_item.ResourceId}.";
+            return $"journal_sets/{_item.ResourceId}";
+        });
+    }
+
+    private async Task CreateProbeSetAsync()
+    {
+        await RunOperationAsync(async client =>
+        {
+            var existing = await client.JournalSets.ListAsync(tag: ProbeTag);
+            var match = existing.FirstOrDefault();
+
+            if (match is not null)
+            {
+                _item = await client.JournalSets.UpdateJournalSetAsync(match.ResourceId, new UpdateJournalSetRequest
+                {
+                    Description = ProbeDescription,
+                    DatedOn = DateOnly.FromDateTime(_datedOn ?? DateTime.Today)
+                });
+                _journalSetId = _item.ResourceId;
+                _operationMessage = $"Refreshed existing probe journal set {_item.ResourceId} (tag {ProbeTag}).";
+            }
+            else
+            {
+                _item = await client.JournalSets.CreateJournalSetAsync(new CreateJournalSetRequest
+                {
+                    Description = ProbeDescription,
+                    DatedOn = DateOnly.FromDateTime(_datedOn ?? DateTime.Today),
+                    Tag = ProbeTag,
+                    JournalEntries =
+                    [
+                        new JournalEntry
+                        {
+                            CategoryNominalCode = "001",
+                            Description = "SDK probe debit",
+                            DebitValue = -1.00m
+                        },
+                        new JournalEntry
+                        {
+                            CategoryNominalCode = "901",
+                            Description = "SDK probe credit",
+                            DebitValue = 1.00m
+                        }
+                    ]
+                });
+                _journalSetId = _item.ResourceId;
+                _operationMessage = $"Created probe journal set {_item.ResourceId} (tag {ProbeTag}).";
+            }
+
+            return $"journal_sets/{_item.ResourceId}";
+        });
+    }
+
+    private async Task UpdateJournalSetAsync()
+    {
+        if (_journalSetId is null or < 1 || string.IsNullOrWhiteSpace(_description))
+        {
+            return;
+        }
+
+        await RunOperationAsync(async client =>
+        {
+            _item = await client.JournalSets.UpdateJournalSetAsync(_journalSetId.Value, new UpdateJournalSetRequest
+            {
+                Description = _description,
+                DatedOn = _datedOn is DateTime dated ? DateOnly.FromDateTime(dated) : null
+            });
+            _operationMessage = $"Updated journal set {_item.ResourceId}.";
+            return $"journal_sets/{_item.ResourceId}";
+        });
+    }
+
+    private async Task DeleteJournalSetAsync()
+    {
+        if (_journalSetId is null or < 1)
+        {
+            return;
+        }
+
+        var deletedId = _journalSetId.Value;
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.JournalSets.DeleteJournalSetAsync(deletedId);
+                _item = null;
+                _probe = null;
+                _operationMessage = $"Deleted journal set {deletedId}.";
+                return null;
+            },
+            fetchWirePayload: false);
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgent.Client.FreeAgentClient, Task<string?>> action,
+        bool fetchWirePayload = true)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var diagnosticsEndpoint = await action(client);
+
+            if (fetchWirePayload && _item is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_item, _wireApiResponse, envelopeProperty: "journal_set");
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            if (fetchWirePayload && _journalSetId is > 0)
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    $"journal_sets/{_journalSetId}");
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}
