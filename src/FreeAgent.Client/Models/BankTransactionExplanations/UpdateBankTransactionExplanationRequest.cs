@@ -1,5 +1,6 @@
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.DepreciationProfiles;
+using FreeAgent.Client.Models.EcMoss;
 
 namespace FreeAgent.Client.Models.BankTransactionExplanations;
 
@@ -36,7 +37,7 @@ public sealed class UpdateBankTransactionExplanationRequest
     /// <summary>
     /// Place of supply when <see cref="EcStatus"/> is EC VAT MOSS.
     /// </summary>
-    public string? PlaceOfSupply { get; set; }
+    public EcMossPlaceOfSupply? PlaceOfSupply { get; set; }
 
     /// <summary>
     /// Sales tax rate.

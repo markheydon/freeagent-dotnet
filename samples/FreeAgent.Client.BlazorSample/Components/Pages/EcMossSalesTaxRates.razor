@@ -1,0 +1,176 @@
+@page "/ec-moss/sales-tax-rates"
+@using System.Text.Json
+@using FreeAgent.Client.Infrastructure.Serialization
+@using FreeAgent.Client.Models.EcMoss
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>EC VAT MOSS rates - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Sales"
+                         Title="EC VAT MOSS sales tax rates"
+                         CallUnderTest="EcMossService.GetSalesTaxRatesAsync()"
+                         Description="Look up MOSS sales tax rate bands for an EU place-of-supply country and transaction date."
+                         EndpointPath="/v2/ec_moss/sales_tax_rates"
+                         DocsUrl="https://dev.freeagent.com/docs/sales_tax" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudSelect T="EcMossPlaceOfSupply" @bind-Value="_country" Label="Place of supply (country)" Variant="Variant.Outlined" Margin="Margin.Dense">
+                    @foreach (var country in Enum.GetValues<EcMossPlaceOfSupply>())
+                    {
+                        <MudSelectItem Value="@country">@country</MudSelectItem>
+                    }
+                </MudSelect>
+                <MudDatePicker @bind-Date="_date" Label="Transaction date" Variant="Variant.Outlined" Margin="Margin.Dense" />
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_loading"
+                           StartIcon="@Icons.Material.Filled.CloudDownload"
+                           OnClick="LoadRatesAsync">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Loading…</span>
+                    }
+                    else
+                    {
+                        <span>Load MOSS rates</span>
+                    }
+                </MudButton>
+
+                @if (_rates is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_rates.Count rate band@(_rates.Count == 1 ? "" : "s") loaded
+                    </MudChip>
+
+                    <div class="diagnostics-table-shell">
+                        <MudTable Items="@_rates" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                            <HeaderContent>
+                                <MudTh>Band</MudTh>
+                                <MudTh>Percentage</MudTh>
+                                <MudTh>Actions</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd>@context.Band</MudTd>
+                                <MudTd>@context.Percentage</MudTd>
+                                <MudTd>
+                                    <MudButton Size="Size.Small" Variant="Variant.Outlined" OnClick="@(() => InspectRate(context))">
+                                        Inspect mapping
+                                    </MudButton>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </div>
+
+                    @if (_inspectedProbe is not null)
+                    {
+                        <ModelProbeResults Snapshot="_inspectedProbe" WirePayload="@_wireApiResponse" />
+                    }
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private EcMossPlaceOfSupply _country = EcMossPlaceOfSupply.Austria;
+    private DateTime? _date = DateTime.UtcNow.Date;
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private IReadOnlyList<EcMossSalesTaxRate>? _rates;
+    private ModelProbeSnapshot? _inspectedProbe;
+
+    private async Task LoadRatesAsync()
+    {
+        _rates = null;
+        _inspectedProbe = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        if (_date is null)
+        {
+            _error = "Select a transaction date.";
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        var datedOn = DateOnly.FromDateTime(_date.Value);
+        var countryWire = JsonSerializer.Serialize(_country, FreeAgentJsonSerializer.Options).Trim('"');
+        var diagnosticsEndpoint = $"ec_moss/sales_tax_rates?country={Uri.EscapeDataString(countryWire)}&date={datedOn:yyyy-MM-dd}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _rates = await client.EcMoss.GetSalesTaxRatesAsync(_country, datedOn);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectRate(EcMossSalesTaxRate rate)
+    {
+        if (_rates is null)
+        {
+            return;
+        }
+
+        var index = _rates.ToList().IndexOf(rate);
+        if (index >= 0 && ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "sales_tax_rates", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(rate, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(rate, _wireApiResponse, envelopeProperty: "sales_tax_rates");
+    }
+}

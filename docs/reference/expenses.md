@@ -57,3 +57,7 @@ Returns `MileageSettings` with `EngineTypeAndSizeOptions` for valid mileage engi
 ## Category and mileage
 
 The `category` wire field is either a category URI or the literal `Mileage`. On writes, set `CategoryNominalCode` or `IsMileageCategory = true` — the SDK serialises the correct wire shape.
+
+## Sales tax fields
+
+Per [Sales tax and VAT](https://dev.freeagent.com/docs/sales_tax): use `PurchaseSalesTaxRate` on `SalesTaxRate` (`Auto` or a percentage), optional `ManualSalesTaxAmount`, and `SalesTaxStatus` (`BillSalesTaxStatus`). `SalesTaxValue` is calculated by FreeAgent on read.

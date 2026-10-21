@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
+using FreeAgent.Client.Models.EcMoss;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
 
@@ -72,7 +73,7 @@ internal sealed class CreditNoteWritePayload
     public InvoiceEcStatus? EcStatus { get; set; }
 
     [JsonPropertyName("place_of_supply")]
-    public string? PlaceOfSupply { get; set; }
+    public EcMossPlaceOfSupply? PlaceOfSupply { get; set; }
 
     [JsonPropertyName("credit_note_items")]
     public List<CreditNoteItemWritePayload>? CreditNoteItems { get; set; }

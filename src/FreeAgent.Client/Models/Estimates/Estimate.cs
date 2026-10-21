@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Contacts;
+using FreeAgent.Client.Models.EcMoss;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
@@ -150,7 +151,7 @@ public sealed class Estimate : IFreeAgentResource
     /// Place of supply when <see cref="EcStatus"/> is EC VAT MOSS.
     /// </summary>
     [JsonPropertyName("place_of_supply")]
-    public string? PlaceOfSupply { get; set; }
+    public EcMossPlaceOfSupply? PlaceOfSupply { get; set; }
 
     /// <summary>
     /// Total value calculated from estimate items.

@@ -4,6 +4,7 @@ using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.CreditNotes;
+using FreeAgent.Client.Models.EcMoss;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Shared;
 
@@ -260,6 +261,7 @@ public sealed class InvoiceService
     public async Task<Invoice> CreateInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(invoice);
+        EcMossWriteRequirements.ValidateInvoiceEcStatus(invoice.EcStatus, invoice.PlaceOfSupply, nameof(invoice));
 
         var content = FreeAgentJsonSerializer.CreateContent(new InvoiceRequest
         {
@@ -326,6 +328,7 @@ public sealed class InvoiceService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(invoiceId);
         ArgumentNullException.ThrowIfNull(invoice);
         ShowProjectNameWriteSupport.ValidateInvoiceUpdate(invoice);
+        EcMossWriteRequirements.ValidateInvoiceEcStatus(invoice.EcStatus, invoice.PlaceOfSupply, nameof(invoice));
 
         var content = FreeAgentJsonSerializer.CreateContent(new InvoiceRequest
         {

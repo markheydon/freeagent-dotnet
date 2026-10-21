@@ -59,6 +59,10 @@ Explanation type determines which URI fields are required (payment, invoice rece
 | Bank transaction explanations | [Bank transaction explanations](https://dev.freeagent.com/docs/bank_transaction_explanations) | `client.BankTransactionExplanations` |
 | Bank feeds | [Bank feeds](https://dev.freeagent.com/docs/bank_feeds) | `client.BankFeeds` |
 
+## Sales tax and VAT (MOSS)
+
+When a bank transaction explanation uses `ec_status` `EC VAT MOSS`, the SDK requires `place_of_supply` (`EcMossPlaceOfSupply`) and `sales_tax_rate` before the HTTP request. Look up MOSS rates with `client.EcMoss.GetSalesTaxRatesAsync` using the same country and `dated_on`. See [Sales tax and VAT](https://dev.freeagent.com/docs/sales_tax).
+
 ## Key URI fields
 
 ### Bank feed

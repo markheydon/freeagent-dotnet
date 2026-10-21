@@ -179,7 +179,7 @@ internal sealed class BillSamples(SampleContext context) : IConsoleSampleProvide
                     {
                         Description = "Console probe supplier charge",
                         TotalValue = 50m,
-                        SalesTaxRate = 20m,
+                        SalesTaxRate = PurchaseSalesTaxRate.FromPercentage(20m),
                         SalesTaxStatus = BillSalesTaxStatus.Taxable,
                         CategoryNominalCode = nominalCode
                     }

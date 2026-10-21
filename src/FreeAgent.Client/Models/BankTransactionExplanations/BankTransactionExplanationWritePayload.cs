@@ -3,6 +3,7 @@ using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.DepreciationProfiles;
+using FreeAgent.Client.Models.EcMoss;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.BankTransactionExplanations;
@@ -34,7 +35,7 @@ internal sealed class BankTransactionExplanationWritePayload
     public BankTransactionExplanationEcStatus? EcStatus { get; set; }
 
     [JsonPropertyName("place_of_supply")]
-    public string? PlaceOfSupply { get; set; }
+    public EcMossPlaceOfSupply? PlaceOfSupply { get; set; }
 
     [JsonPropertyName("sales_tax_rate")]
     public decimal? SalesTaxRate { get; set; }

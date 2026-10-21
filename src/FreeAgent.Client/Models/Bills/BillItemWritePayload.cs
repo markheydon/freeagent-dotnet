@@ -31,7 +31,7 @@ internal sealed class BillItemWritePayload
     public decimal? ManualSalesTaxAmount { get; set; }
 
     [JsonPropertyName("sales_tax_rate")]
-    public decimal? SalesTaxRate { get; set; }
+    public PurchaseSalesTaxRate? SalesTaxRate { get; set; }
 
     [JsonPropertyName("second_sales_tax_rate")]
     public decimal? SecondSalesTaxRate { get; set; }
