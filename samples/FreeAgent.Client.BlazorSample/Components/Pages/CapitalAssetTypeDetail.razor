@@ -125,73 +125,63 @@
             return;
         }
 
-        await RunOperationAsync(
-            async client =>
-            {
-                _item = await client.CapitalAssetTypes.GetCapitalAssetTypeAsync(_capitalAssetTypeId.Value);
-                _name = _item.Name ?? ProbeName;
-                _operationMessage = $"Loaded capital asset type {_item.ResourceId}.";
-            },
-            $"capital_asset_types/{_capitalAssetTypeId}",
-            "capital_asset_type");
+        await RunOperationAsync(async client =>
+        {
+            _item = await client.CapitalAssetTypes.GetCapitalAssetTypeAsync(_capitalAssetTypeId.Value);
+            _name = _item.Name ?? ProbeName;
+            _operationMessage = $"Loaded capital asset type {_item.ResourceId}.";
+            return $"capital_asset_types/{_item.ResourceId}";
+        });
     }
 
     private async Task CreateProbeTypeAsync()
     {
-        if (string.IsNullOrWhiteSpace(_name))
+        await RunOperationAsync(async client =>
         {
-            _error = "Enter a name before creating.";
-            return;
-        }
+            var existing = await client.CapitalAssetTypes.ListAsync();
+            var match = existing.FirstOrDefault(item => string.Equals(item.Name, ProbeName, StringComparison.Ordinal));
 
-        await RunOperationAsync(
-            async client =>
+            if (match is not null)
             {
-                var existing = await client.CapitalAssetTypes.ListAsync();
-                var match = existing.FirstOrDefault(item => string.Equals(item.Name, ProbeName, StringComparison.Ordinal));
+                _item = await client.CapitalAssetTypes.UpdateCapitalAssetTypeAsync(match.ResourceId, new UpdateCapitalAssetTypeRequest
+                {
+                    Name = ProbeName
+                });
+                _capitalAssetTypeId = _item.ResourceId;
+                _name = ProbeName;
+                _operationMessage = $"Refreshed existing probe type {_item.ResourceId} (name {ProbeName}).";
+            }
+            else
+            {
+                _item = await client.CapitalAssetTypes.CreateCapitalAssetTypeAsync(new CreateCapitalAssetTypeRequest
+                {
+                    Name = ProbeName
+                });
+                _capitalAssetTypeId = _item.ResourceId;
+                _name = _item.Name ?? ProbeName;
+                _operationMessage = $"Created probe type {_item.ResourceId} (name {ProbeName}).";
+            }
 
-                if (match is not null)
-                {
-                    _item = await client.CapitalAssetTypes.UpdateCapitalAssetTypeAsync(match.ResourceId, new UpdateCapitalAssetTypeRequest
-                    {
-                        Name = _name
-                    });
-                    _capitalAssetTypeId = _item.ResourceId;
-                    _operationMessage = $"Updated existing probe type {_item.ResourceId} (name {ProbeName}).";
-                }
-                else
-                {
-                    _item = await client.CapitalAssetTypes.CreateCapitalAssetTypeAsync(new CreateCapitalAssetTypeRequest
-                    {
-                        Name = ProbeName
-                    });
-                    _capitalAssetTypeId = _item.ResourceId;
-                    _name = _item.Name ?? ProbeName;
-                    _operationMessage = $"Created probe type {_item.ResourceId} (name {ProbeName}).";
-                }
-            },
-            _capitalAssetTypeId is > 0 ? $"capital_asset_types/{_capitalAssetTypeId}" : "capital_asset_types",
-            "capital_asset_type");
+            return $"capital_asset_types/{_item.ResourceId}";
+        });
     }
 
     private async Task UpdateCapitalAssetTypeAsync()
     {
-        if (_capitalAssetTypeId is null or < 1)
+        if (_capitalAssetTypeId is null or < 1 || string.IsNullOrWhiteSpace(_name))
         {
             return;
         }
 
-        await RunOperationAsync(
-            async client =>
+        await RunOperationAsync(async client =>
+        {
+            _item = await client.CapitalAssetTypes.UpdateCapitalAssetTypeAsync(_capitalAssetTypeId.Value, new UpdateCapitalAssetTypeRequest
             {
-                _item = await client.CapitalAssetTypes.UpdateCapitalAssetTypeAsync(_capitalAssetTypeId.Value, new UpdateCapitalAssetTypeRequest
-                {
-                    Name = _name
-                });
-                _operationMessage = $"Updated capital asset type {_item.ResourceId}.";
-            },
-            $"capital_asset_types/{_capitalAssetTypeId}",
-            "capital_asset_type");
+                Name = _name
+            });
+            _operationMessage = $"Updated capital asset type {_item.ResourceId}.";
+            return $"capital_asset_types/{_item.ResourceId}";
+        });
     }
 
     private async Task DeleteCapitalAssetTypeAsync()
@@ -201,22 +191,23 @@
             return;
         }
 
+        var deletedId = _capitalAssetTypeId.Value;
+
         await RunOperationAsync(
             async client =>
             {
-                await client.CapitalAssetTypes.DeleteCapitalAssetTypeAsync(_capitalAssetTypeId.Value);
+                await client.CapitalAssetTypes.DeleteCapitalAssetTypeAsync(deletedId);
                 _item = null;
                 _probe = null;
-                _operationMessage = $"Deleted capital asset type {_capitalAssetTypeId}.";
+                _operationMessage = $"Deleted capital asset type {deletedId}.";
+                return null;
             },
-            $"capital_asset_types/{_capitalAssetTypeId}",
-            envelopeProperty: null);
+            fetchWirePayload: false);
     }
 
     private async Task RunOperationAsync(
-        Func<FreeAgent.Client.FreeAgentClient, Task> operation,
-        string diagnosticsEndpoint,
-        string? envelopeProperty)
+        Func<FreeAgent.Client.FreeAgentClient, Task<string?>> action,
+        bool fetchWirePayload = true)
     {
         var token = TokenStore.GetToken();
         if (token is null)
@@ -227,30 +218,38 @@
 
         _loading = true;
         _error = null;
-        _wireApiResponse = string.Empty;
+        _probe = null;
+
+        if (fetchWirePayload)
+        {
+            _wireApiResponse = string.Empty;
+        }
 
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            await operation(client);
+            var diagnosticsEndpoint = await action(client);
 
-            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
-                token.AccessToken,
-                TokenStore.ConnectedEnvironment,
-                diagnosticsEndpoint);
-
-            if (_item is not null && envelopeProperty is not null)
+            if (fetchWirePayload && _item is not null && !string.IsNullOrWhiteSpace(diagnosticsEndpoint))
             {
-                _probe = ModelWireDiagnostics.Build(_item, _wireApiResponse, envelopeProperty: envelopeProperty);
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    diagnosticsEndpoint);
+
+                _probe = ModelWireDiagnostics.Build(_item, _wireApiResponse, envelopeProperty: "capital_asset_type");
             }
         }
         catch (FreeAgentApiException ex)
         {
             _error = $"API error: {ex.Message}";
-            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
-                token.AccessToken,
-                TokenStore.ConnectedEnvironment,
-                diagnosticsEndpoint);
+            if (fetchWirePayload && _capitalAssetTypeId is > 0)
+            {
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    $"capital_asset_types/{_capitalAssetTypeId}");
+            }
         }
         catch (Exception ex)
         {
