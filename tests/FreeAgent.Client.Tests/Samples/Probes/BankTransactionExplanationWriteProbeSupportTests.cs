@@ -1,3 +1,4 @@
+#if NET10_0
 using FreeAgent.Client;
 using FreeAgent.Client.Samples.Shared.Probes;
 
@@ -92,3 +93,4 @@ public class BankTransactionExplanationWriteProbeSupportTests
             TransactionId = transactionId,
         };
 }
+#endif

@@ -326,58 +326,58 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         switch (variant)
         {
             case BankTransactionExplanationWriteProbeVariant.CreatePaymentOrRefund:
-            {
-                var project = await context.Data.GetFirstProjectAsync(cancellationToken);
-                projectId = project.ResourceId;
-                break;
-            }
+                {
+                    var project = await context.Data.GetFirstProjectAsync(cancellationToken);
+                    projectId = project.ResourceId;
+                    break;
+                }
 
             case BankTransactionExplanationWriteProbeVariant.CreateInvoiceReceipt:
-            {
-                var invoice = await context.Data.GetFirstInvoiceAsync(cancellationToken);
-                invoiceId = invoice.ResourceId;
-                break;
-            }
+                {
+                    var invoice = await context.Data.GetFirstInvoiceAsync(cancellationToken);
+                    invoiceId = invoice.ResourceId;
+                    break;
+                }
 
             case BankTransactionExplanationWriteProbeVariant.CreateBillPayment:
-            {
-                var bill = await context.Data.GetFirstBillAsync(cancellationToken);
-                billId = bill.ResourceId;
-                break;
-            }
+                {
+                    var bill = await context.Data.GetFirstBillAsync(cancellationToken);
+                    billId = bill.ResourceId;
+                    break;
+                }
 
             case BankTransactionExplanationWriteProbeVariant.CreateSmartUserPayment
                 or BankTransactionExplanationWriteProbeVariant.CreateCategorisedUserPayment:
-            {
-                var user = await context.Data.GetFirstUserAsync(cancellationToken);
-                userId = user.ResourceId;
-                break;
-            }
+                {
+                    var user = await context.Data.GetFirstUserAsync(cancellationToken);
+                    userId = user.ResourceId;
+                    break;
+                }
 
             case BankTransactionExplanationWriteProbeVariant.CreateTransfer:
-            {
-                var bankAccounts = await context.Client.BankAccounts.ListAsync(cancellationToken: cancellationToken);
-                transferBankAccountId = bankAccounts.Count >= 2 ? bankAccounts[1].ResourceId : 0L;
-                break;
-            }
+                {
+                    var bankAccounts = await context.Client.BankAccounts.ListAsync(cancellationToken: cancellationToken);
+                    transferBankAccountId = bankAccounts.Count >= 2 ? bankAccounts[1].ResourceId : 0L;
+                    break;
+                }
 
             case BankTransactionExplanationWriteProbeVariant.CreateStock:
-            {
-                var stockItem = await context.Data.GetFirstStockItemAsync(cancellationToken);
-                stockItemId = stockItem.ResourceId;
-                break;
-            }
+                {
+                    var stockItem = await context.Data.GetFirstStockItemAsync(cancellationToken);
+                    stockItemId = stockItem.ResourceId;
+                    break;
+                }
 
             case BankTransactionExplanationWriteProbeVariant.CreateLandlordProperty:
                 propertyUri = await TryResolvePropertyUriForLandlordProbeAsync(cancellationToken);
                 break;
 
             case BankTransactionExplanationWriteProbeVariant.CreateOpeningBalance:
-            {
-                var contact = await context.Data.GetFirstContactAsync(cancellationToken);
-                contactId = contact.ResourceId;
-                break;
-            }
+                {
+                    var contact = await context.Data.GetFirstContactAsync(cancellationToken);
+                    contactId = contact.ResourceId;
+                    break;
+                }
         }
 
         return new BankTransactionExplanationWriteProbeContext
