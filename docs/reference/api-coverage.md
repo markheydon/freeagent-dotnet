@@ -29,6 +29,8 @@ For how resources relate to each other and a suggested implementation order, see
 | [Capital assets](capital-assets.md) | `client.CapitalAssets` | [Capital assets](https://dev.freeagent.com/docs/capital_assets) |
 | [Capital asset types](capital-asset-types.md) | `client.CapitalAssetTypes` | [Capital asset types](https://dev.freeagent.com/docs/capital_asset_types) |
 | [Journal sets](journal-sets.md) | `client.JournalSets` | [Journal sets](https://dev.freeagent.com/docs/journal_sets) |
+| [Payroll](payroll.md) | `client.Payroll` | [Payroll](https://dev.freeagent.com/docs/payroll) |
+| [Payroll profiles](payroll-profiles.md) | `client.PayrollProfiles` | [Payroll profiles](https://dev.freeagent.com/docs/payroll_profiles) |
 | [Properties](properties.md) | `client.Properties` | [Properties](https://dev.freeagent.com/docs/properties) |
 | [CIS bands](cis-bands.md) | `client.CisBands` | [CIS bands](https://dev.freeagent.com/docs/cis_bands) |
 | [CIS settings](cis-settings.md) | `client.CisSettings` | [CIS settings](https://dev.freeagent.com/docs/cis_settings) |

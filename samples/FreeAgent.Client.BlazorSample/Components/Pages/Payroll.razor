@@ -1,0 +1,255 @@
+@page "/payroll"
+@using FreeAgent.Client.Models.Payroll
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Payroll - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Payroll endpoint"
+                         Title="Payroll tax year"
+                         CallUnderTest="PayrollService.ListAsync(...) / MarkPaymentAsPaidAsync / MarkPaymentAsUnpaidAsync"
+                         Description="Load payroll periods and liability payments for a UK tax year end. Mark payment transitions mutate live sandbox data."
+                         EndpointPath="/v2/payroll/:year"
+                         DocsUrl="https://dev.freeagent.com/docs/payroll" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    Payroll requires a UK company with payroll enabled. Use the tax year end (for example 2026 for April 2025–March 2026).
+                    Open <MudLink Href="/payroll/period">period payslips</MudLink> for per-period detail.
+                </MudAlert>
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudNumericField @bind-Value="_taxYearEnd" Label="Tax year end" Min="2000" Max="2100" />
+
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                               OnClick="LoadTaxYearAsync">Load payroll year</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _selectedPaymentDueOn is null"
+                               OnClick="MarkPaymentPaidAsync">Mark payment paid</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _selectedPaymentDueOn is null"
+                               OnClick="MarkPaymentUnpaidAsync">Mark payment unpaid</MudButton>
+                </MudStack>
+
+                @if (_taxYear is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_taxYear.Periods!.Count period@(_taxYear.Periods.Count == 1 ? "" : "s"),
+                        @(_taxYear.Payments?.Count ?? 0) payment@((_taxYear.Payments?.Count ?? 0) == 1 ? "" : "s")
+                    </MudChip>
+
+                    @if (_taxYear.Periods!.Count > 0)
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_periodRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>Period</MudTh>
+                                    <MudTh>Pay date</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Period">@context.PeriodNumber</MudTd>
+                                    <MudTd DataLabel="Pay date">@ValueOrDash(context.DatedOn)</MudTd>
+                                    <MudTd DataLabel="Status">@ValueOrDash(context.Status?.ToString())</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedPeriodIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectPeriodRowAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            @if (context.PeriodNumber is not null)
+                                            {
+                                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small"
+                                                           Href="@GetPeriodHref(context.PeriodNumber.Value)">
+                                                    Payslips
+                                                </MudButton>
+                                            }
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+
+                    @if (_taxYear.Payments is { Count: > 0 })
+                    {
+                        <MudText Typo="Typo.subtitle2">Liability payments</MudText>
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_paymentRows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>Due on</MudTh>
+                                    <MudTh>Amount</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Due on">@context.DueOn</MudTd>
+                                    <MudTd DataLabel="Amount">@context.AmountDue</MudTd>
+                                    <MudTd DataLabel="Status">@ValueOrDash(context.Status?.ToString())</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudButton Variant="Variant.Outlined" Size="Size.Small"
+                                                   Color="@(context.DueOn == _selectedPaymentDueOn ? Color.Primary : Color.Default)"
+                                                   OnClick="@(() => SelectPayment(context.DueOn))">
+                                            Select for mark-as
+                                        </MudButton>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedPeriod is not null && _inspectedProbe is not null)
+                {
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="PayrollPeriod fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private int _taxYearEnd = DateTime.UtcNow.Month >= 4 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
+    private PayrollTaxYear? _taxYear;
+    private FreeAgent.Client.Models.Payroll.PayrollPeriod? _inspectedPeriod;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedPeriodIndex;
+    private DateOnly? _selectedPaymentDueOn;
+
+    private IReadOnlyList<PeriodRow> _periodRows => _taxYear?.Periods?
+        .Select(static (item, index) => new PeriodRow(
+            index,
+            item.PeriodNumber,
+            item.DatedOn?.ToString("yyyy-MM-dd"),
+            item.Status))
+        .ToList() ?? [];
+
+    private IReadOnlyList<PaymentRow> _paymentRows => _taxYear?.Payments?
+        .Select(static (item, index) => new PaymentRow(index, item.DueOn, item.AmountDue, item.Status))
+        .ToList() ?? [];
+
+    private string GetPeriodHref(int periodNumber) =>
+        $"/payroll/period?taxYearEnd={_taxYearEnd}&period={periodNumber}";
+
+    private async Task LoadTaxYearAsync() => await RunAsync(async client =>
+    {
+        _taxYear = await client.Payroll.ListAsync(_taxYearEnd);
+        _inspectedPeriod = null;
+        _inspectedProbe = null;
+        _inspectedPeriodIndex = null;
+        _selectedPaymentDueOn = null;
+    }, $"payroll/{_taxYearEnd}");
+
+    private Task MarkPaymentPaidAsync() => RunMutationAsync(
+        client => client.Payroll.MarkPaymentAsPaidAsync(_taxYearEnd, _selectedPaymentDueOn!.Value));
+
+    private Task MarkPaymentUnpaidAsync() => RunMutationAsync(
+        client => client.Payroll.MarkPaymentAsUnpaidAsync(_taxYearEnd, _selectedPaymentDueOn!.Value));
+
+    private async Task RunMutationAsync(Func<FreeAgent.Client.FreeAgentClient, Task<PayrollTaxYear>> action)
+    {
+        await RunAsync(async client =>
+        {
+            _taxYear = await action(client);
+            _inspectedPeriod = null;
+            _inspectedProbe = null;
+            _inspectedPeriodIndex = null;
+        }, $"payroll/{_taxYearEnd}");
+    }
+
+    private async Task RunAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action, string diagnosticsEndpoint)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectPeriodRowAsync(int index)
+    {
+        if (_taxYear?.Periods is null || index < 0 || index >= _taxYear.Periods.Count)
+        {
+            return;
+        }
+
+        _inspectedPeriodIndex = index;
+        _inspectedPeriod = _taxYear.Periods[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "periods", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedPeriod, wireItem);
+        }
+    }
+
+    private void SelectPayment(DateOnly? dueOn) => _selectedPaymentDueOn = dueOn;
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private sealed record PeriodRow(int Index, int? PeriodNumber, string? DatedOn, PayrollPeriodFilingStatus? Status);
+
+    private sealed record PaymentRow(int Index, DateOnly? DueOn, decimal? AmountDue, PayrollPaymentStatus? Status);
+}

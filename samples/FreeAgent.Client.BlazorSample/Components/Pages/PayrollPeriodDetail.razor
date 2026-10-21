@@ -1,0 +1,238 @@
+@page "/payroll/period"
+@using System.Text.Json
+@using FreeAgent.Client.Models.Payroll
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Payroll period - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Payroll endpoint"
+                         Title="Payroll period payslips"
+                         CallUnderTest="PayrollService.ListPayslipsAsync(...)"
+                         Description="Load payslips for a payroll period and inspect wire-to-model mapping per row."
+                         EndpointPath="/v2/payroll/:year/:period"
+                         DocsUrl="https://dev.freeagent.com/docs/payroll" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    Deep link with <code>?taxYearEnd=YYYY&amp;period=0</code> (period 0–11) or pick values below.
+                </MudAlert>
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudNumericField @bind-Value="_taxYearEnd" Label="Tax year end" Min="2000" Max="2100" />
+                <MudNumericField @bind-Value="_periodNumber" Label="Period (0–11)" Min="0" Max="11" />
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading"
+                           OnClick="LoadPeriodAsync">Load payslips</MudButton>
+
+                @if (_period is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @(_period.Payslips?.Count ?? 0) payslip@((_period.Payslips?.Count ?? 0) == 1 ? "" : "s")
+                    </MudChip>
+
+                    @if (_period.Payslips is { Count: > 0 })
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>User id</MudTh>
+                                    <MudTh>Tax code</MudTh>
+                                    <MudTh>Basic pay</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="User id">@ValueOrDash(context.UserId)</MudTd>
+                                    <MudTd DataLabel="Tax code">@ValueOrDash(context.TaxCode)</MudTd>
+                                    <MudTd DataLabel="Basic pay">@context.BasicPay</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudButton Variant="Variant.Filled"
+                                                   Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                   Size="Size.Small"
+                                                   OnClick="@(() => InspectRowAsync(context.Index))">
+                                            Inspect mapping
+                                        </MudButton>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedPayslip is not null && _inspectedProbe is not null)
+                {
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="PayrollPayslip fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    [SupplyParameterFromQuery(Name = "taxYearEnd")]
+    public int? TaxYearEndQuery { get; set; }
+
+    [SupplyParameterFromQuery(Name = "period")]
+    public int? PeriodQuery { get; set; }
+
+    private int _taxYearEnd = DateTime.UtcNow.Month >= 4 ? DateTime.UtcNow.Year + 1 : DateTime.UtcNow.Year;
+    private int _periodNumber;
+    private FreeAgent.Client.Models.Payroll.PayrollPeriod? _period;
+    private PayrollPayslip? _inspectedPayslip;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+
+    protected override void OnParametersSet()
+    {
+        if (TaxYearEndQuery is not null)
+        {
+            _taxYearEnd = TaxYearEndQuery.Value;
+        }
+
+        if (PeriodQuery is not null)
+        {
+            _periodNumber = PeriodQuery.Value;
+        }
+    }
+
+    private IReadOnlyList<PayslipRow> _rows => _period?.Payslips?
+        .Select(static (item, index) => new PayslipRow(
+            index,
+            item.UserId?.ToString(),
+            item.TaxCode,
+            item.BasicPay))
+        .ToList() ?? [];
+
+    private async Task LoadPeriodAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _inspectedPayslip = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+
+        var diagnosticsEndpoint = $"payroll/{_taxYearEnd}/{_periodNumber}";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _period = await client.Payroll.ListPayslipsAsync(_taxYearEnd, _periodNumber);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_period?.Payslips is null || index < 0 || index >= _period.Payslips.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedPayslip = _period.Payslips[index];
+
+        if (TryGetPayslipWireItem(index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedPayslip, wireItem);
+        }
+    }
+
+    private bool TryGetPayslipWireItem(int index, out JsonElement item)
+    {
+        item = default;
+
+        if (string.IsNullOrWhiteSpace(_wireApiResponse))
+        {
+            return false;
+        }
+
+        try
+        {
+            using var document = JsonDocument.Parse(_wireApiResponse);
+            if (!document.RootElement.TryGetProperty("period", out var periodElement)
+                || !periodElement.TryGetProperty("payslips", out var payslipsElement)
+                || payslipsElement.ValueKind != JsonValueKind.Array)
+            {
+                return false;
+            }
+
+            var position = 0;
+            foreach (var element in payslipsElement.EnumerateArray())
+            {
+                if (position == index)
+                {
+                    item = element.Clone();
+                    return true;
+                }
+
+                position++;
+            }
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+
+        return false;
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private sealed record PayslipRow(int Index, string? UserId, string? TaxCode, decimal? BasicPay);
+}
