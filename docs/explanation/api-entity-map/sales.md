@@ -66,6 +66,15 @@ Invoice items and credit note items are nested on their parent resource pages (n
 | Credit note reconciliations | [Credit note reconciliations](https://dev.freeagent.com/docs/credit_note_reconciliations) | `client.CreditNoteReconciliations` |
 | Stock items | [Stock items](https://dev.freeagent.com/docs/stock_items) | `client.StockItems` |
 | Price list items | [Price list items](https://dev.freeagent.com/docs/price_list_items) | `client.PriceListItems` |
+| EC VAT MOSS rates | [Sales tax and VAT](https://dev.freeagent.com/docs/sales_tax) | `client.EcMoss` |
+
+## Sales tax and VAT
+
+Cross-cutting rules are in [Sales tax and VAT](https://dev.freeagent.com/docs/sales_tax). On this cluster:
+
+- Invoice, estimate, and credit note line items use `sales_tax_rate`; contact `charge_sales_tax` applies when a line rate is omitted.
+- When `ec_status` is `EC VAT MOSS`, set `place_of_supply` to `EcMossPlaceOfSupply` on the parent document.
+- Fetch MOSS rate bands with `client.EcMoss.GetSalesTaxRatesAsync(country, datedOn)`.
 
 ## Key URI fields
 

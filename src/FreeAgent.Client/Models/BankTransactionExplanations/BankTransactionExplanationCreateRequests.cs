@@ -1,5 +1,6 @@
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.DepreciationProfiles;
+using FreeAgent.Client.Models.EcMoss;
 
 namespace FreeAgent.Client.Models.BankTransactionExplanations;
 
@@ -20,7 +21,7 @@ public sealed class CreateCategoryBankTransactionExplanationRequest : BankTransa
         decimal grossValue,
         string? description = null,
         BankTransactionExplanationEcStatus? ecStatus = null,
-        string? placeOfSupply = null,
+        EcMossPlaceOfSupply? placeOfSupply = null,
         decimal? salesTaxRate = null,
         BillSalesTaxStatus? salesTaxStatus = null,
         BankTransactionExplanationAttachmentWritePayload? attachment = null) =>
@@ -36,7 +37,7 @@ public sealed class CreateCategoryBankTransactionExplanationRequest : BankTransa
         decimal grossValue,
         string? description = null,
         BankTransactionExplanationEcStatus? ecStatus = null,
-        string? placeOfSupply = null,
+        EcMossPlaceOfSupply? placeOfSupply = null,
         decimal? salesTaxRate = null,
         BillSalesTaxStatus? salesTaxStatus = null,
         BankTransactionExplanationAttachmentWritePayload? attachment = null) =>
@@ -50,7 +51,7 @@ public sealed class CreateCategoryBankTransactionExplanationRequest : BankTransa
         decimal grossValue,
         string? description,
         BankTransactionExplanationEcStatus? ecStatus,
-        string? placeOfSupply,
+        EcMossPlaceOfSupply? placeOfSupply,
         decimal? salesTaxRate,
         BillSalesTaxStatus? salesTaxStatus,
         BankTransactionExplanationAttachmentWritePayload? attachment)

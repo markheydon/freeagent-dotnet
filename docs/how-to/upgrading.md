@@ -98,9 +98,20 @@ Contact list methods now return `Contact` instead of the removed `ContactSummary
 
 When creating or updating contacts, read-only API fields (`url`, balances, mandate state, timestamps) are ignored during serialisation. You can still round-trip a `Contact` retrieved from the API without sending those fields back.
 
+### Sales tax and EC VAT MOSS (#102)
+
+| Before | After |
+|---|---|
+| `place_of_supply` as `string?` on invoices, estimates, credit notes, recurring invoices, bank explanations | `EcMossPlaceOfSupply?` |
+| Expense / bill item `SalesTaxRate` as `decimal?` | `PurchaseSalesTaxRate?` (`PurchaseSalesTaxRate.Auto` or `FromPercentage`) |
+| (none) | `client.EcMoss.GetSalesTaxRatesAsync` |
+
+MOSS creates/updates throw `ArgumentException` when `ec_status` is `EC VAT MOSS` but required fields are missing (see [EC VAT MOSS sales tax rates](../reference/ec-moss-sales-tax-rates.md)).
+
 ## Additive API changes
 
 - **Attachments:** `client.Attachments` (`GetAttachmentAsync`, `DeleteAttachmentAsync`) — see [Attachments reference](../reference/attachments.md).
+- **EC VAT MOSS:** `client.EcMoss.GetSalesTaxRatesAsync` — see [EC VAT MOSS sales tax rates](../reference/ec-moss-sales-tax-rates.md).
 
 ## Stable releases
 

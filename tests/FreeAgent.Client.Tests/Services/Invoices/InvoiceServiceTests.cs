@@ -1093,4 +1093,18 @@ public class InvoiceServiceTests
 
         await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetInvoicePdfAsync(1));
     }
+
+    [Fact]
+    public async Task CreateInvoiceAsync_MossWithoutPlaceOfSupply_ThrowsBeforeHttp()
+    {
+        using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.CreateInvoiceAsync(new Invoice
+        {
+            ContactId = 1,
+            EcStatus = InvoiceEcStatus.EcVatMoss
+        }));
+    }
 }

@@ -4,6 +4,7 @@ using System.Text.Json;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
+using FreeAgent.Client.Models.EcMoss;
 using FreeAgent.Client.Models.Estimates;
 using FreeAgent.Client.Models.Shared;
 
@@ -289,6 +290,7 @@ public sealed class EstimateService
     public async Task<Estimate> CreateEstimateAsync(Estimate estimate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(estimate);
+        EcMossWriteRequirements.ValidateEstimateEcStatus(estimate.EcStatus, estimate.PlaceOfSupply, nameof(estimate));
 
         var content = FreeAgentJsonSerializer.CreateContent(new EstimateRequest
         {
@@ -324,6 +326,7 @@ public sealed class EstimateService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(estimateId);
         ArgumentNullException.ThrowIfNull(estimate);
+        EcMossWriteRequirements.ValidateEstimateEcStatus(estimate.EcStatus, estimate.PlaceOfSupply, nameof(estimate));
 
         var content = FreeAgentJsonSerializer.CreateContent(new EstimateRequest
         {

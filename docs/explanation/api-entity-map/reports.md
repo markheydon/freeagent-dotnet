@@ -14,6 +14,8 @@ Read-only accounting and tax reports. These endpoints are mostly **date-bounded 
 
 Report resources aggregate ledger data for a period. They do not typically expose create/update/delete flows or require parent URIs on list. Relationships to operational resources (contacts, projects, categories) are implicit in the underlying transactions, not as REST links on the report response.
 
+Sales tax **field** behaviour and EC VAT MOSS rules are documented at [Sales tax and VAT](https://dev.freeagent.com/docs/sales_tax) on operational resources (invoices, expenses, bank explanations), not as a report endpoint here. Company sales tax **periods** are `client.SalesTaxPeriods`; MOSS rate lookup is `client.EcMoss`.
+
 Use the [Foundations](foundations.md), [Sales](sales.md), [Purchases](purchases.md), and [Banking](banking.md) clusters to understand where report numbers originate.
 
 ## Resource catalogue
@@ -26,7 +28,6 @@ Use the [Foundations](foundations.md), [Sales](sales.md), [Purchases](purchases.
 | Cashflow | [Cashflow](https://dev.freeagent.com/docs/cashflow) | `client.Cashflow` | Date range |
 | Transactions | [Transactions](https://dev.freeagent.com/docs/transactions) | `client.Transactions` | Date range, category filters |
 | VAT returns | [VAT returns](https://dev.freeagent.com/docs/vat_returns) | `client.VatReturns` | Period |
-| Sales tax | [Sales tax](https://dev.freeagent.com/docs/sales_tax) | Not yet | Configuration / periods |
 | Sales tax periods | [Sales tax periods](https://dev.freeagent.com/docs/sales_tax_periods) | `client.SalesTaxPeriods` | Period |
 | Corporation tax returns | [Corporation tax returns](https://dev.freeagent.com/docs/corporation_tax_returns) | `client.CorporationTaxReturns` | Period |
 | Income tax returns | [Income tax returns](https://dev.freeagent.com/docs/income_tax_returns) | `client.IncomeTaxReturns` | Period (user) |

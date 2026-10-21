@@ -1,4 +1,5 @@
 using FreeAgent.Client.Models.Bills;
+using FreeAgent.Client.Models.EcMoss;
 
 namespace FreeAgent.Client.Models.BankTransactionExplanations;
 
@@ -19,7 +20,7 @@ public abstract class BankTransactionExplanationCreateRequestBase
 
     internal BankTransactionExplanationEcStatus? EcStatus { get; init; }
 
-    internal string? PlaceOfSupply { get; init; }
+    internal EcMossPlaceOfSupply? PlaceOfSupply { get; init; }
 
     internal decimal? SalesTaxRate { get; init; }
 

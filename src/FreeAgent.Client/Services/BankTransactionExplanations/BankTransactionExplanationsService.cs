@@ -3,6 +3,7 @@ using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.BankTransactionExplanations;
+using FreeAgent.Client.Models.EcMoss;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Services.BankTransactionExplanations;
@@ -260,6 +261,7 @@ public sealed class BankTransactionExplanationsService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bankTransactionExplanationId);
         ArgumentNullException.ThrowIfNull(request);
+        EcMossWriteRequirements.ValidateBankExplanation(request.EcStatus, request.PlaceOfSupply, request.SalesTaxRate);
 
         var content = FreeAgentJsonSerializer.CreateContent(new BankTransactionExplanationRequest
         {
@@ -300,6 +302,7 @@ public sealed class BankTransactionExplanationsService
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(payload);
+        EcMossWriteRequirements.ValidateBankExplanation(payload.EcStatus, payload.PlaceOfSupply, payload.SalesTaxRate);
 
         var content = FreeAgentJsonSerializer.CreateContent(new BankTransactionExplanationRequest
         {

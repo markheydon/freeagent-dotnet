@@ -20,6 +20,10 @@ FreeAgent exposes many create shapes on one `POST` route. The SDK maps each docu
 
 From 1 December 2026, explanations may return an `attachments` array instead of a singular `attachment`. Use `X-Api-Version: 2026-09-01` to adopt the new behaviour early.
 
+## EC VAT MOSS
+
+When `ec_status` is `EC VAT MOSS`, the SDK requires `place_of_supply` (`EcMossPlaceOfSupply`) and `sales_tax_rate` on create and update before calling the API. Use [EC VAT MOSS sales tax rates](ec-moss-sales-tax-rates.md) to look up rates for the same country and `dated_on`.
+
 ## Methods
 
 ### ListAsync

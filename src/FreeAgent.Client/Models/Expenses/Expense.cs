@@ -129,8 +129,7 @@ public sealed class Expense : IFreeAgentResource
     /// Sales tax rate.
     /// </summary>
     [JsonPropertyName("sales_tax_rate")]
-    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-    public decimal? SalesTaxRate { get; set; }
+    public PurchaseSalesTaxRate? SalesTaxRate { get; set; }
 
     /// <summary>
     /// Total sales tax value.

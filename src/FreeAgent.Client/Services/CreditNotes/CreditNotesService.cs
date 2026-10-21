@@ -4,6 +4,7 @@ using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.CreditNotes;
+using FreeAgent.Client.Models.EcMoss;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Services.CreditNotes;
@@ -265,6 +266,7 @@ public sealed class CreditNotesService
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(creditNote);
+        EcMossWriteRequirements.ValidateInvoiceEcStatus(creditNote.EcStatus, creditNote.PlaceOfSupply, nameof(creditNote));
 
         var content = FreeAgentJsonSerializer.CreateContent(new CreditNoteRequest
         {
@@ -308,6 +310,7 @@ public sealed class CreditNotesService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(creditNoteId);
         ArgumentNullException.ThrowIfNull(creditNote);
         ShowProjectNameWriteSupport.ValidateCreditNoteUpdate(creditNote);
+        EcMossWriteRequirements.ValidateInvoiceEcStatus(creditNote.EcStatus, creditNote.PlaceOfSupply, nameof(creditNote));
 
         var content = FreeAgentJsonSerializer.CreateContent(new CreditNoteRequest
         {

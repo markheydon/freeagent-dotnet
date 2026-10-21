@@ -65,7 +65,7 @@ internal static class TurpinverseBillMapper
             Description = line.Description,
             Quantity = line.Quantity,
             TotalValue = line.LineTotal,
-            SalesTaxRate = salesTaxRate,
+            SalesTaxRate = PurchaseSalesTaxRate.FromPercentage(salesTaxRate),
             SalesTaxStatus = salesTaxStatus,
             CategoryNominalCode = categoryNominalCode,
             ProjectId = projectId

@@ -287,6 +287,9 @@
                 <MudNavLink Href="/sales-tax-periods/detail" Icon="@Icons.Material.Filled.Edit">
                     Sales tax period CRUD
                 </MudNavLink>
+                <MudNavLink Href="/ec-moss/sales-tax-rates" Icon="@Icons.Material.Filled.Public">
+                    EC VAT MOSS rates
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Sales catalogue" Icon="@Icons.Material.Filled.Inventory2" Expanded="@IsSalesCatalogueRoute">
@@ -494,7 +497,8 @@
         || CurrentPath.Equals("final-accounts-reports", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("final-accounts-reports/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("sales-tax-periods", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.StartsWith("sales-tax-periods/", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.StartsWith("sales-tax-periods/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("ec-moss/sales-tax-rates", StringComparison.OrdinalIgnoreCase);
 
     private bool IsSalesCatalogueRoute =>
         CurrentPath.Equals("stock-items", StringComparison.OrdinalIgnoreCase)

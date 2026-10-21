@@ -16,6 +16,10 @@ List, create, update, and delete invoices; status transitions; email and PDF act
 
 Pagination patterns: see [Pagination](../how-to/pagination.md). Contact, project, category, and bank account links: see [Linked resources](../explanation/linked-resources.md). Sales cluster patterns: see [Sales entity map](../explanation/api-entity-map/sales.md#sales-cluster-sdk-patterns).
 
+## Sales tax and EC VAT MOSS
+
+Per [Sales tax and VAT](https://dev.freeagent.com/docs/sales_tax): set `sales_tax_rate` on each `InvoiceItem` where possible; if omitted, contact `charge_sales_tax` applies. When `ec_status` is `EC VAT MOSS`, `place_of_supply` (`EcMossPlaceOfSupply`) is required on create and update (the SDK validates before HTTP). Look up MOSS rate bands with [EC VAT MOSS sales tax rates](ec-moss-sales-tax-rates.md). Header `sales_tax_value` is read-only.
+
 ## Methods
 
 ### ListAsync

@@ -6,6 +6,7 @@ using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.Categories;
 using FreeAgent.Client.Models.Contacts;
 using FreeAgent.Client.Models.CreditNotes;
+using FreeAgent.Client.Models.EcMoss;
 using FreeAgent.Client.Models.Invoices;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
@@ -129,7 +130,7 @@ public sealed class BankTransactionExplanation : IFreeAgentResource
     /// Place of supply when <see cref="EcStatus"/> is EC VAT MOSS.
     /// </summary>
     [JsonPropertyName("place_of_supply")]
-    public string? PlaceOfSupply { get; set; }
+    public EcMossPlaceOfSupply? PlaceOfSupply { get; set; }
 
     /// <summary>
     /// Sales tax rate applied to the explanation.

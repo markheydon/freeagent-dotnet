@@ -60,6 +60,14 @@ Hire purchases are created via the Bills API and exposed as a read-only resource
 | Hire purchases | [Hire purchases](https://dev.freeagent.com/docs/hire_purchases) | `client.HirePurchases` |
 | Attachments | [Attachments](https://dev.freeagent.com/docs/attachments) | `client.Attachments` |
 
+## Sales tax and VAT
+
+See [Sales tax and VAT](https://dev.freeagent.com/docs/sales_tax). On expenses and bill items:
+
+- Omit `sales_tax_rate` and `manual_sales_tax_amount` to use the category default, or set `sales_tax_rate` to `PurchaseSalesTaxRate.Auto`.
+- Use `manual_sales_tax_amount` or an explicit percentage via `PurchaseSalesTaxRate.FromPercentage`.
+- `sales_tax_status` supports `EXEMPT` and `OUT_OF_SCOPE` via `BillSalesTaxStatus`.
+
 ## Key URI fields
 
 ### Bill

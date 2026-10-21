@@ -2,6 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Bills;
 using FreeAgent.Client.Models.HirePurchases;
+using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
@@ -105,7 +106,7 @@ internal sealed class HirePurchaseSamples(SampleContext context) : IConsoleSampl
                     {
                         Description = "Console hire purchase probe charge",
                         TotalValue = 50m,
-                        SalesTaxRate = 20m,
+                        SalesTaxRate = PurchaseSalesTaxRate.FromPercentage(20m),
                         SalesTaxStatus = BillSalesTaxStatus.Taxable,
                         CategoryNominalCode = nominalCode
                     }

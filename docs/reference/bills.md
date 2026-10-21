@@ -18,6 +18,10 @@ Pagination patterns: see [Pagination](../how-to/pagination.md). Contact, project
 
 Nested `attachment` on bill responses may omit thumbnail URLs and `expires_at`. For the full attachment payload, call [Attachments](attachments.md) (`client.Attachments.GetAttachmentAsync`) using the attachment ID from the nested `url`.
 
+## Sales tax on bill items
+
+Per [Sales tax and VAT](https://dev.freeagent.com/docs/sales_tax): on each `BillItem`, use `PurchaseSalesTaxRate` for `SalesTaxRate` (`Auto` or a percentage), optional `ManualSalesTaxAmount`, and `SalesTaxStatus` (`BillSalesTaxStatus`). `SalesTaxValue` is calculated by FreeAgent on read.
+
 ## Methods
 
 ### ListAsync

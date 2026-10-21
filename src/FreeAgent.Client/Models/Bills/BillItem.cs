@@ -98,8 +98,7 @@ public sealed class BillItem
     /// Standard sales tax rate.
     /// </summary>
     [JsonPropertyName("sales_tax_rate")]
-    [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
-    public decimal? SalesTaxRate { get; set; }
+    public PurchaseSalesTaxRate? SalesTaxRate { get; set; }
 
     /// <summary>
     /// Second sales tax rate for universal accounts.

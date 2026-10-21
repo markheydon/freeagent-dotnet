@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
+using FreeAgent.Client.Models.EcMoss;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Estimates;
@@ -46,7 +47,7 @@ internal sealed class EstimateWritePayload
     public EstimateEcStatus? EcStatus { get; set; }
 
     [JsonPropertyName("place_of_supply")]
-    public string? PlaceOfSupply { get; set; }
+    public EcMossPlaceOfSupply? PlaceOfSupply { get; set; }
 
     [JsonPropertyName("include_sales_tax_on_total_value")]
     public bool? IncludeSalesTaxOnTotalValue { get; set; }

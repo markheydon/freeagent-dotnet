@@ -16,6 +16,7 @@ using FreeAgent.Client.Services.Contacts;
 using FreeAgent.Client.Services.CorporationTaxReturns;
 using FreeAgent.Client.Services.CreditNoteReconciliations;
 using FreeAgent.Client.Services.CreditNotes;
+using FreeAgent.Client.Services.EcMoss;
 using FreeAgent.Client.Services.EmailAddresses;
 using FreeAgent.Client.Services.Estimates;
 using FreeAgent.Client.Services.Expenses;
@@ -239,6 +240,11 @@ public sealed class FreeAgentClient : IDisposable
     public SalesTaxPeriodsService SalesTaxPeriods { get; }
 
     /// <summary>
+    /// EC VAT MOSS API service.
+    /// </summary>
+    public EcMossService EcMoss { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -333,6 +339,7 @@ public sealed class FreeAgentClient : IDisposable
         SelfAssessmentReturns = new SelfAssessmentReturnsService(_httpClient);
         FinalAccountsReports = new FinalAccountsReportsService(_httpClient);
         SalesTaxPeriods = new SalesTaxPeriodsService(_httpClient);
+        EcMoss = new EcMossService(_httpClient);
     }
 
     /// <summary>

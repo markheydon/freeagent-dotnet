@@ -33,7 +33,7 @@ internal sealed class ExpenseWritePayload
     public decimal? NativeGrossValue { get; set; }
 
     [JsonPropertyName("sales_tax_rate")]
-    public decimal? SalesTaxRate { get; set; }
+    public PurchaseSalesTaxRate? SalesTaxRate { get; set; }
 
     [JsonPropertyName("sales_tax_value")]
     public decimal? SalesTaxValue { get; set; }
