@@ -30,6 +30,7 @@ using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Services.Timeslips;
 using FreeAgent.Client.Services.TrialBalance;
 using FreeAgent.Client.Services.Users;
+using FreeAgent.Client.Services.VatReturns;
 
 namespace FreeAgent.Client;
 
@@ -197,6 +198,11 @@ public sealed class FreeAgentClient : IDisposable
     public CashflowService Cashflow { get; }
 
     /// <summary>
+    /// VAT returns API service.
+    /// </summary>
+    public VatReturnsService VatReturns { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -284,6 +290,7 @@ public sealed class FreeAgentClient : IDisposable
         BalanceSheet = new BalanceSheetService(_httpClient);
         TrialBalance = new TrialBalanceService(_httpClient);
         Cashflow = new CashflowService(_httpClient);
+        VatReturns = new VatReturnsService(_httpClient);
     }
 
     /// <summary>
