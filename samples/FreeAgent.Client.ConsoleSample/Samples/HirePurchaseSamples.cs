@@ -23,7 +23,7 @@ internal sealed class HirePurchaseSamples(SampleContext context) : IConsoleSampl
             item => $"{item.ResourceId,8}  {item.Description}  (bill: {item.BillId})");
     }
 
-    [ConsoleSample(Name = "Get hire purchase detail", MutatesData = true)]
+    [ConsoleSample(Name = "Get hire purchase detail with probe create and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task GetHirePurchaseDetailAsync(CancellationToken cancellationToken)
     {

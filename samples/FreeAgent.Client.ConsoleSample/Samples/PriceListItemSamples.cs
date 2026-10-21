@@ -22,7 +22,7 @@ internal sealed class PriceListItemSamples(SampleContext context) : IConsoleSamp
         SampleOutput.WriteRows(items, item => $"{item.ResourceId,8}  {item.Code}  {item.ItemType}  {item.Price}");
     }
 
-    [ConsoleSample(Name = "Get price list item detail", MutatesData = true)]
+    [ConsoleSample(Name = "Get price list item detail with probe create and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task GetPriceListItemDetailAsync(CancellationToken cancellationToken)
     {

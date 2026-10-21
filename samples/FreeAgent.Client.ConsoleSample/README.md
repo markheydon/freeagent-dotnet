@@ -133,7 +133,7 @@ Examples marked **(mutates)** write to the connected account.
 | Recurring invoices | List recurring invoices; stream all recurring invoices via ListAutoPagingAsync; list recurring invoices filtered by contact; get recurring invoice by id |
 | Credit notes | List credit notes; stream all credit notes via ListAutoPagingAsync; list credit notes filtered by contact; get credit note by id; **(mutates)** create probe credit note and delete; **(mutates)** update credit note comments; **(mutates)** mark credit note as sent/draft; get credit note PDF; **(mutates)** send credit note email (template) |
 | Bills | List bills; list bills filtered by contact; get bill by id; **(mutates)** create probe bill and delete; **(mutates)** create hire purchase probe bill and delete; **(mutates)** update bill line item |
-| Hire purchases | List hire purchases; get hire purchase detail (creates hire-purchase probe bill when none exist) |
+| Hire purchases | List hire purchases; **(mutates)** get hire purchase detail with probe create and delete |
 | Expenses | List expenses; stream all expenses; list recent expenses; list expenses for project; get expense detail; get mileage settings; **(mutates)** create probe expense and delete; **(mutates)** create probe mileage expense and delete; **(mutates)** create probe expenses batch and delete; **(mutates)** update expense description and delete |
 | Attachments | Get attachment detail; **(mutates)** create expense with attachment, get and delete |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
@@ -142,7 +142,7 @@ Examples marked **(mutates)** write to the connected account.
 | Bank transaction explanations | List explanations for a bank account; get explanation by id; **(mutates)** create category explanation with new transaction and delete |
 | Bank transactions | List bank transactions; list unexplained transactions; get detail; **(mutates)** upload a statement line and delete; **(mutates)** upload a statement file and delete |
 | Stock items | List stock items; get stock item detail |
-| Price list items | List price list items; get price list item detail; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |
+| Price list items | List price list items; **(mutates)** get price list item detail with probe create and delete; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |
 | Linked resources | **(mutates)** verify linked-resource writes (create, update) — sandbox PUT round-trip checks for issue #134 |
 
 New SDK resource areas should add a matching `*Samples.cs` provider class under `Samples/`.
