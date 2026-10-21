@@ -1,7 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using FreeAgent.Client;
+using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Models.Expenses;
 
 namespace FreeAgent.Client.ConsoleSample.Samples;
@@ -137,7 +139,7 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task CreateProbeMileageExpenseAndDeleteAsync(CancellationToken cancellationToken)
     {
-        var created = await CreateSampleMileageExpenseAsync(cancellationToken);
+        var created = await CreateSampleMileageExpenseForSmokeAsync(cancellationToken);
 
         SampleOutput.WriteHeader("Created probe mileage expense");
         SampleOutput.WriteField("Id", created.ResourceId);
@@ -223,6 +225,21 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
         }
 
         return await context.Client.Expenses.CreateExpenseAsync(expense, cancellationToken);
+    }
+
+    private async Task<Expense> CreateSampleMileageExpenseForSmokeAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await CreateSampleMileageExpenseAsync(cancellationToken);
+        }
+        catch (FreeAgentApiException ex) when (
+            ex.StatusCode == HttpStatusCode.BadRequest
+            && ex.Message.Contains("Mileage", StringComparison.OrdinalIgnoreCase))
+        {
+            SampleContext.Skip("sandbox account does not accept mileage category expenses");
+            throw;
+        }
     }
 
     private static bool TryResolveMileageEngine(
