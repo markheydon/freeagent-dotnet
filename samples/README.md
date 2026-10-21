@@ -152,6 +152,8 @@ These pages exercise the SDK endpoints that exist today. Do not expect UI for re
 | [/income-tax-returns/detail](https://localhost:5001/income-tax-returns/detail?userId=&amp;periodEndsOn=YYYY-MM-DD) | `GetAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()`, `MarkPaymentAsPaidAsync()`, `MarkPaymentAsUnpaidAsync()` | User-scoped SA wire path; payment date for payment transitions |
 | [/self-assessment-returns](https://localhost:5001/self-assessment-returns) | `SelfAssessmentReturnsService.ListAsync(userId)` | Same wire path as income tax; self assessment docs entry point |
 | [/self-assessment-returns/detail](https://localhost:5001/self-assessment-returns/detail?userId=&amp;periodEndsOn=YYYY-MM-DD) | Self assessment return GET and mark-as transitions | Parallel probe surface for `self_assessment_returns` docs |
+| [/final-accounts-reports](https://localhost:5001/final-accounts-reports) | `FinalAccountsReportsService.ListAsync()` | Limited-company note when empty |
+| [/final-accounts-reports/detail](https://localhost:5001/final-accounts-reports/detail?periodEndsOn=YYYY-MM-DD) | `GetAsync()`, `MarkAsFiledAsync()`, `MarkAsUnfiledAsync()` | Filing transitions only; `ExcludeFromRunAll` on mutating console examples |
 
 Contributors adding endpoints should follow [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md).
 

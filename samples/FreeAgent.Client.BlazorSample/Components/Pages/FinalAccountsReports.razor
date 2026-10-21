@@ -1,0 +1,205 @@
+@page "/final-accounts-reports"
+@using FreeAgent.Client.Models.FinalAccountsReports
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Final accounts reports - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Final accounts reports"
+                         CallUnderTest="FinalAccountsReportsService.ListAsync()"
+                         Description="List final accounts report periods. Limited companies only — sole traders may return an empty list. Use Inspect mapping per row, then open detail to exercise mark-as transitions."
+                         EndpointPath="/v2/final_accounts_reports"
+                         DocsUrl="https://dev.freeagent.com/docs/final_accounts_reports" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    Final accounts reports typically require a UK limited company sandbox with Tax/Accounting access.
+                </MudAlert>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_loading"
+                           OnClick="LoadListAsync">
+                    List final accounts reports
+                </MudButton>
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_reports is not null)
+                {
+                    @if (_reports.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No final accounts reports returned. Skip these probes when the connected company does not file final accounts.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>Period ends</MudTh>
+                                    <MudTh>Filing status</MudTh>
+                                    <MudTh>Filing due on</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="Period ends">@context.PeriodEndsOn</MudTd>
+                                    <MudTd DataLabel="Filing status">@context.FilingStatus</MudTd>
+                                    <MudTd DataLabel="Filing due on">@context.FilingDueOn</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectRowAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            @if (context.PeriodEndsOn is not null)
+                                            {
+                                                <MudButton Variant="Variant.Outlined"
+                                                           Color="Color.Primary"
+                                                           Size="Size.Small"
+                                                           Href="@GetDetailHref(context.PeriodEndsOn.Value)">
+                                                    Open detail
+                                                </MudButton>
+                                            }
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedReport is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="FinalAccountsReport fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private IReadOnlyList<FinalAccountsReport>? _reports;
+    private List<FinalAccountsReportRow> _rows = [];
+    private int _inspectedIndex = -1;
+    private FinalAccountsReport? _inspectedReport;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private string _wireApiResponse = string.Empty;
+
+    private async Task LoadListAsync()
+    {
+        await RunAsync(async client =>
+        {
+            _reports = await client.FinalAccountsReports.ListAsync();
+            _rows = _reports
+                .Select((item, index) => new FinalAccountsReportRow(index, item))
+                .ToList();
+            _inspectedIndex = -1;
+            _inspectedReport = null;
+            _inspectedProbe = null;
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                TokenStore.GetToken()!.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "final_accounts_reports");
+
+            if (_reports.Count > 0)
+            {
+                InspectRowAsync(0);
+            }
+        });
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_reports is null || index < 0 || index >= _reports.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedReport = _reports[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "final_accounts_reports", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedReport, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(
+            _inspectedReport,
+            _wireApiResponse,
+            envelopeProperty: "final_accounts_reports");
+    }
+
+    private static string GetDetailHref(DateOnly periodEndsOn) =>
+        $"/final-accounts-reports/detail?periodEndsOn={periodEndsOn:yyyy-MM-dd}";
+
+    private async Task RunAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+            _wireApiResponse = string.Empty;
+            _inspectedProbe = null;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private sealed record FinalAccountsReportRow(int Index, FinalAccountsReport Item)
+    {
+        public DateOnly? PeriodEndsOn => Item.PeriodEndsOn;
+
+        public FinalAccountsReportFilingStatus? FilingStatus => Item.FilingStatus;
+
+        public DateOnly? FilingDueOn => Item.FilingDueOn;
+    }
+}

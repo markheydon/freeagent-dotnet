@@ -1,0 +1,175 @@
+@page "/final-accounts-reports/detail"
+@using FreeAgent.Client.Models.FinalAccountsReports
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Final accounts report detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Final accounts report detail and transitions"
+                         CallUnderTest="FinalAccountsReportsService.GetAsync / MarkAsFiledAsync / MarkAsUnfiledAsync"
+                         Description="Fetch a report by period end date and exercise mark-as filed/unfiled transitions. Mutations change live sandbox data."
+                         EndpointPath="/v2/final_accounts_reports/:period_ends_on"
+                         DocsUrl="https://dev.freeagent.com/docs/final_accounts_reports" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    Pass <code>?periodEndsOn=YYYY-MM-DD</code> or pick a period from the
+                    <MudLink Href="/final-accounts-reports">list probe</MudLink>.
+                </MudAlert>
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudDatePicker @bind-Date="_periodEndsOnDate"
+                               Label="Period ends on"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               DateFormat="yyyy-MM-dd" />
+
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _periodEndsOn is null"
+                               OnClick="GetAsync">Get report</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _periodEndsOn is null"
+                               OnClick="MarkAsFiledAsync">Mark as filed</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _periodEndsOn is null"
+                               OnClick="MarkAsUnfiledAsync">Mark as unfiled</MudButton>
+                </MudStack>
+
+                @if (_probe is not null && _report is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="FinalAccountsReport fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    Period ends @_report.PeriodEndsOn
+                                </MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">
+                                    @_report.FilingStatus
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "periodEndsOn")]
+    public string? PeriodEndsOnQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private FinalAccountsReport? _report;
+    private ModelProbeSnapshot? _probe;
+    private string _wireApiResponse = string.Empty;
+    private DateTime? _periodEndsOnDate;
+
+    private DateOnly? _periodEndsOn =>
+        _periodEndsOnDate is null ? null : DateOnly.FromDateTime(_periodEndsOnDate.Value);
+
+    protected override void OnParametersSet()
+    {
+        if (DateOnly.TryParse(PeriodEndsOnQuery, out var parsed))
+        {
+            _periodEndsOnDate = parsed.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task GetAsync() => await RunMutationAsync(
+        async client =>
+        {
+            _report = await client.FinalAccountsReports.GetAsync(_periodEndsOn!.Value);
+            _operationMessage = "Loaded final accounts report from GET.";
+        });
+
+    private async Task MarkAsFiledAsync() => await RunMutationAsync(
+        async client =>
+        {
+            _report = await client.FinalAccountsReports.MarkAsFiledAsync(_periodEndsOn!.Value);
+            _operationMessage = "Marked as filed.";
+        });
+
+    private async Task MarkAsUnfiledAsync() => await RunMutationAsync(
+        async client =>
+        {
+            _report = await client.FinalAccountsReports.MarkAsUnfiledAsync(_periodEndsOn!.Value);
+            _operationMessage = "Marked as unfiled.";
+        });
+
+    private async Task RunMutationAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action)
+    {
+        if (_periodEndsOn is null)
+        {
+            _error = "Select a period end date first.";
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+
+            if (_report is not null)
+            {
+                var period = _periodEndsOn.Value;
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    $"final_accounts_reports/{period:yyyy-MM-dd}");
+                _probe = ModelWireDiagnostics.Build(_report, _wireApiResponse, envelopeProperty: "final_accounts_report");
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}
