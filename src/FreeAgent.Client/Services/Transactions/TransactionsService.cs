@@ -84,7 +84,7 @@ public sealed class TransactionsService
     /// <param name="transactionId">Transaction identifier from the resource URL.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Transaction returned by FreeAgent</returns>
-    public async Task<AccountingTransaction> GetAsync(long transactionId, CancellationToken cancellationToken = default)
+    public async Task<AccountingTransaction> GetAccountingTransactionAsync(long transactionId, CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(transactionId);
 

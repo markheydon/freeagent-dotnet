@@ -1,7 +1,7 @@
 ---
 title: Transactions
 parent: API coverage
-nav_order: 27
+nav_order: 26.5
 ---
 
 # Transactions
@@ -32,10 +32,10 @@ Task<IReadOnlyList<AccountingTransaction>> ListAsync(
 
 Optional query parameters: `from_date`, `to_date` (`YYYY-MM-DD`), and `nominal_code`. When dates are omitted, FreeAgent returns transactions from the start of the current accounting period to the current date. Requested periods must be 12 months or shorter, or fall inside a single accounting year. The endpoint returns the full collection for the period, so there is no auto-paging method.
 
-### GetAsync
+### GetAccountingTransactionAsync
 
 ```csharp
-Task<AccountingTransaction> GetAsync(long transactionId, CancellationToken cancellationToken = default)
+Task<AccountingTransaction> GetAccountingTransactionAsync(long transactionId, CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `GET /v2/accounting/transactions/:id`
@@ -47,5 +47,5 @@ Task<AccountingTransaction> GetAsync(long transactionId, CancellationToken cance
 ```csharp
 var monthAgo = DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(-1);
 var transactions = await client.Transactions.ListAsync(fromDate: monthAgo, nominalCode: "359");
-var detail = await client.Transactions.GetAsync(transactions[0].ResourceId);
+var detail = await client.Transactions.GetAccountingTransactionAsync(transactions[0].ResourceId);
 ```

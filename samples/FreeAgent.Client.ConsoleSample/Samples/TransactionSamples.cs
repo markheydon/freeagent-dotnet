@@ -55,7 +55,7 @@ internal sealed class TransactionSamples(SampleContext context) : IConsoleSample
             throw new InvalidOperationException("Listed transaction is missing a resource id.");
         }
 
-        var detail = await context.Client.Transactions.GetAsync(transactionId, cancellationToken);
+        var detail = await context.Client.Transactions.GetAccountingTransactionAsync(transactionId, cancellationToken);
 
         SampleOutput.WriteHeader("Transaction detail");
         SampleOutput.WriteField("Id", detail.ResourceId);

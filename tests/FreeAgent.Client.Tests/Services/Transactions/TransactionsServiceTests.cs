@@ -102,7 +102,7 @@ public class TransactionsServiceTests
     }
 
     [Fact]
-    public async Task GetAsync_CallsTransactionEndpoint()
+    public async Task GetAccountingTransactionAsync_CallsTransactionEndpoint()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -131,7 +131,7 @@ public class TransactionsServiceTests
         });
 
         var service = CreateService(handler);
-        var transaction = await service.GetAsync(1);
+        var transaction = await service.GetAccountingTransactionAsync(1);
 
         Assert.Equal(1, transaction.ResourceId);
         Assert.Equal(new DateOnly(2023, 1, 2), transaction.DatedOn);
@@ -140,7 +140,7 @@ public class TransactionsServiceTests
     }
 
     [Fact]
-    public async Task GetAsync_ThrowsWhenTransactionMissing()
+    public async Task GetAccountingTransactionAsync_ThrowsWhenTransactionMissing()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -149,16 +149,16 @@ public class TransactionsServiceTests
 
         var service = CreateService(handler);
 
-        var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetAsync(1));
+        var exception = await Assert.ThrowsAsync<FreeAgentApiException>(() => service.GetAccountingTransactionAsync(1));
         Assert.Contains("Transaction", exception.Message, StringComparison.Ordinal);
     }
 
     [Fact]
-    public async Task GetAsync_RejectsNonPositiveId()
+    public async Task GetAccountingTransactionAsync_RejectsNonPositiveId()
     {
         var service = CreateService(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)));
 
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.GetAsync(0));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.GetAccountingTransactionAsync(0));
     }
 
     private static TransactionsService CreateService(QueueHttpMessageHandler handler)

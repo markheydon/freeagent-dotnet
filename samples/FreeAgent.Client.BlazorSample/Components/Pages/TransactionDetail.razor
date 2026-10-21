@@ -11,7 +11,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="Get a single transaction"
-                         CallUnderTest="TransactionsService.GetAsync"
+                         CallUnderTest="TransactionsService.GetAccountingTransactionAsync"
                          Description="Read-only detail probe for one accounting transaction with wire-to-model diagnostics."
                          EndpointPath="/v2/accounting/transactions/:id"
                          DocsUrl="https://dev.freeagent.com/docs/transactions" />
@@ -150,7 +150,7 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _transaction = await client.Transactions.GetAsync(_transactionId.Value);
+            _transaction = await client.Transactions.GetAccountingTransactionAsync(_transactionId.Value);
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
