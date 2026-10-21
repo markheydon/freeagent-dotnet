@@ -16,6 +16,10 @@ List, create, update, and delete estimates; status transitions; email and PDF ac
 
 Pagination patterns: see [Pagination](../how-to/pagination.md). Contact, project, category, and invoice links: see [Linked resources](../explanation/linked-resources.md). Sales cluster patterns: see [Sales entity map](../explanation/api-entity-map/sales.md#sales-cluster-sdk-patterns).
 
+## Sales tax and EC VAT MOSS
+
+Per [Sales tax and VAT](https://dev.freeagent.com/docs/sales_tax): set `sales_tax_rate` on estimate line items where appropriate. When `ec_status` is `EC VAT MOSS`, `place_of_supply` (`EcMossPlaceOfSupply`) is required on create and update (validated by the SDK). See [EC VAT MOSS sales tax rates](ec-moss-sales-tax-rates.md).
+
 ## Methods
 
 ### ListAsync
