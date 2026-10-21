@@ -18,10 +18,10 @@ Minimum access level: Tax and Limited Accounting. UK payroll companies only.
 
 ## Methods
 
-### ListAllPeriodsForTaxYearAsync
+### ListAsync
 
 ```csharp
-Task<PayrollTaxYear> ListAllPeriodsForTaxYearAsync(int taxYearEnd, CancellationToken cancellationToken = default)
+Task<PayrollTaxYear> ListAsync(int taxYearEnd, CancellationToken cancellationToken = default)
 ```
 
 **HTTP:** `GET /v2/payroll/:year`
@@ -30,10 +30,10 @@ Returns `periods` and `payments` for the tax year end (for example `2026` for Ap
 
 ---
 
-### ListAllPayslipsForPeriodAsync
+### ListPayslipsAsync
 
 ```csharp
-Task<PayrollPeriod> ListAllPayslipsForPeriodAsync(
+Task<PayrollPeriod> ListPayslipsAsync(
     int taxYearEnd,
     int periodNumber,
     CancellationToken cancellationToken = default)
@@ -90,9 +90,9 @@ Payslip `user` links deserialize to `UserId` / nested `User` using the standard 
 
 ```csharp
 var taxYearEnd = 2026;
-var taxYear = await client.Payroll.ListAllPeriodsForTaxYearAsync(taxYearEnd);
+var taxYear = await client.Payroll.ListAsync(taxYearEnd);
 
-var period = await client.Payroll.ListAllPayslipsForPeriodAsync(taxYearEnd, 0);
+var period = await client.Payroll.ListPayslipsAsync(taxYearEnd, 0);
 foreach (var payslip in period.Payslips ?? [])
 {
     Console.WriteLine($"{payslip.UserId}: {payslip.BasicPay}");

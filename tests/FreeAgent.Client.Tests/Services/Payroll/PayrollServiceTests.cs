@@ -13,7 +13,7 @@ public class PayrollServiceTests
     private const int TaxYearEnd = 2026;
 
     [Fact]
-    public async Task ListAllPeriodsForTaxYearAsync_CallsDocumentedEndpoint()
+    public async Task ListAsync_CallsDocumentedEndpoint()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -46,7 +46,7 @@ public class PayrollServiceTests
         });
 
         var service = CreateService(handler);
-        var taxYear = await service.ListAllPeriodsForTaxYearAsync(TaxYearEnd);
+        var taxYear = await service.ListAsync(TaxYearEnd);
 
         Assert.Single(taxYear.Periods!);
         Assert.Equal(0, taxYear.Periods![0].PeriodNumber);
@@ -55,7 +55,7 @@ public class PayrollServiceTests
     }
 
     [Fact]
-    public async Task ListAllPayslipsForPeriodAsync_CallsDocumentedEndpoint()
+    public async Task ListPayslipsAsync_CallsDocumentedEndpoint()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -86,7 +86,7 @@ public class PayrollServiceTests
         });
 
         var service = CreateService(handler);
-        var period = await service.ListAllPayslipsForPeriodAsync(TaxYearEnd, 0);
+        var period = await service.ListPayslipsAsync(TaxYearEnd, 0);
 
         Assert.Equal(86, period.Payslips![0].UserId);
         Assert.Equal(PayrollNiCalculationType.Director, period.Payslips[0].NiCalcType);
@@ -94,15 +94,15 @@ public class PayrollServiceTests
     }
 
     [Fact]
-    public async Task ListAllPayslipsForPeriodAsync_ThrowsWhenPeriodOutOfRange()
+    public async Task ListPayslipsAsync_ThrowsWhenPeriodOutOfRange()
     {
         var service = CreateService(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)));
 
-        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.ListAllPayslipsForPeriodAsync(TaxYearEnd, 12));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.ListPayslipsAsync(TaxYearEnd, 12));
     }
 
     [Fact]
-    public async Task ListAllPeriodsForTaxYearAsync_ThrowsWhenPeriodsMissing()
+    public async Task ListAsync_ThrowsWhenPeriodsMissing()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -111,7 +111,7 @@ public class PayrollServiceTests
 
         var service = CreateService(handler);
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListAllPeriodsForTaxYearAsync(TaxYearEnd));
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListAsync(TaxYearEnd));
     }
 
     [Fact]

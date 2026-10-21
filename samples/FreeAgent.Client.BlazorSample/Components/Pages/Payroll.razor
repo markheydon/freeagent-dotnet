@@ -11,7 +11,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Payroll endpoint"
                          Title="Payroll tax year"
-                         CallUnderTest="PayrollService.ListAllPeriodsForTaxYearAsync(...) / MarkPaymentAsPaidAsync / MarkPaymentAsUnpaidAsync"
+                         CallUnderTest="PayrollService.ListAsync(...) / MarkPaymentAsPaidAsync / MarkPaymentAsUnpaidAsync"
                          Description="Load payroll periods and liability payments for a UK tax year end. Mark payment transitions mutate live sandbox data."
                          EndpointPath="/v2/payroll/:year"
                          DocsUrl="https://dev.freeagent.com/docs/payroll" />
@@ -165,7 +165,7 @@
 
     private async Task LoadTaxYearAsync() => await RunAsync(async client =>
     {
-        _taxYear = await client.Payroll.ListAllPeriodsForTaxYearAsync(_taxYearEnd);
+        _taxYear = await client.Payroll.ListAsync(_taxYearEnd);
         _inspectedPeriod = null;
         _inspectedProbe = null;
         _inspectedPeriodIndex = null;

@@ -18,10 +18,10 @@ Minimum access level: Tax and Limited Accounting. UK payroll companies only.
 
 ## Methods
 
-### ListAllProfilesForTaxYearAsync
+### ListAsync
 
 ```csharp
-Task<IReadOnlyList<PayrollProfile>> ListAllProfilesForTaxYearAsync(
+Task<IReadOnlyList<PayrollProfile>> ListAsync(
     int taxYearEnd,
     CancellationToken cancellationToken = default)
 ```
@@ -62,7 +62,7 @@ The nested `current_payroll_profile` on [Users](users.md) is a smaller read-only
 using FreeAgent.Client.Models.Shared;
 
 var taxYearEnd = 2021;
-var profiles = await client.PayrollProfiles.ListAllProfilesForTaxYearAsync(taxYearEnd);
+var profiles = await client.PayrollProfiles.ListAsync(taxYearEnd);
 
 var user = UserReference.ForEnvironment(client.Environment, 107);
 var userProfiles = await client.PayrollProfiles.ListProfilesForUserAsync(taxYearEnd, user);

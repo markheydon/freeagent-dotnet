@@ -71,7 +71,7 @@ public class PayrollProfile
     public string? Country { get; set; }
 
     /// <summary>
-    /// Title or honorific.
+    /// Title or honourific.
     /// </summary>
     [JsonPropertyName("title")]
     public string? Title { get; set; }

@@ -30,7 +30,7 @@ public sealed class PayrollService
     /// <param name="taxYearEnd">Tax year end (for example 2026 for April 2025–March 2026).</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Periods and payments for the tax year</returns>
-    public async Task<PayrollTaxYear> ListAllPeriodsForTaxYearAsync(
+    public async Task<PayrollTaxYear> ListAsync(
         int taxYearEnd,
         CancellationToken cancellationToken = default)
     {
@@ -53,7 +53,7 @@ public sealed class PayrollService
     /// <param name="periodNumber">Pay period index within the tax year (0–11).</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Payroll period including payslips</returns>
-    public async Task<PayrollPeriod> ListAllPayslipsForPeriodAsync(
+    public async Task<PayrollPeriod> ListPayslipsAsync(
         int taxYearEnd,
         int periodNumber,
         CancellationToken cancellationToken = default)

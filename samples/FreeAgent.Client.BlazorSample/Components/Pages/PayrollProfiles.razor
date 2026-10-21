@@ -12,7 +12,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Payroll profiles endpoint"
                          Title="Payroll profiles for tax year"
-                         CallUnderTest="PayrollProfilesService.ListAllProfilesForTaxYearAsync(...) / ListProfilesForUserAsync(...)"
+                         CallUnderTest="PayrollProfilesService.ListAsync(...) / ListProfilesForUserAsync(...)"
                          Description="Read payroll profiles for a UK tax year end, optionally filtered to one user."
                          EndpointPath="/v2/payroll_profiles/:year"
                          DocsUrl="https://dev.freeagent.com/docs/payroll_profiles" />
@@ -145,7 +145,7 @@
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
 
             _profiles = _filterUserId is null
-                ? await client.PayrollProfiles.ListAllProfilesForTaxYearAsync(_taxYearEnd)
+                ? await client.PayrollProfiles.ListAsync(_taxYearEnd)
                 : await client.PayrollProfiles.ListProfilesForUserAsync(
                     _taxYearEnd,
                     UserReference.ForEnvironment(TokenStore.ConnectedEnvironment, _filterUserId.Value));

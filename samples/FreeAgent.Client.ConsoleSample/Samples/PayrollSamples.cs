@@ -14,7 +14,7 @@ internal sealed class PayrollSamples(SampleContext context) : IConsoleSampleProv
     private async Task ListPayrollTaxYearAsync(CancellationToken cancellationToken)
     {
         var taxYearEnd = ResolveCurrentUkTaxYearEnd();
-        var taxYear = await context.Client.Payroll.ListAllPeriodsForTaxYearAsync(taxYearEnd, cancellationToken);
+        var taxYear = await context.Client.Payroll.ListAsync(taxYearEnd, cancellationToken);
 
         SampleOutput.WriteHeader($"Payroll tax year {taxYearEnd}");
         SampleOutput.WriteField("Periods", taxYear.Periods!.Count);
@@ -29,14 +29,14 @@ internal sealed class PayrollSamples(SampleContext context) : IConsoleSampleProv
     private async Task ListFirstPeriodPayslipsAsync(CancellationToken cancellationToken)
     {
         var taxYearEnd = ResolveCurrentUkTaxYearEnd();
-        var taxYear = await context.Client.Payroll.ListAllPeriodsForTaxYearAsync(taxYearEnd, cancellationToken);
+        var taxYear = await context.Client.Payroll.ListAsync(taxYearEnd, cancellationToken);
         if (taxYear.Periods!.Count == 0)
         {
             SampleContext.Skip("no payroll periods returned for the current tax year end");
         }
 
         var periodNumber = taxYear.Periods[0].PeriodNumber ?? 0;
-        var period = await context.Client.Payroll.ListAllPayslipsForPeriodAsync(
+        var period = await context.Client.Payroll.ListPayslipsAsync(
             taxYearEnd,
             periodNumber,
             cancellationToken);
@@ -52,7 +52,7 @@ internal sealed class PayrollSamples(SampleContext context) : IConsoleSampleProv
     private async Task MarkFirstPaymentPaidThenUnpaidAsync(CancellationToken cancellationToken)
     {
         var taxYearEnd = ResolveCurrentUkTaxYearEnd();
-        var taxYear = await context.Client.Payroll.ListAllPeriodsForTaxYearAsync(taxYearEnd, cancellationToken);
+        var taxYear = await context.Client.Payroll.ListAsync(taxYearEnd, cancellationToken);
         var payment = taxYear.Payments?.FirstOrDefault(p => p.DueOn is not null);
         if (payment?.DueOn is null)
         {

@@ -26,7 +26,7 @@ public sealed class PayrollProfilesService
     /// <param name="taxYearEnd">Tax year end (for example 2021 for April 2020–March 2021).</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Payroll profiles for the tax year</returns>
-    public async Task<IReadOnlyList<PayrollProfile>> ListAllProfilesForTaxYearAsync(
+    public async Task<IReadOnlyList<PayrollProfile>> ListAsync(
         int taxYearEnd,
         CancellationToken cancellationToken = default)
     {
@@ -54,7 +54,9 @@ public sealed class PayrollProfilesService
         UserReference user,
         CancellationToken cancellationToken = default)
     {
-        var endpoint = $"{BuildTaxYearEndpoint(taxYearEnd)}?user={Uri.EscapeDataString(user.Uri)}";
+        var endpoint = FreeAgentQueryStringBuilder.BuildEndpoint(
+            BuildTaxYearEndpoint(taxYearEnd),
+            [new KeyValuePair<string, string>("user", user.Uri)]);
         var response = await _requestClient.GetAsync<PayrollProfilesListResponse>(endpoint, cancellationToken);
 
         if (response.Profiles is null)

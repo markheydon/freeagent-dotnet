@@ -14,7 +14,7 @@ public class PayrollProfilesServiceTests
     private const string UserUri = "https://api.freeagent.com/v2/users/107";
 
     [Fact]
-    public async Task ListAllProfilesForTaxYearAsync_CallsDocumentedEndpoint()
+    public async Task ListAsync_CallsDocumentedEndpoint()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
@@ -40,7 +40,7 @@ public class PayrollProfilesServiceTests
         });
 
         var service = CreateService(handler);
-        var profiles = await service.ListAllProfilesForTaxYearAsync(TaxYearEnd);
+        var profiles = await service.ListAsync(TaxYearEnd);
 
         Assert.Single(profiles);
         Assert.Equal(107, profiles[0].UserId);
@@ -83,7 +83,7 @@ public class PayrollProfilesServiceTests
     }
 
     [Fact]
-    public async Task ListAllProfilesForTaxYearAsync_ThrowsWhenProfilesMissing()
+    public async Task ListAsync_ThrowsWhenProfilesMissing()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
         {
@@ -92,7 +92,7 @@ public class PayrollProfilesServiceTests
 
         var service = CreateService(handler);
 
-        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListAllProfilesForTaxYearAsync(TaxYearEnd));
+        await Assert.ThrowsAsync<FreeAgentApiException>(() => service.ListAsync(TaxYearEnd));
     }
 
     private static PayrollProfilesService CreateService(QueueHttpMessageHandler handler)

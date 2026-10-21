@@ -12,7 +12,7 @@
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
     <EndpointProbeHeader SectionKicker="Payroll endpoint"
                          Title="Payroll period payslips"
-                         CallUnderTest="PayrollService.ListAllPayslipsForPeriodAsync(...)"
+                         CallUnderTest="PayrollService.ListPayslipsAsync(...)"
                          Description="Load payslips for a payroll period and inspect wire-to-model mapping per row."
                          EndpointPath="/v2/payroll/:year/:period"
                          DocsUrl="https://dev.freeagent.com/docs/payroll" />
@@ -152,7 +152,7 @@
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _period = await client.Payroll.ListAllPayslipsForPeriodAsync(_taxYearEnd, _periodNumber);
+            _period = await client.Payroll.ListPayslipsAsync(_taxYearEnd, _periodNumber);
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
