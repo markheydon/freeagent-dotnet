@@ -115,7 +115,7 @@
                             <MudButton Variant="Variant.Filled"
                                        Color="Color.Primary"
                                        StartIcon="@Icons.Material.Filled.CloudDownload"
-                                       Disabled="_loading"
+                                       Disabled="_loading || _loadingAll"
                                        Class="contacts-load-button"
                                        OnClick="LoadTimeslipsAsync">
                                 @if (_loading)
@@ -215,7 +215,7 @@
                             <MudButton Variant="Variant.Outlined"
                                        Color="Color.Secondary"
                                        StartIcon="@Icons.Material.Filled.AllInclusive"
-                                       Disabled="_loadingAll"
+                                       Disabled="_loading || _loadingAll"
                                        OnClick="LoadAllAsync">
                                 @if (_loadingAll)
                                 {

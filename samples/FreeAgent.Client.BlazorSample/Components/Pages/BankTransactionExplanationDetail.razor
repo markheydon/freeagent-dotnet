@@ -61,6 +61,18 @@
                         }
                     </MudSelect>
 
+                    @if (_writeVariant is BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetDisposal
+                        or BankTransactionExplanationWriteProbeVariant.CreateStock
+                        or BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetPurchase
+                        or BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetPurchaseWithDepreciationProfile)
+                    {
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+                            This variant mutates sandbox accounting data. For disposal, set
+                            <strong>Disposed asset ID</strong> to a probe asset you created — do not reuse production assets.
+                            Stock and capital-asset purchase variants may leave ledger records after delete.
+                        </MudAlert>
+                    }
+
                     <MudGrid Spacing="2">
                         <MudItem xs="12" sm="6" md="4">
                             <MudNumericField @bind-Value="_explanationId" Label="Explanation ID (get/update/delete)" Min="1" HideSpinButtons="true" />
