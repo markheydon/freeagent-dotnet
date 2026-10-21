@@ -83,7 +83,7 @@ public class OAuthTokenResponseTests
         };
 
         var json = JsonSerializer.Serialize(original);
-        var restored = JsonSerializer.Deserialize<OAuthTokenResponse>(json);
+        var restored = JsonSerializer.Deserialize<OAuthTokenResponse>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.NotNull(restored);
         Assert.Equal(original.ExpiresAtUtc, restored!.ExpiresAtUtc);

@@ -11,7 +11,7 @@ public class ProjectTaskModelSerializationTests
     [InlineData("\"Hidden\"", FreeAgentProjectTaskStatus.Hidden)]
     public void ProjectTaskStatus_DeserializesWireValues(string wireValue, FreeAgentProjectTaskStatus expected)
     {
-        var task = JsonSerializer.Deserialize<ProjectTask>($$"""{ "status": {{wireValue}} }""");
+        var task = JsonSerializer.Deserialize<ProjectTask>($$"""{ "status": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, task!.Status);
     }
@@ -21,7 +21,7 @@ public class ProjectTaskModelSerializationTests
     [InlineData("\"day\"", ProjectTaskBillingPeriod.Day)]
     public void ProjectTaskBillingPeriod_DeserializesWireValues(string wireValue, ProjectTaskBillingPeriod expected)
     {
-        var task = JsonSerializer.Deserialize<ProjectTask>($$"""{ "billing_period": {{wireValue}} }""");
+        var task = JsonSerializer.Deserialize<ProjectTask>($$"""{ "billing_period": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, task!.BillingPeriod);
     }
@@ -45,7 +45,7 @@ public class ProjectTaskModelSerializationTests
         }
         """;
 
-        var task = JsonSerializer.Deserialize<ProjectTask>(json);
+        var task = JsonSerializer.Deserialize<ProjectTask>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal("https://api.freeagent.com/v2/tasks/1", task!.Url);
         Assert.Null(task.Project);
@@ -72,7 +72,7 @@ public class ProjectTaskModelSerializationTests
         }
         """;
 
-        var task = JsonSerializer.Deserialize<ProjectTask>(json);
+        var task = JsonSerializer.Deserialize<ProjectTask>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(9, task!.ProjectId);
         Assert.Equal("Nested Project", task.Project!.Name);

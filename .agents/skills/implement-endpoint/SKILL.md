@@ -60,6 +60,14 @@ Apply to all new and retrofitted models:
 10. **Linked resource fields:** expose flat read properties (`[Resource]?`, `[Resource]Id`, denormalised display names); use `long? *Id` (and `CategoryNominalCode` for categories) on model write payloads; use `[Resource]Reference` on list filters and inbound URL parsing only; keep internal `ExpandableField<T>` for JSON only; add `*GetOptions` with `Include*` flags on single GET when consumers commonly need linked data; add `*UpdateOptions` with `OmitLineItems` when line items should be excludable from updates. Do not use bare `string` for documented URI links. Do not require `client.Urls` at write call sites. See [adr-0011-linked-resource-identity-and-expandable-references.md](../../adr/adr-0011-linked-resource-identity-and-expandable-references.md) and [docs/explanation/linked-resources.md](../../docs/explanation/linked-resources.md).
 11. **Per-variant allowed values:** when allowed wire keys differ by operation variant, use a distinct enum on that request only. When they also differ by a documented discriminator (for example company type), use discriminator-specific enums and factory methods - do not flatten into one enum, do not leave `string` plus "see the API docs", and do not add a runtime validator that fetches Company or account settings. See [adr-0010-documented-operations-to-sdk-methods.md](../../adr/adr-0010-documented-operations-to-sdk-methods.md).
 
+After adding or renaming wire model types, regenerate JSON source metadata:
+
+```bash
+./scripts/generate-freeagent-json-context.sh
+```
+
+Commit the updated `FreeAgentJsonContext.Types.g.cs` with the model changes.
+
 Common retrofit violations:
 
 - `DateTime` instead of `DateOnly` for date-only fields

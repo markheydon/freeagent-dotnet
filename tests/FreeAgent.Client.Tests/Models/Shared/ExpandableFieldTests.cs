@@ -45,7 +45,7 @@ public class ExpandableFieldTests
         }
         """;
 
-        var project = JsonSerializer.Deserialize<Project>(json);
+        var project = JsonSerializer.Deserialize<Project>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal("Public Org", project!.Contact!.OrganisationName);
     }

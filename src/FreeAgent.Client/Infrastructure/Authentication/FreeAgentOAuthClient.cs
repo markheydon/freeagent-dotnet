@@ -1,4 +1,5 @@
 using FreeAgent.Client.Infrastructure.Configuration;
+using FreeAgent.Client.Infrastructure.Serialization;
 
 namespace FreeAgent.Client;
 
@@ -18,10 +19,7 @@ public class FreeAgentOAuthClient : IDisposable
     private readonly string _tokenEndpoint;
 
     // Cached to avoid allocating a new instance per call (CA1869)
-    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
+    private static readonly System.Text.Json.JsonSerializerOptions JsonOptions = FreeAgentJsonSerializerOptions.Default;
 
     /// <summary>
     /// Initializes a new instance of the OAuth client.

@@ -17,7 +17,7 @@ public class NoteModelSerializationTests
         }
         """;
 
-        var note = JsonSerializer.Deserialize<Note>(json);
+        var note = JsonSerializer.Deserialize<Note>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal("https://api.freeagent.com/v2/notes/1", note!.Url);
         Assert.Equal("A new note", note.Content);
@@ -37,7 +37,7 @@ public class NoteModelSerializationTests
         }
         """;
 
-        var note = JsonSerializer.Deserialize<Note>(json);
+        var note = JsonSerializer.Deserialize<Note>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(9, note!.ProjectId);
         Assert.Null(note.ContactId);
@@ -52,7 +52,7 @@ public class NoteModelSerializationTests
         }
         """;
 
-        var note = JsonSerializer.Deserialize<Note>(json);
+        var note = JsonSerializer.Deserialize<Note>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(9, note!.ProjectId);
         Assert.Null(note.ContactId);

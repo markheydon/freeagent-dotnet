@@ -21,7 +21,7 @@ public class AttachmentModelSerializationTests
             }
             """;
 
-        var attachment = JsonSerializer.Deserialize<Attachment>(json);
+        var attachment = JsonSerializer.Deserialize<Attachment>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.NotNull(attachment);
         Assert.Equal(3, attachment.ResourceId);

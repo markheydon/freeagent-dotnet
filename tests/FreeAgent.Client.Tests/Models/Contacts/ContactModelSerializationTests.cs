@@ -10,7 +10,7 @@ public class ContactModelSerializationTests
     [InlineData("\"Never\"", ChargeSalesTax.Never)]
     public void ChargeSalesTax_DeserializesWireValues(string wireValue, ChargeSalesTax expected)
     {
-        var contact = JsonSerializer.Deserialize<Contact>($$"""{ "charge_sales_tax": {{wireValue}} }""");
+        var contact = JsonSerializer.Deserialize<Contact>($$"""{ "charge_sales_tax": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, contact!.ChargeSalesTax);
     }
@@ -21,7 +21,7 @@ public class ContactModelSerializationTests
     [InlineData("\"cis_higher\"", CisDeductionRate.Higher)]
     public void CisDeductionRate_DeserializesWireValues(string wireValue, CisDeductionRate expected)
     {
-        var contact = JsonSerializer.Deserialize<Contact>($$"""{ "cis_deduction_rate": {{wireValue}} }""");
+        var contact = JsonSerializer.Deserialize<Contact>($$"""{ "cis_deduction_rate": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, contact!.CisDeductionRate);
     }
@@ -32,7 +32,7 @@ public class ContactModelSerializationTests
     [InlineData("\"fr-BE\"", ContactLocale.FrenchBelgium)]
     public void ContactLocale_DeserializesWireValues(string wireValue, ContactLocale expected)
     {
-        var contact = JsonSerializer.Deserialize<Contact>($$"""{ "locale": {{wireValue}} }""");
+        var contact = JsonSerializer.Deserialize<Contact>($$"""{ "locale": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, contact!.Locale);
     }
@@ -45,7 +45,7 @@ public class ContactModelSerializationTests
     [InlineData("\"failed\"", DirectDebitMandateState.Failed)]
     public void DirectDebitMandateState_DeserializesWireValues(string wireValue, DirectDebitMandateState expected)
     {
-        var contact = JsonSerializer.Deserialize<Contact>($$"""{ "direct_debit_mandate_state": {{wireValue}} }""");
+        var contact = JsonSerializer.Deserialize<Contact>($$"""{ "direct_debit_mandate_state": {{wireValue}} }""", FreeAgentJsonTestSupport.Options);
 
         Assert.Equal(expected, contact!.DirectDebitMandateState);
     }
@@ -64,7 +64,7 @@ public class ContactModelSerializationTests
         }
         """;
 
-        var contact = JsonSerializer.Deserialize<Contact>(json);
+        var contact = JsonSerializer.Deserialize<Contact>(json, FreeAgentJsonTestSupport.Options);
 
         Assert.NotNull(contact!.DirectDebitMandate);
         Assert.Equal(CurrencyCode.GBP, contact.DirectDebitMandate.Currency);
