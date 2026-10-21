@@ -58,26 +58,38 @@ internal sealed class AttachmentSamples(SampleContext context) : IConsoleSampleP
             },
             cancellationToken);
 
-        var detail = await context.Client.Expenses.GetExpenseAsync(created.ResourceId, cancellationToken: cancellationToken);
-        if (detail.Attachment?.Url is null)
+        var expenseId = created.ResourceId;
+        var expenseDeleted = false;
+        try
         {
-            await context.Client.Expenses.DeleteExpenseAsync(created.ResourceId, cancellationToken);
-            SampleContext.Skip("created expense has no attachment URL in response");
+            var detail = await context.Client.Expenses.GetExpenseAsync(expenseId, cancellationToken: cancellationToken);
+            if (detail.Attachment?.Url is null)
+            {
+                SampleContext.Skip("created expense has no attachment URL in response");
+            }
+
+            var attachmentId = AttachmentReference.Parse(detail.Attachment.Url).Id;
+            var attachment = await context.Client.Attachments.GetAttachmentAsync(attachmentId, cancellationToken: cancellationToken);
+
+            SampleOutput.WriteHeader("Created expense with attachment");
+            SampleOutput.WriteField("Expense ID", expenseId);
+            SampleOutput.WriteField("Attachment ID", attachment.ResourceId);
+            SampleOutput.WriteField("File name", attachment.FileName);
+
+            await context.Client.Attachments.DeleteAttachmentAsync(attachmentId, cancellationToken: cancellationToken);
+            await context.Client.Expenses.DeleteExpenseAsync(expenseId, cancellationToken);
+            expenseDeleted = true;
+
+            SampleOutput.WriteHeader("Deleted attachment and expense");
+            SampleOutput.WriteField("Attachment ID", attachmentId);
+            SampleOutput.WriteField("Expense ID", expenseId);
         }
-
-        var attachmentId = AttachmentReference.Parse(detail.Attachment.Url).Id;
-        var attachment = await context.Client.Attachments.GetAttachmentAsync(attachmentId, cancellationToken: cancellationToken);
-
-        SampleOutput.WriteHeader("Created expense with attachment");
-        SampleOutput.WriteField("Expense ID", created.ResourceId);
-        SampleOutput.WriteField("Attachment ID", attachment.ResourceId);
-        SampleOutput.WriteField("File name", attachment.FileName);
-
-        await context.Client.Attachments.DeleteAttachmentAsync(attachmentId, cancellationToken: cancellationToken);
-        await context.Client.Expenses.DeleteExpenseAsync(created.ResourceId, cancellationToken);
-
-        SampleOutput.WriteHeader("Deleted attachment and expense");
-        SampleOutput.WriteField("Attachment ID", attachmentId);
-        SampleOutput.WriteField("Expense ID", created.ResourceId);
+        finally
+        {
+            if (!expenseDeleted)
+            {
+                await context.Client.Expenses.DeleteExpenseAsync(expenseId, cancellationToken);
+            }
+        }
     }
 }
