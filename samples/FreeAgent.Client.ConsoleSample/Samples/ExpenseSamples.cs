@@ -1,4 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Models.Expenses;
 
@@ -197,19 +199,83 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
     private async Task<Expense> CreateSampleMileageExpenseAsync(CancellationToken cancellationToken)
     {
         var user = await context.Data.GetFirstUserAsync(cancellationToken);
+        var datedOn = DateOnly.FromDateTime(DateTime.UtcNow);
+        var settings = await context.Client.Expenses.GetMileageSettingsAsync(cancellationToken);
+
         var expense = new Expense
         {
             UserId = user.ResourceId,
             IsMileageCategory = true,
-            DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
+            DatedOn = datedOn,
             Mileage = 12m,
             VehicleType = ExpenseVehicleType.Car,
-            EngineType = ExpenseEngineType.Petrol,
-            EngineSize = "Up to 1400cc",
             Description = $"SDK probe mileage {DateTimeOffset.UtcNow:yyyy-MM-dd HH:mm:ss}"
         };
 
+        if (TryResolveMileageEngine(settings, datedOn, out var engineType, out var engineSize))
+        {
+            expense.EngineType = engineType;
+            expense.EngineSize = engineSize;
+        }
+        else
+        {
+            expense.VehicleType = ExpenseVehicleType.Bicycle;
+        }
+
         return await context.Client.Expenses.CreateExpenseAsync(expense, cancellationToken);
+    }
+
+    private static bool TryResolveMileageEngine(
+        MileageSettings settings,
+        DateOnly datedOn,
+        out ExpenseEngineType engineType,
+        out string engineSize)
+    {
+        engineType = default;
+        engineSize = string.Empty;
+
+        var optionSet = settings.EngineTypeAndSizeOptions?
+            .FirstOrDefault(option => option.From <= datedOn && (option.To is null || option.To >= datedOn))
+            ?? settings.EngineTypeAndSizeOptions?.LastOrDefault();
+
+        if (optionSet?.Value is null || optionSet.Value.Count == 0)
+        {
+            return false;
+        }
+
+        foreach (var (engineTypeName, sizes) in optionSet.Value)
+        {
+            if (sizes.Count == 0)
+            {
+                continue;
+            }
+
+            var mappedEngineType = MapEngineTypeName(engineTypeName);
+            if (mappedEngineType is null)
+            {
+                continue;
+            }
+
+            engineType = mappedEngineType.Value;
+            engineSize = sizes[0];
+            return true;
+        }
+
+        return false;
+    }
+
+    private static ExpenseEngineType? MapEngineTypeName(string engineTypeName)
+    {
+        foreach (var field in typeof(ExpenseEngineType).GetFields(BindingFlags.Public | BindingFlags.Static))
+        {
+            var wireName = field.GetCustomAttribute<JsonStringEnumMemberNameAttribute>()?.Name ?? field.Name;
+            if (string.Equals(wireName, engineTypeName, StringComparison.Ordinal))
+            {
+                return (ExpenseEngineType)field.GetValue(null)!;
+            }
+        }
+
+        return null;
     }
 
     private async Task<Expense> BuildSampleExpenseAsync(CancellationToken cancellationToken)

@@ -81,14 +81,6 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
             created.ResourceId,
             cancellationToken);
 
-        if (created.BankTransactionId is { } bankTransactionId && bankTransactionId > 0)
-        {
-            await context.Client.BankTransactions.DeleteBankTransactionAsync(bankTransactionId, cancellationToken);
-            Console.WriteLine();
-            Console.WriteLine($"  Deleted explanation {created.ResourceId} and bank transaction {bankTransactionId}.");
-            return;
-        }
-
         Console.WriteLine();
         Console.WriteLine($"  Deleted explanation {created.ResourceId}.");
     }

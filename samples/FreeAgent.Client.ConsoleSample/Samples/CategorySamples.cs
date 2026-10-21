@@ -275,7 +275,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
         Func<string, CancellationToken, Task<Category>> create,
         CancellationToken cancellationToken)
     {
-        var nominalCode = AllocateProbeNominalCode(minNominalCode, maxNominalCode);
+        var nominalCode = await AllocateProbeNominalCodeAsync(minNominalCode, maxNominalCode, cancellationToken);
         var created = await create(nominalCode, cancellationToken);
 
         try
@@ -300,7 +300,7 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
         Func<string, CancellationToken, Task<Category>> update,
         CancellationToken cancellationToken)
     {
-        var nominalCode = AllocateProbeNominalCode(minNominalCode, maxNominalCode);
+        var nominalCode = await AllocateProbeNominalCodeAsync(minNominalCode, maxNominalCode, cancellationToken);
         await create(nominalCode, cancellationToken);
 
         try
@@ -320,10 +320,31 @@ internal sealed class CategorySamples(SampleContext context) : IConsoleSamplePro
         }
     }
 
-    private static string AllocateProbeNominalCode(int minInclusive, int maxInclusive)
+    private async Task<string> AllocateProbeNominalCodeAsync(
+        int minInclusive,
+        int maxInclusive,
+        CancellationToken cancellationToken)
     {
+        var sets = await context.Client.Categories.ListAsync(cancellationToken: cancellationToken);
+        var usedCodes = new HashSet<string>(
+            sets.AllCategories
+                .Select(category => category.NominalCode)
+                .Where(code => !string.IsNullOrWhiteSpace(code))
+                .Select(code => code!),
+            StringComparer.Ordinal);
+
         var range = maxInclusive - minInclusive + 1;
-        var offset = (int)(Math.Abs(DateTime.UtcNow.Ticks % range));
-        return (minInclusive + offset).ToString("D3", CultureInfo.InvariantCulture);
+        var startOffset = (int)(Math.Abs(DateTime.UtcNow.Ticks % range));
+        for (var attempt = 0; attempt < range; attempt++)
+        {
+            var code = (minInclusive + ((startOffset + attempt) % range)).ToString("D3", CultureInfo.InvariantCulture);
+            if (!usedCodes.Contains(code))
+            {
+                return code;
+            }
+        }
+
+        SampleContext.Skip($"no unused category nominal codes in range {minInclusive}-{maxInclusive}");
+        return string.Empty;
     }
 }
