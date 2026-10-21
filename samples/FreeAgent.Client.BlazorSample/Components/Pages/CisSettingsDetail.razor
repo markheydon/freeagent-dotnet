@@ -1,0 +1,138 @@
+@page "/cis-settings/detail"
+@using FreeAgent.Client.Models.CisSettings
+@using FreeAgent.Client.Models.Shared
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>CIS settings update - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="CIS settings endpoint"
+                         Title="CIS settings update"
+                         CallUnderTest="CisSettingsService.UpdateCisSettingsAsync(...)"
+                         Description="Round-trip prior deductions when already recorded (no registration changes)."
+                         EndpointPath="/v2/cis_settings"
+                         DocsUrl="https://dev.freeagent.com/docs/cis_settings" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                    This probe re-submits existing <code>prior_deductions</code> values when present. It does not deregister CIS roles.
+                </MudAlert>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_loading"
+                           OnClick="RunRoundTripUpdateAsync">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Running…</span>
+                    }
+                    else
+                    {
+                        <span>Round-trip prior deductions update</span>
+                    }
+                </MudButton>
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_message is not null)
+                {
+                    <MudAlert Severity="Severity.Success">@_message</MudAlert>
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_probe is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="CisSettings after update" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string? _message;
+    private ModelProbeSnapshot? _probe;
+    private string _wireApiResponse = string.Empty;
+
+    private async Task RunRoundTripUpdateAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _message = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var current = await client.CisSettings.GetCisSettingsAsync();
+            var prior = current.SubcontractorDetails?.PriorDeductions;
+            if (prior?.StartDate is null || prior.InitialBalance is null)
+            {
+                _message = "Skipped update — subcontractor prior deductions are not recorded on this company.";
+                return;
+            }
+
+            var update = new CisSettingsUpdate
+            {
+                SubcontractorDetails = PatchValue.Set(new CisSubcontractorDetailsUpdate
+                {
+                    PriorDeductions = PatchValue.Set(new CisPriorDeductions
+                    {
+                        StartDate = prior.StartDate,
+                        InitialBalance = prior.InitialBalance
+                    })
+                })
+            };
+
+            var updated = await client.CisSettings.UpdateCisSettingsAsync(update);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "cis_settings");
+
+            _probe = ModelWireDiagnostics.Build(updated, _wireApiResponse, envelopeProperty: "cis_settings");
+            _message = "Update completed and settings re-fetched.";
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

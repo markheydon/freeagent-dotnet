@@ -61,7 +61,7 @@ Capital asset history events may link to an expense, bill, or bank transaction e
 | Payroll | [Payroll](https://dev.freeagent.com/docs/payroll) | Not yet |
 | Payroll profiles | [Payroll profiles](https://dev.freeagent.com/docs/payroll_profiles) | Not yet |
 | CIS bands | [CIS bands](https://dev.freeagent.com/docs/cis_bands) | Implemented |
-| CIS settings | [CIS settings](https://dev.freeagent.com/docs/cis_settings) | Not yet |
+| CIS settings | [CIS settings](https://dev.freeagent.com/docs/cis_settings) | Implemented |
 
 ## Key URI fields
 

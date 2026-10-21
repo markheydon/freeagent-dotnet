@@ -1,0 +1,116 @@
+@page "/cis-settings"
+@using FreeAgent.Client.Models.CisSettings
+@using CisSettingsModel = FreeAgent.Client.Models.CisSettings.CisSettings
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>CIS settings - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="CIS settings endpoint"
+                         Title="CIS settings"
+                         CallUnderTest="CisSettingsService.GetCisSettingsAsync()"
+                         Description="Load Construction Industry Scheme contractor and subcontractor registration for the company."
+                         EndpointPath="/v2/cis_settings"
+                         DocsUrl="https://dev.freeagent.com/docs/cis_settings" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudText Typo="Typo.body2" Class="hero-copy">
+                    Use <MudLink Href="/cis-settings/detail">CIS settings update</MudLink> to exercise
+                    <code>UpdateCisSettingsAsync</code> with partial PUT semantics.
+                </MudText>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.CloudDownload"
+                           Disabled="_loading"
+                           OnClick="LoadCisSettingsAsync">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Running…</span>
+                    }
+                    else
+                    {
+                        <span>Fetch CIS settings</span>
+                    }
+                </MudButton>
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_probe is not null && _settings is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All CisSettings model fields" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private CisSettingsModel? _settings;
+    private ModelProbeSnapshot? _probe;
+    private string _wireApiResponse = string.Empty;
+
+    private async Task LoadCisSettingsAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _settings = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _settings = await client.CisSettings.GetCisSettingsAsync();
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "cis_settings");
+
+            _probe = ModelWireDiagnostics.Build(_settings, _wireApiResponse, envelopeProperty: "cis_settings");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}
