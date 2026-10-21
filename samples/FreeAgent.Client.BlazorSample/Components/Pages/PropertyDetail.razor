@@ -193,14 +193,14 @@
 
             if (match is not null)
             {
-                _item = await client.Properties.UpdatePropertyAsync(match.ResourceId, BuildUpdateRequest());
+                _item = await client.Properties.UpdatePropertyAsync(match.ResourceId, BuildProbeUpdateRequest());
                 _propertyId = _item.ResourceId;
                 BindFromItem(_item);
                 _operationMessage = $"Refreshed existing probe property {_item.ResourceId} (address1 {ProbeAddress1}).";
             }
             else
             {
-                _item = await client.Properties.CreatePropertyAsync(BuildCreateRequest());
+                _item = await client.Properties.CreatePropertyAsync(BuildProbeCreateRequest());
                 _propertyId = _item.ResourceId;
                 BindFromItem(_item);
                 _operationMessage = $"Created probe property {_item.ResourceId} (address1 {ProbeAddress1}).";
@@ -246,6 +246,24 @@
             },
             fetchWirePayload: false);
     }
+
+    private CreatePropertyRequest BuildProbeCreateRequest() => new()
+    {
+        Address1 = ProbeAddress1,
+        Address2 = "Probe annex",
+        Town = "Sampletown",
+        Region = "Sampleshire",
+        Postcode = "SW1A 1AA"
+    };
+
+    private UpdatePropertyRequest BuildProbeUpdateRequest() => new()
+    {
+        Address1 = ProbeAddress1,
+        Address2 = "Probe annex",
+        Town = "Sampletown",
+        Region = "Sampleshire",
+        Postcode = "SW1A 1AA"
+    };
 
     private CreatePropertyRequest BuildCreateRequest() => new()
     {
