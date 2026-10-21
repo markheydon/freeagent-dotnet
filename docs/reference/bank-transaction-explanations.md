@@ -262,6 +262,23 @@ Task<BankTransactionExplanation> CreateLandlordPropertyBankTransactionExplanatio
 
 Landlord property profit and loss categories. Factory: `CreateLandlordPropertyBankTransactionExplanationRequest.Create(...)`.
 
+Resolve property URIs with [`client.Properties`](properties.md) (`ListAsync`, `GetPropertyAsync`) or `client.Urls.Property(propertyId)` — do not hand-build URIs at the call site when you already have an id.
+
+**Sample:**
+
+```csharp
+var propertyId = (await client.Properties.ListAsync()).First().ResourceId;
+
+var explanation = await client.BankTransactionExplanations.CreateLandlordPropertyBankTransactionExplanationAsync(
+    CreateLandlordPropertyBankTransactionExplanationRequest.Create(
+        bankTransactionId,
+        categoryNominalCode,
+        propertyId,
+        client.Environment,
+        datedOn,
+        grossValue));
+```
+
 ---
 
 ### CreateOpeningBalanceBankTransactionExplanationAsync

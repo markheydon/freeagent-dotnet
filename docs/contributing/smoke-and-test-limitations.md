@@ -29,7 +29,7 @@ These gaps are not fixed by seeding alone; they need API capability, new SDK res
 | `TakeDirectDebitPaymentAsync` | Requires an invoice and contact with a live direct-debit mandate; not creatable via the public API. |
 | `CreateStockBankTransactionExplanationAsync` | Needs a stock item id; [stock items](../reference/stock-items.md) are read-only in the SDK. |
 | `CreateCapitalAssetDisposalBankTransactionExplanationAsync` | Needs a disposed capital asset id (`client.CapitalAssets` with `view=disposed`, or dispose in the sandbox UI). Smoke does not create or dispose assets end-to-end. |
-| `CreateLandlordPropertyBankTransactionExplanationAsync` | Needs a property URI; no property resource in the SDK. |
+| `CreateLandlordPropertyBankTransactionExplanationAsync` | Needs a property URI and a `UkUnincorporatedLandlord` company; smoke skips when company type or property data is unavailable. |
 | Recurring invoice writes | API is read-only; see [recurring invoices](../reference/recurring-invoices.md). |
 | Stock item writes | Read-only API; SDK exposes list and get only. |
 | Bank feed connect or refresh | Bank-aggregator OAuth; out of SDK scope; see [bank feeds](../reference/bank-feeds.md). |

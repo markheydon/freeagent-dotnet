@@ -57,7 +57,7 @@ Capital asset history events may link to an expense, bill, or bank transaction e
 | Capital asset types | [Capital asset types](https://dev.freeagent.com/docs/capital_asset_types) | [`client.CapitalAssetTypes`](../../reference/capital-asset-types.md) |
 | Depreciation profiles | [Depreciation profiles](https://dev.freeagent.com/docs/depreciation_profiles) | [Typed nested models](../../reference/depreciation-profiles.md) (no REST resource) |
 | Journal sets | [Journal sets](https://dev.freeagent.com/docs/journal_sets) | [`client.JournalSets`](../../reference/journal-sets.md) |
-| Properties | [Properties](https://dev.freeagent.com/docs/properties) | Not yet |
+| Properties | [Properties](https://dev.freeagent.com/docs/properties) | [`client.Properties`](../../reference/properties.md) |
 | Payroll | [Payroll](https://dev.freeagent.com/docs/payroll) | Not yet |
 | Payroll profiles | [Payroll profiles](https://dev.freeagent.com/docs/payroll_profiles) | Not yet |
 | CIS bands | [CIS bands](https://dev.freeagent.com/docs/cis_bands) | Implemented |
@@ -87,7 +87,7 @@ Opening balances journal set also embeds `bank_accounts` and `stock_items` array
 
 ### Property
 
-Only for companies of type `UkUnincorporatedLandlord`. Referenced optionally on invoices, expenses, bank explanations, and journal entries in that context.
+Only for companies of type `UkUnincorporatedLandlord`. Referenced optionally on invoices, expenses, bank explanations, and journal entries in that context. REST CRUD is [`client.Properties`](../../reference/properties.md); linked writes use `PropertyReference` / `client.Urls.Property(id)`.
 
 ### User payroll profile
 
