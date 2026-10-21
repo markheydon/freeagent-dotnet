@@ -61,6 +61,9 @@ internal static class LinkedResourceWriteMapper
     public static CapitalAssetReference? ToCapitalAssetReference(FreeAgentEnvironment environment, long? capitalAssetId) =>
         capitalAssetId is long id ? CapitalAssetReference.ForEnvironment(environment, id) : null;
 
+    public static CapitalAssetTypeReference? ToCapitalAssetTypeReference(FreeAgentEnvironment environment, long? capitalAssetTypeId) =>
+        capitalAssetTypeId is long id ? CapitalAssetTypeReference.ForEnvironment(environment, id) : null;
+
     public static WriteLink<ContactReference>? ResolveContactReference(
         FreeAgentEnvironment environment,
         in SettableLinkId backing,

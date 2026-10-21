@@ -5,6 +5,7 @@ using FreeAgent.Client.Services.BankFeeds;
 using FreeAgent.Client.Services.BankTransactionExplanations;
 using FreeAgent.Client.Services.BankTransactions;
 using FreeAgent.Client.Services.Bills;
+using FreeAgent.Client.Services.CapitalAssetTypes;
 using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.Company;
 using FreeAgent.Client.Services.Contacts;
@@ -155,6 +156,11 @@ public sealed class FreeAgentClient : IDisposable
     public PriceListItemsService PriceListItems { get; }
 
     /// <summary>
+    /// Capital asset types API service.
+    /// </summary>
+    public CapitalAssetTypesService CapitalAssetTypes { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -235,6 +241,7 @@ public sealed class FreeAgentClient : IDisposable
         CreditNoteReconciliations = new CreditNoteReconciliationsService(_httpClient);
         StockItems = new StockItemsService(_httpClient);
         PriceListItems = new PriceListItemsService(_httpClient);
+        CapitalAssetTypes = new CapitalAssetTypesService(_httpClient);
     }
 
     /// <summary>

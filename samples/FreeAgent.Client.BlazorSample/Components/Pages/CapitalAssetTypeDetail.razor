@@ -1,0 +1,266 @@
+@page "/capital-asset-types/detail"
+@using FreeAgent.Client.Models.CapitalAssetTypes
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Capital asset type detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Capital asset types endpoint"
+                         Title="Get, create, update, and delete capital asset types"
+                         CallUnderTest="CapitalAssetTypesService.GetCapitalAssetTypeAsync / CreateCapitalAssetTypeAsync / UpdateCapitalAssetTypeAsync / DeleteCapitalAssetTypeAsync"
+                         Description="Exercises capital asset type CRUD with wire-to-model diagnostics after each successful call."
+                         EndpointPath="/v2/capital_asset_types/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/capital_asset_types" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick an ID from the <MudLink Href="/capital-asset-types">capital asset types list</MudLink>, or pass <code>?id=12345</code>.
+                        <strong>Create probe type</strong> upserts by stable name <code>@ProbeName</code>. Only user-created types with no linked items can be updated or deleted.
+                    </MudText>
+                    <MudNumericField @bind-Value="_capitalAssetTypeId" @bind-Value:after="OnCapitalAssetTypeIdChanged" Label="Capital asset type ID" Min="1" />
+                    <MudTextField @bind-Value="_name" Label="Name" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _capitalAssetTypeId is null or < 1"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetCapitalAssetTypeAsync">Get type</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateProbeTypeAsync">Create probe type</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _capitalAssetTypeId is null or < 1 || _item?.SystemDefault == true"
+                                   OnClick="UpdateCapitalAssetTypeAsync">Update type</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _capitalAssetTypeId is null or < 1 || _item?.SystemDefault == true"
+                                   OnClick="DeleteCapitalAssetTypeAsync">Delete type</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _item is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All CapitalAssetType model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_item.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_item.Name)</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Run an operation above to load capital asset type diagnostics.</MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private const string ProbeName = "SDK-PROBE-CAPITAL-ASSET-TYPE";
+
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? CapitalAssetTypeIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private long? _capitalAssetTypeId;
+    private CapitalAssetType? _item;
+    private ModelProbeSnapshot? _probe;
+
+    private string _name = ProbeName;
+
+    protected override void OnParametersSet()
+    {
+        if (CapitalAssetTypeIdFromQuery is > 0)
+        {
+            _capitalAssetTypeId = CapitalAssetTypeIdFromQuery;
+        }
+    }
+
+    private void OnCapitalAssetTypeIdChanged()
+    {
+        _item = null;
+        _probe = null;
+        _error = null;
+        _operationMessage = null;
+    }
+
+    private async Task GetCapitalAssetTypeAsync()
+    {
+        if (_capitalAssetTypeId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _item = await client.CapitalAssetTypes.GetCapitalAssetTypeAsync(_capitalAssetTypeId.Value);
+                _name = _item.Name ?? ProbeName;
+                _operationMessage = $"Loaded capital asset type {_item.ResourceId}.";
+            },
+            $"capital_asset_types/{_capitalAssetTypeId}",
+            "capital_asset_type");
+    }
+
+    private async Task CreateProbeTypeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_name))
+        {
+            _error = "Enter a name before creating.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = await client.CapitalAssetTypes.ListAsync();
+                var match = existing.FirstOrDefault(item => string.Equals(item.Name, ProbeName, StringComparison.Ordinal));
+
+                if (match is not null)
+                {
+                    _item = await client.CapitalAssetTypes.UpdateCapitalAssetTypeAsync(match.ResourceId, new UpdateCapitalAssetTypeRequest
+                    {
+                        Name = _name
+                    });
+                    _capitalAssetTypeId = _item.ResourceId;
+                    _operationMessage = $"Updated existing probe type {_item.ResourceId} (name {ProbeName}).";
+                }
+                else
+                {
+                    _item = await client.CapitalAssetTypes.CreateCapitalAssetTypeAsync(new CreateCapitalAssetTypeRequest
+                    {
+                        Name = ProbeName
+                    });
+                    _capitalAssetTypeId = _item.ResourceId;
+                    _name = _item.Name ?? ProbeName;
+                    _operationMessage = $"Created probe type {_item.ResourceId} (name {ProbeName}).";
+                }
+            },
+            _capitalAssetTypeId is > 0 ? $"capital_asset_types/{_capitalAssetTypeId}" : "capital_asset_types",
+            "capital_asset_type");
+    }
+
+    private async Task UpdateCapitalAssetTypeAsync()
+    {
+        if (_capitalAssetTypeId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _item = await client.CapitalAssetTypes.UpdateCapitalAssetTypeAsync(_capitalAssetTypeId.Value, new UpdateCapitalAssetTypeRequest
+                {
+                    Name = _name
+                });
+                _operationMessage = $"Updated capital asset type {_item.ResourceId}.";
+            },
+            $"capital_asset_types/{_capitalAssetTypeId}",
+            "capital_asset_type");
+    }
+
+    private async Task DeleteCapitalAssetTypeAsync()
+    {
+        if (_capitalAssetTypeId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.CapitalAssetTypes.DeleteCapitalAssetTypeAsync(_capitalAssetTypeId.Value);
+                _item = null;
+                _probe = null;
+                _operationMessage = $"Deleted capital asset type {_capitalAssetTypeId}.";
+            },
+            $"capital_asset_types/{_capitalAssetTypeId}",
+            envelopeProperty: null);
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgent.Client.FreeAgentClient, Task> operation,
+        string diagnosticsEndpoint,
+        string? envelopeProperty)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await operation(client);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+
+            if (_item is not null && envelopeProperty is not null)
+            {
+                _probe = ModelWireDiagnostics.Build(_item, _wireApiResponse, envelopeProperty: envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}
