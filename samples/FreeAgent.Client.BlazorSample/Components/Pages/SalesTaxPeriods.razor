@@ -1,0 +1,217 @@
+@page "/sales-tax-periods"
+@using FreeAgent.Client.Models.SalesTaxPeriods
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Sales tax periods - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Sales tax periods list"
+                         CallUnderTest="SalesTaxPeriodsService.ListAsync()"
+                         Description="List sales tax periods for US and universal companies. Inspect wire-to-model mapping per row, then open CRUD to create, update, or delete."
+                         EndpointPath="/v2/sales_tax_periods"
+                         DocsUrl="https://dev.freeagent.com/docs/sales_tax_periods" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    Sales tax periods are available for US and universal companies only. UK limited-company sandboxes may return errors or empty lists.
+                </MudAlert>
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_loading"
+                           StartIcon="@Icons.Material.Filled.CloudDownload"
+                           OnClick="LoadSalesTaxPeriodsAsync">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Loading…</span>
+                    }
+                    else
+                    {
+                        <span>Load sales tax periods</span>
+                    }
+                </MudButton>
+
+                @if (_periods is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_periods.Count period@(_periods.Count == 1 ? "" : "s") loaded
+                    </MudChip>
+
+                    @if (_periods.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No sales tax periods returned. Create a probe period from
+                            <MudLink Href="/sales-tax-periods/detail">Sales tax period CRUD</MudLink> when your company supports this endpoint.
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div class="diagnostics-table-shell">
+                            <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                                <HeaderContent>
+                                    <MudTh>ID</MudTh>
+                                    <MudTh>Name</MudTh>
+                                    <MudTh>Effective</MudTh>
+                                    <MudTh>Status</MudTh>
+                                    <MudTh>Locked</MudTh>
+                                    <MudTh>Actions</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+                                    <MudTd DataLabel="ID"><code>@context.Id</code></MudTd>
+                                    <MudTd DataLabel="Name">@ValueOrDash(context.Name)</MudTd>
+                                    <MudTd DataLabel="Effective">@context.EffectiveDate</MudTd>
+                                    <MudTd DataLabel="Status">@context.RegistrationStatus</MudTd>
+                                    <MudTd DataLabel="Locked">@context.IsLocked</MudTd>
+                                    <MudTd DataLabel="Actions">
+                                        <MudStack Row="true" Spacing="1" Wrap="Wrap.Wrap">
+                                            <MudButton Variant="Variant.Filled"
+                                                       Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                                       Size="Size.Small"
+                                                       OnClick="@(() => InspectRowAsync(context.Index))">
+                                                Inspect mapping
+                                            </MudButton>
+                                            <MudButton Variant="Variant.Outlined"
+                                                       Color="Color.Primary"
+                                                       Size="Size.Small"
+                                                       Href="@GetCrudHref(context.Id)">
+                                                Open in CRUD
+                                            </MudButton>
+                                        </MudStack>
+                                    </MudTd>
+                                </RowTemplate>
+                            </MudTable>
+                        </div>
+                    }
+                }
+
+                @if (_inspectedPeriod is not null && _inspectedProbe is not null)
+                {
+                    <MudDivider />
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All SalesTaxPeriod model fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string _wireApiResponse = string.Empty;
+    private IReadOnlyList<SalesTaxPeriod>? _periods;
+    private SalesTaxPeriod? _inspectedPeriod;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private int? _inspectedIndex;
+
+    private IReadOnlyList<SalesTaxPeriodRow> _rows => _periods?
+        .Select(static (period, index) => new SalesTaxPeriodRow(
+            index,
+            period.ResourceId,
+            period.SalesTaxName,
+            period.EffectiveDate?.ToString("yyyy-MM-dd") ?? "-",
+            period.SalesTaxRegistrationStatus?.ToString() ?? "-",
+            period.IsLocked switch
+            {
+                true => "Yes",
+                false => "No",
+                _ => "-"
+            }))
+        .ToList() ?? [];
+
+    private async Task LoadSalesTaxPeriodsAsync()
+    {
+        _periods = null;
+        _inspectedPeriod = null;
+        _inspectedProbe = null;
+        _inspectedIndex = null;
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        const string diagnosticsEndpoint = "sales_tax_periods";
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _periods = await client.SalesTaxPeriods.ListAsync();
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_periods is null || index < 0 || index >= _periods.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedPeriod = _periods[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "sales_tax_periods", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedPeriod, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedPeriod, _wireApiResponse, envelopeProperty: "sales_tax_periods");
+    }
+
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
+
+    private static string GetCrudHref(long id) => $"/sales-tax-periods/detail?id={id}";
+
+    private sealed record SalesTaxPeriodRow(int Index, long Id, string? Name, string EffectiveDate, string RegistrationStatus, string IsLocked);
+}

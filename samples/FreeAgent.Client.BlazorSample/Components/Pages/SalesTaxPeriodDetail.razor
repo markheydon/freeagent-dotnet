@@ -1,0 +1,323 @@
+@page "/sales-tax-periods/detail"
+@using FreeAgent.Client.Models.SalesTaxPeriods
+@using FreeAgent.Client.BlazorSample.Services
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Sales tax period detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Get, create, update, and delete sales tax periods"
+                         CallUnderTest="SalesTaxPeriodsService.GetSalesTaxPeriodAsync / CreateSalesTaxPeriodAsync / UpdateSalesTaxPeriodAsync / DeleteSalesTaxPeriodAsync"
+                         Description="Exercises sales tax period CRUD with wire-to-model diagnostics after each successful call. US and universal companies only."
+                         EndpointPath="/v2/sales_tax_periods/:id"
+                         DocsUrl="https://dev.freeagent.com/docs/sales_tax_periods" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect to FreeAgent from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudStack Spacing="2">
+                    <MudText Typo="Typo.body2" Class="hero-copy">
+                        Pick an ID from the <MudLink Href="/sales-tax-periods">sales tax periods list</MudLink>, or pass <code>?id=12345</code>.
+                        <strong>Create probe period</strong> upserts by stable name <code>@ProbeName</code>.
+                    </MudText>
+                    <MudNumericField @bind-Value="_salesTaxPeriodId" @bind-Value:after="OnSalesTaxPeriodIdChanged" Label="Sales tax period ID" Min="1" />
+                    <MudTextField @bind-Value="_salesTaxName" Label="Sales tax name" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
+                    <MudSelect T="SalesTaxPeriodRegistrationStatus?"
+                               @bind-Value="_registrationStatus"
+                               Label="Registration status"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               FullWidth="true">
+                        @foreach (var status in Enum.GetValues<SalesTaxPeriodRegistrationStatus>())
+                        {
+                            <MudSelectItem Value="@status">@status</MudSelectItem>
+                        }
+                    </MudSelect>
+                    <MudNumericField @bind-Value="_salesTaxRate1" Label="Sales tax rate 1" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <MudNumericField @bind-Value="_salesTaxRate2" Label="Sales tax rate 2 (optional)" Min="0" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <MudSwitch @bind-Value="_salesTaxIsValueAdded" Label="Sales tax is value added" Color="Color.Primary" />
+                    <MudDatePicker @bind-Date="_effectiveDate" Label="Effective date" Variant="Variant.Outlined" Margin="Margin.Dense" />
+                    <MudTextField @bind-Value="_registrationNumber"
+                                  Label="Registration number (optional)"
+                                  Variant="Variant.Outlined"
+                                  Margin="Margin.Dense"
+                                  FullWidth="true" />
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _salesTaxPeriodId is null or < 1"
+                                   StartIcon="@Icons.Material.Filled.CloudDownload"
+                                   OnClick="GetSalesTaxPeriodAsync">Get period</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" Disabled="_loading"
+                                   OnClick="CreateProbePeriodAsync">Create probe period</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || _salesTaxPeriodId is null or < 1"
+                                   OnClick="UpdateSalesTaxPeriodAsync">Update period</MudButton>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_loading || _salesTaxPeriodId is null or < 1"
+                                   OnClick="DeleteSalesTaxPeriodAsync">Delete period</MudButton>
+                    </MudStack>
+                </MudStack>
+
+                @if (_probe is not null && _period is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All SalesTaxPeriod model fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudText Typo="Typo.h5">Result summary</MudText>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_period.ResourceId</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_period.SalesTaxName)</MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+                else if (!_loading && _error is null && string.IsNullOrWhiteSpace(_operationMessage))
+                {
+                    <MudText Typo="Typo.body2" Class="hero-copy">Run an operation above to load sales tax period diagnostics.</MudText>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private const string ProbeName = "SDK-PROBE-STP";
+
+    [SupplyParameterFromQuery(Name = "id")]
+    public long? SalesTaxPeriodIdFromQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private long? _salesTaxPeriodId;
+    private SalesTaxPeriod? _period;
+    private ModelProbeSnapshot? _probe;
+
+    private string _salesTaxName = ProbeName;
+    private SalesTaxPeriodRegistrationStatus? _registrationStatus = SalesTaxPeriodRegistrationStatus.Registered;
+    private decimal _salesTaxRate1 = 2m;
+    private decimal? _salesTaxRate2;
+    private bool _salesTaxIsValueAdded = true;
+    private DateTime? _effectiveDate = new DateTime(2016, 9, 21);
+    private string? _registrationNumber;
+
+    protected override void OnParametersSet()
+    {
+        if (SalesTaxPeriodIdFromQuery is > 0)
+        {
+            _salesTaxPeriodId = SalesTaxPeriodIdFromQuery;
+        }
+    }
+
+    private void OnSalesTaxPeriodIdChanged()
+    {
+        _period = null;
+        _probe = null;
+        _error = null;
+        _operationMessage = null;
+    }
+
+    private DateOnly? EffectiveDate =>
+        _effectiveDate is null ? null : DateOnly.FromDateTime(_effectiveDate.Value);
+
+    private async Task GetSalesTaxPeriodAsync()
+    {
+        if (_salesTaxPeriodId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _period = await client.SalesTaxPeriods.GetSalesTaxPeriodAsync(_salesTaxPeriodId.Value);
+                ApplyPeriodToForm(_period);
+                _operationMessage = $"Loaded sales tax period {_period.ResourceId}.";
+            },
+            $"sales_tax_periods/{_salesTaxPeriodId}",
+            "sales_tax_period");
+    }
+
+    private async Task CreateProbePeriodAsync()
+    {
+        if (_registrationStatus is null || EffectiveDate is null)
+        {
+            _error = "Select registration status and effective date before creating.";
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                var existing = await client.SalesTaxPeriods.ListAsync();
+                var match = existing.FirstOrDefault(period => string.Equals(period.SalesTaxName, ProbeName, StringComparison.Ordinal));
+
+                if (match is not null)
+                {
+                    _period = await client.SalesTaxPeriods.UpdateSalesTaxPeriodAsync(match.ResourceId, new UpdateSalesTaxPeriodRequest
+                    {
+                        SalesTaxName = _salesTaxName,
+                        SalesTaxRegistrationStatus = _registrationStatus,
+                        SalesTaxRate1 = _salesTaxRate1,
+                        SalesTaxRate2 = _salesTaxRate2,
+                        SalesTaxIsValueAdded = _salesTaxIsValueAdded,
+                        EffectiveDate = EffectiveDate,
+                        SalesTaxRegistrationNumber = _registrationNumber
+                    });
+                    _salesTaxPeriodId = _period.ResourceId;
+                    _operationMessage = $"Updated existing probe period {_period.ResourceId} (name {ProbeName}).";
+                }
+                else
+                {
+                    _period = await client.SalesTaxPeriods.CreateSalesTaxPeriodAsync(new CreateSalesTaxPeriodRequest
+                    {
+                        SalesTaxName = _salesTaxName,
+                        SalesTaxRegistrationStatus = _registrationStatus.Value,
+                        SalesTaxRate1 = _salesTaxRate1,
+                        SalesTaxRate2 = _salesTaxRate2,
+                        SalesTaxIsValueAdded = _salesTaxIsValueAdded,
+                        EffectiveDate = EffectiveDate.Value,
+                        SalesTaxRegistrationNumber = _registrationNumber
+                    });
+                    _salesTaxPeriodId = _period.ResourceId;
+                    _operationMessage = $"Created probe period {_period.ResourceId} (name {ProbeName}).";
+                }
+            },
+            _salesTaxPeriodId is > 0 ? $"sales_tax_periods/{_salesTaxPeriodId}" : "sales_tax_periods",
+            "sales_tax_period");
+    }
+
+    private async Task UpdateSalesTaxPeriodAsync()
+    {
+        if (_salesTaxPeriodId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                _period = await client.SalesTaxPeriods.UpdateSalesTaxPeriodAsync(_salesTaxPeriodId.Value, new UpdateSalesTaxPeriodRequest
+                {
+                    SalesTaxName = string.IsNullOrWhiteSpace(_salesTaxName) ? null : _salesTaxName,
+                    SalesTaxRegistrationStatus = _registrationStatus,
+                    SalesTaxRate1 = _salesTaxRate1,
+                    SalesTaxRate2 = _salesTaxRate2,
+                    SalesTaxIsValueAdded = _salesTaxIsValueAdded,
+                    EffectiveDate = EffectiveDate,
+                    SalesTaxRegistrationNumber = _registrationNumber
+                });
+                _operationMessage = $"Updated sales tax period {_period.ResourceId}.";
+            },
+            $"sales_tax_periods/{_salesTaxPeriodId}",
+            "sales_tax_period");
+    }
+
+    private async Task DeleteSalesTaxPeriodAsync()
+    {
+        if (_salesTaxPeriodId is null or < 1)
+        {
+            return;
+        }
+
+        await RunOperationAsync(
+            async client =>
+            {
+                await client.SalesTaxPeriods.DeleteSalesTaxPeriodAsync(_salesTaxPeriodId.Value);
+                _period = null;
+                _probe = null;
+                _operationMessage = $"Deleted sales tax period {_salesTaxPeriodId}.";
+            },
+            $"sales_tax_periods/{_salesTaxPeriodId}",
+            envelopeProperty: null);
+    }
+
+    private void ApplyPeriodToForm(SalesTaxPeriod period)
+    {
+        _salesTaxName = period.SalesTaxName ?? ProbeName;
+        _registrationStatus = period.SalesTaxRegistrationStatus;
+        _salesTaxRate1 = period.SalesTaxRate1 ?? _salesTaxRate1;
+        _salesTaxRate2 = period.SalesTaxRate2;
+        _salesTaxIsValueAdded = period.SalesTaxIsValueAdded ?? _salesTaxIsValueAdded;
+        _effectiveDate = period.EffectiveDate?.ToDateTime(TimeOnly.MinValue) ?? _effectiveDate;
+        _registrationNumber = period.SalesTaxRegistrationNumber;
+    }
+
+    private async Task RunOperationAsync(
+        Func<FreeAgent.Client.FreeAgentClient, Task> operation,
+        string diagnosticsEndpoint,
+        string? envelopeProperty)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await operation(client);
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+
+            if (_period is not null && envelopeProperty is not null)
+            {
+                _probe = ModelWireDiagnostics.Build(_period, _wireApiResponse, envelopeProperty: envelopeProperty);
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _error = $"API error: {ex.Message}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                diagnosticsEndpoint);
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+}
