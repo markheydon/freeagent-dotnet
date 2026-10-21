@@ -22,6 +22,7 @@ internal static class FreeAgentJsonSerializerOptions
                 new DefaultJsonTypeInfoResolver()),
         };
 
+        options.MakeReadOnly();
         return options;
     }
 }
