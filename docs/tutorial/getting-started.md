@@ -21,6 +21,38 @@ dotnet add package FreeAgent.Client
 
 > The package is currently in **alpha** prerelease. Pin an exact version if stability matters. See [Upgrading](../how-to/upgrading.md) and [Prerelease and OAuth scope](../explanation/prerelease-and-oauth.md).
 
+## Host compatibility
+
+| Host | Status |
+|------|--------|
+| SDK-style `.csproj` apps (web, worker, console) | **Supported** — recommended path |
+| File-based apps (`#:package`, .NET 10+) | **Workaround required** until [#175](https://github.com/markheydon/freeagent-dotnet/issues/175) |
+| `PublishTrimmed` / aggressive trimming | **Not supported yet** |
+| Native AOT publish (`PublishAot`) | **Not supported yet** |
+
+The SDK serialises and deserialises API traffic with reflection-based `System.Text.Json`. That works in normal SDK-style projects; other host modes need care until [trim-safe JSON](https://github.com/markheydon/freeagent-dotnet/issues/175) ships.
+
+### File-based apps (.NET 10+)
+
+[File-based apps](https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps) default to reflection-disabled JSON. Without a workaround, calls that hit JSON (including OAuth token exchange) can fail with `InvalidOperationException` until [#175](https://github.com/markheydon/freeagent-dotnet/issues/175) lands.
+
+Add `#:property JsonSerializerIsReflectionEnabledByDefault=true` before `#:package`:
+
+```csharp
+#:property JsonSerializerIsReflectionEnabledByDefault=true
+#:package FreeAgent.Client@0.1.0-alpha.5
+
+using FreeAgent.Client;
+
+// OAuth setup omitted — any API call that hits JSON needs the property above until trim-safe JSON ships.
+```
+
+This unblocks single-file scripts; it does **not** make the library reliable under Native AOT or full trimming.
+
+### Trimmed and Native AOT publish
+
+`PublishTrimmed` and `PublishAot` are **not supported** for apps using this client during alpha. Use a standard SDK-style project without aggressive trim or Native AOT until [#175](https://github.com/markheydon/freeagent-dotnet/issues/175) and [#173](https://github.com/markheydon/freeagent-dotnet/issues/173) define a proven path.
+
 ## OAuth protocol helpers
 
 The SDK provides protocol-level OAuth utilities (`FreeAgentOAuthClient`): authorisation URL construction, code exchange, and token refresh. It does **not** host callback endpoints or orchestrate browser flows - your application owns that.

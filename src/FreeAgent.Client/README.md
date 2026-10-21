@@ -21,6 +21,17 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 dotnet add package FreeAgent.Client
 ```
 
+## Compatibility
+
+| Host | Status |
+|------|--------|
+| SDK-style `.csproj` apps (web, worker, console) | **Supported** — recommended path |
+| File-based apps (`#:package`, .NET 10+) | **Workaround required** until [#175](https://github.com/markheydon/freeagent-dotnet/issues/175) |
+| `PublishTrimmed` / aggressive trimming | **Not supported yet** |
+| Native AOT publish (`PublishAot`) | **Not supported yet** |
+
+Reflection-based `System.Text.Json` is used for API and OAuth traffic. File-based apps need `#:property JsonSerializerIsReflectionEnabledByDefault=true` until [#175](https://github.com/markheydon/freeagent-dotnet/issues/175); trim and Native AOT publish are tracked under [#173](https://github.com/markheydon/freeagent-dotnet/issues/173). See [getting started — host compatibility](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started/#host-compatibility).
+
 ## Quick start
 
 ```csharp
