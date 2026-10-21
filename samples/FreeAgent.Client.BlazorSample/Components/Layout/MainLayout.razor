@@ -269,6 +269,12 @@
                 <MudNavLink Href="/self-assessment-returns/detail" Icon="@Icons.Material.Filled.Edit">
                     Self assessment return detail
                 </MudNavLink>
+                <MudNavLink Href="/final-accounts-reports" Icon="@Icons.Material.Filled.Description">
+                    Final accounts reports
+                </MudNavLink>
+                <MudNavLink Href="/final-accounts-reports/detail" Icon="@Icons.Material.Filled.Edit">
+                    Final accounts report detail
+                </MudNavLink>
             </MudNavGroup>
 
             <MudNavGroup Title="Sales catalogue" Icon="@Icons.Material.Filled.Inventory2" Expanded="@IsSalesCatalogueRoute">
@@ -470,7 +476,9 @@
         || CurrentPath.Equals("income-tax-returns", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.StartsWith("income-tax-returns/", StringComparison.OrdinalIgnoreCase)
         || CurrentPath.Equals("self-assessment-returns", StringComparison.OrdinalIgnoreCase)
-        || CurrentPath.StartsWith("self-assessment-returns/", StringComparison.OrdinalIgnoreCase);
+        || CurrentPath.StartsWith("self-assessment-returns/", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.Equals("final-accounts-reports", StringComparison.OrdinalIgnoreCase)
+        || CurrentPath.StartsWith("final-accounts-reports/", StringComparison.OrdinalIgnoreCase);
 
     private bool IsSalesCatalogueRoute =>
         CurrentPath.Equals("stock-items", StringComparison.OrdinalIgnoreCase)
