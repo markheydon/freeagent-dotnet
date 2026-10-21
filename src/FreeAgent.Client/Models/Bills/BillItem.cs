@@ -2,6 +2,7 @@ using System.Text.Json.Serialization;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Models.Categories;
+using FreeAgent.Client.Models.DepreciationProfiles;
 using FreeAgent.Client.Models.Projects;
 using FreeAgent.Client.Models.Shared;
 using FreeAgent.Client.Models.StockItems;
@@ -193,6 +194,12 @@ public sealed class BillItem
     /// </summary>
     [JsonPropertyName("capital_asset")]
     public string? CapitalAssetUri { get; set; }
+
+    /// <summary>
+    /// Capital asset purchase attributes for create and update requests.
+    /// </summary>
+    [JsonIgnore]
+    public CapitalAssetPurchaseWrite? CapitalAssetPurchase { get; set; }
 
     /// <summary>
     /// Wire representation of the project link.

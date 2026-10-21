@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using FreeAgent.Client.Infrastructure.Configuration;
 using FreeAgent.Client.Infrastructure.Serialization;
+using FreeAgent.Client.Models.DepreciationProfiles;
 using FreeAgent.Client.Models.Shared;
 
 namespace FreeAgent.Client.Models.Bills;
@@ -61,6 +62,9 @@ internal sealed class BillItemWritePayload
     [JsonPropertyName("_destroy")]
     public int? Destroy { get; set; }
 
+    [JsonPropertyName("capital_asset")]
+    public CapitalAssetPurchaseWritePayload? CapitalAsset { get; set; }
+
     public static BillItemWritePayload FromBillItem(
         BillItem item,
         FreeAgentEnvironment environment,
@@ -116,7 +120,8 @@ internal sealed class BillItemWritePayload
                 environment,
                 item.ProjectIdBacking,
                 item.ProjectLinkId),
-            Destroy = item.Destroy
+            Destroy = item.Destroy,
+            CapitalAsset = CapitalAssetPurchaseWritePayload.FromWrite(item.CapitalAssetPurchase)
         };
     }
 }

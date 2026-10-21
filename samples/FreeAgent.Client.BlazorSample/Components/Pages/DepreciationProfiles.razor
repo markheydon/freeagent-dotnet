@@ -1,0 +1,87 @@
+@page "/depreciation-profiles"
+@using System.Text.Json
+@using FreeAgent.Client.Infrastructure.Serialization
+@using FreeAgent.Client.Models.DepreciationProfiles
+@using FreeAgent.Client.BlazorSample.Services
+
+<PageTitle>Depreciation profiles - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Depreciation profiles"
+                         Title="Depreciation profile wire mapping"
+                         CallUnderTest="DepreciationProfile deserialization + CapitalAssetPurchaseWrite factories"
+                         Description="FreeAgent documents depreciation profiles as nested capital_asset payloads (no list/get REST resource). Inspect wire-to-model mapping for each documented method variant."
+                         EndpointPath="(nested under capital_asset on expenses, bill items, and bank transaction explanations)"
+                         DocsUrl="https://dev.freeagent.com/docs/depreciation_profiles" />
+
+    <MudPaper Class="workbench-panel" Elevation="0">
+        <MudStack Spacing="3">
+            <MudText Typo="Typo.body2" Class="hero-copy">
+                Select a documented depreciation method to load example wire JSON and compare it with the
+                <code>DepreciationProfile</code> model. For live API writes, use the
+                <MudLink Href="/bank-transaction-explanations/detail">bank transaction explanation CRUD</MudLink>
+                probe variant <em>Create capital asset purchase with depreciation profile</em>.
+            </MudText>
+
+            <MudSelect T="DepreciationProfileProbeVariant" @bind-Value="_variant" Label="Method variant">
+                @foreach (var variant in Enum.GetValues<DepreciationProfileProbeVariant>())
+                {
+                    <MudSelectItem Value="@variant">@variant</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoadVariantAsync">
+                Load wire example
+            </MudButton>
+
+            @if (_probe is not null)
+            {
+                <ModelProbeResults Snapshot="_probe"
+                                 ModelFieldsHeading="DepreciationProfile model fields" />
+            }
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private DepreciationProfileProbeVariant _variant = DepreciationProfileProbeVariant.StraightLine;
+    private ModelProbeSnapshot? _probe;
+
+    private enum DepreciationProfileProbeVariant
+    {
+        StraightLine,
+        ReducingBalance,
+        NoDepreciation
+    }
+
+    private Task LoadVariantAsync()
+    {
+        var wireJson = _variant switch
+        {
+            DepreciationProfileProbeVariant.StraightLine => """
+                {
+                  "method": "straight_line",
+                  "asset_life_years": 10,
+                  "frequency": "annually"
+                }
+                """,
+            DepreciationProfileProbeVariant.ReducingBalance => """
+                {
+                  "method": "reducing_balance",
+                  "annual_depreciation_percentage": 25,
+                  "frequency": "monthly"
+                }
+                """,
+            DepreciationProfileProbeVariant.NoDepreciation => """
+                {
+                  "method": "no_depreciation"
+                }
+                """,
+            _ => throw new ArgumentOutOfRangeException(nameof(_variant))
+        };
+
+        var model = JsonSerializer.Deserialize<DepreciationProfile>(wireJson, FreeAgentJsonSerializer.Options);
+        _probe = ModelWireDiagnostics.Build(model!, wireJson);
+        return Task.CompletedTask;
+    }
+}

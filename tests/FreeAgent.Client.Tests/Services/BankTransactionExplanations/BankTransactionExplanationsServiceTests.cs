@@ -6,6 +6,7 @@ using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Models.BankTransactionExplanations;
 using FreeAgent.Client.Models.Bills;
+using FreeAgent.Client.Models.DepreciationProfiles;
 using FreeAgent.Client.Services.BankTransactionExplanations;
 using FreeAgent.Client.Tests.TestSupport;
 
@@ -369,6 +370,27 @@ public class BankTransactionExplanationsServiceTests
         var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
         Assert.Equal("https://api.freeagent.com/v2/categories/720", explanation.GetProperty("category").GetString());
         Assert.Equal("5", explanation.GetProperty("asset_life_years").GetString());
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task CreateCapitalAssetPurchaseBankTransactionExplanationAsync_SerialisesDepreciationProfile()
+    {
+        var body = await CaptureCreatePayloadAsync(service => service.CreateCapitalAssetPurchaseBankTransactionExplanationAsync(
+            CreateCapitalAssetPurchaseBankTransactionExplanationRequest.CreateWithDepreciationProfile(
+                8,
+                "720",
+                new DateOnly(2019, 5, 1),
+                -500m,
+                CapitalAssetPurchaseWrite.StraightLine(10, DepreciationFrequency.Annually))));
+
+        using var document = JsonDocument.Parse(body);
+        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
+        var capitalAsset = explanation.GetProperty("capital_asset");
+        var profile = capitalAsset.GetProperty("depreciation_profile");
+        Assert.Equal("straight_line", profile.GetProperty("method").GetString());
+        Assert.Equal(10, profile.GetProperty("asset_life_years").GetInt32());
+        Assert.Equal("annually", profile.GetProperty("frequency").GetString());
+        Assert.False(explanation.TryGetProperty("asset_life_years", out _));
     }
 
     [Fact]
