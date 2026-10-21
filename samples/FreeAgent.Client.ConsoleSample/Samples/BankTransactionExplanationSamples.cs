@@ -124,7 +124,9 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateBankTransactionExplanationAndDeleteAsync(CancellationToken cancellationToken)
     {
-        var probeContext = await TryBuildWriteProbeContextAsync(cancellationToken);
+        var probeContext = await TryBuildWriteProbeContextAsync(
+            BankTransactionExplanationWriteProbeVariant.CreateCategory,
+            cancellationToken);
         if (probeContext is null)
         {
             return;
@@ -158,7 +160,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         BankTransactionExplanationWriteProbeVariant variant,
         CancellationToken cancellationToken)
     {
-        var probeContext = await TryBuildWriteProbeContextAsync(cancellationToken);
+        var probeContext = await TryBuildWriteProbeContextAsync(variant, cancellationToken);
         if (probeContext is null)
         {
             return;
@@ -207,12 +209,38 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
                 when probeContext.DisposedAssetId <= 0:
                 Console.WriteLine("  Skipped: no capital asset available for disposal probe.");
                 return false;
+            case BankTransactionExplanationWriteProbeVariant.CreateInvoiceReceipt
+                when probeContext.InvoiceId <= 0:
+                Console.WriteLine("  Skipped: no invoice available for invoice receipt probe.");
+                return false;
+            case BankTransactionExplanationWriteProbeVariant.CreateBillPayment
+                when probeContext.BillId <= 0:
+                Console.WriteLine("  Skipped: no bill available for bill payment probe.");
+                return false;
+            case BankTransactionExplanationWriteProbeVariant.CreateStock
+                when probeContext.StockItemId <= 0:
+                Console.WriteLine("  Skipped: no stock item available for stock probe.");
+                return false;
+            case BankTransactionExplanationWriteProbeVariant.CreateSmartUserPayment
+                or BankTransactionExplanationWriteProbeVariant.CreateCategorisedUserPayment
+                when probeContext.UserId <= 0:
+                Console.WriteLine("  Skipped: no user available for user payment probe.");
+                return false;
+            case BankTransactionExplanationWriteProbeVariant.CreateOpeningBalance
+                when probeContext.ContactId <= 0:
+                Console.WriteLine("  Skipped: no contact available for opening balance probe.");
+                return false;
+            case BankTransactionExplanationWriteProbeVariant.CreatePaymentOrRefund
+                when probeContext.ProjectId <= 0:
+                Console.WriteLine("  Skipped: no project available for payment or refund probe.");
+                return false;
             default:
                 return true;
         }
     }
 
     private async Task<BankTransactionExplanationWriteProbeContext?> TryBuildWriteProbeContextAsync(
+        BankTransactionExplanationWriteProbeVariant variant,
         CancellationToken cancellationToken)
     {
         var bankAccount = await context.Data.GetFirstBankAccountAsync(cancellationToken);
@@ -223,44 +251,135 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
             return null;
         }
 
-        var project = await context.Data.GetFirstProjectAsync(cancellationToken);
-        var invoice = await context.Data.GetFirstInvoiceAsync(cancellationToken);
-        var bill = await context.Data.GetFirstBillAsync(cancellationToken);
-        var user = await context.Data.GetFirstUserAsync(cancellationToken);
-        var contact = await context.Data.GetFirstContactAsync(cancellationToken);
-        var stockItem = await context.Data.GetFirstStockItemAsync(cancellationToken);
-        var categoryNominalCode = await context.Data.GetFirstAdminExpensesCategoryNominalCodeAsync(cancellationToken);
+        long projectId = 0;
+        long invoiceId = 0;
+        long billId = 0;
+        long userId = 0;
+        long transferBankAccountId = 0;
+        long stockItemId = 0;
+        long contactId = 0;
+        long disposedAssetId = 0;
+        var categoryNominalCode = "285";
+        var propertyUri = string.Empty;
 
-        var bankAccounts = await context.Client.BankAccounts.ListAsync(cancellationToken: cancellationToken);
-        var transferBankAccountId = bankAccounts.Count >= 2
-            ? bankAccounts[1].ResourceId
-            : 0L;
-
-        var capitalAssets = await context.Client.CapitalAssets.ListAsync(cancellationToken: cancellationToken);
-        var disposedAssetId = capitalAssets.Count > 0 ? capitalAssets[0].ResourceId : 0L;
-
-        string propertyUri = string.Empty;
-        var properties = await context.Client.Properties.ListAsync(cancellationToken: cancellationToken);
-        if (properties.Count > 0)
+        if (VariantUsesCategoryNominalCode(variant))
         {
-            propertyUri = context.Client.Urls.Property(properties[0].ResourceId).Uri;
+            categoryNominalCode = await context.Data.GetFirstAdminExpensesCategoryNominalCodeAsync(cancellationToken);
+        }
+
+        switch (variant)
+        {
+            case BankTransactionExplanationWriteProbeVariant.CreatePaymentOrRefund:
+            {
+                var project = await context.Data.GetFirstProjectAsync(cancellationToken);
+                projectId = project.ResourceId;
+                break;
+            }
+
+            case BankTransactionExplanationWriteProbeVariant.CreateInvoiceReceipt:
+            {
+                var invoice = await context.Data.GetFirstInvoiceAsync(cancellationToken);
+                invoiceId = invoice.ResourceId;
+                break;
+            }
+
+            case BankTransactionExplanationWriteProbeVariant.CreateBillPayment:
+            {
+                var bill = await context.Data.GetFirstBillAsync(cancellationToken);
+                billId = bill.ResourceId;
+                break;
+            }
+
+            case BankTransactionExplanationWriteProbeVariant.CreateSmartUserPayment
+                or BankTransactionExplanationWriteProbeVariant.CreateCategorisedUserPayment:
+            {
+                var user = await context.Data.GetFirstUserAsync(cancellationToken);
+                userId = user.ResourceId;
+                break;
+            }
+
+            case BankTransactionExplanationWriteProbeVariant.CreateTransfer:
+            {
+                var bankAccounts = await context.Client.BankAccounts.ListAsync(cancellationToken: cancellationToken);
+                transferBankAccountId = bankAccounts.Count >= 2 ? bankAccounts[1].ResourceId : 0L;
+                break;
+            }
+
+            case BankTransactionExplanationWriteProbeVariant.CreateStock:
+            {
+                var stockItem = await context.Data.GetFirstStockItemAsync(cancellationToken);
+                stockItemId = stockItem.ResourceId;
+                break;
+            }
+
+            case BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetDisposal:
+            {
+                var capitalAssets = await context.Client.CapitalAssets.ListAsync(cancellationToken: cancellationToken);
+                disposedAssetId = capitalAssets.Count > 0 ? capitalAssets[0].ResourceId : 0L;
+                break;
+            }
+
+            case BankTransactionExplanationWriteProbeVariant.CreateLandlordProperty:
+                propertyUri = await TryResolvePropertyUriForLandlordProbeAsync(cancellationToken);
+                break;
+
+            case BankTransactionExplanationWriteProbeVariant.CreateOpeningBalance:
+            {
+                var contact = await context.Data.GetFirstContactAsync(cancellationToken);
+                contactId = contact.ResourceId;
+                break;
+            }
         }
 
         return new BankTransactionExplanationWriteProbeContext
         {
             BankAccountId = bankAccount.ResourceId,
             BankTransactionId = bankTransactionId.Value,
-            ProjectId = project.ResourceId,
-            InvoiceId = invoice.ResourceId,
-            BillId = bill.ResourceId,
-            UserId = user.ResourceId,
+            ProjectId = projectId,
+            InvoiceId = invoiceId,
+            BillId = billId,
+            UserId = userId,
             TransferBankAccountId = transferBankAccountId,
-            StockItemId = stockItem.ResourceId,
-            ContactId = contact.ResourceId,
+            StockItemId = stockItemId,
+            ContactId = contactId,
             DisposedAssetId = disposedAssetId,
             CategoryNominalCode = categoryNominalCode,
-            PropertyUri = propertyUri
+            PropertyUri = propertyUri,
         };
+    }
+
+    private static bool VariantUsesCategoryNominalCode(BankTransactionExplanationWriteProbeVariant variant) =>
+        variant is BankTransactionExplanationWriteProbeVariant.CreateCategory
+            or BankTransactionExplanationWriteProbeVariant.CreatePaymentOrRefund
+            or BankTransactionExplanationWriteProbeVariant.CreateCategorisedUserPayment
+            or BankTransactionExplanationWriteProbeVariant.CreateStock
+            or BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetPurchase
+            or BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetPurchaseWithDepreciationProfile
+            or BankTransactionExplanationWriteProbeVariant.CreateLandlordProperty
+            or BankTransactionExplanationWriteProbeVariant.CreateOpeningBalance;
+
+    private async Task<string> TryResolvePropertyUriForLandlordProbeAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            var company = await context.Client.Company.GetCompanyAsync(cancellationToken);
+            if (company.Type != CompanyType.UkUnincorporatedLandlord)
+            {
+                return string.Empty;
+            }
+
+            var properties = await context.Client.Properties.ListAsync(cancellationToken: cancellationToken);
+            if (properties.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return context.Client.Urls.Property(properties[0].ResourceId).Uri;
+        }
+        catch (FreeAgentApiException)
+        {
+            return string.Empty;
+        }
     }
 
     private async Task<long?> UploadProbeBankTransactionAsync(long bankAccountId, CancellationToken cancellationToken)
@@ -289,7 +408,20 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         var created = uploaded.Items.FirstOrDefault(transaction => transaction.TransactionId == fitId)
             ?? uploaded.Items.FirstOrDefault(transaction => transaction.Description == fitId);
 
-        return created?.ResourceId;
+        if (created is not null)
+        {
+            return created.ResourceId;
+        }
+
+        foreach (var orphan in uploaded.Items.Where(
+                     transaction =>
+                         string.Equals(transaction.TransactionId, fitId, StringComparison.Ordinal)
+                         || string.Equals(transaction.Description, fitId, StringComparison.Ordinal)))
+        {
+            await TryDeleteProbeBankTransactionAsync(orphan.ResourceId, cancellationToken);
+        }
+
+        return null;
     }
 
     private async Task TryDeleteProbeBankTransactionAsync(long bankTransactionId, CancellationToken cancellationToken)

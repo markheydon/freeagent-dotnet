@@ -143,7 +143,7 @@
         async client =>
         {
             _return = await client.SelfAssessmentReturns.GetSelfAssessmentReturnAsync(_userId!.Value, _periodEndsOn!.Value);
-            _operationMessage = "Loaded income tax return from GET.";
+            _operationMessage = "Loaded self assessment return from GET.";
         });
 
     private async Task MarkAsFiledAsync() => await RunMutationAsync(

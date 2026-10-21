@@ -61,6 +61,13 @@ internal sealed class JournalSetSamples(SampleContext context) : IConsoleSampleP
     private async Task UpdateProbeJournalSetDescriptionAsync(CancellationToken cancellationToken)
     {
         var (probeId, createdForProbe) = await ResolveProbeJournalSetIdAsync(cancellationToken);
+        string? originalDescription = null;
+        if (!createdForProbe)
+        {
+            var existing = await context.Client.JournalSets.GetJournalSetAsync(probeId, cancellationToken);
+            originalDescription = existing.Description;
+        }
+
         try
         {
             var updatedDescription = $"SDK console probe updated {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}";
@@ -78,6 +85,13 @@ internal sealed class JournalSetSamples(SampleContext context) : IConsoleSampleP
             if (createdForProbe)
             {
                 await context.Client.JournalSets.DeleteJournalSetAsync(probeId, cancellationToken);
+            }
+            else if (!string.IsNullOrWhiteSpace(originalDescription))
+            {
+                await context.Client.JournalSets.UpdateJournalSetAsync(
+                    probeId,
+                    new UpdateJournalSetRequest { Description = originalDescription },
+                    cancellationToken);
             }
         }
     }
