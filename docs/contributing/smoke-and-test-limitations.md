@@ -42,6 +42,10 @@ These gaps are not fixed by seeding alone; they need API capability, new SDK res
 
 - **Stream all …** — full pagination; rate-limit risk on `--run-all`.
 - **Linked resources** — use `--verify-linked-resources` instead.
+- **Take direct debit payment** — needs a live mandate; see table above.
+- **Convert estimate to invoice**, **convert invoice to credit note**, **convert estimate to credit note** — leaves non-deletable converted documents.
+- **Send credit note email (template)** on the first existing credit note — no probe lifecycle; trial limits on canon data.
+- **Update current user opening mileage** — mutates the CI OAuth user even with restore.
 - Estimate and credit note **PDF** downloads — optional; invoice PDF is already in smoke.
 
 ## Turpinverse and sandbox data gaps
@@ -54,8 +58,8 @@ Turpinverse seeds contacts, projects, tasks, sales documents, notes, and timesli
 | Expenses with attachments | `GetFirstAttachmentIdAsync` scans up to 500 expenses | At least one canon expense with an attachment on create. |
 | Bank transaction explanations | Not seeded | One category explanation or manual line on the company bank account. |
 | Credit note reconciliations | Not seeded | Optional canon reconciliation, or rely on create probe in `--run-all`. |
-| Price list items | Not seeded | Stable canon PLI, or self-contained probe in console examples. |
-| Hire purchases | Probe hire-purchase bill may be deleted before get runs | Seed HP bill or chain get-before-delete in console samples. |
+| Price list items | Not seeded | Turpinverse canon PLI optional; console **get/update** create probe `SDK-CONSOLE-PLI` when the list is empty. |
+| Hire purchases | Not seeded | Turpinverse HP bill optional; console **get detail** and hire-purchase bill probe fetch HP before bill delete. |
 | Recurring invoices | API cannot create | Manual sandbox UI or accept skip on get-by-id when list is empty. |
 | Stock items | Read-only API | Manual catalogue in sandbox or accept skip on get-by-id. |
 | Bank feeds | Connection out of scope | List-only smoke; get when empty prints a message and passes. |
@@ -67,6 +71,7 @@ Some examples run in `--run-all` but may **skip** when the sandbox account lacks
 | Example | Skip reason |
 |---------|-------------|
 | Send invoice email (template) | FreeAgent free-trial email limit |
+| Send estimate email (template) | FreeAgent free-trial email limit |
 | Mark invoice as scheduled | Missing invoice email template or account cannot schedule |
 | Update credit note reconciliation | Probe gross value ≤ 1 (cannot decrement for update test) |
 | Update/delete estimate item | Created item has no id in API response |
