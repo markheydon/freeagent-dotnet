@@ -1,0 +1,120 @@
+@page "/cashflow"
+@using CashflowModel = FreeAgent.Client.Models.Cashflow.Cashflow
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Cashflow - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Reports"
+                         Title="Cashflow summary"
+                         CallUnderTest="CashflowService.GetAsync(fromDate, toDate)"
+                         Description="Load historic cashflow for a date range (both dates required)."
+                         EndpointPath="/v2/cashflow"
+                         DocsUrl="https://dev.freeagent.com/docs/cashflow" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Label="From date" @bind-Date="_fromDate" Required="true" />
+                    </MudItem>
+                    <MudItem xs="12" sm="4">
+                        <MudDatePicker Label="To date" @bind-Date="_toDate" Required="true" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_loading || _fromDate is null || _toDate is null"
+                           OnClick="LoadCashflowAsync">
+                    Fetch cashflow
+                </MudButton>
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_probe is not null && _cashflow is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="All Cashflow model fields" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private CashflowModel? _cashflow;
+    private ModelProbeSnapshot? _probe;
+    private string _wireApiResponse = string.Empty;
+    private DateTime? _fromDate = DateTime.Today.AddMonths(-3);
+    private DateTime? _toDate = DateTime.Today;
+
+    private async Task LoadCashflowAsync()
+    {
+        if (_fromDate is null || _toDate is null)
+        {
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        var from = DateOnly.FromDateTime(_fromDate.Value);
+        var to = DateOnly.FromDateTime(_toDate.Value);
+
+        _loading = true;
+        _error = null;
+        _cashflow = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            _cashflow = await client.Cashflow.GetAsync(from, to);
+
+            var endpoint = $"cashflow?from_date={from:yyyy-MM-dd}&to_date={to:yyyy-MM-dd}";
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                token.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                endpoint);
+
+            _probe = ModelWireDiagnostics.Build(_cashflow, _wireApiResponse, envelopeProperty: "cashflow");
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

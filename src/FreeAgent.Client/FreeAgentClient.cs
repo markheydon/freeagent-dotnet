@@ -7,6 +7,7 @@ using FreeAgent.Client.Services.BankTransactionExplanations;
 using FreeAgent.Client.Services.BankTransactions;
 using FreeAgent.Client.Services.Bills;
 using FreeAgent.Client.Services.CapitalAssetTypes;
+using FreeAgent.Client.Services.Cashflow;
 using FreeAgent.Client.Services.Categories;
 using FreeAgent.Client.Services.CisBands;
 using FreeAgent.Client.Services.CisSettings;
@@ -191,6 +192,11 @@ public sealed class FreeAgentClient : IDisposable
     public TrialBalanceService TrialBalance { get; }
 
     /// <summary>
+    /// Cashflow report API service.
+    /// </summary>
+    public CashflowService Cashflow { get; }
+
+    /// <summary>
     /// Target API environment for this client.
     /// </summary>
     public FreeAgentEnvironment Environment => _httpClient.Environment;
@@ -277,6 +283,7 @@ public sealed class FreeAgentClient : IDisposable
         ProfitAndLoss = new ProfitAndLossService(_httpClient);
         BalanceSheet = new BalanceSheetService(_httpClient);
         TrialBalance = new TrialBalanceService(_httpClient);
+        Cashflow = new CashflowService(_httpClient);
     }
 
     /// <summary>
