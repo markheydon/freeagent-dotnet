@@ -146,7 +146,7 @@ internal static class BankTransactionExplanationWritePayloadMapper
 
         var payload = CreateCommonPayload(request, environment);
         payload.Category = LinkedResourceWriteMapper.ToCategoryReference(environment, request.CategoryNominalCode);
-        payload.PropertyUri = request.PropertyUri;
+        payload.Property = LinkedResourceWriteMapper.ToPropertyReference(environment, request.PropertyId);
         return payload;
     }
 

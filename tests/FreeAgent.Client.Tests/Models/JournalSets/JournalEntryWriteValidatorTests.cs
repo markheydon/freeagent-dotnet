@@ -52,4 +52,47 @@ public class JournalEntryWriteValidatorTests
 
         Assert.Throws<ArgumentException>(() => JournalEntryWriteValidator.ValidateForUpdate(entries));
     }
+
+    [Fact]
+    public void ValidateForUpdate_ThrowsWhenEntryIdIsNotPositive()
+    {
+        var entries = new List<JournalEntry> { new() { EntryId = 0 } };
+
+        var ex = Assert.Throws<ArgumentException>(() => JournalEntryWriteValidator.ValidateForUpdate(entries));
+        Assert.Contains("positive", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public void ValidateForCreate_ThrowsWhenDebitValuesDoNotBalance()
+    {
+        var entries = new List<JournalEntry>
+        {
+            new() { CategoryNominalCode = "001", DebitValue = 10m },
+            new() { CategoryNominalCode = "002", DebitValue = -5m }
+        };
+
+        var ex = Assert.Throws<ArgumentException>(() => JournalEntryWriteValidator.ValidateForCreate(entries));
+        Assert.Contains("sum to zero", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void ValidateForCreate_ThrowsWhenOpeningBalanceCategoryMissingContact()
+    {
+        var entries = new List<JournalEntry>
+        {
+            new() { CategoryNominalCode = "681", DebitValue = 10m },
+            new() { CategoryNominalCode = "901", DebitValue = -10m }
+        };
+
+        var ex = Assert.Throws<ArgumentException>(() => JournalEntryWriteValidator.ValidateForCreate(entries));
+        Assert.Contains("Contact is required", ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void RequiresOpeningBalanceContact_ReturnsTrueFor681And796()
+    {
+        Assert.True(JournalEntryWriteValidator.RequiresOpeningBalanceContact("681"));
+        Assert.True(JournalEntryWriteValidator.RequiresOpeningBalanceContact("796"));
+        Assert.False(JournalEntryWriteValidator.RequiresOpeningBalanceContact("001"));
+    }
 }

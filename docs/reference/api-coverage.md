@@ -11,6 +11,8 @@ This reference lists FreeAgent API resources implemented in the SDK today. It re
 
 For how resources relate to each other and a suggested implementation order, see the [API entity map](../explanation/api-entity-map.md).
 
+Landlord **property** links on sales and purchase documents use `PropertyId` on the typed models (with `PropertyReference` on the wire). See [Linked resources](../explanation/linked-resources.md) for write semantics and company-type constraints.
+
 ## Implemented resources
 
 | Resource | SDK entry point | FreeAgent docs |

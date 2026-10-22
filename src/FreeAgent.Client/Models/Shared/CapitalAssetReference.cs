@@ -44,6 +44,31 @@ public readonly record struct CapitalAssetReference : IResourceReference
     }
 
     /// <summary>
+    /// Attempts to parse a capital asset reference from a resource URI.
+    /// </summary>
+    /// <param name="uri">Capital asset resource URI.</param>
+    /// <param name="reference">Parsed reference when successful.</param>
+    /// <returns><see langword="true"/> when parsing succeeds.</returns>
+    public static bool TryParse(string? uri, out CapitalAssetReference reference)
+    {
+        reference = default;
+        if (string.IsNullOrWhiteSpace(uri))
+        {
+            return false;
+        }
+
+        try
+        {
+            reference = Parse(uri);
+            return true;
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Creates a capital asset reference for the selected API environment.
     /// </summary>
     /// <param name="environment">Target API environment.</param>

@@ -226,9 +226,9 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
             purchaseContext,
             cancellationToken);
 
-        if (string.IsNullOrWhiteSpace(purchase.CapitalAssetUri))
+        if (purchase.CapitalAssetId is not long capitalAssetId)
         {
-            Console.WriteLine("  Skipped: capital asset purchase did not return a capital_asset URI.");
+            Console.WriteLine("  Skipped: capital asset purchase did not return a capital asset id.");
             await context.Client.BankTransactionExplanations.DeleteBankTransactionExplanationAsync(
                 purchase.ResourceId,
                 cancellationToken);
@@ -236,7 +236,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
             return;
         }
 
-        var disposedAssetId = CapitalAssetReference.Parse(purchase.CapitalAssetUri).Id;
+        var disposedAssetId = capitalAssetId;
         var (disposalBankTransactionId, disposalUploadSkipReason) = await UploadProbeBankTransactionAsync(
             purchaseContext.BankAccountId,
             cancellationToken,
@@ -317,7 +317,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         long contactId = 0;
         long disposedAssetId = 0;
         var categoryNominalCode = "285";
-        var propertyUri = string.Empty;
+        long propertyId = 0;
 
         if (VariantUsesCategoryNominalCode(variant))
         {
@@ -370,7 +370,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
                 }
 
             case BankTransactionExplanationWriteProbeVariant.CreateLandlordProperty:
-                propertyUri = await TryResolvePropertyUriForLandlordProbeAsync(cancellationToken);
+                propertyId = await TryResolvePropertyIdForLandlordProbeAsync(cancellationToken);
                 break;
 
             case BankTransactionExplanationWriteProbeVariant.CreateOpeningBalance:
@@ -394,7 +394,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
             ContactId = contactId,
             DisposedAssetId = disposedAssetId,
             CategoryNominalCode = categoryNominalCode,
-            PropertyUri = propertyUri,
+            PropertyId = propertyId,
         }, null);
     }
 
@@ -408,27 +408,27 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
             or BankTransactionExplanationWriteProbeVariant.CreateLandlordProperty
             or BankTransactionExplanationWriteProbeVariant.CreateOpeningBalance;
 
-    private async Task<string> TryResolvePropertyUriForLandlordProbeAsync(CancellationToken cancellationToken)
+    private async Task<long> TryResolvePropertyIdForLandlordProbeAsync(CancellationToken cancellationToken)
     {
         try
         {
             var company = await context.Client.Company.GetCompanyAsync(cancellationToken);
             if (company.Type != CompanyType.UkUnincorporatedLandlord)
             {
-                return string.Empty;
+                return 0;
             }
 
             var properties = await context.Client.Properties.ListAsync(cancellationToken: cancellationToken);
             if (properties.Count == 0)
             {
-                return string.Empty;
+                return 0;
             }
 
-            return context.Client.Urls.Property(properties[0].ResourceId).Uri;
+            return properties[0].ResourceId;
         }
         catch (FreeAgentApiException)
         {
-            return string.Empty;
+            return 0;
         }
     }
 

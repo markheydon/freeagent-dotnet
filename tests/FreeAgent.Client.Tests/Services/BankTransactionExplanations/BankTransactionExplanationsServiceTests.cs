@@ -402,18 +402,6 @@ public class BankTransactionExplanationsServiceTests
     }
 
     [Fact]
-    public async System.Threading.Tasks.Task CreateLandlordPropertyBankTransactionExplanationAsync_SerialisesPropertyUri()
-    {
-        const string propertyUri = "https://api.freeagent.com/v2/properties/1";
-        var body = await CaptureCreatePayloadAsync(service => service.CreateLandlordPropertyBankTransactionExplanationAsync(
-            CreateLandlordPropertyBankTransactionExplanationRequest.Create(8, "285", propertyUri, new DateOnly(2019, 5, 1), -30m)));
-
-        using var document = JsonDocument.Parse(body);
-        var explanation = document.RootElement.GetProperty("bank_transaction_explanation");
-        Assert.Equal(propertyUri, explanation.GetProperty("property").GetString());
-    }
-
-    [Fact]
     public async System.Threading.Tasks.Task CreateLandlordPropertyBankTransactionExplanationAsync_SerialisesPropertyFromId()
     {
         var body = await CaptureCreatePayloadAsync(service => service.CreateLandlordPropertyBankTransactionExplanationAsync(
@@ -421,7 +409,6 @@ public class BankTransactionExplanationsServiceTests
                 8,
                 "285",
                 1,
-                FreeAgentEnvironment.Production,
                 new DateOnly(2019, 5, 1),
                 -30m)));
 

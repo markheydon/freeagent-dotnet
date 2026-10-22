@@ -97,4 +97,49 @@ public class LinkedResourceWriteMapperTests
         Assert.False(link!.IsCleared);
         Assert.Equal("https://api.freeagent.com/v2/contacts/9", link.Value.Uri);
     }
+
+    [Fact]
+    public void ResolvePropertyReference_ExplicitClear_ReturnsClearedWriteLink()
+    {
+        var backing = default(SettableLinkId);
+        backing.Set(null);
+
+        var link = LinkedResourceWriteMapper.ResolvePropertyReference(
+            FreeAgentEnvironment.Production,
+            backing,
+            linkId: 5);
+
+        Assert.NotNull(link);
+        Assert.True(link!.IsCleared);
+    }
+
+    [Fact]
+    public void ResolvePropertyReference_Omit_ReturnsNull()
+    {
+        var backing = default(SettableLinkId);
+        backing.Set(3);
+
+        var link = LinkedResourceWriteMapper.ResolvePropertyReference(
+            FreeAgentEnvironment.Production,
+            backing,
+            linkId: 5,
+            omit: true);
+
+        Assert.Null(link);
+    }
+
+    [Fact]
+    public void ResolvePropertyReference_RoundTripsFromWireLink()
+    {
+        var backing = default(SettableLinkId);
+
+        var link = LinkedResourceWriteMapper.ResolvePropertyReference(
+            FreeAgentEnvironment.Sandbox,
+            backing,
+            linkId: 7);
+
+        Assert.NotNull(link);
+        Assert.False(link!.IsCleared);
+        Assert.Equal("https://api.sandbox.freeagent.com/v2/properties/7", link.Value.Uri);
+    }
 }

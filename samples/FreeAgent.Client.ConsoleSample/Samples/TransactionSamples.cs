@@ -62,6 +62,8 @@ internal sealed class TransactionSamples(SampleContext context) : IConsoleSample
         SampleOutput.WriteField("Nominal code", detail.NominalCode);
         SampleOutput.WriteField("Category", detail.CategoryName);
         SampleOutput.WriteField("Debit value", detail.DebitValue);
+        SampleOutput.WriteField("Source item kind", detail.SourceItemKind);
+        SampleOutput.WriteField("Source item ID", detail.SourceItemId);
         SampleOutput.WriteField("Source item URL", detail.SourceItemUrl);
     }
 

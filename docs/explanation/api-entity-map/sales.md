@@ -115,6 +115,7 @@ List filter: `?contact=`
 | `contact` | Contact | Yes |
 | `project` | Project | No |
 | `bank_account` | Bank account | No |
+| `property` | Property | No (landlord companies only) |
 
 List filters: `?contact=`, `?project=`
 
@@ -151,4 +152,4 @@ Invoices establishes patterns used across the Sales cluster:
 | PDF download | `Get*PdfAsync` decoding `{ pdf: { content } }` base64 wrapper | Estimates |
 | Email action | `Send*EmailAsync` with typed email request | Estimates |
 | Company default text | `Get/Update/DeleteDefaultAdditionalTextAsync` under resource path | Estimates (if documented) |
-| Linked references | `ContactReference`, `ProjectReference`, `CategoryReference`, `BankAccountReference` | All Sales documents |
+| Linked references | `ContactReference`, `ProjectReference`, `PropertyReference`, `CategoryReference`, `BankAccountReference`; set optional links with `ContactId`, `ProjectId`, `PropertyId`, and line-item `CategoryNominalCode` | All Sales documents |

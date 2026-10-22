@@ -39,6 +39,7 @@ public class TransactionsServiceTests
         Assert.Equal("750-1", sale.NominalCode);
         Assert.Equal(30.0m, sale.DebitValue);
         Assert.Equal("https://api.freeagent.com/v2/bank_transaction_explanations/1", sale.SourceItemUrl);
+        Assert.Equal(AccountingTransactionSourceKind.BankTransactionExplanation, sale.SourceItemKind);
         Assert.Equal(1, sale.SourceItemId);
         Assert.NotNull(sale.ForeignCurrency);
         Assert.Null(sale.ForeignCurrency.CurrencyCode);
@@ -50,6 +51,7 @@ public class TransactionsServiceTests
         Assert.Equal("359", bill.CategoryNominalCode);
         Assert.Equal(-30.0m, bill.DebitValue);
         Assert.Equal("https://api.freeagent.com/v2/bills/2", bill.SourceItemUrl);
+        Assert.Equal(AccountingTransactionSourceKind.Bill, bill.SourceItemKind);
         Assert.Equal(2, bill.SourceItemId);
         Assert.Equal(CurrencyCode.USD, bill.ForeignCurrency?.CurrencyCode);
         Assert.Equal(-37.61m, bill.ForeignCurrency?.DebitValue);

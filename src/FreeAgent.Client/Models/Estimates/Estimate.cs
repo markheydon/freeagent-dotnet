@@ -43,6 +43,11 @@ public sealed class Estimate : IFreeAgentResource
     /// <summary>
     /// Contact when returned nested on the wire or hydrated via <see cref="EstimateGetOptions.IncludeContact"/>.
     /// </summary>
+    /// <remarks>
+    /// After a normal <c>GetEstimateAsync</c> this property is <see langword="null"/>; use <see cref="ContactId"/>
+    /// instead, or pass <see cref="EstimateGetOptions.IncludeContact"/>.
+    /// See the common pitfall section in <c>docs/explanation/linked-resources.md</c>.
+    /// </remarks>
     [JsonIgnore]
     public Contact? Contact => ContactLink?.Value;
 

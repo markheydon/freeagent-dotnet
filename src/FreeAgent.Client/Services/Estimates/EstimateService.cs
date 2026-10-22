@@ -286,6 +286,7 @@ public sealed class EstimateService
     public async Task<Estimate> CreateEstimateAsync(Estimate estimate, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(estimate);
+        SalesDocumentWriteValidator.ValidateEstimateForCreate(estimate);
         EcMossWriteRequirements.ValidateEstimateEcStatus(estimate.EcStatus, estimate.PlaceOfSupply, nameof(estimate));
 
         var content = FreeAgentJsonSerializer.CreateContent(new EstimateRequest
@@ -322,6 +323,7 @@ public sealed class EstimateService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(estimateId);
         ArgumentNullException.ThrowIfNull(estimate);
+        SalesDocumentWriteValidator.ValidateEstimateForUpdate(estimate, options?.OmitLineItems == true);
         EcMossWriteRequirements.ValidateEstimateEcStatus(estimate.EcStatus, estimate.PlaceOfSupply, nameof(estimate));
 
         var content = FreeAgentJsonSerializer.CreateContent(new EstimateRequest

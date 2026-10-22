@@ -30,6 +30,11 @@ public class Project : IFreeAgentResource
     /// <summary>
     /// Billing contact when returned nested on the wire or hydrated via <see cref="ProjectGetOptions.IncludeContact"/>.
     /// </summary>
+    /// <remarks>
+    /// After a normal <c>GetProjectAsync</c> this property is <see langword="null"/>; use <see cref="ContactName"/>
+    /// or <see cref="ContactId"/> instead, or pass <see cref="ProjectGetOptions.IncludeContact"/>.
+    /// See the common pitfall section in <c>docs/explanation/linked-resources.md</c>.
+    /// </remarks>
     [JsonIgnore]
     public Contact? Contact => ContactLink?.Value;
 

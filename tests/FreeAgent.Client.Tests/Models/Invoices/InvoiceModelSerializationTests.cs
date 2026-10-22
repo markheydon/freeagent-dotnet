@@ -46,6 +46,51 @@ public class InvoiceModelSerializationTests
     }
 
     [Fact]
+    public void DeserializeInvoice_MapsPropertyUriLink()
+    {
+        const string json = """
+            {
+              "url": "https://api.freeagent.com/v2/invoices/4",
+              "property": "https://api.freeagent.com/v2/properties/11"
+            }
+            """;
+
+        var invoice = JsonSerializer.Deserialize<Invoice>(json, FreeAgentJsonSerializer.Options);
+
+        Assert.NotNull(invoice);
+        Assert.Equal(11, invoice!.PropertyId);
+        Assert.Null(invoice.Property);
+    }
+
+    [Fact]
+    public void SerializeCreatePayload_IncludesPropertyLinkWhenSet()
+    {
+        var invoice = new Invoice
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 14,
+            PropertyId = 11,
+            InvoiceItems =
+            [
+                new InvoiceItem
+                {
+                    Description = "Rent",
+                    ItemType = InvoiceItemType.Hours,
+                    Quantity = 1,
+                    Price = 100,
+                    CategoryNominalCode = "001"
+                }
+            ]
+        };
+
+        var payload = InvoiceWritePayload.FromInvoice(invoice, FreeAgentEnvironment.Production);
+        var json = JsonSerializer.Serialize(new InvoiceRequest { Invoice = payload }, FreeAgentJsonSerializer.Options);
+
+        Assert.Contains("\"property\":\"https://api.freeagent.com/v2/properties/11\"", json, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void DeserializeInvoice_MapsRecurringInvoiceUriLinkWithoutExpandingNestedObject()
     {
         const string json = """

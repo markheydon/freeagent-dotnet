@@ -239,6 +239,7 @@ public class BillServiceTests
         {
             ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
+            DueOn = new DateOnly(2024, 4, 18),
             BillItems =
             [
                 new BillItem
@@ -255,6 +256,37 @@ public class BillServiceTests
         Assert.Contains("\"bill_items\"", postedJson, StringComparison.Ordinal);
         Assert.Contains("\"description\":\"Supplier charge\"", postedJson, StringComparison.Ordinal);
         Assert.Equal(BillStatus.Open, created.Status);
+    }
+
+    [Fact]
+    public async Task CreateBillAsync_ThrowsWhenLineItemHasStockQuantityWithoutStockItem()
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.Created)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new BillService(client);
+
+        var bill = new Bill
+        {
+            ContactId = 2,
+            DatedOn = new DateOnly(2024, 3, 18),
+            DueOn = new DateOnly(2024, 4, 18),
+            BillItems =
+            [
+                new BillItem
+                {
+                    Description = "Stock line",
+                    TotalValue = 10m,
+                    CategoryNominalCode = "285",
+                    StockAlteringQuantity = 1m
+                }
+            ]
+        };
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateBillAsync(bill));
+        Assert.Contains("Stock item and stock altering quantity", ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]

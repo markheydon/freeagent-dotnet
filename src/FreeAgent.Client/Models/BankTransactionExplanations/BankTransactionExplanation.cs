@@ -428,10 +428,18 @@ public sealed class BankTransactionExplanation : IFreeAgentResource
     public int? StockAlteringQuantity { get; set; }
 
     /// <summary>
-    /// Capital asset URI for purchases. Read-only on responses.
+    /// Wire representation of the capital asset link on read responses.
     /// </summary>
     [JsonPropertyName("capital_asset")]
-    public string? CapitalAssetUri { get; set; }
+    [JsonInclude]
+    internal string? CapitalAssetWire { get; set; }
+
+    /// <summary>
+    /// Capital asset identifier for purchases. Read-only from the API.
+    /// </summary>
+    [JsonIgnore]
+    public long? CapitalAssetId =>
+        CapitalAssetReference.TryParse(CapitalAssetWire, out var reference) ? reference.Id : null;
 
     /// <summary>
     /// Deprecated depreciation years hint for capital asset purchases.
@@ -440,19 +448,37 @@ public sealed class BankTransactionExplanation : IFreeAgentResource
     public string? AssetLifeYears { get; set; }
 
     /// <summary>
-    /// Disposed capital asset URI for disposals.
+    /// Wire representation of the disposed capital asset link on read responses.
     /// </summary>
     [JsonPropertyName("disposed_asset")]
-    public string? DisposedAssetUri { get; set; }
+    [JsonInclude]
+    internal string? DisposedAssetWire { get; set; }
 
     /// <summary>
-    /// Property URI for UK unincorporated landlord companies.
+    /// Disposed capital asset identifier for disposals. Read-only from the API.
     /// </summary>
-    /// <remarks>
-    /// Full property operations are not yet implemented in the SDK.
-    /// </remarks>
+    [JsonIgnore]
+    public long? DisposedAssetId =>
+        CapitalAssetReference.TryParse(DisposedAssetWire, out var reference) ? reference.Id : null;
+
+    /// <summary>
+    /// Wire representation of the property link.
+    /// </summary>
     [JsonPropertyName("property")]
-    public string? PropertyUri { get; set; }
+    [JsonInclude]
+    internal ExpandableField<LandlordProperty>? PropertyLink { get; set; }
+
+    /// <summary>
+    /// Landlord property when returned nested on the wire.
+    /// </summary>
+    [JsonIgnore]
+    public LandlordProperty? Property => PropertyLink?.Value;
+
+    /// <summary>
+    /// Property identifier parsed from the response for UK unincorporated landlord companies.
+    /// </summary>
+    [JsonIgnore]
+    public long? PropertyId => PropertyLink?.Id;
 
     /// <summary>
     /// Wire representation of the opening balance contact.

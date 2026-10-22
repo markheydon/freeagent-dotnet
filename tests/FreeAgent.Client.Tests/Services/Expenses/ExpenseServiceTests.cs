@@ -182,6 +182,41 @@ public class ExpenseServiceTests
     }
 
     [Fact]
+    public async Task CreateExpenseAsync_MileageWithoutVehicleType_ThrowsBeforeHttp()
+    {
+        using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ExpenseService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.CreateExpenseAsync(new Expense
+        {
+            UserId = 1,
+            IsMileageCategory = true,
+            DatedOn = new DateOnly(2024, 1, 2),
+            Mileage = 5m,
+            Description = "Mileage probe"
+        }));
+    }
+
+    [Fact]
+    public async Task CreateExpenseAsync_RebillMarkupWithoutFactor_ThrowsBeforeHttp()
+    {
+        using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new ExpenseService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.CreateExpenseAsync(new Expense
+        {
+            UserId = 1,
+            DatedOn = new DateOnly(2024, 1, 2),
+            Description = "Rebill probe",
+            CategoryNominalCode = "285",
+            GrossValue = 10m,
+            RebillType = BillRebillType.Markup
+        }));
+    }
+
+    [Fact]
     public async Task CreateExpensesAsync_PostsBatchEnvelope()
     {
         string? body = null;

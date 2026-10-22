@@ -274,6 +274,7 @@ Key properties:
 | `DueOn` | `DateOnly?` | `due_on` | |
 | `PaymentTermsInDays` | `int?` | `payment_terms_in_days` | Required on create |
 | `ContactId` | `long?` | `contact` | Required on create |
+| `PropertyId` | `long?` | `property` | Optional landlord property link (`PropertyId` on writes; see [Linked resources](../explanation/linked-resources.md)) |
 | `ProjectId` | `long?` | `project` | Optional project link |
 | `BankAccountId` | `long?` | `bank_account` | Optional remittance bank account |
 | `InvoiceItems` | `List<InvoiceItem>?` | `invoice_items` | Nested line items |

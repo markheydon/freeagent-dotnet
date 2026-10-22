@@ -42,7 +42,7 @@ Task<AccountingTransaction> GetAccountingTransactionAsync(long transactionId, Ca
 
 ## Models
 
-`AccountingTransaction` includes `dated_on` (`DateOnly`), `created_at` and `updated_at` (`DateTimeOffset`), `description`, category link fields (`Category`, `CategoryNominalCode`, `CategoryName`), `nominal_code`, `debit_value` (credits are negative), `source_item_url` with `SourceItemId` when the final path segment is numeric, and `foreign_currency_data` (`AccountingTransactionForeignCurrency` with `CurrencyCode` and a foreign `debit_value`).
+`AccountingTransaction` includes `dated_on` (`DateOnly`), `created_at` and `updated_at` (`DateTimeOffset`), `description`, category link fields (`Category`, `CategoryNominalCode`, `CategoryName`), `nominal_code`, `debit_value` (credits are negative), `source_item_url` with `SourceItemId` when the final path segment is numeric, `SourceItemKind` when the URL matches a known FreeAgent resource segment (for example `invoices`, `expenses`, `journal_entries`), and `foreign_currency_data` (`AccountingTransactionForeignCurrency` with `CurrencyCode` and a foreign `debit_value`).
 
 ```csharp
 var monthAgo = DateOnly.FromDateTime(DateTime.UtcNow).AddMonths(-1);

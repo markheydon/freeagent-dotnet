@@ -7,11 +7,15 @@ namespace FreeAgent.Client;
 /// </summary>
 /// <remarks>
 /// Does not validate category-specific shapes that require account state (user categories, stock categories, landlord property).
+/// Journal set balance is enforced on create only; partial updates may send a non-balancing subset of lines.
 /// </remarks>
 internal static class JournalEntryWriteValidator
 {
     internal const int CapitalAssetCategoryMin = 601;
     internal const int CapitalAssetCategoryMax = 607;
+
+    internal const int TradeDebtorsCategory = 681;
+    internal const int TradeCreditorsCategory = 796;
 
     internal static void ValidateForCreate(IReadOnlyList<JournalEntry> entries)
     {
@@ -26,6 +30,8 @@ internal static class JournalEntryWriteValidator
         {
             ValidateCreateEntry(entry);
         }
+
+        ValidateSetBalancesForCreate(entries);
     }
 
     internal static void ValidateForUpdate(IReadOnlyList<JournalEntry>? entries)
@@ -53,6 +59,11 @@ internal static class JournalEntryWriteValidator
     private static void ValidateUpdateEntry(JournalEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
+
+        if (entry.EntryId is long entryId && entryId <= 0)
+        {
+            throw new ArgumentException("Journal entry id must be a positive value.", nameof(entry));
+        }
 
         if (entry.Destroy == true)
         {
@@ -103,6 +114,15 @@ internal static class JournalEntryWriteValidator
 
     private static void ValidateDocumentedConditionalFields(JournalEntry entry, string categoryNominalCode)
     {
+        if (RequiresOpeningBalanceContact(categoryNominalCode) && !HasContact(entry))
+        {
+            throw new ArgumentException(
+                $"Contact is required when the journal entry category is {categoryNominalCode} (Trade Debtors or Trade Creditors opening balance).",
+                nameof(entry));
+        }
+
+        ValidateStockCompanions(entry);
+
         if (!RequiresCapitalAssetType(categoryNominalCode))
         {
             return;
@@ -115,6 +135,58 @@ internal static class JournalEntryWriteValidator
                 nameof(entry));
         }
     }
+
+    internal static bool RequiresOpeningBalanceContact(string categoryNominalCode)
+    {
+        if (!TryParseBaseCategoryCode(categoryNominalCode, out var baseCode))
+        {
+            return false;
+        }
+
+        return baseCode is TradeDebtorsCategory or TradeCreditorsCategory;
+    }
+
+    private static void ValidateStockCompanions(JournalEntry entry)
+    {
+        var stockItemExplicit = entry.StockItemIdBacking.IsExplicitlySet;
+        var quantitySet = entry.StockAlteringQuantity is not null;
+
+        if (!stockItemExplicit && !quantitySet)
+        {
+            return;
+        }
+
+        if (entry.StockItemId is null || entry.StockAlteringQuantity is null)
+        {
+            throw new ArgumentException(
+                "Stock item and stock altering quantity must both be set when either is provided.",
+                nameof(entry));
+        }
+    }
+
+    private static void ValidateSetBalancesForCreate(IReadOnlyList<JournalEntry> entries)
+    {
+        decimal sum = 0;
+        foreach (var entry in entries)
+        {
+            if (entry.DebitValue is not decimal debit)
+            {
+                throw new ArgumentException("Debit value is required for journal entries.", nameof(entries));
+            }
+
+            sum += debit;
+        }
+
+        if (sum != 0)
+        {
+            throw new ArgumentException("Journal entry debit values must sum to zero.", nameof(entries));
+        }
+    }
+
+    private static bool HasContact(JournalEntry entry) =>
+        entry.ContactIdBacking.IsExplicitlySet
+            ? entry.ContactId is not null
+            : entry.ContactLinkId is not null;
 
     internal static bool RequiresCapitalAssetType(string categoryNominalCode)
     {

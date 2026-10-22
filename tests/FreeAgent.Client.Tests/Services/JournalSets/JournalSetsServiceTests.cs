@@ -200,6 +200,27 @@ public class JournalSetsServiceTests
     }
 
     [Fact]
+    public async Task CreateJournalSetAsync_Unbalanced_ThrowsBeforeHttp()
+    {
+        var handler = new QueueHttpMessageHandler(_ =>
+            throw new InvalidOperationException("HTTP should not be called for unbalanced journal sets."));
+
+        var service = CreateService(handler);
+
+        var exception = await Assert.ThrowsAsync<ArgumentException>(() => service.CreateJournalSetAsync(new CreateJournalSetRequest
+        {
+            Description = "Unbalanced",
+            JournalEntries =
+            [
+                new JournalEntry { CategoryNominalCode = "001", DebitValue = 10m },
+                new JournalEntry { CategoryNominalCode = "901", DebitValue = -5m }
+            ]
+        }));
+
+        Assert.Contains("sum to zero", exception.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public async Task CreateJournalSetAsync_ThrowsWhenCapitalAssetCategoryMissingType()
     {
         var handler = new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK));

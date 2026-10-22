@@ -14,6 +14,7 @@ public sealed class Expense : IFreeAgentResource
     private SettableLinkId _projectId;
     private SettableLinkId _rebillToProjectId;
     private SettableLinkId _stockItemId;
+    private SettableLinkId _propertyId;
 
     /// <summary>
     /// Expense resource URL.
@@ -295,10 +296,27 @@ public sealed class Expense : IFreeAgentResource
     public long? RebilledOnInvoiceId => RebilledOnInvoiceLink?.Id;
 
     /// <summary>
-    /// Property URI for landlord companies. Full property operations are not yet implemented in the SDK.
+    /// Wire representation of the property link.
     /// </summary>
     [JsonPropertyName("property")]
-    public string? PropertyUri { get; set; }
+    [JsonInclude]
+    internal ExpandableField<LandlordProperty>? PropertyLink { get; set; }
+
+    /// <summary>
+    /// Landlord property when returned nested on the wire.
+    /// </summary>
+    [JsonIgnore]
+    public LandlordProperty? Property => PropertyLink?.Value;
+
+    /// <summary>
+    /// Property identifier for create and update requests for landlord companies.
+    /// </summary>
+    [JsonIgnore]
+    public long? PropertyId
+    {
+        get => _propertyId.Get(PropertyLink?.Id);
+        set => _propertyId.Set(value);
+    }
 
     /// <summary>
     /// Recurrence frequency.
@@ -331,10 +349,18 @@ public sealed class Expense : IFreeAgentResource
     public ExpenseAttachmentWritePayload? AttachmentWrite { get; set; }
 
     /// <summary>
-    /// Capital asset URI for capital purchases. Read-only on responses.
+    /// Wire representation of the capital asset link on read responses.
     /// </summary>
     [JsonPropertyName("capital_asset")]
-    public string? CapitalAssetUri { get; set; }
+    [JsonInclude]
+    internal string? CapitalAssetWire { get; set; }
+
+    /// <summary>
+    /// Capital asset identifier when the expense is a capital purchase. Read-only from the API.
+    /// </summary>
+    [JsonIgnore]
+    public long? CapitalAssetId =>
+        CapitalAssetReference.TryParse(CapitalAssetWire, out var reference) ? reference.Id : null;
 
     /// <summary>
     /// Capital asset purchase attributes for create and update requests.
@@ -439,6 +465,10 @@ public sealed class Expense : IFreeAgentResource
     internal long? RebillToProjectLinkId => RebillToProjectLink?.Id;
 
     internal SettableLinkId StockItemIdBacking => _stockItemId;
+
+    internal SettableLinkId PropertyIdBacking => _propertyId;
+
+    internal long? PropertyLinkId => PropertyLink?.Id;
 
     internal long? StockItemLinkId => StockItemLink?.Id;
 

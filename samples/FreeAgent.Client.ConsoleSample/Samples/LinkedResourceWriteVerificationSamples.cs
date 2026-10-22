@@ -170,6 +170,44 @@ internal sealed class LinkedResourceWriteVerificationSamples(SampleContext conte
                 true,
                 $"ContactId={expectedContactId}, line items={lineCountAfter}"));
 
+            var company = await context.Client.Company.GetCompanyAsync(cancellationToken);
+            if (company.Type == CompanyType.UkUnincorporatedLandlord)
+            {
+                var properties = await context.Client.Properties.ListAsync(cancellationToken: cancellationToken);
+                if (properties.Count > 0)
+                {
+                    var landlordPropertyId = properties[0].ResourceId;
+                    if (landlordPropertyId is > 0)
+                    {
+                        var invoiceForProperty = await context.Client.Invoices.GetInvoiceAsync(
+                            invoiceFromGet.ResourceId,
+                            cancellationToken);
+                        invoiceForProperty.PropertyId = landlordPropertyId;
+
+                        await context.Client.Invoices.UpdateInvoiceAsync(
+                            invoiceForProperty.ResourceId,
+                            invoiceForProperty,
+                            new InvoiceUpdateOptions { OmitLineItems = true },
+                            cancellationToken);
+
+                        var afterPropertyUpdate = await context.Client.Invoices.GetInvoiceAsync(
+                            invoiceForProperty.ResourceId,
+                            cancellationToken);
+
+                        if (afterPropertyUpdate.PropertyId != landlordPropertyId)
+                        {
+                            throw new InvalidOperationException(
+                                $"Invoice PropertyId update: expected {landlordPropertyId}, got {afterPropertyUpdate.PropertyId}.");
+                        }
+
+                        results.Add((
+                            "Invoice PropertyId write round-trip (landlord sandbox)",
+                            true,
+                            $"PropertyId={landlordPropertyId}"));
+                    }
+                }
+            }
+
             var invoiceForProjectClear = await context.Client.Invoices.GetInvoiceAsync(
                 invoiceFromGet.ResourceId,
                 cancellationToken);
