@@ -1,5 +1,6 @@
 @page "/sales-tax-periods/detail"
 @using FreeAgent.Client.BlazorSample.Services
+@using FreeAgent.Client.Samples.Shared
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
 @inject ApiDiagnosticsService ApiDiagnostics
@@ -40,6 +41,11 @@
                 @if (_operationMessage is not null)
                 {
                     <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                @if (_companyTypeWarning is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_companyTypeWarning</MudAlert>
                 }
 
                 <MudStack Spacing="2">
@@ -112,6 +118,7 @@
     public long? SalesTaxPeriodIdFromQuery { get; set; }
 
     private bool _loading;
+    private string? _companyTypeWarning;
     private string? _error;
     private string? _operationMessage;
     private string _wireApiResponse = string.Empty;
@@ -127,11 +134,44 @@
     private DateTime? _effectiveDate = new DateTime(2016, 9, 21);
     private string? _registrationNumber;
 
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshCompanyTypeWarningAsync();
+    }
+
     protected override void OnParametersSet()
     {
         if (SalesTaxPeriodIdFromQuery is > 0)
         {
             _salesTaxPeriodId = SalesTaxPeriodIdFromQuery;
+        }
+    }
+
+    private async Task RefreshCompanyTypeWarningAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            return;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var company = await client.Company.GetCompanyAsync();
+            if (!CompanySalesTaxPeriodSupport.SupportsSalesTaxPeriods(company.Type))
+            {
+                _companyTypeWarning =
+                    $"Connected company type is {company.Type?.ToString() ?? "unknown"} (sales tax periods apply to US and universal companies only).";
+            }
+            else
+            {
+                _companyTypeWarning = null;
+            }
+        }
+        catch
+        {
+            _companyTypeWarning = "Could not load company type to verify sales tax period eligibility.";
         }
     }
 

@@ -70,7 +70,9 @@ internal sealed class PayrollSamples(SampleContext context) : IConsoleSampleProv
         if (payment?.DueOn is null)
         {
             SampleContext.Skip(
-                "no unpaid liability payment due between the previous and latest payroll periods with payslips");
+                PayrollLiabilityPaymentProbeSupport.DescribeWhyNoPaymentSelected(
+                    periodsWithPayslips,
+                    taxYear.Payments));
         }
 
         var dueOn = payment.DueOn!.Value;
@@ -81,13 +83,25 @@ internal sealed class PayrollSamples(SampleContext context) : IConsoleSampleProv
 
         var paid = await context.Client.Payroll.MarkPaymentAsPaidAsync(taxYearEnd, dueOn, cancellationToken);
         var paidRow = paid.Payments?.FirstOrDefault(p => p.DueOn == dueOn);
+        if (paidRow?.Status is not PayrollPaymentStatus.MarkedAsPaid and not PayrollPaymentStatus.Paid)
+        {
+            throw new InvalidOperationException(
+                $"MarkPaymentAsPaidAsync did not return marked_as_paid for due date {dueOn:yyyy-MM-dd} (status: {paidRow?.Status}).");
+        }
+
         SampleOutput.WriteHeader("Marked payment as paid");
-        SampleOutput.WriteField("Status", paidRow?.Status);
+        SampleOutput.WriteField("Status", paidRow.Status);
 
         var unpaid = await context.Client.Payroll.MarkPaymentAsUnpaidAsync(taxYearEnd, dueOn, cancellationToken);
         var unpaidRow = unpaid.Payments?.FirstOrDefault(p => p.DueOn == dueOn);
+        if (unpaidRow?.Status is not PayrollPaymentStatus.Unpaid)
+        {
+            throw new InvalidOperationException(
+                $"MarkPaymentAsUnpaidAsync did not return unpaid for due date {dueOn:yyyy-MM-dd} (status: {unpaidRow?.Status}).");
+        }
+
         SampleOutput.WriteHeader("Marked payment as unpaid");
-        SampleOutput.WriteField("Status", unpaidRow?.Status);
+        SampleOutput.WriteField("Status", unpaidRow.Status);
     }
 
     private async Task<List<PayrollPeriod>> ListPeriodsWithPayslipsAsync(
@@ -98,7 +112,8 @@ internal sealed class PayrollSamples(SampleContext context) : IConsoleSampleProv
         var withPayslips = new List<PayrollPeriod>();
         foreach (var summary in periodSummaries
                      .Where(static period => period.PeriodNumber is not null)
-                     .OrderBy(static period => period.PeriodNumber))
+                     .OrderBy(static period => period.DatedOn ?? DateOnly.MinValue)
+                     .ThenBy(static period => period.PeriodNumber))
         {
             var periodNumber = summary.PeriodNumber!.Value;
             var detail = await context.Client.Payroll.ListPayslipsAsync(taxYearEnd, periodNumber, cancellationToken);

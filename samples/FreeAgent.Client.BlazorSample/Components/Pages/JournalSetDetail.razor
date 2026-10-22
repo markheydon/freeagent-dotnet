@@ -159,7 +159,8 @@
                 var currentUser = await client.Users.GetCurrentUserAsync();
                 if (!currentUser.TryGetResourceId(out var userId))
                 {
-                    throw new InvalidOperationException("Connected user is missing a parseable resource id.");
+                    _error = "Connected user is missing a parseable resource id.";
+                    return string.Empty;
                 }
 
                 _item = await client.JournalSets.CreateJournalSetAsync(
