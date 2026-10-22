@@ -68,9 +68,19 @@ public static class BankTransactionExplanationWriteProbeSupport
     public const decimal ProbeMoneyOutStatementAmount = ProbeMoneyOutGrossValue;
 
     /// <summary>
+    /// Gross value for invoice receipt probes (money in).
+    /// </summary>
+    public const decimal ProbeMoneyInGrossValue = 0.01m;
+
+    /// <summary>
+    /// Statement upload amount for invoice receipt bank transaction probes.
+    /// </summary>
+    public const decimal ProbeMoneyInStatementAmount = ProbeMoneyInGrossValue;
+
+    /// <summary>
     /// Gross value for capital asset disposal probes (money in).
     /// </summary>
-    public const decimal ProbeDisposalGrossValue = 0.01m;
+    public const decimal ProbeDisposalGrossValue = ProbeMoneyInGrossValue;
 
     /// <summary>
     /// Statement upload amount for disposal bank transaction probes.
@@ -155,10 +165,19 @@ public static class BankTransactionExplanationWriteProbeSupport
         return skipReason is null;
     }
 
+    /// <summary>
+    /// Statement upload amount for a probe variant (signed to match money in vs money out).
+    /// </summary>
+    public static decimal GetProbeStatementAmount(BankTransactionExplanationWriteProbeVariant variant) =>
+        GetProbeGrossValue(variant);
+
     private static decimal GetProbeGrossValue(BankTransactionExplanationWriteProbeVariant variant) =>
-        variant == BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetDisposal
-            ? ProbeDisposalGrossValue
-            : ProbeMoneyOutGrossValue;
+        variant switch
+        {
+            BankTransactionExplanationWriteProbeVariant.CreateInvoiceReceipt => ProbeMoneyInGrossValue,
+            BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetDisposal => ProbeDisposalGrossValue,
+            _ => ProbeMoneyOutGrossValue,
+        };
 
     public static string GetCallUnderTest(BankTransactionExplanationWriteProbeVariant variant) => variant switch
     {

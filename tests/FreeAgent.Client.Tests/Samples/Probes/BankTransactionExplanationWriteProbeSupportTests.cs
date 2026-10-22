@@ -82,7 +82,12 @@ public class BankTransactionExplanationWriteProbeSupportTests
             BankTransactionExplanationWriteProbeSupport.ProbeDisposalStatementAmount,
             BankTransactionExplanationWriteProbeSupport.ProbeDisposalGrossValue);
         Assert.True(BankTransactionExplanationWriteProbeSupport.ProbeMoneyOutGrossValue < 0);
+        Assert.True(BankTransactionExplanationWriteProbeSupport.ProbeMoneyInGrossValue > 0);
         Assert.True(BankTransactionExplanationWriteProbeSupport.ProbeDisposalGrossValue > 0);
+        Assert.Equal(
+            BankTransactionExplanationWriteProbeSupport.ProbeMoneyInGrossValue,
+            BankTransactionExplanationWriteProbeSupport.GetProbeStatementAmount(
+                BankTransactionExplanationWriteProbeVariant.CreateInvoiceReceipt));
     }
 
     private static BankTransaction CreateTransaction(long id, string? transactionId, string description) =>

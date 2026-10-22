@@ -296,7 +296,11 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         CancellationToken cancellationToken)
     {
         var bankAccount = await context.Data.GetFirstBankAccountAsync(cancellationToken);
-        var (bankTransactionId, uploadSkipReason) = await UploadProbeBankTransactionAsync(bankAccount.ResourceId, cancellationToken);
+        var uploadAmount = BankTransactionExplanationWriteProbeSupport.GetProbeStatementAmount(variant);
+        var (bankTransactionId, uploadSkipReason) = await UploadProbeBankTransactionAsync(
+            bankAccount.ResourceId,
+            cancellationToken,
+            uploadAmount);
         if (bankTransactionId is null)
         {
             return (null, uploadSkipReason ?? "could not upload or resolve a probe bank transaction");
@@ -329,7 +333,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
 
             case BankTransactionExplanationWriteProbeVariant.CreateInvoiceReceipt:
                 {
-                    var invoice = await context.Data.GetFirstInvoiceAsync(cancellationToken);
+                    var invoice = await context.Data.GetFirstReceiptableInvoiceAsync(cancellationToken);
                     invoiceId = invoice.ResourceId;
                     break;
                 }

@@ -201,6 +201,26 @@ internal sealed class SampleData
     }
 
     /// <summary>
+    /// Returns an invoice that can receive a bank receipt (not draft or already paid).
+    /// </summary>
+    public async Task<Invoice> GetFirstReceiptableInvoiceAsync(CancellationToken cancellationToken = default)
+    {
+        var page = await _context.Client.Invoices.ListAsync(perPage: 100, cancellationToken: cancellationToken);
+        var invoice = page.Items.FirstOrDefault(static item =>
+            item.Status is InvoiceStatus.Open
+                or InvoiceStatus.Overdue
+                or InvoiceStatus.ScheduledToEmail
+                or InvoiceStatus.ZeroValue);
+        if (invoice is null)
+        {
+            SampleContext.Skip(
+                "no open or overdue invoice available for invoice receipt probe (draft and paid invoices cannot be used)");
+        }
+
+        return invoice;
+    }
+
+    /// <summary>
     /// Returns the first estimate from the estimates list.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token.</param>
