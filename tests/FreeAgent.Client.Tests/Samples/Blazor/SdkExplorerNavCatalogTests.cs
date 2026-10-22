@@ -8,7 +8,7 @@ public sealed class SdkExplorerNavCatalogTests
     [Fact]
     public void TotalItemCount_MatchesCatalogEntries()
     {
-        Assert.Equal(82, SdkExplorerNavMatching.TotalItemCount(SdkExplorerNavCatalog.Groups));
+        Assert.Equal(85, SdkExplorerNavMatching.TotalItemCount(SdkExplorerNavCatalog.Groups));
     }
 
     [Fact]

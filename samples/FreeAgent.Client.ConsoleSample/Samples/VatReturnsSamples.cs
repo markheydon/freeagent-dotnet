@@ -45,4 +45,40 @@ internal sealed class VatReturnsSamples(SampleContext context) : IConsoleSampleP
         SampleOutput.WriteField("Breakdown title", detail.Breakdown?.Title);
         SampleOutput.WriteField("Breakdown rows", detail.Breakdown?.Rows?.Count);
     }
+
+    [ConsoleSample(Name = "Mark VAT return as filed (sandbox)", MutatesData = true, ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task MarkVatReturnAsFiledAsync(CancellationToken cancellationToken)
+    {
+        var periodEndsOn = await ResolvePeriodEndsOnAsync(cancellationToken);
+        var updated = await context.Client.VatReturns.MarkAsFiledAsync(periodEndsOn, cancellationToken);
+
+        SampleOutput.WriteHeader("Mark VAT return as filed");
+        SampleOutput.WriteField("Period ends", updated.PeriodEndsOn);
+        SampleOutput.WriteField("Filing status", updated.FilingStatus);
+    }
+
+    [ConsoleSample(Name = "Mark VAT return as unfiled (sandbox)", MutatesData = true, ExcludeFromRunAll = true)]
+    [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
+    private async Task MarkVatReturnAsUnfiledAsync(CancellationToken cancellationToken)
+    {
+        var periodEndsOn = await ResolvePeriodEndsOnAsync(cancellationToken);
+        var updated = await context.Client.VatReturns.MarkAsUnfiledAsync(periodEndsOn, cancellationToken);
+
+        SampleOutput.WriteHeader("Mark VAT return as unfiled");
+        SampleOutput.WriteField("Period ends", updated.PeriodEndsOn);
+        SampleOutput.WriteField("Filing status", updated.FilingStatus);
+    }
+
+    private async Task<DateOnly> ResolvePeriodEndsOnAsync(CancellationToken cancellationToken)
+    {
+        var returns = await context.Client.VatReturns.ListAsync(cancellationToken);
+        if (returns.Count == 0)
+        {
+            SampleContext.Skip("no VAT returns available in this sandbox company");
+        }
+
+        return returns[0].PeriodEndsOn
+            ?? throw new InvalidOperationException("Listed VAT return is missing period_ends_on.");
+    }
 }

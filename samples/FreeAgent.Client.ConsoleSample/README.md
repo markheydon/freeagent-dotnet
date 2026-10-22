@@ -90,7 +90,7 @@ dotnet run
 ### What happens
 
 1. The app completes OAuth (browser flow or token from environment variables).
-2. A category menu appears (Company, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Capital assets, Capital asset types, Journal sets, Payroll, Payroll profiles, Properties, Depreciation profiles, CIS bands, CIS settings, Profit and loss, Balance sheet, Trial balance, Cashflow, Transactions, VAT returns, Corporation tax returns, Income tax returns, Self assessment returns, Final accounts reports, Sales tax periods, EC VAT MOSS, Stock items, Price list items).
+2. A category menu appears (Company, Account locks, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Capital assets, Capital asset types, Journal sets, Payroll, Payroll profiles, Properties, Depreciation profiles, CIS bands, CIS settings, Profit and loss, Balance sheet, Trial balance, Cashflow, Transactions, VAT returns, Corporation tax returns, Income tax returns, Self assessment returns, Final accounts reports, Sales tax periods, EC VAT MOSS, Stock items, Price list items).
 3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
@@ -120,6 +120,7 @@ Examples marked **(mutates)** write to the connected account.
 | Category | Examples |
 |----------|----------|
 | Company | Get company profile; list business categories; list tax timeline |
+| Account locks | List account locks |
 | Contacts | List active contacts; stream all contacts; get contact detail; **(mutates)** create probe contact and delete; **(mutates)** update contact organisation name |
 | Categories | List category sets; get category by nominal code; **(mutates)** create/update income category and delete; **(mutates)** create/update cost of sales category and delete; **(mutates)** create/update admin expenses category and delete; **(mutates)** create/update current asset category and delete; **(mutates)** create/update liabilities category and delete; **(mutates)** create/update equity category and delete |
 | Projects | List projects; stream all projects via ListAutoPagingAsync; list active projects; get project detail; list projects for contact; **(mutates)** create probe project and delete; **(mutates)** update project name |
@@ -150,7 +151,7 @@ Examples marked **(mutates)** write to the connected account.
 | Trial balance | Get trial balance summary; Get trial balance opening balances |
 | Cashflow | Get cashflow summary |
 | Transactions | List transactions; List transactions for a date range; Get transaction by id |
-| VAT returns | List VAT returns; Get VAT return detail |
+| VAT returns | List VAT returns; Get VAT return detail; **(mutates, menu-only)** mark as filed/unfiled |
 | Corporation tax returns | List corporation tax returns; Get corporation tax return detail; **(mutates, menu-only)** mark as filed/unfiled/paid/unpaid |
 | Income tax returns | List income tax returns; Get income tax return detail; **(mutates, menu-only)** mark return/payment transitions (`ExcludeFromRunAll` when sandbox has no SA data) |
 | Self assessment returns | List self assessment returns; Get self assessment return detail; **(mutates, menu-only)** mark return/payment transitions (`ExcludeFromRunAll` when sandbox has no SA data) |
@@ -308,7 +309,7 @@ The pinned NuGet version is defined in [`Directory.Packages.props`](../../Direct
 If you copy the project files into your own solution, remove the `UseLocalFreeAgentClient` property and project-reference block, then add the package:
 
 ```bash
-dotnet add package FreeAgent.Client --version 0.1.0-alpha.6
+dotnet add package FreeAgent.Client --version 0.1.0-beta.1
 ```
 
 ---

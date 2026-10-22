@@ -1,7 +1,7 @@
 # Scope
 
 **Project:** FreeAgent.NET
-**Last updated:** 4 September 2026
+**Last updated:** 22 October 2026
 
 ---
 

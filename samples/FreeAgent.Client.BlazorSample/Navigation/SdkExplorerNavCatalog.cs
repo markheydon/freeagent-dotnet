@@ -20,6 +20,8 @@ public static class SdkExplorerNavCatalog
             Item("Company Overview", "/company", Icons.Material.Filled.FactCheck),
             Item("Business Categories", "/company/business-categories", Icons.Material.Filled.Category),
             Item("Tax Timeline", "/company/tax-timeline", Icons.Material.Filled.Event),
+            Item("Account locks list", "/account-locks", Icons.Material.Filled.Lock),
+            Item("Account locks writes", "/account-locks/detail", Icons.Material.Filled.LockOpen),
             Item("Email addresses", "/email-addresses", Icons.Material.Filled.Email)),
         Group(
             "Contacts",
@@ -116,6 +118,7 @@ public static class SdkExplorerNavCatalog
             "Taxes",
             Icons.Material.Filled.ReceiptLong,
             Item("VAT returns", "/vat-returns", Icons.Material.Filled.ReceiptLong),
+            Item("VAT return detail", "/vat-returns/detail", Icons.Material.Filled.Edit),
             Item("Corporation tax returns", "/corporation-tax-returns", Icons.Material.Filled.Gavel),
             Item("Corporation tax return detail", "/corporation-tax-returns/detail", Icons.Material.Filled.Edit),
             Item("Income tax returns", "/income-tax-returns", Icons.Material.Filled.Assignment),

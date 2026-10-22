@@ -3,9 +3,14 @@ using System.Text.Json.Serialization;
 
 namespace FreeAgent.Client.Infrastructure.Serialization;
 
+[JsonSerializable(typeof(FreeAgent.Client.AccountLock))]
+[JsonSerializable(typeof(FreeAgent.Client.AccountLockRequest))]
+[JsonSerializable(typeof(FreeAgent.Client.AccountLockWritePayload))]
+[JsonSerializable(typeof(FreeAgent.Client.AccountLocksListResponse))]
 [JsonSerializable(typeof(FreeAgent.Client.AccountingTransaction))]
 [JsonSerializable(typeof(FreeAgent.Client.AccountingTransactionForeignCurrency))]
 [JsonSerializable(typeof(FreeAgent.Client.AccountingTransactionResponse))]
+[JsonSerializable(typeof(FreeAgent.Client.AccountingTransactionSourceKind))]
 [JsonSerializable(typeof(FreeAgent.Client.AccountingTransactionsListResponse))]
 [JsonSerializable(typeof(FreeAgent.Client.AnnualAccountingPeriod))]
 [JsonSerializable(typeof(FreeAgent.Client.Attachment))]

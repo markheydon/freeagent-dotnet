@@ -55,6 +55,7 @@ Landlord **property** links on sales and purchase documents use `PropertyId` on 
 | [Bank transactions](bank-transactions.md) | `client.BankTransactions` | [Bank transactions](https://dev.freeagent.com/docs/bank_transactions) |
 | [Hire purchases](hire-purchases.md) | `client.HirePurchases` | [Hire purchases](https://dev.freeagent.com/docs/hire_purchases) |
 | [Expenses](expenses.md) | `client.Expenses` | [Expenses](https://dev.freeagent.com/docs/expenses) |
+| [Account locks](account-locks.md) | `client.AccountLocks` | [Account locks](https://dev.freeagent.com/docs/account_locks) |
 | [Attachments](attachments.md) | `client.Attachments` | [Attachments](https://dev.freeagent.com/docs/attachments) |
 | [Stock items](stock-items.md) | `client.StockItems` | [Stock items](https://dev.freeagent.com/docs/stock_items) |
 | [Price list items](price-list-items.md) | `client.PriceListItems` | [Price list items](https://dev.freeagent.com/docs/price_list_items) |
@@ -67,4 +68,4 @@ Landlord **property** links on sales and purchase documents use `PropertyId` on 
 
 ## Not yet implemented
 
-Resources described in the [API entity map](../explanation/api-entity-map.md) but not yet implemented in the SDK are tracked via [GitHub Issues](https://github.com/markheydon/freeagent-dotnet/issues).
+All company API resources listed on the [FreeAgent docs index](https://dev.freeagent.com/docs/index) are implemented here, except the separate [Accountancy Practice API](https://dev.freeagent.com/docs/accountancy_practice_api) product surface. Future API additions or out-of-scope work are tracked via [GitHub Issues](https://github.com/markheydon/freeagent-dotnet/issues).

@@ -1,7 +1,7 @@
 # Versioning Policy
 
 **Project:** FreeAgent.NET
-**Last updated:** 30 April 2026
+**Last updated:** 22 October 2026
 
 ---
 
@@ -13,15 +13,15 @@ FreeAgent.NET uses [Semantic Versioning 2.0.0](https://semver.org/). Until the M
 
 ---
 
-## Current Stage: Alpha
+## Current Stage: Beta
 
-The package is currently published with the `alpha` prerelease tag (e.g. `0.1.0-alpha.1`).
+The package is currently published with the `beta` prerelease tag (e.g. `0.1.0-beta.1`).
 
-### What alpha means
+### What beta means
 
-- Core architecture and API surface are being established.
-- Breaking changes between alpha releases are possible and will be noted in release notes.
-- Not recommended for production use.
+- MVP scope in [SCOPE.md](SCOPE.md) is feature-complete for the company FreeAgent API (see [API coverage](docs/reference/api-coverage.md)).
+- Breaking changes are avoided where possible and will be called out in release notes.
+- Suitable for integration testing and feedback; stable `1.0.0` still requires the criteria in *Criteria for First Stable 1.0.0* below.
 
 ---
 
@@ -73,7 +73,7 @@ The release workflow will:
 If you depend on a prerelease version of this package, pin to an exact version in your project file:
 
 ```xml
-<PackageReference Include="FreeAgent.Client" Version="0.1.0-alpha.1" />
+<PackageReference Include="FreeAgent.Client" Version="0.1.0-beta.1" />
 ```
 
 ---
@@ -82,4 +82,5 @@ If you depend on a prerelease version of this package, pin to an exact version i
 
 | Date | Change | Reason |
 |---|---|---|
+| 22 October 2026 | Promote to beta (`0.1.0-beta.1`) | Company API coverage complete |
 | 30 April 2026 | Initial draft | Adopt prerelease versioning policy |

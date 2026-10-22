@@ -3,7 +3,7 @@
 
 **Project:** FreeAgent.NET
 **Owner:** Mark Heydon
-**Last updated:** 4 September 2026
+**Last updated:** 22 October 2026
 
 ---
 
@@ -56,6 +56,7 @@ I will stop work on this project if:
 ## Revision History
 | Date | Change | Reason |
 |---|---|---|
+| 22 October 2026 | Refresh document metadata after whole-repo goals review | Governance doc housekeeping; no goal text changes |
 | 4 September 2026 | Clarified G2: Stripe.NET-quality is a floor; IntelliSense for documented writes; fail-fast only for official local contract constraints | ADR-0010; Categories workflow; avoid invented validation |
 | 3 May 2026 | Clarified OAuth protocol-level helpers in scope; revised out-of-scope OAuth bullet | Broadened SDK utility remit |
 | 29 April 2026 | Initial draft - project kickoff | Project kickoff |
