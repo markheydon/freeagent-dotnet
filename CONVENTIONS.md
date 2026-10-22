@@ -4,7 +4,7 @@
 
 
 **Project:** FreeAgent.NET
-**Last updated:** 21 October 2026
+**Last updated:** 22 October 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.
@@ -30,7 +30,7 @@ src/
 	├── Models/                          # Resource-grouped strongly typed models (one folder per API resource area)
 	│   ├── Attachments/ … VatReturns/   # See src/FreeAgent.Client/Models/ for the full set (reports, tax, payroll, banking, sales, purchases, and Shared/)
 	└── Services/                        # Resource-oriented service classes (folder per resource; *Service.cs entry point)
-		├── Attachments/ … VatReturns/     # See src/FreeAgent.Client/Services/ — 44 resource services including reports, tax returns, payroll, banking, and assets
+		├── Attachments/ … VatReturns/     # See src/FreeAgent.Client/Services/ — 45 resource services including reports, tax returns, payroll, banking, and assets
 
 tests/
 └── FreeAgent.Client.Tests/
@@ -125,6 +125,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
+| 22 October 2026 | Correct resource service count in project-structure tree (45) | Goals review documentation drift |
 | 21 October 2026 | Refresh project-structure tree after goals review | SDK surface now includes reports, tax, payroll, and banking clusters |
 | 25 September 2026 | Unified link write contract: `*Id` on models, `*Reference` for filters and inbound URLs | Linked resource contract refactor |
 | 25 September 2026 | Refresh project-structure tree for Sales cluster services, models, and tests | Goals review documentation drift after #64 |
