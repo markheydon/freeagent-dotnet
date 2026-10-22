@@ -6,7 +6,7 @@ nav_order: 26
 
 # Cashflow
 
-Read historic cashflow for a date range.
+Read **historic** cashflow for a date range. FreeAgent’s in-product Cashflow chart includes **projected** cashflow; that projection is **not** available on this API. Dates in the future return zero totals (see [FreeAgent cashflow docs](https://dev.freeagent.com/docs/cashflow)).
 
 | | |
 |---|---|
