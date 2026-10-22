@@ -262,6 +262,7 @@ public sealed class CreditNotesService
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(creditNote);
+        SalesDocumentWriteValidator.ValidateCreditNoteForCreate(creditNote);
         EcMossWriteRequirements.ValidateInvoiceEcStatus(creditNote.EcStatus, creditNote.PlaceOfSupply, nameof(creditNote));
 
         var content = FreeAgentJsonSerializer.CreateContent(new CreditNoteRequest
@@ -306,6 +307,7 @@ public sealed class CreditNotesService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(creditNoteId);
         ArgumentNullException.ThrowIfNull(creditNote);
         ShowProjectNameWriteSupport.ValidateCreditNoteUpdate(creditNote);
+        SalesDocumentWriteValidator.ValidateCreditNoteForUpdate(creditNote, options?.OmitLineItems == true);
         EcMossWriteRequirements.ValidateInvoiceEcStatus(creditNote.EcStatus, creditNote.PlaceOfSupply, nameof(creditNote));
 
         var content = FreeAgentJsonSerializer.CreateContent(new CreditNoteRequest

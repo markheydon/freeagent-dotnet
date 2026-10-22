@@ -183,10 +183,18 @@ public sealed class BillItem
     public string? DepreciationSchedule { get; set; }
 
     /// <summary>
-    /// Capital asset resource URI. Read-only on the wire.
+    /// Wire representation of the capital asset link on read responses.
     /// </summary>
     [JsonPropertyName("capital_asset")]
-    public string? CapitalAssetUri { get; set; }
+    [JsonInclude]
+    internal string? CapitalAssetWire { get; set; }
+
+    /// <summary>
+    /// Capital asset identifier for capital purchases. Read-only from the API.
+    /// </summary>
+    [JsonIgnore]
+    public long? CapitalAssetId =>
+        CapitalAssetReference.TryParse(CapitalAssetWire, out var reference) ? reference.Id : null;
 
     /// <summary>
     /// Capital asset purchase attributes for create and update requests.

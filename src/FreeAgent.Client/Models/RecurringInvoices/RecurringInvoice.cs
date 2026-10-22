@@ -63,13 +63,23 @@ public sealed class RecurringInvoice : IFreeAgentResource
     public long? ProjectId => ProjectLink?.Id;
 
     /// <summary>
-    /// Property URI for landlord companies.
+    /// Wire representation of the property link.
     /// </summary>
-    /// <remarks>
-    /// Full property operations are not yet implemented in the SDK.
-    /// </remarks>
     [JsonPropertyName("property")]
-    public string? PropertyUri { get; set; }
+    [JsonInclude]
+    internal ExpandableField<LandlordProperty>? PropertyLink { get; set; }
+
+    /// <summary>
+    /// Landlord property when returned nested on the wire.
+    /// </summary>
+    [JsonIgnore]
+    public LandlordProperty? Property => PropertyLink?.Value;
+
+    /// <summary>
+    /// Property identifier parsed from the recurring invoice response.
+    /// </summary>
+    [JsonIgnore]
+    public long? PropertyId => PropertyLink?.Id;
 
     /// <summary>
     /// Timeslip grouping option.

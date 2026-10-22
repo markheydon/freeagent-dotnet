@@ -17,7 +17,8 @@ internal sealed class InvoiceWritePayload
     public WriteLink<ProjectReference>? Project { get; set; }
 
     [JsonPropertyName("property")]
-    public string? Property { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<PropertyReference>))]
+    public WriteLink<PropertyReference>? Property { get; set; }
 
     [JsonPropertyName("include_timeslips")]
     public InvoiceIncludeTimeslips? IncludeTimeslips { get; set; }
@@ -125,7 +126,10 @@ internal sealed class InvoiceWritePayload
                 invoice.ProjectIdBacking,
                 invoice.ProjectLinkId,
                 linkOptions.OmitProject),
-            Property = invoice.PropertyUri,
+            Property = LinkedResourceWriteMapper.ResolvePropertyReference(
+                environment,
+                invoice.PropertyIdBacking,
+                invoice.PropertyLinkId),
             IncludeTimeslips = invoice.IncludeTimeslips,
             IncludeExpenses = invoice.IncludeExpenses,
             IncludeEstimates = invoice.IncludeEstimates,

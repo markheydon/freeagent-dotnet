@@ -11,6 +11,7 @@ public sealed class CreditNote : IFreeAgentResource
     private SettableLinkId _contactId;
     private SettableLinkId _projectId;
     private SettableLinkId _bankAccountId;
+    private SettableLinkId _propertyId;
 
     /// <summary>
     /// Credit note resource URL.
@@ -87,13 +88,27 @@ public sealed class CreditNote : IFreeAgentResource
     }
 
     /// <summary>
-    /// Property URI for landlord companies.
+    /// Wire representation of the property link.
     /// </summary>
-    /// <remarks>
-    /// Full property operations are not yet implemented in the SDK.
-    /// </remarks>
     [JsonPropertyName("property")]
-    public string? PropertyUri { get; set; }
+    [JsonInclude]
+    internal ExpandableField<LandlordProperty>? PropertyLink { get; set; }
+
+    /// <summary>
+    /// Landlord property when returned nested on the wire.
+    /// </summary>
+    [JsonIgnore]
+    public LandlordProperty? Property => PropertyLink?.Value;
+
+    /// <summary>
+    /// Property identifier for create and update requests for landlord companies.
+    /// </summary>
+    [JsonIgnore]
+    public long? PropertyId
+    {
+        get => _propertyId.Get(PropertyLink?.Id);
+        set => _propertyId.Set(value);
+    }
 
     /// <summary>
     /// Credit note reference.
@@ -332,6 +347,10 @@ public sealed class CreditNote : IFreeAgentResource
     internal long? ProjectLinkId => ProjectLink?.Id;
 
     internal SettableLinkId BankAccountIdBacking => _bankAccountId;
+
+    internal SettableLinkId PropertyIdBacking => _propertyId;
+
+    internal long? PropertyLinkId => PropertyLink?.Id;
 
     internal long? BankAccountLinkId => BankAccountLink?.Id;
 

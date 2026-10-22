@@ -151,9 +151,9 @@ public sealed class UpdateBankTransactionExplanationRequest
     public long? DisposedAssetId { get; set; }
 
     /// <summary>
-    /// Property URI for landlord companies.
+    /// Property identifier for landlord companies.
     /// </summary>
-    public string? PropertyUri { get; set; }
+    public long? PropertyId { get; set; }
 
     /// <summary>
     /// Opening balance contact identifier.

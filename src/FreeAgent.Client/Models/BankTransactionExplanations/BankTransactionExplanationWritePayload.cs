@@ -99,7 +99,7 @@ internal sealed class BankTransactionExplanationWritePayload
     public CapitalAssetReference? DisposedAsset { get; set; }
 
     [JsonPropertyName("property")]
-    public string? PropertyUri { get; set; }
+    public PropertyReference? Property { get; set; }
 
     [JsonPropertyName("direct_contact")]
     public ContactReference? DirectContact { get; set; }
@@ -143,7 +143,7 @@ internal sealed class BankTransactionExplanationWritePayload
             AssetLifeYears = request.CapitalAssetPurchase is null ? request.AssetLifeYears : null,
             CapitalAsset = CapitalAssetPurchaseWritePayload.FromWrite(request.CapitalAssetPurchase),
             DisposedAsset = LinkedResourceWriteMapper.ToCapitalAssetReference(environment, request.DisposedAssetId),
-            PropertyUri = request.PropertyUri,
+            Property = LinkedResourceWriteMapper.ToPropertyReference(environment, request.PropertyId),
             DirectContact = LinkedResourceWriteMapper.ToContactReference(environment, request.DirectContactId)
         };
     }

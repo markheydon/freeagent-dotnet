@@ -49,7 +49,7 @@ public sealed class BankTransactionExplanationWriteProbeContext
 
     public string CategoryNominalCode { get; init; } = "285";
 
-    public string PropertyUri { get; init; } = string.Empty;
+    public long PropertyId { get; init; }
 }
 
 /// <summary>
@@ -135,8 +135,8 @@ public static class BankTransactionExplanationWriteProbeSupport
                 when context.TransferBankAccountId <= 0 =>
                 "Skipped: need at least two bank accounts for a transfer probe.",
             BankTransactionExplanationWriteProbeVariant.CreateLandlordProperty
-                when string.IsNullOrWhiteSpace(context.PropertyUri) =>
-                "Skipped: no property URI available (landlord company type required).",
+                when context.PropertyId <= 0 =>
+                "Skipped: no property ID available (landlord company type required).",
             BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetDisposal
                 when context.DisposedAssetId <= 0 =>
                 "Skipped: no disposed capital asset ID (console sample creates a probe asset first).",
@@ -335,7 +335,7 @@ public static class BankTransactionExplanationWriteProbeSupport
                     CreateLandlordPropertyBankTransactionExplanationRequest.Create(
                         context.BankTransactionId,
                         context.CategoryNominalCode,
-                        context.PropertyUri,
+                        context.PropertyId,
                         datedOn,
                         grossValue,
                         description: "SDK probe landlord property explanation"),

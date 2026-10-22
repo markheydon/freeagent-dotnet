@@ -26,6 +26,21 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP comp
 
 ## Recent breaking changes (alpha)
 
+### Property and capital asset linked resources (pre-V1 G2)
+
+| Before | After |
+|--------|--------|
+| `Invoice.PropertyUri`, `Bill.PropertyUri`, `Expense.PropertyUri`, `CreditNote.PropertyUri`, `RecurringInvoice.PropertyUri` | `PropertyId` (and optional read `Property`) |
+| `BankTransactionExplanation.PropertyUri` | `PropertyId` |
+| `UpdateBankTransactionExplanationRequest.PropertyUri` | `PropertyId` |
+| `Expense.CapitalAssetUri`, `BillItem.CapitalAssetUri`, `BankTransactionExplanation.CapitalAssetUri` / `DisposedAssetUri` | `CapitalAssetId` / `DisposedAssetId` (read-only, parsed from the wire) |
+| `CreateLandlordPropertyBankTransactionExplanationRequest.Create(..., string propertyUri, ...)` | `Create(..., long propertyId, ...)` only |
+| `CreateLandlordPropertyBankTransactionExplanationRequest.Create(..., long propertyId, FreeAgentEnvironment, ...)` | Removed — the service supplies the environment |
+
+`AccountingTransaction` adds `SourceItemKind` alongside `SourceItemId` for report rows.
+
+Create and update calls on invoices, estimates, credit notes, bills, expenses, and journal sets now throw `ArgumentException` before HTTP when documented required fields are missing (contact, dates, line descriptions, journal balance on create, and related rules). Company-type constraints still surface as API validation errors.
+
 ### Model namespace flattening
 
 All public model types now live in `FreeAgent.Client` alongside `FreeAgentClient` and `*GetOptions`. Remove every `using FreeAgent.Client.Models.*;` directive.

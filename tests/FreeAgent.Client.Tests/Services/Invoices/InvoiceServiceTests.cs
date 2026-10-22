@@ -1105,4 +1105,19 @@ public class InvoiceServiceTests
             EcStatus = InvoiceEcStatus.EcVatMoss
         }));
     }
+
+    [Fact]
+    public async Task CreateInvoiceAsync_MissingContact_ThrowsBeforeHttp()
+    {
+        using var httpClient = new HttpClient(new HttpClientHandler()) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new InvoiceService(client);
+
+        await Assert.ThrowsAsync<ArgumentException>(() => service.CreateInvoiceAsync(new Invoice
+        {
+            DatedOn = new DateOnly(2024, 3, 18),
+            PaymentTermsInDays = 14,
+            InvoiceItems = [new InvoiceItem { Description = "Line", Price = 1m }]
+        }));
+    }
 }

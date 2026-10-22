@@ -243,6 +243,7 @@ public sealed class BillService
     public async Task<Bill> CreateBillAsync(Bill bill, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(bill);
+        SalesDocumentWriteValidator.ValidateBillForCreate(bill);
 
         var content = FreeAgentJsonSerializer.CreateContent(new BillRequest
         {
@@ -275,6 +276,7 @@ public sealed class BillService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(billId);
         ArgumentNullException.ThrowIfNull(bill);
+        SalesDocumentWriteValidator.ValidateBillForUpdate(bill, options?.OmitLineItems == true);
 
         var content = FreeAgentJsonSerializer.CreateContent(new BillRequest
         {

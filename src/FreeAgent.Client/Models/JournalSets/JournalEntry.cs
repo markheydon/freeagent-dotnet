@@ -202,11 +202,17 @@ public sealed class JournalEntry
         set => _propertyId.Set(value);
     }
 
+    private long? _explicitEntryId;
+
     /// <summary>
-    /// Journal entry identifier parsed from <see cref="Url"/>.
+    /// Journal entry identifier used when updating or destroying an existing line.
     /// </summary>
     [JsonIgnore]
-    public long? EntryId => !string.IsNullOrWhiteSpace(Url) && FreeAgentResourceId.TryParse(Url, out var id) ? id : null;
+    public long? EntryId
+    {
+        get => _explicitEntryId ?? TryParseEntryIdFromUrl();
+        set => _explicitEntryId = value;
+    }
 
     /// <summary>
     /// When <see langword="true"/>, removes the journal entry on update.
@@ -242,4 +248,7 @@ public sealed class JournalEntry
     internal SettableLinkId BankAccountIdBacking => _bankAccountId;
 
     internal long? BankAccountLinkId => BankAccountLink?.Id;
+
+    private long? TryParseEntryIdFromUrl() =>
+        !string.IsNullOrWhiteSpace(Url) && FreeAgentResourceId.TryParse(Url, out var id) ? id : null;
 }

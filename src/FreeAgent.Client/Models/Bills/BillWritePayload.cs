@@ -54,7 +54,8 @@ internal sealed class BillWritePayload
     public WriteLink<ProjectReference>? RebillToProject { get; set; }
 
     [JsonPropertyName("property")]
-    public string? Property { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<PropertyReference>))]
+    public WriteLink<PropertyReference>? Property { get; set; }
 
     [JsonPropertyName("recurring")]
     public BillRecurringSchedule? Recurring { get; set; }
@@ -117,7 +118,10 @@ internal sealed class BillWritePayload
                 bill.RebillToProjectIdBacking,
                 bill.RebillToProjectLinkId,
                 linkOptions.OmitRebillToProject),
-            Property = bill.PropertyUri,
+            Property = LinkedResourceWriteMapper.ResolvePropertyReference(
+                environment,
+                bill.PropertyIdBacking,
+                bill.PropertyLinkId),
             Recurring = bill.Recurring,
             RecurringEndDate = bill.RecurringEndDate,
             Attachment = bill.AttachmentWrite,

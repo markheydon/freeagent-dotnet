@@ -112,9 +112,9 @@
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4">
                             <MudStack Spacing="1">
-                                <MudTextField @bind-Value="_propertyUri" Label="Property URI (landlord)" />
+                                <MudNumericField @bind-Value="_propertyId" Label="Property ID (landlord)" Min="1" HideSpinButtons="true" />
                                 <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small" Disabled="_loading"
-                                           OnClick="LoadFirstPropertyUriAsync">Fill URI from first property (Properties API)</MudButton>
+                                           OnClick="LoadFirstPropertyIdAsync">Fill ID from first property (Properties API)</MudButton>
                             </MudStack>
                         </MudItem>
                         <MudItem xs="12">
@@ -220,7 +220,7 @@
     private long? _contactId;
     private long? _disposedAssetId;
     private string _categoryNominalCode = "285";
-    private string _propertyUri = string.Empty;
+    private long? _propertyId;
     private string _updateDescription = "SDK probe description update";
 
     private bool CanCreate => _bankTransactionId is > 0;
@@ -239,7 +239,7 @@
         }
     }
 
-    private async System.Threading.Tasks.Task LoadFirstPropertyUriAsync()
+    private async System.Threading.Tasks.Task LoadFirstPropertyIdAsync()
     {
         var token = TokenStore.GetToken();
         if (token is null)
@@ -261,8 +261,8 @@
                 return;
             }
 
-            _propertyUri = properties[0].Url;
-            _operationMessage = $"Property URI set from property {properties[0].ResourceId}.";
+            _propertyId = properties[0].ResourceId;
+            _operationMessage = $"Property ID set to {properties[0].ResourceId}.";
         }
         catch (FreeAgentApiException ex)
         {
@@ -400,7 +400,7 @@
             ContactId = _contactId ?? 0,
             DisposedAssetId = _disposedAssetId ?? 0,
             CategoryNominalCode = _categoryNominalCode,
-            PropertyUri = _propertyUri
+            PropertyId = _propertyId ?? 0
         };
 
     private async System.Threading.Tasks.Task RunOperationAsync(
@@ -480,6 +480,6 @@
         _stockItemId = _explanation.StockItemId ?? _stockItemId;
         _contactId = _explanation.DirectContactId ?? _contactId;
         _categoryNominalCode = _explanation.CategoryNominalCode ?? _categoryNominalCode;
-        _propertyUri = _explanation.PropertyUri ?? _propertyUri;
+        _propertyId = _explanation.PropertyId ?? _propertyId;
     }
 }

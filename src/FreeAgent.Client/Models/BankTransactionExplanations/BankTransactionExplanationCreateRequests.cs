@@ -455,7 +455,7 @@ public sealed class CreateLandlordPropertyBankTransactionExplanationRequest : Ba
 {
     internal string CategoryNominalCode { get; private init; } = string.Empty;
 
-    internal string PropertyUri { get; private init; } = string.Empty;
+    internal long PropertyId { get; private init; }
 
     /// <summary>
     /// Creates a landlord property-linked explanation.
@@ -463,54 +463,24 @@ public sealed class CreateLandlordPropertyBankTransactionExplanationRequest : Ba
     public static CreateLandlordPropertyBankTransactionExplanationRequest Create(
         long bankTransactionId,
         string categoryNominalCode,
-        string propertyUri,
+        long propertyId,
         DateOnly datedOn,
         decimal grossValue,
         string? description = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bankTransactionId);
         ArgumentException.ThrowIfNullOrWhiteSpace(categoryNominalCode);
-        ArgumentException.ThrowIfNullOrWhiteSpace(propertyUri);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(propertyId);
 
         return new CreateLandlordPropertyBankTransactionExplanationRequest
         {
             BankTransactionId = bankTransactionId,
             CategoryNominalCode = categoryNominalCode,
-            PropertyUri = propertyUri,
+            PropertyId = propertyId,
             DatedOn = datedOn,
             GrossValue = grossValue,
             Description = description
         };
-    }
-
-    /// <summary>
-    /// Creates a landlord property-linked explanation using a property identifier.
-    /// </summary>
-    /// <param name="bankTransactionId">Bank transaction identifier.</param>
-    /// <param name="categoryNominalCode">Landlord profit and loss category nominal code.</param>
-    /// <param name="propertyId">Property identifier (equivalent to <c>client.Urls.Property(propertyId)</c>).</param>
-    /// <param name="environment">Target API environment for URI construction.</param>
-    /// <param name="datedOn">Accounting date.</param>
-    /// <param name="grossValue">Gross value (negative for money out).</param>
-    /// <param name="description">Optional description.</param>
-    public static CreateLandlordPropertyBankTransactionExplanationRequest Create(
-        long bankTransactionId,
-        string categoryNominalCode,
-        long propertyId,
-        FreeAgentEnvironment environment,
-        DateOnly datedOn,
-        decimal grossValue,
-        string? description = null)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(propertyId);
-
-        return Create(
-            bankTransactionId,
-            categoryNominalCode,
-            PropertyReference.ForEnvironment(environment, propertyId).Uri,
-            datedOn,
-            grossValue,
-            description);
     }
 }
 

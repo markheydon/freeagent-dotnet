@@ -182,6 +182,7 @@ public sealed class ExpenseService
     public async Task<Expense> CreateExpenseAsync(Expense expense, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(expense);
+        ExpenseWriteValidator.ValidateForCreate(expense);
 
         var content = FreeAgentJsonSerializer.CreateContent(new ExpenseRequest
         {
@@ -212,6 +213,11 @@ public sealed class ExpenseService
             throw new ArgumentException("At least one expense is required.", nameof(expenses));
         }
 
+        foreach (var expense in expenses)
+        {
+            ExpenseWriteValidator.ValidateForCreate(expense);
+        }
+
         var content = FreeAgentJsonSerializer.CreateContent(new ExpensesBatchRequest
         {
             Expenses = expenses
@@ -239,6 +245,7 @@ public sealed class ExpenseService
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(expenseId);
         ArgumentNullException.ThrowIfNull(expense);
+        ExpenseWriteValidator.ValidateForUpdate(expense);
 
         var content = FreeAgentJsonSerializer.CreateContent(new ExpenseRequest
         {

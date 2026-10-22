@@ -239,6 +239,7 @@ public class BillServiceTests
         {
             ContactId = 2,
             DatedOn = new DateOnly(2024, 3, 18),
+            DueOn = new DateOnly(2024, 4, 18),
             BillItems =
             [
                 new BillItem

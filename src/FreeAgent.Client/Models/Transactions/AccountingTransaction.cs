@@ -92,6 +92,15 @@ public sealed class AccountingTransaction : IFreeAgentResource
     public string? SourceItemUrl { get; set; }
 
     /// <summary>
+    /// Resource kind parsed from <see cref="SourceItemUrl"/> when recognised.
+    /// </summary>
+    [JsonIgnore]
+    public AccountingTransactionSourceKind? SourceItemKind =>
+        AccountingTransactionSourceItem.TryParse(SourceItemUrl, out var kind, out _)
+            ? kind
+            : null;
+
+    /// <summary>
     /// Numeric identifier parsed from <see cref="SourceItemUrl"/> when the final path segment is numeric.
     /// </summary>
     [JsonIgnore]

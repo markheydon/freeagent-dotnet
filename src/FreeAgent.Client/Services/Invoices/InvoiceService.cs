@@ -256,6 +256,7 @@ public sealed class InvoiceService
     public async Task<Invoice> CreateInvoiceAsync(Invoice invoice, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(invoice);
+        SalesDocumentWriteValidator.ValidateInvoiceForCreate(invoice);
         EcMossWriteRequirements.ValidateInvoiceEcStatus(invoice.EcStatus, invoice.PlaceOfSupply, nameof(invoice));
 
         var content = FreeAgentJsonSerializer.CreateContent(new InvoiceRequest
@@ -323,6 +324,7 @@ public sealed class InvoiceService
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(invoiceId);
         ArgumentNullException.ThrowIfNull(invoice);
         ShowProjectNameWriteSupport.ValidateInvoiceUpdate(invoice);
+        SalesDocumentWriteValidator.ValidateInvoiceForUpdate(invoice, options?.OmitLineItems == true);
         EcMossWriteRequirements.ValidateInvoiceEcStatus(invoice.EcStatus, invoice.PlaceOfSupply, nameof(invoice));
 
         var content = FreeAgentJsonSerializer.CreateContent(new InvoiceRequest

@@ -115,8 +115,27 @@ Invoices link to contacts, projects, bank accounts, and line-item categories:
 |----------|----------------|
 | `ContactId`, `ContactName`, `Contact` | Contact link on the invoice |
 | `ProjectId`, `Project` | Optional project link on the invoice |
+| `PropertyId`, `Property` | Optional landlord property link |
 | `BankAccountId`, `BankAccount` | Optional remittance bank account |
 | `CategoryNominalCode` | Category link on line items |
+
+Landlord property and capital asset links on purchases documents, expenses, bills, and bank explanations:
+
+| Property | When it is set |
+|----------|----------------|
+| `PropertyId`, `Property` | When the API returns a property URI (landlord companies) |
+| `CapitalAssetId` | Read-only when the API returns a `capital_asset` URI on expenses, bill lines, or bank explanations |
+| `DisposedAssetId` | Read-only when the API returns a `disposed_asset` URI on bank explanations |
+
+Writes use `PropertyId` on the model — not `client.Urls` at the call site:
+
+```csharp
+invoice.PropertyId = property.ResourceId;
+```
+
+### Common pitfall: contact and project navigation properties
+
+After a normal single-resource GET (for example `GetInvoiceAsync(id)` without options), navigation properties such as `invoice.Contact` and `invoice.Project` are **null** even though `ContactId`, `ContactName`, and `ProjectId` are populated from the wire response. That is intentional: full linked objects require a nested wire payload or an explicit `Include*` flag on `*GetOptions` (see [ADR-0011](../../adr/adr-0011-linked-resource-identity-and-expandable-references.md)). For display labels, use denormalised fields such as `ContactName`. For full organisation details, call `GetInvoiceAsync(id, new InvoiceGetOptions { IncludeContact = true })`.
 
 ```csharp
 var invoice = await client.Invoices.CreateInvoiceAsync(new Invoice

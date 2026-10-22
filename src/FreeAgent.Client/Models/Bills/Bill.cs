@@ -11,6 +11,7 @@ public sealed class Bill : IFreeAgentResource
     private SettableLinkId _contactId;
     private SettableLinkId _projectId;
     private SettableLinkId _rebillToProjectId;
+    private SettableLinkId _propertyId;
 
     /// <summary>
     /// Bill resource URL.
@@ -227,13 +228,27 @@ public sealed class Bill : IFreeAgentResource
     }
 
     /// <summary>
-    /// Property URI for landlord companies.
+    /// Wire representation of the property link.
     /// </summary>
-    /// <remarks>
-    /// Full property operations are not yet implemented in the SDK.
-    /// </remarks>
     [JsonPropertyName("property")]
-    public string? PropertyUri { get; set; }
+    [JsonInclude]
+    internal ExpandableField<LandlordProperty>? PropertyLink { get; set; }
+
+    /// <summary>
+    /// Landlord property when returned nested on the wire.
+    /// </summary>
+    [JsonIgnore]
+    public LandlordProperty? Property => PropertyLink?.Value;
+
+    /// <summary>
+    /// Property identifier for create and update requests for landlord companies.
+    /// </summary>
+    [JsonIgnore]
+    public long? PropertyId
+    {
+        get => _propertyId.Get(PropertyLink?.Id);
+        set => _propertyId.Set(value);
+    }
 
     /// <summary>
     /// Recurrence frequency for the bill.
@@ -340,6 +355,10 @@ public sealed class Bill : IFreeAgentResource
     internal SettableLinkId RebillToProjectIdBacking => _rebillToProjectId;
 
     internal long? RebillToProjectLinkId => RebillToProjectLink?.Id;
+
+    internal SettableLinkId PropertyIdBacking => _propertyId;
+
+    internal long? PropertyLinkId => PropertyLink?.Id;
 
     /// <summary>
     /// Attaches a hydrated contact to this bill.

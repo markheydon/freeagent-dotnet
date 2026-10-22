@@ -17,7 +17,8 @@ internal sealed class CreditNoteWritePayload
     public WriteLink<ProjectReference>? Project { get; set; }
 
     [JsonPropertyName("property")]
-    public string? Property { get; set; }
+    [JsonConverter(typeof(WriteLinkJsonConverter<PropertyReference>))]
+    public WriteLink<PropertyReference>? Property { get; set; }
 
     [JsonPropertyName("reference")]
     public string? Reference { get; set; }
@@ -101,7 +102,10 @@ internal sealed class CreditNoteWritePayload
                 creditNote.ProjectIdBacking,
                 creditNote.ProjectLinkId,
                 linkOptions.OmitProject),
-            Property = creditNote.PropertyUri,
+            Property = LinkedResourceWriteMapper.ResolvePropertyReference(
+                environment,
+                creditNote.PropertyIdBacking,
+                creditNote.PropertyLinkId),
             Reference = creditNote.Reference,
             DatedOn = creditNote.DatedOn,
             DueOn = creditNote.DueOn,
