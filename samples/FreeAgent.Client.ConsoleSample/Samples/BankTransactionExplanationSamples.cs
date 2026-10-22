@@ -437,7 +437,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         CancellationToken cancellationToken,
         decimal amount = BankTransactionExplanationWriteProbeSupport.ProbeMoneyOutStatementAmount)
     {
-        var fitId = $"sdk-console-bte-{DateTime.UtcNow:yyyyMMddHHmmss}";
+        var fitId = ProbeBankTransactionLifecycleSupport.CreateProbeFitId("sdk-console-bte");
         await context.Client.BankTransactions.UploadBankStatementAsync(
             new UploadBankStatementRequest(
             [
@@ -461,30 +461,33 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         var createdId = BankTransactionExplanationWriteProbeSupport.TryResolveUploadedBankTransactionId(
             uploaded.Items,
             fitId);
-        if (createdId is not null)
+        if (createdId is null)
+        {
+            foreach (var orphan in BankTransactionExplanationWriteProbeSupport.FindUploadOrphans(uploaded.Items, fitId))
+            {
+                await TryDeleteProbeBankTransactionAsync(orphan.ResourceId, cancellationToken);
+            }
+
+            return (null, "bank statement upload did not return a matching transaction id");
+        }
+
+        var detail = await context.Client.BankTransactions.GetBankTransactionAsync(createdId.Value, cancellationToken);
+        if (ProbeBankTransactionLifecycleSupport.IsUnexplainedForProbe(detail, amount))
         {
             return (createdId, null);
         }
 
-        foreach (var orphan in BankTransactionExplanationWriteProbeSupport.FindUploadOrphans(uploaded.Items, fitId))
-        {
-            await TryDeleteProbeBankTransactionAsync(orphan.ResourceId, cancellationToken);
-        }
-
-        return (null, "bank statement upload did not return a matching transaction id");
+        await TryDeleteProbeBankTransactionAsync(createdId.Value, cancellationToken);
+        return (
+            null,
+            $"uploaded bank transaction {createdId.Value} is not unexplained for probe amount {amount.ToString(CultureInfo.InvariantCulture)} (unexplained {detail.UnexplainedAmount?.ToString(CultureInfo.InvariantCulture) ?? "null"})");
     }
 
-    private async Task TryDeleteProbeBankTransactionAsync(long bankTransactionId, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await context.Client.BankTransactions.DeleteBankTransactionAsync(bankTransactionId, cancellationToken);
-        }
-        catch (FreeAgentApiException)
-        {
-            // Explanation delete may have removed the transaction; ignore cleanup failures.
-        }
-    }
+    private Task TryDeleteProbeBankTransactionAsync(long bankTransactionId, CancellationToken cancellationToken) =>
+        ProbeBankTransactionLifecycleSupport.DeleteExplanationsAndBankTransactionAsync(
+            context.Client,
+            bankTransactionId,
+            cancellationToken);
 
     private static string FormatExplanationRow(BankTransactionExplanation explanation) =>
         $"{explanation.ResourceId,8}  gross={explanation.GrossValue,10}  type={explanation.Type?.ToString() ?? "—",-20}  dated={explanation.DatedOn?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "—"}";
