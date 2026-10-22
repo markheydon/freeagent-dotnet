@@ -1,33 +1,32 @@
 name: Sandbox smoke
 
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
     branches:
       - main
-  pull_request:
-    branches:
-      - main
-  schedule:
-    # Weekly sandbox smoke on Monday 06:00 UTC
-    - cron: "0 6 * * 1"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: sandbox-smoke-${{ github.workflow }}-${{ github.ref }}
+  group: sandbox-smoke-${{ github.event.workflow_run.head_sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
   changes:
     name: Detect smoke-relevant changes
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     outputs:
       run_smoke: ${{ steps.decide.outputs.run_smoke }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Paths filter
         id: paths
@@ -42,8 +41,8 @@ jobs:
       - name: Decide smoke eligibility
         id: decide
         env:
-          EVENT: ${{ github.event_name }}
-          ACTOR: ${{ github.actor }}
+          EVENT: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.event || github.event_name }}
+          ACTOR: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.triggering_actor.login || github.actor }}
           PATHS_SMOKE: ${{ steps.paths.outputs.smoke }}
           FREEAGENT_BATCH_SKIP_SMOKE: ${{ vars.FREEAGENT_BATCH_SKIP_SMOKE }}
         run: |
@@ -75,7 +74,7 @@ jobs:
 
   build-console-smoke:
     name: Build console smoke
-    if: needs.changes.outputs.run_smoke == 'true'
+    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && needs.changes.outputs.run_smoke == 'true'
     runs-on: ubuntu-latest
     needs: [changes]
     timeout-minutes: 15
@@ -83,6 +82,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
@@ -101,12 +102,12 @@ jobs:
       - name: Upload console smoke build
         uses: actions/upload-artifact@v7
         with:
-          name: console-smoke
+          name: console-smoke-${{ github.event.workflow_run.head_sha || github.sha }}
           path: ${{ runner.temp }}/console-smoke
 
   console-smoke:
     name: Console Sample Smoke
-    if: needs.changes.outputs.run_smoke == 'true'
+    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && needs.changes.outputs.run_smoke == 'true'
     runs-on: ubuntu-latest
     needs: [build-console-smoke, changes]
     timeout-minutes: 25
@@ -114,6 +115,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
@@ -130,7 +133,19 @@ jobs:
             exit 0
           fi
 
-          case "${{ github.event_name }}" in
+          EVENT="${{ github.event_name }}"
+          if [[ "$EVENT" == "workflow_run" ]]; then
+            HEAD_BRANCH="${{ github.event.workflow_run.head_branch }}"
+            WR_EVENT="${{ github.event.workflow_run.event }}"
+            if [[ "$HEAD_BRANCH" == "main" && "$WR_EVENT" == "push" ]]; then
+              echo "mode=required" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "mode=skip" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          case "$EVENT" in
             push|schedule|workflow_dispatch)
               if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
                 echo "mode=required" >> "$GITHUB_OUTPUT"
@@ -156,7 +171,7 @@ jobs:
         if: steps.policy.outputs.mode == 'run'
         uses: actions/download-artifact@v8
         with:
-          name: console-smoke
+          name: console-smoke-${{ github.event.workflow_run.head_sha || github.sha }}
           path: console-smoke
 
       - name: Refresh sandbox access token

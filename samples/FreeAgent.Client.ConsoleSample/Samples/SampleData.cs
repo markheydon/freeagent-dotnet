@@ -205,20 +205,26 @@ internal sealed class SampleData
     /// </summary>
     public async Task<Invoice> GetFirstReceiptableInvoiceAsync(CancellationToken cancellationToken = default)
     {
-        var page = await _context.Client.Invoices.ListAsync(perPage: 100, cancellationToken: cancellationToken);
-        var invoice = page.Items.FirstOrDefault(static item =>
-            item.Status is InvoiceStatus.Open
-                or InvoiceStatus.Overdue
-                or InvoiceStatus.ScheduledToEmail
-                or InvoiceStatus.ZeroValue);
-        if (invoice is null)
+        await foreach (var invoice in _context.Client.Invoices.ListAutoPagingAsync(
+                           perPage: 100,
+                           cancellationToken: cancellationToken))
         {
-            SampleContext.Skip(
-                "no open or overdue invoice available for invoice receipt probe (draft and paid invoices cannot be used)");
+            if (IsReceiptableInvoice(invoice))
+            {
+                return invoice;
+            }
         }
 
-        return invoice;
+        SampleContext.Skip(
+            "no open or overdue invoice available for invoice receipt probe (draft and paid invoices cannot be used)");
+        return null!;
     }
+
+    private static bool IsReceiptableInvoice(Invoice invoice) =>
+        invoice.Status is InvoiceStatus.Open
+            or InvoiceStatus.Overdue
+            or InvoiceStatus.ScheduledToEmail
+            or InvoiceStatus.ZeroValue;
 
     /// <summary>
     /// Returns the first estimate from the estimates list.

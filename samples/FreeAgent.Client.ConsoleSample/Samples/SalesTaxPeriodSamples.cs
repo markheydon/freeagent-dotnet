@@ -55,9 +55,11 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
     {
         await EnsureSalesTaxPeriodsSupportedAsync(cancellationToken);
         var (probeId, createdForProbe) = await ResolveProbeSalesTaxPeriodIdAsync(cancellationToken);
+        decimal? originalRate1 = null;
         try
         {
             var existing = await context.Client.SalesTaxPeriods.GetSalesTaxPeriodAsync(probeId, cancellationToken);
+            originalRate1 = existing.SalesTaxRate1;
             var updated = await context.Client.SalesTaxPeriods.UpdateSalesTaxPeriodAsync(
                 probeId,
                 new UpdateSalesTaxPeriodRequest
@@ -75,6 +77,13 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
             if (createdForProbe)
             {
                 await context.Client.SalesTaxPeriods.DeleteSalesTaxPeriodAsync(probeId, cancellationToken);
+            }
+            else if (originalRate1 is not null)
+            {
+                await context.Client.SalesTaxPeriods.UpdateSalesTaxPeriodAsync(
+                    probeId,
+                    new UpdateSalesTaxPeriodRequest { SalesTaxRate1 = originalRate1 },
+                    cancellationToken);
             }
         }
     }

@@ -97,26 +97,31 @@ gh variable set FREEAGENT_BATCH_SKIP_SMOKE --repo markheydon/freeagent-dotnet --
 
 ## How the workflow behaves
 
-The **Console Sample Smoke** job is omitted unless the run is smoke-eligible. Eligibility is decided in the `Detect smoke-relevant changes` job:
+Sandbox smoke is a **separate workflow** from [CI](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml). It does not start until **CI has completed successfully** for the same commit (`workflow_run` on the `CI` workflow). That keeps unit tests and docs verification ahead of the long live API harness. CI and smoke still build independently (smoke publishes its own console sample artefact).
+
+Manual runs use **workflow_dispatch** on the Sandbox smoke workflow. Weekly API freshness uses the **CI** schedule (Monday 06:00 UTC); when that CI run succeeds, sandbox smoke follows automatically for eligible commits on `main`.
+
+The **Console Sample Smoke** job is omitted unless the run is smoke-eligible. Eligibility is decided in the `Detect smoke-relevant changes` job (against the CI commit SHA):
 
 | Condition | Smoke job |
 |-----------|-----------|
 | Changes under `src/`, `samples/`, or `scripts/ci/` (compared to the PR base or previous commit) | Eligible |
 | Documentation-only, tests-only, dependency-only (`.csproj` / lockfile), GitHub Actions-only, or other paths outside the list above | **Not** eligible — job skipped |
-| Pull request opened by **Dependabot** | **Not** eligible — unit tests still run; live API smoke is deferred to the weekly schedule |
-| Weekly schedule or **workflow_dispatch** | Always eligible (API freshness on `main`) |
+| Pull request opened by **Dependabot** | **Not** eligible — unit tests still run; live API smoke is deferred to the next successful CI on `main` |
+| **workflow_dispatch** on Sandbox smoke | Always eligible |
 
 When the job runs, credentials behave as before:
 
 | Trigger | Secrets configured? | Result |
 |---------|---------------------|--------|
-| Pull request (eligible) | No | Smoke **skipped** (forks and draft work stay unblocked) |
-| Pull request (eligible) | Yes | Smoke **runs** (secrets are available to workflows from this repository) |
-| Push to `main` (eligible) | No | Workflow **fails** (credentials required when smoke would run) |
-| Push to `main` (eligible) | Yes | Smoke **runs** |
-| Push to `main` (not eligible) | Any | Smoke job **skipped** |
-| Weekly schedule / manual dispatch on `main` | No | Workflow **fails** |
-| Weekly schedule / manual dispatch on `main` | Yes | Smoke **runs** |
+| CI succeeded on a pull request (eligible) | No | Smoke **skipped** (forks and draft work stay unblocked) |
+| CI succeeded on a pull request (eligible) | Yes | Smoke **runs** (secrets are available to workflows from this repository) |
+| CI succeeded on push to `main` (eligible) | No | Workflow **fails** (credentials required when smoke would run) |
+| CI succeeded on push to `main` (eligible) | Yes | Smoke **runs** |
+| CI succeeded on push to `main` (not eligible) | Any | Smoke job **skipped** |
+| CI failed or was cancelled | Any | Sandbox smoke workflow **does not run** smoke jobs |
+| Manual **workflow_dispatch** on `main` | No | Workflow **fails** when smoke is eligible |
+| Manual **workflow_dispatch** on `main` | Yes | Smoke **runs** when eligible |
 
 Before `--run-all`, the job:
 
@@ -140,7 +145,7 @@ Common causes:
 
 - Refresh token revoked (disconnect the app in FreeAgent, or security revocation)
 - OAuth client secret rotated without updating GitHub secrets
-- Sandbox rate limits (the job runs weekly plus on each `main` push when secrets exist)
+- Sandbox rate limits (the job runs after each successful CI on `main` when smoke-eligible, plus weekly via the CI schedule, when secrets exist)
 
 Re-run bootstrap (`--bootstrap-refresh-token`) and update the three repository secrets.
 

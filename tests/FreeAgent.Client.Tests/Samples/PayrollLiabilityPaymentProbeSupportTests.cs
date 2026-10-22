@@ -38,7 +38,7 @@ public sealed class PayrollLiabilityPaymentProbeSupportTests
     }
 
     [Fact]
-    public void TrySelectPreviousPeriodLiabilityPayment_FallsBackToLatestUnpaidBeforeLatestPayDate()
+    public void TrySelectPreviousPeriodLiabilityPayment_ReturnsNullWhenNoUnpaidBetweenPeriodPayDates()
     {
         var periods = new[]
         {
@@ -51,10 +51,7 @@ public sealed class PayrollLiabilityPaymentProbeSupportTests
             new PayrollPayment { DueOn = new DateOnly(2026, 4, 15), Status = PayrollPaymentStatus.Unpaid },
         };
 
-        var selected = PayrollLiabilityPaymentProbeSupport.TrySelectPreviousPeriodLiabilityPayment(periods, payments);
-
-        Assert.NotNull(selected);
-        Assert.Equal(new DateOnly(2026, 4, 15), selected.DueOn);
+        Assert.Null(PayrollLiabilityPaymentProbeSupport.TrySelectPreviousPeriodLiabilityPayment(periods, payments));
     }
 
     [Fact]

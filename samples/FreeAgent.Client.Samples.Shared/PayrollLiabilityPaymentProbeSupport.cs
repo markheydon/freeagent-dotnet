@@ -48,15 +48,7 @@ public static class PayrollLiabilityPaymentProbeSupport
             .OrderBy(payment => payment.DueOn)
             .ToList();
 
-        if (betweenPeriods.Count > 0)
-        {
-            return betweenPeriods[^1];
-        }
-
-        return unpaid
-            .Where(payment => payment.DueOn < latestPayDate)
-            .OrderBy(payment => payment.DueOn)
-            .LastOrDefault();
+        return betweenPeriods.Count > 0 ? betweenPeriods[^1] : null;
     }
 
     /// <summary>
@@ -94,7 +86,7 @@ public static class PayrollLiabilityPaymentProbeSupport
         }
 
         return
-            "no unpaid liability payment due on or after the previous payslip period pay date and before the latest payslip period pay date (or earlier fallback)";
+            "no unpaid liability payment due on or after the previous payslip period pay date and before the latest payslip period pay date";
     }
 
     private static List<PayrollPeriod> OrderPeriodsByPayDate(IReadOnlyList<PayrollPeriod> periodsWithPayslips) =>

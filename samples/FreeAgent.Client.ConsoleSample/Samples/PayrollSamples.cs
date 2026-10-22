@@ -112,9 +112,14 @@ internal sealed class PayrollSamples(SampleContext context) : IConsoleSampleProv
         var withPayslips = new List<PayrollPeriod>();
         foreach (var summary in periodSummaries
                      .Where(static period => period.PeriodNumber is not null)
-                     .OrderBy(static period => period.DatedOn ?? DateOnly.MinValue)
-                     .ThenBy(static period => period.PeriodNumber))
+                     .OrderByDescending(static period => period.DatedOn ?? DateOnly.MinValue)
+                     .ThenByDescending(static period => period.PeriodNumber))
         {
+            if (withPayslips.Count >= PayrollLiabilityPaymentProbeSupport.MinimumPeriodsWithPayslips)
+            {
+                break;
+            }
+
             var periodNumber = summary.PeriodNumber!.Value;
             var detail = await context.Client.Payroll.ListPayslipsAsync(taxYearEnd, periodNumber, cancellationToken);
             if (detail.Payslips is { Count: > 0 })

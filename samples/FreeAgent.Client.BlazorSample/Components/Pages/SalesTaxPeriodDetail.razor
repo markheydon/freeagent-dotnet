@@ -169,9 +169,10 @@
                 _companyTypeWarning = null;
             }
         }
-        catch
+        catch (FreeAgentApiException ex)
         {
-            _companyTypeWarning = "Could not load company type to verify sales tax period eligibility.";
+            _companyTypeWarning =
+                $"Could not load company type to verify sales tax period eligibility ({ex.Message}).";
         }
     }
 
