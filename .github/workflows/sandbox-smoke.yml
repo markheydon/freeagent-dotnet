@@ -224,6 +224,12 @@ jobs:
         run: |
           echo "Skipping console smoke - FREEAGENT_REFRESH_TOKEN not configured"
 
+      - name: Checkout
+        if: steps.policy.outputs.mode == 'run'
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.client_payload.sha || github.sha }}
+
       - name: Download console smoke build
         if: steps.policy.outputs.mode == 'run'
         uses: actions/download-artifact@v8
