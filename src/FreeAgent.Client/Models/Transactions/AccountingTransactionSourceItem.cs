@@ -30,7 +30,7 @@ public static class AccountingTransactionSourceItem
         }
 
         kind = ResolveKind(sourceItemUrl);
-        return true;
+        return kind != AccountingTransactionSourceKind.Unknown;
     }
 
     private static AccountingTransactionSourceKind ResolveKind(string sourceItemUrl)
@@ -63,6 +63,11 @@ public static class AccountingTransactionSourceItem
         if (ContainsSegment(sourceItemUrl, "estimates"))
         {
             return AccountingTransactionSourceKind.Estimate;
+        }
+
+        if (ContainsSegment(sourceItemUrl, "journal_entries"))
+        {
+            return AccountingTransactionSourceKind.JournalEntry;
         }
 
         return AccountingTransactionSourceKind.Unknown;

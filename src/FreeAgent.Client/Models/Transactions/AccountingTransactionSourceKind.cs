@@ -39,4 +39,9 @@ public enum AccountingTransactionSourceKind
     /// Estimate resource (<c>estimates</c>).
     /// </summary>
     Estimate,
+
+    /// <summary>
+    /// Journal entry resource (<c>journal_entries</c>).
+    /// </summary>
+    JournalEntry,
 }

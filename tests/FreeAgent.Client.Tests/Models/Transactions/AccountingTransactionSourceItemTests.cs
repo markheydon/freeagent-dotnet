@@ -27,4 +27,24 @@ public class AccountingTransactionSourceItemTests
     {
         Assert.False(AccountingTransactionSourceItem.TryParse(null, out _, out _));
     }
+
+    [Fact]
+    public void TryParse_RecognisesJournalEntry()
+    {
+        var url = "https://api.freeagent.com/v2/journal_sets/37/journal_entries/17";
+
+        Assert.True(AccountingTransactionSourceItem.TryParse(url, out var kind, out var id));
+        Assert.Equal(AccountingTransactionSourceKind.JournalEntry, kind);
+        Assert.Equal(17, id);
+    }
+
+    [Fact]
+    public void TryParse_ReturnsFalseForUnrecognisedSegmentWithNumericId()
+    {
+        var url = "https://api.freeagent.com/v2/manual_journals/99";
+
+        Assert.False(AccountingTransactionSourceItem.TryParse(url, out var kind, out var id));
+        Assert.Equal(AccountingTransactionSourceKind.Unknown, kind);
+        Assert.Equal(99, id);
+    }
 }
