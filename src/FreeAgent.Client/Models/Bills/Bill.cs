@@ -45,6 +45,11 @@ public sealed class Bill : IFreeAgentResource
     /// <summary>
     /// Contact when returned nested on the wire or hydrated via <see cref="BillGetOptions.IncludeContact"/>.
     /// </summary>
+    /// <remarks>
+    /// After a normal <c>GetBillAsync</c> this property is <see langword="null"/>; use <see cref="ContactId"/>
+    /// instead, or pass <see cref="BillGetOptions.IncludeContact"/>.
+    /// See the common pitfall section in <c>docs/explanation/linked-resources.md</c>.
+    /// </remarks>
     [JsonIgnore]
     public Contact? Contact => ContactLink?.Value;
 

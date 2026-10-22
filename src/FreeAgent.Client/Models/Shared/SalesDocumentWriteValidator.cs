@@ -1,3 +1,5 @@
+using FreeAgent.Client.Infrastructure.Serialization;
+
 namespace FreeAgent.Client;
 
 /// <summary>
@@ -15,6 +17,12 @@ internal static class SalesDocumentWriteValidator
     internal static void ValidateInvoiceForUpdate(Invoice invoice, bool omitLineItems)
     {
         ArgumentNullException.ThrowIfNull(invoice);
+        ValidateContactNotExplicitlyCleared(invoice.ContactIdBacking, invoice.ContactId, nameof(invoice));
+        if (omitLineItems)
+        {
+            ValidateSalesDocumentHeader(invoice.ContactId, invoice.DatedOn, invoice.PaymentTermsInDays, nameof(invoice));
+        }
+
         if (!omitLineItems)
         {
             ValidateInvoiceLineItemsForUpdate(invoice.InvoiceItems, nameof(invoice));
@@ -31,6 +39,12 @@ internal static class SalesDocumentWriteValidator
     internal static void ValidateEstimateForUpdate(Estimate estimate, bool omitLineItems)
     {
         ArgumentNullException.ThrowIfNull(estimate);
+        ValidateContactNotExplicitlyCleared(estimate.ContactIdBacking, estimate.ContactId, nameof(estimate));
+        if (omitLineItems)
+        {
+            ValidateDocumentHeader(estimate.ContactId, estimate.DatedOn, nameof(estimate));
+        }
+
         if (!omitLineItems)
         {
             ValidateEstimateLineItemsForUpdate(estimate.EstimateItems, nameof(estimate));
@@ -47,6 +61,16 @@ internal static class SalesDocumentWriteValidator
     internal static void ValidateCreditNoteForUpdate(CreditNote creditNote, bool omitLineItems)
     {
         ArgumentNullException.ThrowIfNull(creditNote);
+        ValidateContactNotExplicitlyCleared(creditNote.ContactIdBacking, creditNote.ContactId, nameof(creditNote));
+        if (omitLineItems)
+        {
+            ValidateSalesDocumentHeader(
+                creditNote.ContactId,
+                creditNote.DatedOn,
+                creditNote.PaymentTermsInDays,
+                nameof(creditNote));
+        }
+
         if (!omitLineItems)
         {
             ValidateCreditNoteLineItemsForUpdate(creditNote.CreditNoteItems, nameof(creditNote));
@@ -63,9 +87,26 @@ internal static class SalesDocumentWriteValidator
     internal static void ValidateBillForUpdate(Bill bill, bool omitLineItems)
     {
         ArgumentNullException.ThrowIfNull(bill);
+        ValidateContactNotExplicitlyCleared(bill.ContactIdBacking, bill.ContactId, nameof(bill));
+        if (omitLineItems)
+        {
+            ValidateBillHeader(bill.ContactId, bill.DatedOn, bill.DueOn, nameof(bill));
+        }
+
         if (!omitLineItems)
         {
             ValidateBillLineItemsForUpdate(bill.BillItems, nameof(bill));
+        }
+    }
+
+    private static void ValidateContactNotExplicitlyCleared(
+        SettableLinkId contactBacking,
+        long? contactId,
+        string paramName)
+    {
+        if (contactBacking.IsExplicitlySet && contactId is null)
+        {
+            throw new ArgumentException("Contact cannot be cleared.", paramName);
         }
     }
 

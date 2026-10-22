@@ -7,6 +7,7 @@ namespace FreeAgent.Client;
 /// </summary>
 /// <remarks>
 /// Does not validate category-specific shapes that require account state (user categories, stock categories, landlord property).
+/// Journal set balance is enforced on create only; partial updates may send a non-balancing subset of lines.
 /// </remarks>
 internal static class JournalEntryWriteValidator
 {

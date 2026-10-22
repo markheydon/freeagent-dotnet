@@ -136,13 +136,6 @@ internal sealed class ExpenseWritePayload
             expense.CategoryNominalCodeBacking,
             expense.CategoryLinkNominalCode);
 
-        if (expense.IsMileageCategoryBacking == false && category is null)
-        {
-            throw new ArgumentException(
-                "A category nominal code is required when IsMileageCategory is false.",
-                nameof(expense));
-        }
-
         return new ExpenseWritePayload
         {
             User = LinkedResourceWriteMapper.ResolveUserReference(

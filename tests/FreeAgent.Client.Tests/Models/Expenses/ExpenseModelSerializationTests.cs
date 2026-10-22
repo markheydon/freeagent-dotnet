@@ -76,7 +76,7 @@ public class ExpenseModelSerializationTests
     }
 
     [Fact]
-    public void FromExpense_IsMileageCategoryFalseWithoutCategory_Throws()
+    public void ValidateForUpdate_IsMileageCategoryFalseWithoutCategory_Throws()
     {
         const string json = """
             {
@@ -84,6 +84,7 @@ public class ExpenseModelSerializationTests
               "user": "https://api.freeagent.com/v2/users/1",
               "category": "Mileage",
               "dated_on": "2024-03-01",
+              "description": "Trip",
               "mileage": "10",
               "vehicle_type": "Car"
             }
@@ -94,7 +95,7 @@ public class ExpenseModelSerializationTests
         expense!.IsMileageCategory = false;
 
         var exception = Assert.Throws<ArgumentException>(() =>
-            ExpenseWritePayload.FromExpense(expense, FreeAgentEnvironment.Sandbox));
+            ExpenseWriteValidator.ValidateForUpdate(expense));
 
         Assert.Equal("expense", exception.ParamName);
     }
