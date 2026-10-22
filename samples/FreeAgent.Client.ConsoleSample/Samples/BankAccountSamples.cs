@@ -24,7 +24,7 @@ internal sealed class BankAccountSamples(SampleContext context) : IConsoleSample
     private async Task ListStandardBankAccountsAsync(CancellationToken cancellationToken)
     {
         var bankAccounts = await context.Client.BankAccounts.ListAsync(
-            BankAccountViews.StandardBankAccounts,
+            BankAccountView.StandardBankAccounts,
             cancellationToken);
 
         SampleOutput.WriteHeader($"Standard bank accounts ({bankAccounts.Count})");

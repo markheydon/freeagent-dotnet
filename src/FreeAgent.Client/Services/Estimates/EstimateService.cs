@@ -30,7 +30,7 @@ public sealed class EstimateService
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="EstimateViews.Draft"/>)</param>
+    /// <param name="view">Optional view filter (for example: <see cref="EstimateView.Draft"/>)</param>
     /// <param name="fromDate">Return estimates dated on or after this date</param>
     /// <param name="toDate">Return estimates dated on or before this date</param>
     /// <param name="updatedSince">Return estimates updated since this UTC timestamp</param>
@@ -46,7 +46,7 @@ public sealed class EstimateService
     public async Task<PaginatedResponse<Estimate>> ListAsync(
         int page = 1,
         int perPage = 25,
-        string? view = null,
+        EstimateView? view = null,
         DateOnly? fromDate = null,
         DateOnly? toDate = null,
         DateTimeOffset? updatedSince = null,
@@ -69,9 +69,9 @@ public sealed class EstimateService
             new("per_page", perPage.ToString(CultureInfo.InvariantCulture))
         };
 
-        if (!string.IsNullOrWhiteSpace(view))
+        if (view is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("view", view));
+            queryParameters.Add(new KeyValuePair<string, string>("view", EnumWireValue.Get(view.Value)));
         }
 
         if (fromDate is not null)
@@ -146,7 +146,7 @@ public sealed class EstimateService
     /// </summary>
     public async IAsyncEnumerable<Estimate> ListAutoPagingAsync(
         int perPage = 25,
-        string? view = null,
+        EstimateView? view = null,
         DateOnly? fromDate = null,
         DateOnly? toDate = null,
         DateTimeOffset? updatedSince = null,

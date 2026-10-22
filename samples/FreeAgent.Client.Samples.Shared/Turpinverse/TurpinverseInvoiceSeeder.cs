@@ -169,7 +169,7 @@ public sealed class TurpinverseInvoiceSeeder
         var invoicesByReference = new Dictionary<string, Invoice>(StringComparer.Ordinal);
 
         await foreach (var invoice in client.Invoices.ListAutoPagingAsync(
-                           view: InvoiceViews.All,
+                           view: InvoiceView.All,
                            cancellationToken: cancellationToken))
         {
             if (string.IsNullOrWhiteSpace(invoice.Reference)

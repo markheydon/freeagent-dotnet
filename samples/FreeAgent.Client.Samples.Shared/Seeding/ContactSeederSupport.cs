@@ -22,7 +22,7 @@ internal static class ContactSeederSupport
         var contactsByEmail = new Dictionary<string, Contact>(StringComparer.OrdinalIgnoreCase);
 
         await foreach (var contact in client.Contacts.ListAutoPagingAsync(
-                           view: ContactViews.All,
+                           view: ContactView.All,
                            cancellationToken: cancellationToken))
         {
             if (string.IsNullOrWhiteSpace(contact.Email))

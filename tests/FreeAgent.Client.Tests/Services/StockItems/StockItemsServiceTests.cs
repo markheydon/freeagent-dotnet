@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Services.StockItems;
 using FreeAgent.Client.Tests.TestSupport;
 
@@ -61,7 +62,7 @@ public class StockItemsServiceTests
         });
 
         var service = CreateService(handler);
-        await service.ListAsync(sort: $"-{StockItemSortOptions.Description}");
+        await service.ListAsync(sort: new ApiSort<StockItemSortField>(StockItemSortField.Description, descending: true));
     }
 
     [Fact]

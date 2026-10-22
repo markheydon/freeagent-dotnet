@@ -41,19 +41,19 @@
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
+                            <MudSelect T="CreditNoteView"
                                        @bind-Value="_view"
                                        Label="View"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        FullWidth="true">
-                                <MudSelectItem Value="@CreditNoteViews.RecentOpenOrOverdue">recent_open_or_overdue</MudSelectItem>
-                                <MudSelectItem Value="@CreditNoteViews.Open">open</MudSelectItem>
-                                <MudSelectItem Value="@CreditNoteViews.Overdue">overdue</MudSelectItem>
-                                <MudSelectItem Value="@CreditNoteViews.OpenOrOverdue">open_or_overdue</MudSelectItem>
-                                <MudSelectItem Value="@CreditNoteViews.Draft">draft</MudSelectItem>
-                                <MudSelectItem Value="@CreditNoteViews.Refunded">refunded</MudSelectItem>
-                                <MudSelectItem Value="@CreditNoteViews.All">all</MudSelectItem>
+                                <MudSelectItem Value="@CreditNoteView.RecentOpenOrOverdue">recent_open_or_overdue</MudSelectItem>
+                                <MudSelectItem Value="@CreditNoteView.Open">open</MudSelectItem>
+                                <MudSelectItem Value="@CreditNoteView.Overdue">overdue</MudSelectItem>
+                                <MudSelectItem Value="@CreditNoteView.OpenOrOverdue">open_or_overdue</MudSelectItem>
+                                <MudSelectItem Value="@CreditNoteView.Draft">draft</MudSelectItem>
+                                <MudSelectItem Value="@CreditNoteView.Refunded">refunded</MudSelectItem>
+                                <MudSelectItem Value="@CreditNoteView.All">all</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
@@ -119,7 +119,7 @@
                         <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
                             @_pageResult.Items.Count credit note@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
                         </MudChip>
-                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @ListQueryWire.View(_view)</MudChip>
                         @if (_pageResult.Total > 0)
                         {
                             <MudChip T="string" Variant="Variant.Outlined">Total: @_pageResult.Total</MudChip>
@@ -129,7 +129,7 @@
                     @if (_pageResult.Items.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                            No credit notes returned for view <code>@_view</code>. Try <code>all</code>, or create a test credit note from
+                            No credit notes returned for view <code>@ListQueryWire.View(_view)</code>. Try <code>all</code>, or create a test credit note from
                             <MudLink Href="/credit-notes/detail">Credit note CRUD</MudLink>.
                         </MudAlert>
                     }
@@ -255,7 +255,7 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allCreditNotesCount;
-    private string _view = CreditNoteViews.RecentOpenOrOverdue;
+    private CreditNoteView _view = CreditNoteView.RecentOpenOrOverdue;
     private long? _contactIdFilter;
     private long? _projectIdFilter;
     private bool _nestedCreditNoteItems;
@@ -403,7 +403,7 @@
         {
             "page=1",
             $"per_page={_perPage}",
-            $"view={_view}"
+            $"view={ListQueryWire.View(_view)}"
         };
 
         if (_contactIdFilter is > 0)

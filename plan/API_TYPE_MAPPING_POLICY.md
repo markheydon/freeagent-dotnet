@@ -98,6 +98,26 @@ Post-GA:
 - [ ] Updated sample probe pages when endpoint behaviour changed (see [`docs/contributing/sample-probe-pages.md`](../docs/contributing/sample-probe-pages.md)).
 - [ ] Documented any intentional deviations.
 
+## Intentionally string (documented sweep)
+
+These fields were reviewed against the FreeAgent API docs and remain `string` (or strong value types other than enums) with rationale:
+
+| Field / area | Rationale |
+|---|---|
+| `engine_size` (expenses) | Valid values come from `mileage_settings.engine_type_and_size_options` and change over time; `engine_type` is already typed. |
+| `bank_code` | Docs list examples only, not a closed set. |
+| Capital asset `name` / `asset_type` | User-defined names plus a few system labels; enums would drop custom values on read. |
+| `long_status` | Generated display text, not wire tokens. |
+| Journal `tag` | Documented free text for app identification. |
+| `sales_tax_name`, `second_sales_tax_name`, `initial_vat_frs_type` | Account labels without a published token table. |
+| Payroll `frequency`, `ni_letter`; payroll profile `gender`, `title` | Descriptions do not enumerate allowed values. |
+| Tax timeline `nature`; EC MOSS `band` | Example labels in sample JSON only. |
+| Generic `Attachment.ContentType`; email attachment `content_type` | Open MIME types (for example invoice email `text/csv`). |
+| Category response `tax_reporting_name` | Display label on GET; write paths use per-variant enums (ADR-0010). |
+| `depreciation_schedule` | Deprecated; prefer `DepreciationProfile`. |
+
+List `view` filters use wire enums (or `CreditNoteView` for `last_{n}_months`). List `sort` uses `ApiSort<TField>` with a documented sort-field enum.
+
 ## Handling API Changes and Deviations
 
 1. Raise an issue when API docs or behaviour changes.

@@ -41,20 +41,20 @@
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
+                            <MudSelect T="EstimateView"
                                        @bind-Value="_view"
                                        Label="View"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        FullWidth="true">
-                                <MudSelectItem Value="@EstimateViews.Recent">recent</MudSelectItem>
-                                <MudSelectItem Value="@EstimateViews.Draft">draft</MudSelectItem>
-                                <MudSelectItem Value="@EstimateViews.NonDraft">non_draft</MudSelectItem>
-                                <MudSelectItem Value="@EstimateViews.Sent">sent</MudSelectItem>
-                                <MudSelectItem Value="@EstimateViews.Approved">approved</MudSelectItem>
-                                <MudSelectItem Value="@EstimateViews.Rejected">rejected</MudSelectItem>
-                                <MudSelectItem Value="@EstimateViews.Invoiced">invoiced</MudSelectItem>
-                                <MudSelectItem Value="@EstimateViews.All">all</MudSelectItem>
+                                <MudSelectItem Value="@EstimateView.Recent">recent</MudSelectItem>
+                                <MudSelectItem Value="@EstimateView.Draft">draft</MudSelectItem>
+                                <MudSelectItem Value="@EstimateView.NonDraft">non_draft</MudSelectItem>
+                                <MudSelectItem Value="@EstimateView.Sent">sent</MudSelectItem>
+                                <MudSelectItem Value="@EstimateView.Approved">approved</MudSelectItem>
+                                <MudSelectItem Value="@EstimateView.Rejected">rejected</MudSelectItem>
+                                <MudSelectItem Value="@EstimateView.Invoiced">invoiced</MudSelectItem>
+                                <MudSelectItem Value="@EstimateView.All">all</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
@@ -129,7 +129,7 @@
                         <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
                             @_pageResult.Items.Count estimate@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
                         </MudChip>
-                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @ListQueryWire.View(_view)</MudChip>
                         @if (_pageResult.Total > 0)
                         {
                             <MudChip T="string" Variant="Variant.Outlined">Total: @_pageResult.Total</MudChip>
@@ -139,7 +139,7 @@
                     @if (_pageResult.Items.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                            No estimates returned for view <code>@_view</code>. Try <code>all</code>, or create a test estimate from
+                            No estimates returned for view <code>@ListQueryWire.View(_view)</code>. Try <code>all</code>, or create a test estimate from
                             <MudLink Href="/estimates/detail">Estimate CRUD</MudLink>.
                         </MudAlert>
                     }
@@ -265,7 +265,7 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allEstimatesCount;
-    private string _view = EstimateViews.Recent;
+    private EstimateView _view = EstimateView.Recent;
     private long? _contactIdFilter;
     private long? _projectIdFilter;
     private long? _invoiceIdFilter;
@@ -416,7 +416,7 @@
         {
             "page=1",
             $"per_page={_perPage}",
-            $"view={_view}"
+            $"view={ListQueryWire.View(_view)}"
         };
 
         if (_contactIdFilter is > 0)

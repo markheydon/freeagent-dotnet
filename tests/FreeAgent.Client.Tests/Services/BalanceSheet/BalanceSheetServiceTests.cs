@@ -33,7 +33,7 @@ public class BalanceSheetServiceTests
         var service = CreateService(handler);
         var sheet = await service.GetBalanceSheetAsync();
 
-        Assert.Equal("GBP", sheet.Currency);
+        Assert.Equal(CurrencyCode.GBP, sheet.Currency);
         Assert.Equal(100, sheet.TotalAssets);
     }
 

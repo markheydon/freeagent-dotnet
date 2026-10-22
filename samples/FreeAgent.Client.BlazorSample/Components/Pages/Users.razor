@@ -42,17 +42,17 @@
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
+                            <MudSelect T="UserView"
                                        @bind-Value="_view"
                                        Label="View"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        FullWidth="true">
-                                <MudSelectItem Value="@UserViews.All">all</MudSelectItem>
-                                <MudSelectItem Value="@UserViews.Staff">staff</MudSelectItem>
-                                <MudSelectItem Value="@UserViews.ActiveStaff">active_staff</MudSelectItem>
-                                <MudSelectItem Value="@UserViews.Advisors">advisors</MudSelectItem>
-                                <MudSelectItem Value="@UserViews.ActiveAdvisors">active_advisors</MudSelectItem>
+                                <MudSelectItem Value="@UserView.All">all</MudSelectItem>
+                                <MudSelectItem Value="@UserView.Staff">staff</MudSelectItem>
+                                <MudSelectItem Value="@UserView.ActiveStaff">active_staff</MudSelectItem>
+                                <MudSelectItem Value="@UserView.Advisors">advisors</MudSelectItem>
+                                <MudSelectItem Value="@UserView.ActiveAdvisors">active_advisors</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
@@ -87,13 +87,13 @@
                         <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
                             @_users.Count user@(_users.Count == 1 ? string.Empty : "s") loaded
                         </MudChip>
-                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @ListQueryWire.View(_view)</MudChip>
                     </MudStack>
 
                     @if (_users.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                            No users returned for view <code>@_view</code>. Try <code>all</code>, or create a test user from
+                            No users returned for view <code>@ListQueryWire.View(_view)</code>. Try <code>all</code>, or create a test user from
                             <MudLink Href="/users/detail">User CRUD</MudLink>.
                         </MudAlert>
                     }
@@ -180,7 +180,7 @@
     private User? _inspectedUser;
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
-    private string _view = UserViews.All;
+    private UserView _view = UserView.All;
 
     private IReadOnlyList<UserRow> _userRows => _users?
         .Select(static (user, index) => new UserRow(
@@ -209,7 +209,7 @@
         _error = null;
         _wireApiResponse = string.Empty;
 
-        var diagnosticsEndpoint = $"users?view={_view}";
+        var diagnosticsEndpoint = $"users?view={ListQueryWire.View(_view)}";
 
         try
         {

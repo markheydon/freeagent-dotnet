@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Services.Contacts;
 using FreeAgent.Client.Tests.TestSupport;
 
@@ -43,7 +44,7 @@ public class ContactServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
         var service = new ContactService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 2, view: ContactViews.All);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: ContactView.All);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);
@@ -106,7 +107,9 @@ public class ContactServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ContactService(client);
 
-        await service.ListAsync(sort: "-updated_at", updatedSince: updatedSince);
+        await service.ListAsync(
+            sort: new ApiSort<ContactSortField>(ContactSortField.UpdatedAt, descending: true),
+            updatedSince: updatedSince);
     }
 
     [Fact]
@@ -224,11 +227,11 @@ public class ContactServiceTests
     }
 
     [Fact]
-    public async Task ListAsync_WhenViewContainsSpaces_EscapesViewQueryParameter()
+    public async Task ListAsync_SendsDocumentedViewQueryParameter()
     {
         var handler = new QueueHttpMessageHandler(request =>
         {
-            Assert.Contains("view=clients%20only", request.RequestUri!.Query, StringComparison.Ordinal);
+            Assert.Contains("view=clients", request.RequestUri!.Query, StringComparison.Ordinal);
 
             return new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -251,7 +254,7 @@ public class ContactServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
         var service = new ContactService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 25, view: "clients only");
+        var page = await service.ListAsync(page: 1, perPage: 25, view: ContactView.Clients);
 
         Assert.Equal(1, page.Total);
         Assert.False(page.HasNextPage);
@@ -289,7 +292,7 @@ public class ContactServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", options);
         var service = new ContactService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 2, view: ContactViews.All);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: ContactView.All);
 
         Assert.Equal(3, page.Total);
         Assert.True(page.HasNextPage);
@@ -343,7 +346,7 @@ public class ContactServiceTests
         var service = new ContactService(client);
 
         var contacts = new List<string>();
-        await foreach (var contact in service.ListAutoPagingAsync(perPage: 2, view: ContactViews.All))
+        await foreach (var contact in service.ListAutoPagingAsync(perPage: 2, view: ContactView.All))
         {
             contacts.Add(contact.DisplayName);
         }

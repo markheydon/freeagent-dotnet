@@ -47,7 +47,7 @@ internal sealed class ProjectSamples(SampleContext context) : IConsoleSampleProv
     {
         var page = await context.Client.Projects.ListAsync(
             perPage: 25,
-            view: ProjectViews.Active,
+            view: ProjectView.Active,
             cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader($"Active projects ({page.Items.Count})");

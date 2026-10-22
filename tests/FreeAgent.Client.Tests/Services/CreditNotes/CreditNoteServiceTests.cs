@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Services.CreditNotes;
 using FreeAgent.Client.Tests.TestSupport;
 
@@ -46,7 +47,7 @@ public class CreditNoteServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new CreditNotesService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 2, view: CreditNoteViews.Open);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: CreditNoteView.Open);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);
@@ -77,11 +78,30 @@ public class CreditNoteServiceTests
         var service = new CreditNotesService(client);
 
         await service.ListAsync(
-            sort: $"-{CreditNoteSortOptions.UpdatedAt}",
+            sort: new ApiSort<CreditNoteSortField>(CreditNoteSortField.UpdatedAt, descending: true),
             updatedSince: new DateTimeOffset(2024, 1, 1, 9, 0, 0, TimeSpan.Zero),
             contactId: 2,
             projectId: 3,
             nestedCreditNoteItems: true);
+    }
+
+    [Fact]
+    public async Task ListAsync_LastMonthsView_SendsWireQueryParameter()
+    {
+        var handler = new QueueHttpMessageHandler(request =>
+        {
+            Assert.Contains("view=last_3_months", request.RequestUri!.Query, StringComparison.Ordinal);
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("""{ "credit_notes": [] }""")
+            };
+        });
+
+        using var httpClient = new HttpClient(handler) { BaseAddress = new Uri("https://api.freeagent.com/v2/") };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new CreditNotesService(client);
+
+        await service.ListAsync(view: CreditNoteView.LastMonths(3));
     }
 
     [Theory]

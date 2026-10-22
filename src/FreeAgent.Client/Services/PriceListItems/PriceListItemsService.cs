@@ -1,3 +1,4 @@
+using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
 using FreeAgent.Client.Infrastructure.Serialization;
 namespace FreeAgent.Client.Services.PriceListItems;
@@ -21,18 +22,18 @@ public sealed class PriceListItemsService
     /// <summary>
     /// Lists all price list items for the current company.
     /// </summary>
-    /// <param name="sort">Sort field (<see cref="PriceListItemSortOptions.CreatedAt"/>, <see cref="PriceListItemSortOptions.Code"/>, or <see cref="PriceListItemSortOptions.UpdatedAt"/>); prefix with <c>-</c> for descending</param>
+    /// <param name="sort">Optional sort order</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>All price list items returned by FreeAgent</returns>
     public async Task<IReadOnlyList<PriceListItem>> ListAsync(
-        string? sort = null,
+        ApiSort<PriceListItemSortField>? sort = null,
         CancellationToken cancellationToken = default)
     {
         var queryParameters = new List<KeyValuePair<string, string>>();
 
-        if (!string.IsNullOrWhiteSpace(sort))
+        if (sort is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("sort", sort));
+            queryParameters.Add(new KeyValuePair<string, string>("sort", sort.Value.ToWireValue()));
         }
 
         var endpoint = queryParameters.Count == 0

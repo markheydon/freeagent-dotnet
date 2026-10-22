@@ -21,16 +21,16 @@ public sealed class UserService
     /// <summary>
     /// Lists all users for the current company.
     /// </summary>
-    /// <param name="view">Users view filter (for example: <see cref="UserViews.ActiveStaff"/>)</param>
+    /// <param name="view">Users view filter (for example: <see cref="UserView.ActiveStaff"/>)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>All users returned by FreeAgent for the selected view</returns>
     public async Task<IReadOnlyList<User>> ListAsync(
-        string view = UserViews.All,
+        UserView view = UserView.All,
         CancellationToken cancellationToken = default)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(view);
-
-        var endpoint = FreeAgentQueryStringBuilder.BuildEndpoint("users", [new KeyValuePair<string, string>("view", view)]);
+        var endpoint = FreeAgentQueryStringBuilder.BuildEndpoint(
+            "users",
+            [new KeyValuePair<string, string>("view", EnumWireValue.Get(view))]);
         var response = await _requestClient.GetAsync<UsersResponse>(endpoint, cancellationToken);
 
         if (response.Users is null)

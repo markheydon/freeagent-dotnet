@@ -47,7 +47,7 @@ public class RecurringInvoiceServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new RecurringInvoiceService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 2, view: RecurringInvoiceViews.Draft);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: RecurringInvoiceView.Draft);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);

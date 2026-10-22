@@ -30,7 +30,7 @@ public sealed class TimeslipService
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="TimeslipViews.Unbilled"/>)</param>
+    /// <param name="view">Optional view filter (for example: <see cref="TimeslipView.Unbilled"/>)</param>
     /// <param name="fromDate">Return timeslips dated on or after this date</param>
     /// <param name="toDate">Return timeslips dated on or before this date</param>
     /// <param name="updatedSince">Return timeslips updated on or after this timestamp</param>
@@ -46,7 +46,7 @@ public sealed class TimeslipService
     public async Task<PaginatedResponse<Timeslip>> ListAsync(
         int page = 1,
         int perPage = 25,
-        string? view = null,
+        TimeslipView? view = null,
         DateOnly? fromDate = null,
         DateOnly? toDate = null,
         DateTimeOffset? updatedSince = null,
@@ -69,9 +69,9 @@ public sealed class TimeslipService
             new("per_page", perPage.ToString(CultureInfo.InvariantCulture))
         };
 
-        if (!string.IsNullOrWhiteSpace(view))
+        if (view is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("view", view));
+            queryParameters.Add(new KeyValuePair<string, string>("view", EnumWireValue.Get(view.Value)));
         }
 
         if (fromDate is not null)
@@ -141,7 +141,7 @@ public sealed class TimeslipService
     /// Lists all timeslips across all pages.
     /// </summary>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="TimeslipViews.Unbilled"/>)</param>
+    /// <param name="view">Optional view filter (for example: <see cref="TimeslipView.Unbilled"/>)</param>
     /// <param name="fromDate">Return timeslips dated on or after this date</param>
     /// <param name="toDate">Return timeslips dated on or before this date</param>
     /// <param name="updatedSince">Return timeslips updated on or after this timestamp</param>
@@ -156,7 +156,7 @@ public sealed class TimeslipService
     /// <returns>Async stream of timeslips</returns>
     public async IAsyncEnumerable<Timeslip> ListAutoPagingAsync(
         int perPage = 25,
-        string? view = null,
+        TimeslipView? view = null,
         DateOnly? fromDate = null,
         DateOnly? toDate = null,
         DateTimeOffset? updatedSince = null,

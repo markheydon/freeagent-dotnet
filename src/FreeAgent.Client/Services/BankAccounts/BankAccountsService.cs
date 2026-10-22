@@ -25,18 +25,18 @@ public sealed class BankAccountsService
     /// <summary>
     /// Lists all bank accounts for the current company.
     /// </summary>
-    /// <param name="view">Optional view filter (for example <see cref="BankAccountViews.StandardBankAccounts"/>)</param>
+    /// <param name="view">Optional view filter (for example <see cref="BankAccountView.StandardBankAccounts"/>)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>All bank accounts returned by FreeAgent</returns>
     public async Task<IReadOnlyList<BankAccount>> ListAsync(
-        string? view = null,
+        BankAccountView? view = null,
         CancellationToken cancellationToken = default)
     {
-        var endpoint = string.IsNullOrWhiteSpace(view)
+        var endpoint = view is null
             ? "bank_accounts"
             : FreeAgentQueryStringBuilder.BuildEndpoint(
                 "bank_accounts",
-                [new KeyValuePair<string, string>("view", view)]);
+                [new KeyValuePair<string, string>("view", EnumWireValue.Get(view.Value))]);
 
         var response = await _requestClient.GetAsync<BankAccountListResponse>(endpoint, cancellationToken);
 

@@ -32,7 +32,7 @@ public sealed class ExpenseService
     public async Task<PaginatedResponse<Expense>> ListAsync(
         int page = 1,
         int perPage = 25,
-        string? view = null,
+        ExpenseView? view = null,
         DateOnly? fromDate = null,
         DateOnly? toDate = null,
         DateTimeOffset? updatedSince = null,
@@ -50,9 +50,9 @@ public sealed class ExpenseService
             new("per_page", perPage.ToString(CultureInfo.InvariantCulture))
         };
 
-        if (!string.IsNullOrWhiteSpace(view))
+        if (view is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("view", view));
+            queryParameters.Add(new KeyValuePair<string, string>("view", EnumWireValue.Get(view.Value)));
         }
 
         if (fromDate is not null)
@@ -108,7 +108,7 @@ public sealed class ExpenseService
     /// </summary>
     public async IAsyncEnumerable<Expense> ListAutoPagingAsync(
         int perPage = 25,
-        string? view = null,
+        ExpenseView? view = null,
         DateOnly? fromDate = null,
         DateOnly? toDate = null,
         DateTimeOffset? updatedSince = null,

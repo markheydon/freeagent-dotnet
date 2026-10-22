@@ -29,8 +29,8 @@ public sealed class ProjectTaskService
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="ProjectTaskViews.Active"/>)</param>
-    /// <param name="sort">Sort field (name, project, billing_rate, created_at, updated_at); prefix with <c>-</c> for descending</param>
+    /// <param name="view">Optional view filter (for example: <see cref="ProjectTaskView.Active"/>)</param>
+    /// <param name="sort">Optional sort order</param>
     /// <param name="updatedSince">Return tasks updated on or after this date</param>
     /// <param name="project">Filter by parent project resource reference</param>
     /// <param name="projectId">Filter by parent project identifier (equivalent to <c>client.Urls.Project(projectId)</c>)</param>
@@ -40,8 +40,8 @@ public sealed class ProjectTaskService
     public async Task<PaginatedResponse<ProjectTask>> ListAsync(
         int page = 1,
         int perPage = 25,
-        string? view = null,
-        string? sort = null,
+        ProjectTaskView? view = null,
+        ApiSort<ProjectTaskSortField>? sort = null,
         DateOnly? updatedSince = null,
         ProjectReference? project = null,
         long? projectId = null,
@@ -57,14 +57,14 @@ public sealed class ProjectTaskService
             new("per_page", perPage.ToString(CultureInfo.InvariantCulture))
         };
 
-        if (!string.IsNullOrWhiteSpace(view))
+        if (view is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("view", view));
+            queryParameters.Add(new KeyValuePair<string, string>("view", EnumWireValue.Get(view.Value)));
         }
 
-        if (!string.IsNullOrWhiteSpace(sort))
+        if (sort is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("sort", sort));
+            queryParameters.Add(new KeyValuePair<string, string>("sort", sort.Value.ToWireValue()));
         }
 
         if (updatedSince is not null)
@@ -102,8 +102,8 @@ public sealed class ProjectTaskService
     /// Lists all tasks across all pages.
     /// </summary>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="ProjectTaskViews.Active"/>)</param>
-    /// <param name="sort">Sort field (name, project, billing_rate, created_at, updated_at); prefix with <c>-</c> for descending</param>
+    /// <param name="view">Optional view filter (for example: <see cref="ProjectTaskView.Active"/>)</param>
+    /// <param name="sort">Optional sort order</param>
     /// <param name="updatedSince">Return tasks updated on or after this date</param>
     /// <param name="project">Filter by parent project resource reference</param>
     /// <param name="projectId">Filter by parent project identifier (equivalent to <c>client.Urls.Project(projectId)</c>)</param>
@@ -111,8 +111,8 @@ public sealed class ProjectTaskService
     /// <returns>Async stream of tasks</returns>
     public async IAsyncEnumerable<ProjectTask> ListAutoPagingAsync(
         int perPage = 25,
-        string? view = null,
-        string? sort = null,
+        ProjectTaskView? view = null,
+        ApiSort<ProjectTaskSortField>? sort = null,
         DateOnly? updatedSince = null,
         ProjectReference? project = null,
         long? projectId = null,

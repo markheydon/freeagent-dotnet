@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Text;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Services.Invoices;
 using FreeAgent.Client.Tests.TestSupport;
 
@@ -46,7 +47,7 @@ public class InvoiceServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new InvoiceService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 2, view: InvoiceViews.Open);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: InvoiceView.Open);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);
@@ -76,7 +77,7 @@ public class InvoiceServiceTests
         var service = new InvoiceService(client);
 
         await service.ListAsync(
-            sort: "-updated_at",
+            sort: new ApiSort<InvoiceSortField>(InvoiceSortField.UpdatedAt, descending: true),
             contactId: 2,
             projectId: 3,
             nestedInvoiceItems: true);

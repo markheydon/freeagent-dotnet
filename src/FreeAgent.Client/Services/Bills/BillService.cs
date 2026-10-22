@@ -25,7 +25,7 @@ public sealed class BillService
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="BillViews.Open"/>)</param>
+    /// <param name="view">Optional view filter (for example: <see cref="BillView.Open"/>)</param>
     /// <param name="fromDate">Return bills dated on or after this date</param>
     /// <param name="toDate">Return bills dated on or before this date</param>
     /// <param name="updatedSince">Return bills updated since this UTC timestamp</param>
@@ -39,7 +39,7 @@ public sealed class BillService
     public async Task<PaginatedResponse<Bill>> ListAsync(
         int page = 1,
         int perPage = 25,
-        string? view = null,
+        BillView? view = null,
         DateOnly? fromDate = null,
         DateOnly? toDate = null,
         DateTimeOffset? updatedSince = null,
@@ -60,9 +60,9 @@ public sealed class BillService
             new("per_page", perPage.ToString(CultureInfo.InvariantCulture))
         };
 
-        if (!string.IsNullOrWhiteSpace(view))
+        if (view is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("view", view));
+            queryParameters.Add(new KeyValuePair<string, string>("view", EnumWireValue.Get(view.Value)));
         }
 
         if (fromDate is not null)
@@ -131,7 +131,7 @@ public sealed class BillService
     /// </summary>
     public async IAsyncEnumerable<Bill> ListAutoPagingAsync(
         int perPage = 25,
-        string? view = null,
+        BillView? view = null,
         DateOnly? fromDate = null,
         DateOnly? toDate = null,
         DateTimeOffset? updatedSince = null,

@@ -137,7 +137,7 @@ public sealed class TurpinverseCreditNoteSeeder
         var creditNotesByReference = new Dictionary<string, CreditNote>(StringComparer.Ordinal);
 
         await foreach (var creditNote in client.CreditNotes.ListAutoPagingAsync(
-                           view: CreditNoteViews.All,
+                           view: CreditNoteView.All,
                            cancellationToken: cancellationToken))
         {
             if (string.IsNullOrWhiteSpace(creditNote.Reference)

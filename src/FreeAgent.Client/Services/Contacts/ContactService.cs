@@ -25,34 +25,32 @@ public sealed class ContactService
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Contacts view filter (for example: <see cref="ContactViews.Active"/>)</param>
-    /// <param name="sort">Sort field (name, created_at, updated_at); prefix with <c>-</c> for descending</param>
+    /// <param name="view">Contacts view filter (for example: <see cref="ContactView.Active"/>)</param>
+    /// <param name="sort">Optional sort order</param>
     /// <param name="updatedSince">Return contacts updated since this timestamp (ISO 8601)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated contacts response</returns>
     public async Task<PaginatedResponse<Contact>> ListAsync(
         int page = 1,
         int perPage = 25,
-        string view = ContactViews.Active,
-        string? sort = null,
+        ContactView view = ContactView.Active,
+        ApiSort<ContactSortField>? sort = null,
         DateTimeOffset? updatedSince = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(page, 1);
         ArgumentOutOfRangeException.ThrowIfLessThan(perPage, 1);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(perPage, 100);
-        ArgumentException.ThrowIfNullOrWhiteSpace(view);
-
         var queryParameters = new List<KeyValuePair<string, string>>
         {
             new("page", page.ToString(CultureInfo.InvariantCulture)),
             new("per_page", perPage.ToString(CultureInfo.InvariantCulture)),
-            new("view", view)
+            new("view", EnumWireValue.Get(view))
         };
 
-        if (!string.IsNullOrWhiteSpace(sort))
+        if (sort is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("sort", sort));
+            queryParameters.Add(new KeyValuePair<string, string>("sort", sort.Value.ToWireValue()));
         }
 
         if (updatedSince is not null)
@@ -84,15 +82,15 @@ public sealed class ContactService
     /// Lists all contacts across all pages.
     /// </summary>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Contacts view filter (for example: <see cref="ContactViews.Active"/>)</param>
-    /// <param name="sort">Sort field (name, created_at, updated_at); prefix with <c>-</c> for descending</param>
+    /// <param name="view">Contacts view filter (for example: <see cref="ContactView.Active"/>)</param>
+    /// <param name="sort">Optional sort order</param>
     /// <param name="updatedSince">Return contacts updated since this timestamp (ISO 8601)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Async stream of contacts</returns>
     public async IAsyncEnumerable<Contact> ListAutoPagingAsync(
         int perPage = 25,
-        string view = ContactViews.Active,
-        string? sort = null,
+        ContactView view = ContactView.Active,
+        ApiSort<ContactSortField>? sort = null,
         DateTimeOffset? updatedSince = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {

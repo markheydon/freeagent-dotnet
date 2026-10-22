@@ -43,7 +43,7 @@ public class ExpenseServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ExpenseService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 2, view: ExpenseViews.Recent);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: ExpenseView.Recent);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);

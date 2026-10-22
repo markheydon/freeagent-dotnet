@@ -23,7 +23,7 @@ public sealed class ExpenseAttachment
     /// MIME content type of the attachment.
     /// </summary>
     [JsonPropertyName("content_type")]
-    public string? ContentType { get; set; }
+    public BillAttachmentContentType? ContentType { get; set; }
 
     /// <summary>
     /// Attachment file name.

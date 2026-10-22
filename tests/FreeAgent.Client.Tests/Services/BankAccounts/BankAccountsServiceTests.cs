@@ -66,7 +66,7 @@ public class BankAccountsServiceTests
         });
 
         var service = CreateService(handler);
-        await service.ListAsync(view: BankAccountViews.StandardBankAccounts);
+        await service.ListAsync(view: BankAccountView.StandardBankAccounts);
     }
 
     [Fact]

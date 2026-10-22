@@ -384,7 +384,7 @@
 
         if (_view is not null)
         {
-            query.Add($"view={ViewWireValue(_view.Value)}");
+            query.Add($"view={ListQueryWire.View(_view.Value)}");
         }
 
         if (_fromDate is not null)
@@ -440,17 +440,6 @@
 
     private static DateTimeOffset? ToTimestamp(DateTime? value) =>
         value is null ? null : new DateTimeOffset(value.Value, TimeSpan.Zero);
-
-    private static string ViewWireValue(BankTransactionView view) => view switch
-    {
-        BankTransactionView.All => "all",
-        BankTransactionView.Unexplained => "unexplained",
-        BankTransactionView.Explained => "explained",
-        BankTransactionView.Manual => "manual",
-        BankTransactionView.Imported => "imported",
-        BankTransactionView.MarkedForReview => "marked_for_review",
-        _ => "all"
-    };
 
     private sealed record TransactionRow(
         int Index,
