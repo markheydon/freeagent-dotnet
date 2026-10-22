@@ -97,9 +97,13 @@ gh variable set FREEAGENT_BATCH_SKIP_SMOKE --repo markheydon/freeagent-dotnet --
 
 ## How the workflow behaves
 
-Sandbox smoke is a **separate workflow** from [CI](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml). It starts only when **CI has completed successfully** for the same commit (`workflow_run` on the `CI` workflow). That includes **pull requests targeting `main`** (after green CI), **pushes to `main`**, and the weekly **CI schedule**. Failed or cancelled CI does not start smoke. CI and smoke build independently (smoke publishes its own console sample artefact).
+Sandbox smoke is a **separate workflow** from [CI](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml). After the CI **Build & Test** job succeeds, CI’s **Queue sandbox smoke** job sends a `repository_dispatch` event (`sandbox-smoke`) with the commit SHA and trigger metadata. That covers **pull requests targeting `main`**, **pushes to `main`**, and the weekly **CI schedule**. Verify and documentation-site jobs can fail without blocking smoke; a failed or skipped Build & Test job does not queue smoke. CI and smoke build independently (smoke publishes its own console sample artefact).
 
-Manual runs use **workflow_dispatch** on the Sandbox smoke workflow. Weekly API freshness uses the **CI** schedule (Monday 06:00 UTC); when that CI run succeeds, sandbox smoke follows automatically for eligible commits.
+The dispatch listener is defined on the **default branch** (`main`). Until [`.github/workflows/sandbox-smoke.yml`](../../.github/workflows/sandbox-smoke.yml) is merged there, the queue job may run on pull requests but no smoke workflow will start.
+
+**Fork pull requests** do not run the queue job (same-repo PRs only), so upstream sandbox secrets are never exercised for fork heads.
+
+Manual runs use **workflow_dispatch** on the Sandbox smoke workflow. Weekly API freshness uses the **CI** schedule (Monday 06:00 UTC); when Build & Test succeeds on that run, sandbox smoke is queued automatically for eligible commits.
 
 The **Console Sample Smoke** job is omitted unless the run is smoke-eligible. Eligibility is decided in the `Detect smoke-relevant changes` job (against the CI commit SHA):
 
@@ -121,7 +125,7 @@ When the job runs, credentials behave as before:
 | CI succeeded on **push** to `main` (not eligible) | Any | Smoke job **skipped** |
 | CI **schedule** succeeded (eligible) | No | Workflow **fails** when smoke would run |
 | CI **schedule** succeeded (eligible) | Yes | Smoke **runs** |
-| CI failed or was cancelled | Any | Sandbox smoke workflow **does not run** smoke jobs |
+| CI **Build & Test** failed or was cancelled | Any | Sandbox smoke workflow **does not run** (nothing queued) |
 | Manual **workflow_dispatch** on `main` | No | Workflow **fails** when smoke is eligible |
 | Manual **workflow_dispatch** on `main` | Yes | Smoke **runs** when eligible |
 

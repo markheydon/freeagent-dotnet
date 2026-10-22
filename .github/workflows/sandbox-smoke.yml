@@ -1,18 +1,17 @@
 name: Sandbox smoke
 
 on:
-  # Fires after every CI completion; the smoke-trigger job filters to PRs/pushes/schedules we care about.
-  # Do not set branches here — for pull_request CI runs, head_branch is the PR branch, not main.
-  workflow_run:
-    workflows: [CI]
-    types: [completed]
+  # Queued by CI after Build & Test succeeds (repository_dispatch). Listeners use the default branch workflow file.
+  # Do not use workflow_run with branches: [main] — for pull_request CI, head_branch is the PR branch, not main.
+  repository_dispatch:
+    types: [sandbox-smoke]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: sandbox-smoke-${{ github.event.workflow_run.head_sha || github.sha }}
+  group: sandbox-smoke-${{ github.event.client_payload.sha || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -26,41 +25,51 @@ jobs:
         id: check
         env:
           EVENT_NAME: ${{ github.event_name }}
-          WR_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
-          WR_EVENT: ${{ github.event.workflow_run.event }}
-          WR_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          PAYLOAD_EVENT: ${{ github.event.client_payload.event }}
+          PAYLOAD_BASE_REF: ${{ github.event.client_payload.base_ref }}
+          PAYLOAD_HEAD_BRANCH: ${{ github.event.client_payload.head_branch }}
         run: |
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             echo "enabled=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          if [[ "$EVENT_NAME" != "workflow_run" ]]; then
+          if [[ "$EVENT_NAME" != "repository_dispatch" ]]; then
             echo "enabled=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          if [[ "$WR_CONCLUSION" != "success" ]]; then
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Sandbox smoke skipped — triggering CI workflow did not succeed."
-            exit 0
-          fi
-
-          case "$WR_EVENT" in
-            pull_request|schedule)
-              echo "enabled=true" >> "$GITHUB_OUTPUT"
+          case "$PAYLOAD_EVENT" in
+            pull_request)
+              if [[ "$PAYLOAD_BASE_REF" == "main" ]]; then
+                echo "enabled=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "enabled=false" >> "$GITHUB_OUTPUT"
+                echo "Sandbox smoke skipped — pull request does not target main."
+              fi
               ;;
             push)
-              if [[ "$WR_HEAD_BRANCH" == "main" ]]; then
+              if [[ "$PAYLOAD_HEAD_BRANCH" == "main" ]]; then
                 echo "enabled=true" >> "$GITHUB_OUTPUT"
               else
                 echo "enabled=false" >> "$GITHUB_OUTPUT"
                 echo "Sandbox smoke skipped — push CI was not on main."
               fi
               ;;
+            schedule)
+              echo "enabled=true" >> "$GITHUB_OUTPUT"
+              ;;
+            workflow_dispatch)
+              if [[ "$PAYLOAD_HEAD_BRANCH" == "main" ]]; then
+                echo "enabled=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "enabled=false" >> "$GITHUB_OUTPUT"
+                echo "Sandbox smoke skipped — manual CI was not on main."
+              fi
+              ;;
             *)
               echo "enabled=false" >> "$GITHUB_OUTPUT"
-              echo "Sandbox smoke skipped — CI event '$WR_EVENT' is not pull_request, push, or schedule."
+              echo "Sandbox smoke skipped — CI event '$PAYLOAD_EVENT' is not supported."
               ;;
           esac
 
@@ -75,12 +84,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.event.client_payload.sha || github.sha }}
+          fetch-depth: 0
 
       - name: Paths filter
         id: paths
         uses: dorny/paths-filter@v4
         with:
+          base: ${{ github.event.client_payload.base_sha || github.event.client_payload.sha || github.sha }}
+          ref: ${{ github.event.client_payload.sha || github.sha }}
           filters: |
             smoke:
               - 'src/**'
@@ -90,8 +102,8 @@ jobs:
       - name: Decide smoke eligibility
         id: decide
         env:
-          EVENT: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.event || github.event_name }}
-          ACTOR: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.triggering_actor.login || github.actor }}
+          EVENT: ${{ github.event.client_payload.event || github.event_name }}
+          ACTOR: ${{ github.event.client_payload.actor || github.actor }}
           PATHS_SMOKE: ${{ steps.paths.outputs.smoke }}
           FREEAGENT_BATCH_SKIP_SMOKE: ${{ vars.FREEAGENT_BATCH_SKIP_SMOKE }}
         run: |
@@ -132,7 +144,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.event.client_payload.sha || github.sha }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
@@ -151,7 +163,7 @@ jobs:
       - name: Upload console smoke build
         uses: actions/upload-artifact@v7
         with:
-          name: console-smoke-${{ github.event.workflow_run.head_sha || github.sha }}
+          name: console-smoke-${{ github.event.client_payload.sha || github.sha }}
           path: ${{ runner.temp }}/console-smoke
 
   console-smoke:
@@ -159,8 +171,8 @@ jobs:
     if: >-
       needs.smoke-trigger.outputs.enabled == 'true' &&
       needs.changes.outputs.run_smoke == 'true' &&
-      (github.event_name != 'workflow_run' ||
-        github.event.workflow_run.head_repository.full_name == github.repository)
+      (github.event_name == 'workflow_dispatch' ||
+        github.event.client_payload.head_repository == github.repository)
     runs-on: ubuntu-latest
     needs: [smoke-trigger, build-console-smoke, changes]
     timeout-minutes: 25
@@ -175,9 +187,9 @@ jobs:
         id: policy
         env:
           REFRESH_TOKEN: ${{ secrets.FREEAGENT_REFRESH_TOKEN }}
-          EVENT: ${{ github.event_name }}
-          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
-          WR_EVENT: ${{ github.event.workflow_run.event }}
+          EVENT_NAME: ${{ github.event_name }}
+          CI_EVENT: ${{ github.event.client_payload.event }}
+          HEAD_BRANCH: ${{ github.event.client_payload.head_branch }}
           DISPATCH_REF: ${{ github.ref }}
         run: |
           if [[ -n "$REFRESH_TOKEN" ]]; then
@@ -185,8 +197,8 @@ jobs:
             exit 0
           fi
 
-          if [[ "$EVENT" == "workflow_run" ]]; then
-            if [[ "$HEAD_BRANCH" == "main" && ( "$WR_EVENT" == "push" || "$WR_EVENT" == "schedule" ) ]]; then
+          if [[ "$EVENT_NAME" == "repository_dispatch" ]]; then
+            if [[ "$HEAD_BRANCH" == "main" && ( "$CI_EVENT" == "push" || "$CI_EVENT" == "schedule" ) ]]; then
               echo "mode=required" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -194,7 +206,7 @@ jobs:
             exit 0
           fi
 
-          if [[ "$EVENT" == "workflow_dispatch" && "$DISPATCH_REF" == "refs/heads/main" ]]; then
+          if [[ "$EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_REF" == "refs/heads/main" ]]; then
             echo "mode=required" >> "$GITHUB_OUTPUT"
             exit 0
           fi
@@ -216,7 +228,7 @@ jobs:
         if: steps.policy.outputs.mode == 'run'
         uses: actions/download-artifact@v8
         with:
-          name: console-smoke-${{ github.event.workflow_run.head_sha || github.sha }}
+          name: console-smoke-${{ github.event.client_payload.sha || github.sha }}
           path: console-smoke
 
       - name: Refresh sandbox access token
