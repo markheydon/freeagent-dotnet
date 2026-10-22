@@ -6,9 +6,12 @@ nav_order: 3
 
 # CI sandbox smoke
 
-The **Console Sample Smoke** job in [`.github/workflows/sandbox-smoke.yml`](../../.github/workflows/sandbox-smoke.yml) runs `samples/FreeAgent.Client.ConsoleSample` with `--seed-turpinverse --run-all` against the FreeAgent **sandbox** API.
+The [Sandbox smoke workflow](https://github.com/markheydon/freeagent-dotnet/actions/workflows/sandbox-smoke.yml) runs on pull requests targeting `main`, pushes to `main`, and a weekly schedule. It includes:
 
-The [CI workflow](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml) (`verify`, `build-and-test`, documentation site) uses mocked HTTP handlers only. Live sandbox smoke is a separate workflow and an additional signal that the SDK still works against a real OAuth-protected API.
+- **File-based app smoke** — [`samples/FileBasedQuickStart/CompanyDeserializeSmoke.cs`](../../samples/FileBasedQuickStart/CompanyDeserializeSmoke.cs) (trim-safe JSON fixture deserialise; no sandbox credentials required).
+- **Console Sample Smoke** — `samples/FreeAgent.Client.ConsoleSample` with `--seed-turpinverse --run-all` against the FreeAgent **sandbox** API when path rules and secrets allow.
+
+The [CI workflow](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml) is limited to formatting, unit tests, and the documentation site build (mocked HTTP in tests only).
 
 ## Data mutations
 
@@ -97,13 +100,11 @@ gh variable set FREEAGENT_BATCH_SKIP_SMOKE --repo markheydon/freeagent-dotnet --
 
 ## How the workflow behaves
 
-Sandbox smoke is a **separate workflow** from [CI](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml). After the CI **Build & Test** job succeeds, CI’s **Queue sandbox smoke** job sends a `repository_dispatch` event (`sandbox-smoke`) with the commit SHA and trigger metadata. That covers **pull requests targeting `main`**, **pushes to `main`**, and the weekly **CI schedule**. Verify and documentation-site jobs can fail without blocking smoke; a failed or skipped Build & Test job does not queue smoke. CI and smoke build independently (smoke publishes its own console sample artefact).
+Sandbox smoke is a **separate workflow** from [CI](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml). It runs on the same triggers as CI for integration coverage: **pull requests targeting `main`**, **pushes to `main`**, and a weekly **schedule** (Monday 06:00 UTC). Each push to a PR branch starts **CI** and **Sandbox smoke** as distinct checks on the PR, so you can see smoke pass or fail directly in the PR checks list. CI and smoke build independently (smoke publishes its own console sample artefact).
 
-The dispatch listener is defined on the **default branch** (`main`). Until [`.github/workflows/sandbox-smoke.yml`](../../.github/workflows/sandbox-smoke.yml) is merged there, the queue job may run on pull requests but no smoke workflow will start.
+**Fork pull requests** skip the smoke workflow (same-repo PRs only), so upstream sandbox secrets are never exercised for fork heads.
 
-**Fork pull requests** do not run the queue job (same-repo PRs only), so upstream sandbox secrets are never exercised for fork heads.
-
-Manual runs use **workflow_dispatch** on the Sandbox smoke workflow. Weekly API freshness uses the **CI** schedule (Monday 06:00 UTC); when Build & Test succeeds on that run, sandbox smoke is queued automatically for eligible commits.
+Manual runs use **workflow_dispatch** on the Sandbox smoke workflow.
 
 The **Console Sample Smoke** job is omitted unless the run is smoke-eligible. Eligibility is decided in the `Detect smoke-relevant changes` job (against the CI commit SHA):
 
@@ -118,14 +119,13 @@ When the job runs, credentials behave as before:
 
 | Trigger | Secrets configured? | Result |
 |---------|---------------------|--------|
-| CI succeeded on a **pull request** (eligible) | No | Smoke **skipped** (forks and draft work stay unblocked) |
-| CI succeeded on a **pull request** (eligible) | Yes | Smoke **runs** |
-| CI succeeded on **push** to `main` (eligible) | No | Workflow **fails** (credentials required when smoke would run) |
-| CI succeeded on **push** to `main` (eligible) | Yes | Smoke **runs** |
-| CI succeeded on **push** to `main` (not eligible) | Any | Smoke job **skipped** |
-| CI **schedule** succeeded (eligible) | No | Workflow **fails** when smoke would run |
-| CI **schedule** succeeded (eligible) | Yes | Smoke **runs** |
-| CI **Build & Test** failed or was cancelled | Any | Sandbox smoke workflow **does not run** (nothing queued) |
+| **Pull request** to `main` (eligible) | No | Console smoke **skipped** (PR stays unblocked without secrets) |
+| **Pull request** to `main` (eligible) | Yes | Console smoke **runs** |
+| **Push** to `main` (eligible) | No | Workflow **fails** (credentials required when smoke would run) |
+| **Push** to `main` (eligible) | Yes | Console smoke **runs** |
+| **Push** to `main` (not eligible) | Any | Console smoke job **skipped** |
+| **Schedule** (eligible) | No | Workflow **fails** when smoke would run |
+| **Schedule** (eligible) | Yes | Console smoke **runs** |
 | Manual **workflow_dispatch** on `main` | No | Workflow **fails** when smoke is eligible |
 | Manual **workflow_dispatch** on `main` | Yes | Smoke **runs** when eligible |
 

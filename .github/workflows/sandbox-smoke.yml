@@ -1,98 +1,64 @@
 name: Sandbox smoke
 
 on:
-  # Queued by CI after Build & Test succeeds (repository_dispatch). Listeners use the default branch workflow file.
-  # Do not use workflow_run with branches: [main] — for pull_request CI, head_branch is the PR branch, not main.
-  repository_dispatch:
-    types: [sandbox-smoke]
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  schedule:
+    # Weekly sandbox smoke on Monday 06:00 UTC (paired with ci.yml schedule)
+    - cron: "0 6 * * 1"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: sandbox-smoke-${{ github.event.client_payload.sha || github.sha }}
+  group: sandbox-smoke-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  smoke-trigger:
-    name: Confirm smoke should run
+  file-based-smoke:
+    name: File-based app smoke
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    outputs:
-      enabled: ${{ steps.check.outputs.enabled }}
+    timeout-minutes: 10
+
     steps:
-      - name: Decide whether this workflow should run
-        id: check
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          PAYLOAD_EVENT: ${{ github.event.client_payload.event }}
-          PAYLOAD_BASE_REF: ${{ github.event.client_payload.base_ref }}
-          PAYLOAD_HEAD_BRANCH: ${{ github.event.client_payload.head_branch }}
-        run: |
-          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            echo "enabled=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+      - name: Checkout
+        uses: actions/checkout@v7
 
-          if [[ "$EVENT_NAME" != "repository_dispatch" ]]; then
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          dotnet-version: 8.0.x
 
-          case "$PAYLOAD_EVENT" in
-            pull_request)
-              if [[ "$PAYLOAD_BASE_REF" == "main" ]]; then
-                echo "enabled=true" >> "$GITHUB_OUTPUT"
-              else
-                echo "enabled=false" >> "$GITHUB_OUTPUT"
-                echo "Sandbox smoke skipped — pull request does not target main."
-              fi
-              ;;
-            push)
-              if [[ "$PAYLOAD_HEAD_BRANCH" == "main" ]]; then
-                echo "enabled=true" >> "$GITHUB_OUTPUT"
-              else
-                echo "enabled=false" >> "$GITHUB_OUTPUT"
-                echo "Sandbox smoke skipped — push CI was not on main."
-              fi
-              ;;
-            schedule)
-              echo "enabled=true" >> "$GITHUB_OUTPUT"
-              ;;
-            workflow_dispatch)
-              if [[ "$PAYLOAD_HEAD_BRANCH" == "main" ]]; then
-                echo "enabled=true" >> "$GITHUB_OUTPUT"
-              else
-                echo "enabled=false" >> "$GITHUB_OUTPUT"
-                echo "Sandbox smoke skipped — manual CI was not on main."
-              fi
-              ;;
-            *)
-              echo "enabled=false" >> "$GITHUB_OUTPUT"
-              echo "Sandbox smoke skipped — CI event '$PAYLOAD_EVENT' is not supported."
-              ;;
-          esac
+      - name: File-based app smoke (trim-safe JSON)
+        run: dotnet run samples/FileBasedQuickStart/CompanyDeserializeSmoke.cs --configuration Release
 
   changes:
     name: Detect smoke-relevant changes
-    if: needs.smoke-trigger.outputs.enabled == 'true'
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    needs: [smoke-trigger]
     outputs:
       run_smoke: ${{ steps.decide.outputs.run_smoke }}
     steps:
       - name: Checkout
         uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.client_payload.sha || github.sha }}
           fetch-depth: 0
 
       - name: Paths filter
         id: paths
         uses: dorny/paths-filter@v4
         with:
-          base: ${{ github.event.client_payload.base_sha || github.event.client_payload.sha || github.sha }}
-          ref: ${{ github.event.client_payload.sha || github.sha }}
           filters: |
             smoke:
               - 'src/**'
@@ -102,8 +68,8 @@ jobs:
       - name: Decide smoke eligibility
         id: decide
         env:
-          EVENT: ${{ github.event.client_payload.event || github.event_name }}
-          ACTOR: ${{ github.event.client_payload.actor || github.actor }}
+          EVENT: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
           PATHS_SMOKE: ${{ steps.paths.outputs.smoke }}
           FREEAGENT_BATCH_SKIP_SMOKE: ${{ vars.FREEAGENT_BATCH_SKIP_SMOKE }}
         run: |
@@ -135,16 +101,14 @@ jobs:
 
   build-console-smoke:
     name: Build console smoke
-    if: needs.smoke-trigger.outputs.enabled == 'true' && needs.changes.outputs.run_smoke == 'true'
+    if: needs.changes.outputs.run_smoke == 'true'
     runs-on: ubuntu-latest
-    needs: [smoke-trigger, changes]
+    needs: [changes]
     timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.client_payload.sha || github.sha }}
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v6
@@ -163,18 +127,14 @@ jobs:
       - name: Upload console smoke build
         uses: actions/upload-artifact@v7
         with:
-          name: console-smoke-${{ github.event.client_payload.sha || github.sha }}
+          name: console-smoke-${{ github.event.pull_request.head.sha || github.sha }}
           path: ${{ runner.temp }}/console-smoke
 
   console-smoke:
     name: Console Sample Smoke
-    if: >-
-      needs.smoke-trigger.outputs.enabled == 'true' &&
-      needs.changes.outputs.run_smoke == 'true' &&
-      (github.event_name == 'workflow_dispatch' ||
-        github.event.client_payload.head_repository == github.repository)
+    if: needs.changes.outputs.run_smoke == 'true'
     runs-on: ubuntu-latest
-    needs: [smoke-trigger, build-console-smoke, changes]
+    needs: [build-console-smoke, changes]
     timeout-minutes: 25
 
     steps:
@@ -187,29 +147,22 @@ jobs:
         id: policy
         env:
           REFRESH_TOKEN: ${{ secrets.FREEAGENT_REFRESH_TOKEN }}
-          EVENT_NAME: ${{ github.event_name }}
-          CI_EVENT: ${{ github.event.client_payload.event }}
-          HEAD_BRANCH: ${{ github.event.client_payload.head_branch }}
-          DISPATCH_REF: ${{ github.ref }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
         run: |
           if [[ -n "$REFRESH_TOKEN" ]]; then
             echo "mode=run" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          if [[ "$EVENT_NAME" == "repository_dispatch" ]]; then
-            if [[ "$HEAD_BRANCH" == "main" && ( "$CI_EVENT" == "push" || "$CI_EVENT" == "schedule" ) ]]; then
-              echo "mode=required" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            echo "mode=skip" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [[ "$EVENT_NAME" == "workflow_dispatch" && "$DISPATCH_REF" == "refs/heads/main" ]]; then
-            echo "mode=required" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          case "$EVENT" in
+            push|schedule|workflow_dispatch)
+              if [[ "$REF" == "refs/heads/main" ]]; then
+                echo "mode=required" >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+              ;;
+          esac
 
           echo "mode=skip" >> "$GITHUB_OUTPUT"
 
@@ -227,14 +180,12 @@ jobs:
       - name: Checkout
         if: steps.policy.outputs.mode == 'run'
         uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.client_payload.sha || github.sha }}
 
       - name: Download console smoke build
         if: steps.policy.outputs.mode == 'run'
         uses: actions/download-artifact@v8
         with:
-          name: console-smoke-${{ github.event.client_payload.sha || github.sha }}
+          name: console-smoke-${{ github.event.pull_request.head.sha || github.sha }}
           path: console-smoke
 
       - name: Refresh sandbox access token
