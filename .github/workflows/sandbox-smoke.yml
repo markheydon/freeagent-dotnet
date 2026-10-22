@@ -16,10 +16,63 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  smoke-trigger:
+    name: Confirm smoke should run
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - name: Decide whether this workflow should run
+        id: check
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WR_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          WR_EVENT: ${{ github.event.workflow_run.event }}
+          WR_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$EVENT_NAME" != "workflow_run" ]]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [[ "$WR_CONCLUSION" != "success" ]]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Sandbox smoke skipped — triggering CI workflow did not succeed."
+            exit 0
+          fi
+
+          if [[ "$WR_EVENT" == "pull_request" ]]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Sandbox smoke skipped — CI for a pull request does not run live sandbox smoke (main push or schedule only)."
+            exit 0
+          fi
+
+          if [[ "$WR_HEAD_BRANCH" != "main" ]]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Sandbox smoke skipped — CI head branch is not main."
+            exit 0
+          fi
+
+          case "$WR_EVENT" in
+            push|schedule)
+              echo "enabled=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "enabled=false" >> "$GITHUB_OUTPUT"
+              echo "Sandbox smoke skipped — CI event '$WR_EVENT' is not push or schedule."
+              ;;
+          esac
+
   changes:
     name: Detect smoke-relevant changes
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    if: needs.smoke-trigger.outputs.enabled == 'true'
     runs-on: ubuntu-latest
+    needs: [smoke-trigger]
     outputs:
       run_smoke: ${{ steps.decide.outputs.run_smoke }}
     steps:
@@ -54,7 +107,7 @@ jobs:
 
           if [[ "$ACTOR" == "dependabot[bot]" ]]; then
             echo "run_smoke=false" >> "$GITHUB_OUTPUT"
-            echo "Sandbox smoke skipped — Dependabot pull requests do not run live API smoke."
+            echo "Sandbox smoke skipped — Dependabot does not run live API smoke."
             exit 0
           fi
 
@@ -74,9 +127,9 @@ jobs:
 
   build-console-smoke:
     name: Build console smoke
-    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && needs.changes.outputs.run_smoke == 'true'
+    if: needs.smoke-trigger.outputs.enabled == 'true' && needs.changes.outputs.run_smoke == 'true'
     runs-on: ubuntu-latest
-    needs: [changes]
+    needs: [smoke-trigger, changes]
     timeout-minutes: 15
 
     steps:
@@ -107,9 +160,9 @@ jobs:
 
   console-smoke:
     name: Console Sample Smoke
-    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && needs.changes.outputs.run_smoke == 'true'
+    if: needs.smoke-trigger.outputs.enabled == 'true' && needs.changes.outputs.run_smoke == 'true'
     runs-on: ubuntu-latest
-    needs: [build-console-smoke, changes]
+    needs: [smoke-trigger, build-console-smoke, changes]
     timeout-minutes: 25
 
     steps:
@@ -137,7 +190,7 @@ jobs:
           if [[ "$EVENT" == "workflow_run" ]]; then
             HEAD_BRANCH="${{ github.event.workflow_run.head_branch }}"
             WR_EVENT="${{ github.event.workflow_run.event }}"
-            if [[ "$HEAD_BRANCH" == "main" && "$WR_EVENT" == "push" ]]; then
+            if [[ "$HEAD_BRANCH" == "main" && ( "$WR_EVENT" == "push" || "$WR_EVENT" == "schedule" ) ]]; then
               echo "mode=required" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -145,14 +198,10 @@ jobs:
             exit 0
           fi
 
-          case "$EVENT" in
-            push|schedule|workflow_dispatch)
-              if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-                echo "mode=required" >> "$GITHUB_OUTPUT"
-                exit 0
-              fi
-              ;;
-          esac
+          if [[ "$EVENT" == "workflow_dispatch" && "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "mode=required" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
           echo "mode=skip" >> "$GITHUB_OUTPUT"
 
