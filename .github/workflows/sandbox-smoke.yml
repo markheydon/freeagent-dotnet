@@ -1,11 +1,11 @@
 name: Sandbox smoke
 
 on:
+  # Fires after every CI completion; the smoke-trigger job filters to PRs/pushes/schedules we care about.
+  # Do not set branches here — for pull_request CI runs, head_branch is the PR branch, not main.
   workflow_run:
     workflows: [CI]
     types: [completed]
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
@@ -46,25 +46,21 @@ jobs:
             exit 0
           fi
 
-          if [[ "$WR_EVENT" == "pull_request" ]]; then
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Sandbox smoke skipped — CI for a pull request does not run live sandbox smoke (main push or schedule only)."
-            exit 0
-          fi
-
-          if [[ "$WR_HEAD_BRANCH" != "main" ]]; then
-            echo "enabled=false" >> "$GITHUB_OUTPUT"
-            echo "Sandbox smoke skipped — CI head branch is not main."
-            exit 0
-          fi
-
           case "$WR_EVENT" in
-            push|schedule)
+            pull_request|schedule)
               echo "enabled=true" >> "$GITHUB_OUTPUT"
+              ;;
+            push)
+              if [[ "$WR_HEAD_BRANCH" == "main" ]]; then
+                echo "enabled=true" >> "$GITHUB_OUTPUT"
+              else
+                echo "enabled=false" >> "$GITHUB_OUTPUT"
+                echo "Sandbox smoke skipped — push CI was not on main."
+              fi
               ;;
             *)
               echo "enabled=false" >> "$GITHUB_OUTPUT"
-              echo "Sandbox smoke skipped — CI event '$WR_EVENT' is not push or schedule."
+              echo "Sandbox smoke skipped — CI event '$WR_EVENT' is not pull_request, push, or schedule."
               ;;
           esac
 
@@ -105,9 +101,9 @@ jobs:
             exit 0
           fi
 
-          if [[ "$ACTOR" == "dependabot[bot]" ]]; then
+          if [[ "$ACTOR" == "dependabot[bot]" && "$EVENT" == "pull_request" ]]; then
             echo "run_smoke=false" >> "$GITHUB_OUTPUT"
-            echo "Sandbox smoke skipped — Dependabot does not run live API smoke."
+            echo "Sandbox smoke skipped — Dependabot pull requests do not run live API smoke."
             exit 0
           fi
 
