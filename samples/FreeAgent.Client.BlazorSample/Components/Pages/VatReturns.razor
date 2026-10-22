@@ -7,7 +7,7 @@
 <PageTitle>VAT returns - FreeAgent SDK Sample</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
-    <EndpointProbeHeader SectionKicker="Reports"
+    <EndpointProbeHeader SectionKicker="Taxes"
                          Title="VAT returns"
                          CallUnderTest="VatReturnsService.ListAsync() / GetVatReturnAsync(periodEndsOn)"
                          Description="List VAT return periods and fetch detail (including breakdown) for a period end date."
@@ -30,6 +30,20 @@
                            OnClick="LoadListAsync">
                     List VAT returns
                 </MudButton>
+
+                @if (_returns is not null)
+                {
+                    <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
+                        @_returns.Count VAT return@(_returns.Count == 1 ? "" : "s") loaded
+                    </MudChip>
+
+                    @if (_returns.Count == 0)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            No VAT returns returned. The connected company may not be VAT registered, or no return periods exist in the sandbox yet.
+                        </MudAlert>
+                    }
+                }
 
                 @if (_returns is not null && _returns.Count > 0)
                 {

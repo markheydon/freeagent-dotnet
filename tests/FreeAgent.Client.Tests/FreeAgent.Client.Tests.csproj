@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <PackageReference Include="MudBlazor" />
     <ProjectReference Include="..\..\samples\FreeAgent.Client.ConsoleSample\FreeAgent.Client.ConsoleSample.csproj" />
     <ProjectReference Include="..\..\samples\FreeAgent.Client.Samples.Shared\FreeAgent.Client.Samples.Shared.csproj" />
   </ItemGroup>
@@ -37,6 +38,12 @@
 
   <ItemGroup>
     <Compile Include="..\..\samples\FreeAgent.Client.BlazorSample\Services\ModelWireDiagnostics.cs" Link="Sample\ModelWireDiagnostics.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+    <Compile Include="..\..\samples\FreeAgent.Client.BlazorSample\Navigation\SdkExplorerNavCatalog.cs" Link="Blazor/Navigation/SdkExplorerNavCatalog.cs" />
+    <Compile Include="..\..\samples\FreeAgent.Client.BlazorSample\Navigation\SdkExplorerNavMatching.cs" Link="Blazor/Navigation/SdkExplorerNavMatching.cs" />
+    <Compile Include="..\..\samples\FreeAgent.Client.BlazorSample\Navigation\SdkExplorerNavModels.cs" Link="Blazor/Navigation/SdkExplorerNavModels.cs" />
   </ItemGroup>
 
 </Project>
