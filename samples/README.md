@@ -4,6 +4,8 @@ Samples for trying the `FreeAgent.Client` SDK against the FreeAgent API.
 
 | Sample | Purpose | SDK source |
 |--------|---------|------------|
+| [FileBasedQuickStart/OAuthGetTokenPaste.cs](FileBasedQuickStart/OAuthGetTokenPaste.cs) | README Quick start step 1 — sandbox OAuth via pasted redirect URL (`FREEAGENT_CLIENT_ID`, `FREEAGENT_CLIENT_SECRET`). | Local project by default; `#:package` after NuGet install |
+| [FileBasedQuickStart/CompanyHello.cs](FileBasedQuickStart/CompanyHello.cs) | README Quick start step 2 — `GetCompanyAsync` using `FREEAGENT_ACCESS_TOKEN`. | Local project by default; `#:package` after NuGet install |
 | [FileBasedQuickStart/CompanyDeserializeSmoke.cs](FileBasedQuickStart/CompanyDeserializeSmoke.cs) | File-based app smoke for trim-safe JSON (fixture deserialise; optional live `GetCompanyAsync` when `FREEAGENT_ACCESS_TOKEN` is set). Sandbox smoke CI uses `#:project`. | Local project by default; `#:package` after NuGet install |
 | [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Real-world console reference and live integration harness - DI, interactive menu, `--seed-turpinverse`, `--run-all` sandbox smoke (mutates data) | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
 | [FreeAgent.Client.BlazorSample](FreeAgent.Client.BlazorSample/) | Blazor Server workbench for exercising SDK endpoints interactively | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |

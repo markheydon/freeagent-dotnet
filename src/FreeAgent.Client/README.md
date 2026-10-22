@@ -34,22 +34,25 @@ API and OAuth traffic use `System.Text.Json` with source-generated metadata. Fil
 
 ## Quick start
 
+Once you have an OAuth access token, calling the API is a few lines:
+
 ```csharp
 using FreeAgent.Client;
-// Sandbox or Production - use the same value for OAuth and API calls.
+
+// Access token from your OAuth authorisation flow (do not commit real tokens).
+var accessToken = "paste-your-access-token";
+
+// Must match where the token was issued (sandbox app → Sandbox, production app → Production).
 var environment = FreeAgentEnvironment.Sandbox;
-var oauthClient = new FreeAgentOAuthClient(clientId, clientSecret, redirectUri, environment);
-var authUrl = oauthClient.GetAuthorizationUrl(state: "optional-state");
 
-// Redirect the user to authUrl, then exchange the callback code:
-var token = await oauthClient.ExchangeCodeForTokenAsync(code);
-
-using var client = new FreeAgentClient(oauthClient, token, environment);
+using var client = new FreeAgentClient(accessToken, environment);
 var company = await client.Company.GetCompanyAsync();
 Console.WriteLine($"{company.Name} ({company.Currency})");
 ```
 
-The SDK provides protocol-level OAuth utilities only, your application owns callback endpoints and browser flows.
+**First run from scratch?** Copy-paste runnable scripts (get a sandbox token, then call the API) are in the [repository README Quick start](https://github.com/markheydon/freeagent-dotnet#quick-start). The same files live under `samples/FileBasedQuickStart/` (use `#:project` instead of `#:package` when building from a clone).
+
+The SDK provides protocol-level OAuth utilities (`FreeAgentOAuthClient`); your application owns browser redirects and callback endpoints. See [Getting started](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started/).
 
 ## Linked resources
 
