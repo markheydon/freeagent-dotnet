@@ -88,5 +88,5 @@ Adopt a dual-target framework strategy for the SDK and its validation pipeline:
 - `REF-002`: [src/FreeAgent.Client/FreeAgent.Client.csproj](../src/FreeAgent.Client/FreeAgent.Client.csproj)
 - `REF-003`: [tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj](../tests/FreeAgent.Client.Tests/FreeAgent.Client.Tests.csproj)
 - `REF-004`: [samples/FreeAgent.Client.BlazorSample/FreeAgent.Client.BlazorSample.csproj](../samples/FreeAgent.Client.BlazorSample/FreeAgent.Client.BlazorSample.csproj)
-- `REF-005`: [.github/workflows/ci.yml](../.github/workflows/ci.yml)
+- `REF-005`: [.github/workflows/ci.yml](../.github/workflows/ci.yml), [.github/workflows/sandbox-smoke.yml](../.github/workflows/sandbox-smoke.yml)
 - `REF-006`: [.github/workflows/release.yml](../.github/workflows/release.yml)

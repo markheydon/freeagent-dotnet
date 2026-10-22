@@ -6,9 +6,9 @@ nav_order: 3
 
 # CI sandbox smoke
 
-The **Console Sample Smoke** job in [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml) runs `samples/FreeAgent.Client.ConsoleSample` with `--seed-turpinverse --run-all` against the FreeAgent **sandbox** API.
+The **Console Sample Smoke** job in [`.github/workflows/sandbox-smoke.yml`](../../.github/workflows/sandbox-smoke.yml) runs `samples/FreeAgent.Client.ConsoleSample` with `--seed-turpinverse --run-all` against the FreeAgent **sandbox** API.
 
-Default CI (`verify`, `build-and-test`) uses mocked HTTP handlers only. Live sandbox smoke is an additional signal that the SDK still works against a real OAuth-protected API.
+The [CI workflow](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml) (`verify`, `build-and-test`, documentation site) uses mocked HTTP handlers only. Live sandbox smoke is a separate workflow and an additional signal that the SDK still works against a real OAuth-protected API.
 
 ## Data mutations
 
