@@ -54,6 +54,15 @@ public class JournalEntryWriteValidatorTests
     }
 
     [Fact]
+    public void ValidateForUpdate_ThrowsWhenEntryIdIsNotPositive()
+    {
+        var entries = new List<JournalEntry> { new() { EntryId = 0 } };
+
+        var ex = Assert.Throws<ArgumentException>(() => JournalEntryWriteValidator.ValidateForUpdate(entries));
+        Assert.Contains("positive", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
     public void ValidateForCreate_ThrowsWhenDebitValuesDoNotBalance()
     {
         var entries = new List<JournalEntry>

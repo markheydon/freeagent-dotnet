@@ -60,6 +60,11 @@ internal static class JournalEntryWriteValidator
     {
         ArgumentNullException.ThrowIfNull(entry);
 
+        if (entry.EntryId is long entryId && entryId <= 0)
+        {
+            throw new ArgumentException("Journal entry id must be a positive value.", nameof(entry));
+        }
+
         if (entry.Destroy == true)
         {
             if (string.IsNullOrWhiteSpace(entry.Url) && entry.EntryId is null)

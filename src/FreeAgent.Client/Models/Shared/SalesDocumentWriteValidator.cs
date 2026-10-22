@@ -371,9 +371,24 @@ internal static class SalesDocumentWriteValidator
             throw new ArgumentException("Bill line description is required.", paramName);
         }
 
-        if (item.StockItemId is not null && item.StockAlteringQuantity is null)
+        ValidateBillLineItemStockCompanions(item, paramName);
+    }
+
+    private static void ValidateBillLineItemStockCompanions(BillItem item, string paramName)
+    {
+        var stockItemExplicit = item.StockItemIdBacking.IsExplicitlySet;
+        var quantitySet = item.StockAlteringQuantity is not null;
+
+        if (!stockItemExplicit && !quantitySet)
         {
-            throw new ArgumentException("Stock altering quantity is required when a stock item is set.", paramName);
+            return;
+        }
+
+        if (item.StockItemId is null || item.StockAlteringQuantity is null)
+        {
+            throw new ArgumentException(
+                "Stock item and stock altering quantity must both be set when either is provided.",
+                paramName);
         }
     }
 
