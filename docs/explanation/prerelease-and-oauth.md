@@ -8,10 +8,11 @@ nav_order: 3
 
 ## Prerelease policy
 
-The SDK is in **alpha** (`0.x.y-alpha.n`). Prerelease packages:
+The SDK is in **beta** (`0.x.y-beta.n`; current release `0.1.0-beta.1`). Prerelease packages:
 
-- May introduce breaking public API changes without a major version bump
-- Are suitable for integration trials and feedback, not production stability guarantees
+- Do not carry full stability guarantees until `1.0.0`
+- During beta, breaking changes are avoided where possible and called out in release notes
+- Are suitable for integration testing and feedback, not production stability guarantees
 
 See [VERSIONING.md](../../VERSIONING.md) for stage progression (alpha → beta → stable `1.0.0`) and exit criteria.
 

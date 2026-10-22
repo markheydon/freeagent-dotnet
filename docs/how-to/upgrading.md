@@ -6,11 +6,12 @@ nav_order: 4
 
 # Upgrading
 
-FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP completion, all releases are **prerelease** (`0.x.y-alpha.n`).
+FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until stable `1.0.0`, published packages are **prerelease** (currently **beta**, e.g. `0.1.0-beta.1`).
 
 ## Prerelease expectations
 
-- Public APIs may change between alpha releases.
+- During **beta**, breaking changes are avoided where possible and documented in release notes.
+- **Alpha** tags (`0.x.y-alpha.n`) are historical; treat upgrades from alpha to beta as a major integration step.
 - Pin an exact version in your project file:
 
 ```xml
@@ -21,10 +22,10 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until MVP comp
 
 1. Read the [GitHub Release notes](https://github.com/markheydon/freeagent-dotnet/releases) for breaking changes.
 2. Update the package reference and restore.
-3. Run your test suite - model mapping changes (for example `string` to enum, `DateTime` to `DateOnly`) are the most common breaks during alpha.
+3. Run your test suite - model mapping changes (for example `string` to enum, `DateTime` to `DateOnly`) are the most common breaks when moving between prerelease versions.
 4. Check [API coverage](../reference/api-coverage.md) for newly implemented endpoints.
 
-## Recent breaking changes (alpha)
+## Recent breaking changes (alpha through beta.1)
 
 ### Property and capital asset linked resources (pre-V1 G2)
 
@@ -165,4 +166,4 @@ Collection reads and generic report `GetAsync` names were aligned with [ADR-0012
 
 ## Stable releases
 
-Stable `1.0.0` will follow the criteria in [VERSIONING.md](../../VERSIONING.md). Until then, treat every upgrade as potentially breaking.
+Stable `1.0.0` will follow the criteria in [VERSIONING.md](../../VERSIONING.md). Until then, pin an exact prerelease version and read release notes before upgrading.

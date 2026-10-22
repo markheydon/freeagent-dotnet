@@ -16,10 +16,10 @@ This tutorial walks through installing the SDK, obtaining an access token, and m
 ## Install the package
 
 ```bash
-dotnet add package FreeAgent.Client
+dotnet add package FreeAgent.Client --version 0.1.0-beta.1
 ```
 
-> The package is currently in **alpha** prerelease. Pin an exact version if stability matters. See [Upgrading](../how-to/upgrading.md) and [Prerelease and OAuth scope](../explanation/prerelease-and-oauth.md).
+> The package is currently in **beta** prerelease (`0.1.0-beta.1`). Pin an exact version if stability matters. See [Upgrading](../how-to/upgrading.md) and [Prerelease and OAuth scope](../explanation/prerelease-and-oauth.md).
 
 ## Host compatibility
 
@@ -30,7 +30,7 @@ dotnet add package FreeAgent.Client
 | `PublishTrimmed` / aggressive trimming | **Not supported yet** |
 | Native AOT publish (`PublishAot`) | **Not supported yet** |
 
-The SDK serialises and deserialises API traffic with `System.Text.Json` source generation, so file-based apps work without extra MSBuild properties. Trimmed and Native AOT publish modes are still out of scope during alpha; see [#173](https://github.com/markheydon/freeagent-dotnet/issues/173).
+The SDK serialises and deserialises API traffic with `System.Text.Json` source generation, so file-based apps work without extra MSBuild properties. Trimmed and Native AOT publish modes are still out of scope during beta; see [#173](https://github.com/markheydon/freeagent-dotnet/issues/173).
 
 ### File-based apps (.NET 10+)
 
@@ -49,7 +49,7 @@ For a repo smoke script that deserialises fixture JSON (and optionally calls the
 
 ### Trimmed and Native AOT publish
 
-`PublishTrimmed` and `PublishAot` are **not supported** for apps using this client during alpha. Use a standard SDK-style project without aggressive trim or Native AOT until [#173](https://github.com/markheydon/freeagent-dotnet/issues/173) defines a proven path.
+`PublishTrimmed` and `PublishAot` are **not supported** for apps using this client during beta. Use a standard SDK-style project without aggressive trim or Native AOT until [#173](https://github.com/markheydon/freeagent-dotnet/issues/173) defines a proven path.
 
 ## OAuth protocol helpers
 
