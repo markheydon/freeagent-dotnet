@@ -29,7 +29,7 @@ These gaps are not fixed by seeding alone; they need API capability, new SDK res
 | `TakeDirectDebitPaymentAsync` | Requires an invoice and contact with a live direct-debit mandate; not creatable via the public API. |
 | `CreateStockBankTransactionExplanationAsync` | Needs a stock item id; [stock items](../reference/stock-items.md) are read-only in the SDK. |
 | `CreateCapitalAssetDisposalBankTransactionExplanationAsync` | Needs a disposed capital asset id (`client.CapitalAssets` with `view=disposed`, or dispose in the sandbox UI). Smoke does not create or dispose assets end-to-end. |
-| `CreateLandlordPropertyBankTransactionExplanationAsync` | Needs a property URI and a `UkUnincorporatedLandlord` company; smoke skips when company type or property data is unavailable. |
+| `CreateLandlordPropertyBankTransactionExplanationAsync` | Needs a property URI and a `UkUnincorporatedLandlord` company; kept menu-only (not in `--run-all`). |
 | Recurring invoice writes | API is read-only; see [recurring invoices](../reference/recurring-invoices.md). |
 | Stock item writes | Read-only API; SDK exposes list and get only. |
 | Bank feed connect or refresh | Bank-aggregator OAuth; out of SDK scope; see [bank feeds](../reference/bank-feeds.md). |
@@ -37,7 +37,7 @@ These gaps are not fixed by seeding alone; they need API capability, new SDK res
 | `SendCreditNoteEmailAsync` on an existing credit note | Sends email for Turpinverse canon data; trial limits; no probe create/delete (unlike invoice send on a draft probe). |
 | Payroll RTI periods and payslips | Read-only API; pay runs are created in the FreeAgent UI, not via the SDK. Turpinverse cannot seed them today. |
 
-**Unit tests:** create variants for bank transaction explanations and `UpdateBankTransactionExplanationAsync` are covered in `BankTransactionExplanationsServiceTests`. Live smoke for most explanation **shapes** beyond category create-and-delete is still optional follow-up.
+**Unit tests:** create variants for bank transaction explanations and `UpdateBankTransactionExplanationAsync` are covered in `BankTransactionExplanationsServiceTests`. Live smoke in `--run-all` exercises category, payment/refund, invoice receipt, bill payment, smart and categorised user payment, transfer, and update probes (with `SampleContext.Skip` when prerequisites are missing). Stock, capital-asset purchase and disposal, landlord property, and opening-balance explanation creates remain menu-only.
 
 **Menu-only by design (not API-blocked):**
 
@@ -83,6 +83,10 @@ Some examples run in `--run-all` but may **skip** when the sandbox account lacks
 | Update/delete estimate item | Created item has no id in API response |
 | Mark previous liability payment paid then unpaid | Fewer than two payroll periods with payslips, or no unpaid liability payment due between the previous and latest of those periods |
 | List payslips for first payroll period | No payroll periods returned for the current UK tax year end |
+| Bank transaction explanation create variants (payment/refund, invoice receipt, bill payment, user payments, transfer) | Missing project, invoice, bill, user, or second bank account |
+| Update bank transaction explanation | Could not upload a probe bank transaction |
+| Round-trip CIS prior deductions update | Subcontractor prior deductions not recorded on the company |
+| Get or update sales tax period (probe) | Company is not a US or universal company type |
 
 ## Credit note reconciliation update
 

@@ -22,7 +22,7 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
             $"{period.ResourceId,8}  {period.SalesTaxName}  {period.EffectiveDate:yyyy-MM-dd}  {period.SalesTaxRegistrationStatus}");
     }
 
-    [ConsoleSample(Name = "Get sales tax period detail with probe create and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Get sales tax period detail with probe create and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task GetSalesTaxPeriodDetailAsync(CancellationToken cancellationToken)
     {
@@ -49,7 +49,7 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
         }
     }
 
-    [ConsoleSample(Name = "Update sales tax period rate", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Update sales tax period rate", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateSalesTaxPeriodAsync(CancellationToken cancellationToken)
     {

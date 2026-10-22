@@ -58,32 +58,32 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
     private Task CreateCategoryExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateCategory, cancellationToken);
 
-    [ConsoleSample(Name = "Create payment or refund explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create payment or refund explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreatePaymentOrRefundExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreatePaymentOrRefund, cancellationToken);
 
-    [ConsoleSample(Name = "Create invoice receipt explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create invoice receipt explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreateInvoiceReceiptExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateInvoiceReceipt, cancellationToken);
 
-    [ConsoleSample(Name = "Create bill payment explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create bill payment explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreateBillPaymentExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateBillPayment, cancellationToken);
 
-    [ConsoleSample(Name = "Create smart user payment explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create smart user payment explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreateSmartUserPaymentExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateSmartUserPayment, cancellationToken);
 
-    [ConsoleSample(Name = "Create categorised user payment explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create categorised user payment explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreateCategorisedUserPaymentExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateCategorisedUserPayment, cancellationToken);
 
-    [ConsoleSample(Name = "Create transfer explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create transfer explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreateTransferExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateTransfer, cancellationToken);
@@ -120,7 +120,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
     private Task CreateOpeningBalanceExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateOpeningBalance, cancellationToken);
 
-    [ConsoleSample(Name = "Update bank transaction explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Update bank transaction explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateBankTransactionExplanationAndDeleteAsync(CancellationToken cancellationToken)
     {
@@ -129,7 +129,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
             cancellationToken);
         if (probeContext is null)
         {
-            return;
+            SampleContext.Skip("could not create a probe bank transaction for explanation update");
         }
 
         var created = await BankTransactionExplanationWriteProbeSupport.ExecuteCreateAsync(
@@ -169,13 +169,10 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         var probeContext = await TryBuildWriteProbeContextAsync(variant, cancellationToken);
         if (probeContext is null)
         {
-            return;
+            SampleContext.Skip("could not create a probe bank transaction for explanation create");
         }
 
-        if (!TryLogVariantPrerequisites(variant, probeContext))
-        {
-            return;
-        }
+        EnsureVariantPrerequisitesOrSkip(variant, probeContext);
 
         var created = await BankTransactionExplanationWriteProbeSupport.ExecuteCreateAsync(
             context.Client,
@@ -197,7 +194,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         Console.WriteLine($"  Deleted explanation {created.ResourceId}.");
     }
 
-    private static bool TryLogVariantPrerequisites(
+    private static void EnsureVariantPrerequisitesOrSkip(
         BankTransactionExplanationWriteProbeVariant variant,
         BankTransactionExplanationWriteProbeContext probeContext)
     {
@@ -206,11 +203,10 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
                 probeContext,
                 out var skipReason))
         {
-            return true;
+            return;
         }
 
-        Console.WriteLine($"  {skipReason}");
-        return false;
+        SampleContext.Skip(skipReason ?? "prerequisites for explanation probe are not met");
     }
 
     private async Task RunCapitalAssetDisposalProbeAsync(CancellationToken cancellationToken)

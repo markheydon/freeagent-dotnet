@@ -60,6 +60,21 @@ public class TimeslipServiceTests
         Assert.Equal(12.0m, page.Items[0].Hours);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(101)]
+    public async System.Threading.Tasks.Task ListAsync_InvalidPerPage_Throws(int perPage)
+    {
+        using var httpClient = new HttpClient(new QueueHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)))
+        {
+            BaseAddress = new Uri("https://api.freeagent.com/v2/")
+        };
+        using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
+        var service = new TimeslipService(client);
+
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() => service.ListAsync(perPage: perPage));
+    }
+
     [Fact]
     public async System.Threading.Tasks.Task ListAsync_IncludesDateUpdatedSinceNestedAndFilters()
     {
