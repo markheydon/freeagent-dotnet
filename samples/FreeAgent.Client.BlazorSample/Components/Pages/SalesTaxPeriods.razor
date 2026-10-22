@@ -1,5 +1,6 @@
 @page "/sales-tax-periods"
 @using FreeAgent.Client.BlazorSample.Services
+@using FreeAgent.Client.Samples.Shared
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
 @inject ApiDiagnosticsService ApiDiagnostics
@@ -26,6 +27,11 @@
     {
         <MudPaper Class="workbench-panel" Elevation="0">
             <MudStack Spacing="3">
+                @if (_companyTypeWarning is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_companyTypeWarning</MudAlert>
+                }
+
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
                     Sales tax periods are available for US and universal companies only. UK limited-company sandboxes may return errors or empty lists.
                 </MudAlert>
@@ -119,6 +125,7 @@
 
 @code {
     private bool _loading;
+    private string? _companyTypeWarning;
     private string? _error;
     private string _wireApiResponse = string.Empty;
     private IReadOnlyList<SalesTaxPeriod>? _periods;
@@ -140,6 +147,40 @@
                 _ => "-"
             }))
         .ToList() ?? [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshCompanyTypeWarningAsync();
+    }
+
+    private async Task RefreshCompanyTypeWarningAsync()
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            return;
+        }
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            var company = await client.Company.GetCompanyAsync();
+            if (!CompanySalesTaxPeriodSupport.SupportsSalesTaxPeriods(company.Type))
+            {
+                _companyTypeWarning =
+                    $"Connected company type is {company.Type?.ToString() ?? "unknown"} (sales tax periods apply to US and universal companies only).";
+            }
+            else
+            {
+                _companyTypeWarning = null;
+            }
+        }
+        catch (FreeAgentApiException ex)
+        {
+            _companyTypeWarning =
+                $"Could not load company type to verify sales tax period eligibility ({ex.Message}).";
+        }
+    }
 
     private async Task LoadSalesTaxPeriodsAsync()
     {

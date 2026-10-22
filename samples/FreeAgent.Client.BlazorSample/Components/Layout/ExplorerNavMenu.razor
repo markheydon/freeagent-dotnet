@@ -1,0 +1,52 @@
+@using FreeAgent.Client.BlazorSample.Navigation
+
+<MudStack Spacing="2" Class="px-2 pb-2">
+    <MudTextField @bind-Value="_filterText"
+                  Placeholder="Filter menu…"
+                  Margin="Margin.Dense"
+                  Variant="Variant.Outlined"
+                  Immediate="true"
+                  Clearable="true"
+                  Adornment="Adornment.Start"
+                  AdornmentIcon="@Icons.Material.Filled.Search"
+                  Class="explorer-nav-filter" />
+</MudStack>
+
+<MudNavMenu Rounded="true">
+    @if (SdkExplorerNavMatching.OverviewMatchesFilter(_filterText))
+    {
+        <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+            Overview
+        </MudNavLink>
+    }
+
+    @foreach (var group in SdkExplorerNavCatalog.Groups)
+    {
+        if (!SdkExplorerNavMatching.ShouldShowGroup(group, _filterText))
+        {
+            continue;
+        }
+
+        var visibleItems = SdkExplorerNavMatching.GetVisibleItems(group, _filterText);
+        var groupActive = SdkExplorerNavMatching.GroupIsActive(CurrentPath, group);
+        var filterActive = !string.IsNullOrWhiteSpace(_filterText);
+
+        <MudNavGroup Title="@group.Title"
+                     Icon="@group.Icon"
+                     Expanded="@(groupActive || filterActive)">
+            @foreach (var item in visibleItems)
+            {
+                <MudNavLink Href="@item.Href" Icon="@item.Icon">
+                    @item.Title
+                </MudNavLink>
+            }
+        </MudNavGroup>
+    }
+</MudNavMenu>
+
+@code {
+    [Parameter]
+    public string CurrentPath { get; set; } = string.Empty;
+
+    private string? _filterText;
+}

@@ -1,5 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using FreeAgent.Client;
+using FreeAgent.Client.Samples.Shared.Probes;
+
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>
@@ -123,47 +126,48 @@ internal sealed class BankTransactionSamples(SampleContext context) : IConsoleSa
     private async Task UploadStatementAndDeleteAsync(CancellationToken cancellationToken)
     {
         var bankAccountId = await GetFirstBankAccountIdAsync(cancellationToken);
-        if (bankAccountId is null)
+        if (bankAccountId is not { } accountId)
         {
             return;
         }
 
-        var fitId = $"sdk-console-{DateTime.UtcNow:yyyyMMddHHmmss}";
+        const decimal amount = -0.01m;
+        var fitId = ProbeBankTransactionLifecycleSupport.CreateProbeFitId("sdk-console-line");
         await context.Client.BankTransactions.UploadBankStatementAsync(
             new UploadBankStatementRequest(
             [
                 new BankStatementTransaction
                 {
                     DatedOn = DateOnly.FromDateTime(DateTime.UtcNow),
-                    Amount = -0.01m,
+                    Amount = amount,
                     Description = fitId,
                     FitId = fitId,
                     TransactionType = BankStatementTransactionType.Other
                 }
             ]),
-            bankAccountId: bankAccountId,
+            bankAccountId: accountId,
             cancellationToken: cancellationToken);
 
-        var uploaded = await context.Client.BankTransactions.ListAsync(
-            bankAccountId: bankAccountId,
-            lastUploaded: true,
-            cancellationToken: cancellationToken);
-
-        var created = uploaded.Items.FirstOrDefault(transaction => transaction.TransactionId == fitId)
-            ?? uploaded.Items.FirstOrDefault(transaction => transaction.Description == fitId);
+        var (createdId, skipReason) = await ResolveUploadedProbeTransactionAsync(
+            accountId,
+            fitId,
+            cancellationToken);
 
         SampleOutput.WriteHeader("Uploaded statement line");
         SampleOutput.WriteField("Fit id", fitId);
-        SampleOutput.WriteField("Matched id", created?.ResourceId);
+        SampleOutput.WriteField("Matched id", createdId);
 
-        if (created is null || created.ResourceId <= 0)
+        if (createdId is null)
         {
-            SampleOutput.WriteField("Deleted", "No matching transaction to delete.");
+            SampleOutput.WriteField("Deleted", skipReason ?? "No matching transaction to delete.");
             return;
         }
 
-        await context.Client.BankTransactions.DeleteBankTransactionAsync(created.ResourceId, cancellationToken);
-        SampleOutput.WriteField("Deleted", created.ResourceId);
+        await ProbeBankTransactionLifecycleSupport.DeleteExplanationsAndBankTransactionAsync(
+            context.Client,
+            createdId.Value,
+            cancellationToken);
+        SampleOutput.WriteField("Deleted", createdId.Value);
     }
 
     [ConsoleSample(Name = "Upload statement file and delete", MutatesData = true)]
@@ -171,12 +175,13 @@ internal sealed class BankTransactionSamples(SampleContext context) : IConsoleSa
     private async Task UploadStatementFileAsync(CancellationToken cancellationToken)
     {
         var bankAccountId = await GetFirstBankAccountIdAsync(cancellationToken);
-        if (bankAccountId is null)
+        if (bankAccountId is not { } accountId)
         {
             return;
         }
 
-        var fitId = $"sdk-console-file-{DateTime.UtcNow:yyyyMMddHHmmss}";
+        const decimal amount = -0.02m;
+        var fitId = ProbeBankTransactionLifecycleSupport.CreateProbeFitId("sdk-console-file");
         var posted = DateTime.UtcNow.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
         var ofx = $"""
             OFXHEADER:100
@@ -197,7 +202,7 @@ internal sealed class BankTransactionSamples(SampleContext context) : IConsoleSa
             <STMTTRN>
             <TRNTYPE>OTHER
             <DTPOSTED>{posted}
-            <TRNAMT>-0.02
+            <TRNAMT>{amount.ToString(CultureInfo.InvariantCulture)}
             <FITID>{fitId}
             <NAME>{fitId}
             </STMTTRN>
@@ -211,30 +216,59 @@ internal sealed class BankTransactionSamples(SampleContext context) : IConsoleSa
         await using var stream = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(ofx));
         await context.Client.BankTransactions.UploadBankStatementFileAsync(
             new UploadBankStatementFileRequest(stream, "sdk-probe.ofx"),
-            bankAccountId: bankAccountId,
+            bankAccountId: accountId,
             cancellationToken: cancellationToken);
 
+        var (createdId, skipReason) = await ResolveUploadedProbeTransactionAsync(
+            accountId,
+            fitId,
+            cancellationToken);
+
+        SampleOutput.WriteHeader("Uploaded statement file");
+        SampleOutput.WriteField("File", "sdk-probe.ofx");
+        SampleOutput.WriteField("Fit id", fitId);
+        SampleOutput.WriteField("Matched id", createdId);
+
+        if (createdId is null)
+        {
+            SampleOutput.WriteField("Deleted", skipReason ?? "No matching transaction to delete.");
+            return;
+        }
+
+        await ProbeBankTransactionLifecycleSupport.DeleteExplanationsAndBankTransactionAsync(
+            context.Client,
+            createdId.Value,
+            cancellationToken);
+        SampleOutput.WriteField("Deleted", createdId.Value);
+    }
+
+    private async Task<(long? TransactionId, string? SkipReason)> ResolveUploadedProbeTransactionAsync(
+        long bankAccountId,
+        string fitId,
+        CancellationToken cancellationToken)
+    {
         var uploaded = await context.Client.BankTransactions.ListAsync(
             bankAccountId: bankAccountId,
             lastUploaded: true,
             cancellationToken: cancellationToken);
 
-        var created = uploaded.Items.FirstOrDefault(transaction => transaction.TransactionId == fitId)
-            ?? uploaded.Items.FirstOrDefault(transaction => transaction.Description?.Contains(fitId, StringComparison.Ordinal) == true);
-
-        SampleOutput.WriteHeader("Uploaded statement file");
-        SampleOutput.WriteField("File", "sdk-probe.ofx");
-        SampleOutput.WriteField("Fit id", fitId);
-        SampleOutput.WriteField("Matched id", created?.ResourceId);
-
-        if (created is null || created.ResourceId <= 0)
+        var createdId = BankTransactionExplanationWriteProbeSupport.TryResolveUploadedBankTransactionId(
+            uploaded.Items,
+            fitId);
+        if (createdId is null)
         {
-            SampleOutput.WriteField("Deleted", "No matching transaction to delete.");
-            return;
+            foreach (var orphan in BankTransactionExplanationWriteProbeSupport.FindUploadOrphans(uploaded.Items, fitId))
+            {
+                await ProbeBankTransactionLifecycleSupport.DeleteExplanationsAndBankTransactionAsync(
+                    context.Client,
+                    orphan.ResourceId,
+                    cancellationToken);
+            }
+
+            return (null, "bank statement upload did not return a matching transaction id");
         }
 
-        await context.Client.BankTransactions.DeleteBankTransactionAsync(created.ResourceId, cancellationToken);
-        SampleOutput.WriteField("Deleted", created.ResourceId);
+        return (createdId, null);
     }
 
     private async Task<long?> GetFirstBankAccountIdAsync(CancellationToken cancellationToken)

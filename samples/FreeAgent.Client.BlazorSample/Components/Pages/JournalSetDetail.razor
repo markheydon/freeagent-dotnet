@@ -1,5 +1,6 @@
 @page "/journal-sets/detail"
 @using FreeAgent.Client.BlazorSample.Services
+@using FreeAgent.Client.Samples.Shared.Probes
 @inject TokenStore TokenStore
 @inject OAuthService OAuthService
 @inject ApiDiagnosticsService ApiDiagnostics
@@ -45,7 +46,7 @@
                 <MudStack Spacing="2">
                     <MudText Typo="Typo.body2" Class="hero-copy">
                         Pick an ID from the <MudLink Href="/journal-sets">journal sets list</MudLink>, or pass <code>?id=12345</code>.
-                        <strong>Create probe set</strong> upserts by tag <code>@ProbeTag</code> with two balancing lines (categories 001 and 901).
+                        <strong>Create probe set</strong> upserts by tag <code>@ProbeTag</code> with two balancing lines (categories 001 and 901; 901 includes the connected user).
                     </MudText>
                     <MudNumericField @bind-Value="_journalSetId" @bind-Value:after="OnJournalSetIdChanged" Label="Journal set ID" Min="1" />
                     <MudTextField @bind-Value="_description" Label="Description" Variant="Variant.Outlined" Margin="Margin.Dense" FullWidth="true" />
@@ -155,27 +156,19 @@
             }
             else
             {
-                _item = await client.JournalSets.CreateJournalSetAsync(new CreateJournalSetRequest
+                var currentUser = await client.Users.GetCurrentUserAsync();
+                if (!currentUser.TryGetResourceId(out var userId))
                 {
-                    Description = ProbeDescription,
-                    DatedOn = DateOnly.FromDateTime(_datedOn ?? DateTime.Today),
-                    Tag = ProbeTag,
-                    JournalEntries =
-                    [
-                        new JournalEntry
-                        {
-                            CategoryNominalCode = "001",
-                            Description = "SDK probe debit",
-                            DebitValue = -1.00m
-                        },
-                        new JournalEntry
-                        {
-                            CategoryNominalCode = "901",
-                            Description = "SDK probe credit",
-                            DebitValue = 1.00m
-                        }
-                    ]
-                });
+                    _error = "Connected user is missing a parseable resource id.";
+                    return string.Empty;
+                }
+
+                _item = await client.JournalSets.CreateJournalSetAsync(
+                    JournalSetWriteProbeSupport.BuildCreateRequest(
+                        ProbeDescription,
+                        ProbeTag,
+                        userId,
+                        DateOnly.FromDateTime(_datedOn ?? DateTime.Today)));
                 _journalSetId = _item.ResourceId;
                 _operationMessage = $"Created probe journal set {_item.ResourceId} (tag {ProbeTag}).";
             }

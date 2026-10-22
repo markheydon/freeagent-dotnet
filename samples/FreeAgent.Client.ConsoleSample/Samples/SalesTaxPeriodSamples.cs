@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using FreeAgent.Client.Samples.Shared;
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>
@@ -13,6 +14,7 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task ListSalesTaxPeriodsAsync(CancellationToken cancellationToken)
     {
+        await EnsureSalesTaxPeriodsSupportedAsync(cancellationToken);
         var periods = await context.Client.SalesTaxPeriods.ListAsync(cancellationToken);
 
         SampleOutput.WriteHeader($"Sales tax periods ({periods.Count})");
@@ -20,10 +22,11 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
             $"{period.ResourceId,8}  {period.SalesTaxName}  {period.EffectiveDate:yyyy-MM-dd}  {period.SalesTaxRegistrationStatus}");
     }
 
-    [ConsoleSample(Name = "Get sales tax period detail with probe create and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Get sales tax period detail with probe create and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task GetSalesTaxPeriodDetailAsync(CancellationToken cancellationToken)
     {
+        await EnsureSalesTaxPeriodsSupportedAsync(cancellationToken);
         var (probeId, createdForProbe) = await ResolveProbeSalesTaxPeriodIdAsync(cancellationToken);
         try
         {
@@ -46,14 +49,17 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
         }
     }
 
-    [ConsoleSample(Name = "Update sales tax period rate", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Update sales tax period rate", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateSalesTaxPeriodAsync(CancellationToken cancellationToken)
     {
+        await EnsureSalesTaxPeriodsSupportedAsync(cancellationToken);
         var (probeId, createdForProbe) = await ResolveProbeSalesTaxPeriodIdAsync(cancellationToken);
+        decimal? originalRate1 = null;
         try
         {
             var existing = await context.Client.SalesTaxPeriods.GetSalesTaxPeriodAsync(probeId, cancellationToken);
+            originalRate1 = existing.SalesTaxRate1;
             var updated = await context.Client.SalesTaxPeriods.UpdateSalesTaxPeriodAsync(
                 probeId,
                 new UpdateSalesTaxPeriodRequest
@@ -71,6 +77,13 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
             if (createdForProbe)
             {
                 await context.Client.SalesTaxPeriods.DeleteSalesTaxPeriodAsync(probeId, cancellationToken);
+            }
+            else if (originalRate1 is not null)
+            {
+                await context.Client.SalesTaxPeriods.UpdateSalesTaxPeriodAsync(
+                    probeId,
+                    new UpdateSalesTaxPeriodRequest { SalesTaxRate1 = originalRate1 },
+                    cancellationToken);
             }
         }
     }
@@ -96,5 +109,15 @@ internal sealed class SalesTaxPeriodSamples(SampleContext context) : IConsoleSam
             cancellationToken);
 
         return (created.ResourceId, true);
+    }
+
+    private async Task EnsureSalesTaxPeriodsSupportedAsync(CancellationToken cancellationToken)
+    {
+        var company = await context.Client.Company.GetCompanyAsync(cancellationToken);
+        if (!CompanySalesTaxPeriodSupport.SupportsSalesTaxPeriods(company.Type))
+        {
+            SampleContext.Skip(
+                "sales tax periods API applies to US and universal companies only (connected company is not supported)");
+        }
     }
 }

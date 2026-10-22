@@ -93,7 +93,8 @@ Optional seed helpers (when useful for testing):
 
 ## Navigation and honesty
 
-- Register new routes in `Components/Layout/MainLayout.razor`.
+- Register new probe routes in [`samples/FreeAgent.Client.BlazorSample/Navigation/SdkExplorerNavCatalog.cs`](../../samples/FreeAgent.Client.BlazorSample/Navigation/SdkExplorerNavCatalog.cs). The drawer renders from that catalogue via [`ExplorerNavMenu.razor`](../../samples/FreeAgent.Client.BlazorSample/Components/Layout/ExplorerNavMenu.razor) (filter box + grouped links).
+- Choose the navigation group that matches the API domain: **Payroll** (payroll periods, payslips, profiles), **CIS** (bands and settings), **Taxes** (VAT, corporation/income/self assessment returns, sales tax periods, EC VAT MOSS), or **Reports** (management accounts such as profit and loss, balance sheet, trial balance, cashflow, transactions, final accounts).
 - Add the page to the table in [`samples/README.md`](../../samples/README.md).
 - Do not add sample UI for SDK endpoints that do not exist yet (see ADR-0006).
 
@@ -106,7 +107,7 @@ Optional seed helpers (when useful for testing):
 - [ ] `EndpointProbeHeader` on each page with accurate `CallUnderTest`, `EndpointPath`, and `DocsUrl`.
 - [ ] `ModelProbeResults` after successful SDK calls; `ApiErrorDiagnostics` on failures.
 - [ ] Raw JSON panel present for full payload inspection.
-- [ ] Navigation group added in `MainLayout.razor`.
+- [ ] Navigation entry added in `SdkExplorerNavCatalog.cs` (correct group: Payroll, CIS, Taxes, Reports, or other).
 - [ ] [`docs/reference/api-coverage.md`](../reference/api-coverage.md) and [`samples/README.md`](../../samples/README.md) updated.
 
 ## Related documents

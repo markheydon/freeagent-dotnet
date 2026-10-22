@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using FreeAgent.Client.Samples.Shared;
 namespace FreeAgent.Client.ConsoleSample.Samples;
 
 /// <summary>
@@ -45,26 +46,89 @@ internal sealed class PayrollSamples(SampleContext context) : IConsoleSampleProv
             payslip => $"user={payslip.UserId}  tax_code={payslip.TaxCode}  basic_pay={payslip.BasicPay}");
     }
 
-    [ConsoleSample(Name = "Mark first payroll payment paid then unpaid", MutatesData = true)]
+    [ConsoleSample(Name = "Mark previous liability payment paid then unpaid", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
-    private async Task MarkFirstPaymentPaidThenUnpaidAsync(CancellationToken cancellationToken)
+    private async Task MarkPreviousLiabilityPaymentPaidThenUnpaidAsync(CancellationToken cancellationToken)
     {
         var taxYearEnd = ResolveCurrentUkTaxYearEnd();
         var taxYear = await context.Client.Payroll.ListAsync(taxYearEnd, cancellationToken);
-        var payment = taxYear.Payments?.FirstOrDefault(p => p.DueOn is not null);
+        if (taxYear.Periods!.Count == 0)
+        {
+            SampleContext.Skip("no payroll periods returned for the current tax year end");
+        }
+
+        var periodsWithPayslips = await ListPeriodsWithPayslipsAsync(taxYearEnd, taxYear.Periods!, cancellationToken);
+        if (periodsWithPayslips.Count < PayrollLiabilityPaymentProbeSupport.MinimumPeriodsWithPayslips)
+        {
+            SampleContext.Skip(
+                $"need at least {PayrollLiabilityPaymentProbeSupport.MinimumPeriodsWithPayslips} payroll periods with payslips to mark a previous liability payment");
+        }
+
+        var payment = PayrollLiabilityPaymentProbeSupport.TrySelectPreviousPeriodLiabilityPayment(
+            periodsWithPayslips,
+            taxYear.Payments);
         if (payment?.DueOn is null)
         {
-            SampleContext.Skip("no payroll liability payments returned for the current tax year end");
+            SampleContext.Skip(
+                PayrollLiabilityPaymentProbeSupport.DescribeWhyNoPaymentSelected(
+                    periodsWithPayslips,
+                    taxYear.Payments));
         }
 
         var dueOn = payment.DueOn!.Value;
+        SampleOutput.WriteHeader("Selected liability payment");
+        SampleOutput.WriteField("Due on", dueOn);
+        SampleOutput.WriteField("Amount due", payment.AmountDue);
+        SampleOutput.WriteField("Status", payment.Status);
+
         var paid = await context.Client.Payroll.MarkPaymentAsPaidAsync(taxYearEnd, dueOn, cancellationToken);
+        var paidRow = paid.Payments?.FirstOrDefault(p => p.DueOn == dueOn);
+        if (paidRow?.Status is not PayrollPaymentStatus.MarkedAsPaid and not PayrollPaymentStatus.Paid)
+        {
+            throw new InvalidOperationException(
+                $"MarkPaymentAsPaidAsync did not return marked_as_paid for due date {dueOn:yyyy-MM-dd} (status: {paidRow?.Status}).");
+        }
+
         SampleOutput.WriteHeader("Marked payment as paid");
-        SampleOutput.WriteField("Status", paid.Payments![0].Status);
+        SampleOutput.WriteField("Status", paidRow.Status);
 
         var unpaid = await context.Client.Payroll.MarkPaymentAsUnpaidAsync(taxYearEnd, dueOn, cancellationToken);
+        var unpaidRow = unpaid.Payments?.FirstOrDefault(p => p.DueOn == dueOn);
+        if (unpaidRow?.Status is not PayrollPaymentStatus.Unpaid)
+        {
+            throw new InvalidOperationException(
+                $"MarkPaymentAsUnpaidAsync did not return unpaid for due date {dueOn:yyyy-MM-dd} (status: {unpaidRow?.Status}).");
+        }
+
         SampleOutput.WriteHeader("Marked payment as unpaid");
-        SampleOutput.WriteField("Status", unpaid.Payments![0].Status);
+        SampleOutput.WriteField("Status", unpaidRow.Status);
+    }
+
+    private async Task<List<PayrollPeriod>> ListPeriodsWithPayslipsAsync(
+        int taxYearEnd,
+        IReadOnlyList<PayrollPeriod> periodSummaries,
+        CancellationToken cancellationToken)
+    {
+        var withPayslips = new List<PayrollPeriod>();
+        foreach (var summary in periodSummaries
+                     .Where(static period => period.PeriodNumber is not null)
+                     .OrderByDescending(static period => period.DatedOn ?? DateOnly.MinValue)
+                     .ThenByDescending(static period => period.PeriodNumber))
+        {
+            if (withPayslips.Count >= PayrollLiabilityPaymentProbeSupport.MinimumPeriodsWithPayslips)
+            {
+                break;
+            }
+
+            var periodNumber = summary.PeriodNumber!.Value;
+            var detail = await context.Client.Payroll.ListPayslipsAsync(taxYearEnd, periodNumber, cancellationToken);
+            if (detail.Payslips is { Count: > 0 })
+            {
+                withPayslips.Add(detail);
+            }
+        }
+
+        return withPayslips;
     }
 
     private static int ResolveCurrentUkTaxYearEnd()

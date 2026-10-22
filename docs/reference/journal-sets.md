@@ -80,7 +80,7 @@ var journalSet = await client.JournalSets.CreateJournalSetAsync(new CreateJourna
     JournalEntries =
     [
         new JournalEntry { CategoryNominalCode = "001", DebitValue = -100m },
-        new JournalEntry { CategoryNominalCode = "901", UserId = 1, DebitValue = 100m }
+        new JournalEntry { CategoryNominalCode = "901", UserId = directorUserId, DebitValue = 100m }
     ]
 });
 ```

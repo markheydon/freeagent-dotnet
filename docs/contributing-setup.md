@@ -17,7 +17,7 @@ Install **both** .NET SDKs:
 | **.NET 10.0** | Primary focus; required for the Blazor sample app |
 | **.NET 8.0** | SDK package multi-targets `net8.0` |
 
-CI installs the SDK from [global.json](../global.json) plus `8.0.x` for the `net8.0` target (see [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)).
+CI installs the SDK from [global.json](../global.json) plus `8.0.x` for the `net8.0` target (see [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)). Live sandbox smoke is in [`.github/workflows/sandbox-smoke.yml`](../.github/workflows/sandbox-smoke.yml).
 
 ### Verify installation
 

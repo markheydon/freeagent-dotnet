@@ -4,7 +4,7 @@ Samples for trying the `FreeAgent.Client` SDK against the FreeAgent API.
 
 | Sample | Purpose | SDK source |
 |--------|---------|------------|
-| [FileBasedQuickStart/CompanyDeserializeSmoke.cs](FileBasedQuickStart/CompanyDeserializeSmoke.cs) | File-based app smoke for trim-safe JSON (fixture deserialise; optional live `GetCompanyAsync` when `FREEAGENT_ACCESS_TOKEN` is set). CI uses `#:project`. | Local project by default; `#:package` after NuGet install |
+| [FileBasedQuickStart/CompanyDeserializeSmoke.cs](FileBasedQuickStart/CompanyDeserializeSmoke.cs) | File-based app smoke for trim-safe JSON (fixture deserialise; optional live `GetCompanyAsync` when `FREEAGENT_ACCESS_TOKEN` is set). Sandbox smoke CI uses `#:project`. | Local project by default; `#:package` after NuGet install |
 | [FreeAgent.Client.ConsoleSample](FreeAgent.Client.ConsoleSample/) | Real-world console reference and live integration harness - DI, interactive menu, `--seed-turpinverse`, `--run-all` sandbox smoke (mutates data) | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
 | [FreeAgent.Client.BlazorSample](FreeAgent.Client.BlazorSample/) | Blazor Server workbench for exercising SDK endpoints interactively | Local project by default; `-p:UseLocalFreeAgentClient=false` for NuGet |
 | [FreeAgent.Client.Samples.Shared](FreeAgent.Client.Samples.Shared/) | Turpinverse canon loaders, seeders, and bulk seed orchestrator shared by both samples | Local project only (not published) |
@@ -191,6 +191,7 @@ The sample app provides developer tooling pages under **Developer Tools** in the
 - **Purpose:** One-click sandbox population before probe pages or console `--run-all` smoke.
 - **Sandbox-only:** Restricted to sandbox OAuth sessions, matching the console `--seed-turpinverse` guard.
 - **Idempotent upsert:** Matches existing records by stable keys; does not delete stale sandbox data.
+- **Payroll gap:** Turpinverse does not seed RTI payroll (periods, payslips, or liability payments). The payroll API is read-only except mark-as-paid/unpaid. For console smoke on `Mark previous liability payment paid then unpaid`, run at least two pay periods with payslips in the sandbox UI first. See [Smoke and test limitations](../docs/contributing/smoke-and-test-limitations.md).
 
 Per-resource CRUD probe pages still expose individual Turpinverse seed buttons for targeted runs.
 

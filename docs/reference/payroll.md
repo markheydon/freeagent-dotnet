@@ -98,8 +98,8 @@ foreach (var payslip in period.Payslips ?? [])
     Console.WriteLine($"{payslip.UserId}: {payslip.BasicPay}");
 }
 
-if (taxYear.Payments is { Count: > 0 } payments && payments[0].DueOn is DateOnly dueOn)
-{
-    await client.Payroll.MarkPaymentAsPaidAsync(taxYearEnd, dueOn);
-}
+// Liability payments are keyed by due date. Pick an unpaid payment that aligns with
+// a completed pay period (see console smoke: PayrollLiabilityPaymentProbeSupport).
 ```
+
+The console `--run-all` example loads payslips per period and only marks a **previous** period’s liability when at least two periods have payslips. See [Smoke and test limitations](../contributing/smoke-and-test-limitations.md).

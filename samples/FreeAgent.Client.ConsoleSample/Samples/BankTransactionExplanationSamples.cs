@@ -58,32 +58,32 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
     private Task CreateCategoryExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateCategory, cancellationToken);
 
-    [ConsoleSample(Name = "Create payment or refund explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create payment or refund explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreatePaymentOrRefundExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreatePaymentOrRefund, cancellationToken);
 
-    [ConsoleSample(Name = "Create invoice receipt explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create invoice receipt explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreateInvoiceReceiptExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateInvoiceReceipt, cancellationToken);
 
-    [ConsoleSample(Name = "Create bill payment explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create bill payment explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreateBillPaymentExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateBillPayment, cancellationToken);
 
-    [ConsoleSample(Name = "Create smart user payment explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create smart user payment explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreateSmartUserPaymentExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateSmartUserPayment, cancellationToken);
 
-    [ConsoleSample(Name = "Create categorised user payment explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create categorised user payment explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreateCategorisedUserPaymentExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateCategorisedUserPayment, cancellationToken);
 
-    [ConsoleSample(Name = "Create transfer explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Create transfer explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private Task CreateTransferExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateTransfer, cancellationToken);
@@ -120,16 +120,16 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
     private Task CreateOpeningBalanceExplanationAndDeleteAsync(CancellationToken cancellationToken) =>
         RunCreateVariantProbeAsync(BankTransactionExplanationWriteProbeVariant.CreateOpeningBalance, cancellationToken);
 
-    [ConsoleSample(Name = "Update bank transaction explanation and delete", MutatesData = true, ExcludeFromRunAll = true)]
+    [ConsoleSample(Name = "Update bank transaction explanation and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
     private async Task UpdateBankTransactionExplanationAndDeleteAsync(CancellationToken cancellationToken)
     {
-        var probeContext = await TryBuildWriteProbeContextAsync(
+        var (probeContext, probeSkipReason) = await TryBuildWriteProbeContextAsync(
             BankTransactionExplanationWriteProbeVariant.CreateCategory,
             cancellationToken);
         if (probeContext is null)
         {
-            return;
+            SampleContext.Skip(probeSkipReason ?? "could not create a probe bank transaction for explanation update");
         }
 
         var created = await BankTransactionExplanationWriteProbeSupport.ExecuteCreateAsync(
@@ -166,16 +166,13 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
             return;
         }
 
-        var probeContext = await TryBuildWriteProbeContextAsync(variant, cancellationToken);
+        var (probeContext, probeSkipReason) = await TryBuildWriteProbeContextAsync(variant, cancellationToken);
         if (probeContext is null)
         {
-            return;
+            SampleContext.Skip(probeSkipReason ?? "could not create a probe bank transaction for explanation create");
         }
 
-        if (!TryLogVariantPrerequisites(variant, probeContext))
-        {
-            return;
-        }
+        EnsureVariantPrerequisitesOrSkip(variant, probeContext);
 
         var created = await BankTransactionExplanationWriteProbeSupport.ExecuteCreateAsync(
             context.Client,
@@ -197,7 +194,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         Console.WriteLine($"  Deleted explanation {created.ResourceId}.");
     }
 
-    private static bool TryLogVariantPrerequisites(
+    private static void EnsureVariantPrerequisitesOrSkip(
         BankTransactionExplanationWriteProbeVariant variant,
         BankTransactionExplanationWriteProbeContext probeContext)
     {
@@ -206,21 +203,21 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
                 probeContext,
                 out var skipReason))
         {
-            return true;
+            return;
         }
 
-        Console.WriteLine($"  {skipReason}");
-        return false;
+        SampleContext.Skip(skipReason ?? "prerequisites for explanation probe are not met");
     }
 
     private async Task RunCapitalAssetDisposalProbeAsync(CancellationToken cancellationToken)
     {
-        var purchaseContext = await TryBuildWriteProbeContextAsync(
+        var (purchaseContext, purchaseSkipReason) = await TryBuildWriteProbeContextAsync(
             BankTransactionExplanationWriteProbeVariant.CreateCapitalAssetPurchase,
             cancellationToken);
         if (purchaseContext is null)
         {
-            return;
+            SampleContext.Skip(
+                purchaseSkipReason ?? "could not create a probe bank transaction for capital asset disposal");
         }
 
         var purchase = await BankTransactionExplanationWriteProbeSupport.ExecuteCreateAsync(
@@ -240,7 +237,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         }
 
         var disposedAssetId = CapitalAssetReference.Parse(purchase.CapitalAssetUri).Id;
-        var disposalBankTransactionId = await UploadProbeBankTransactionAsync(
+        var (disposalBankTransactionId, disposalUploadSkipReason) = await UploadProbeBankTransactionAsync(
             purchaseContext.BankAccountId,
             cancellationToken,
             BankTransactionExplanationWriteProbeSupport.ProbeDisposalStatementAmount);
@@ -250,7 +247,8 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
                 purchase.ResourceId,
                 cancellationToken);
             await TryDeleteProbeBankTransactionAsync(purchaseContext.BankTransactionId, cancellationToken);
-            return;
+            SampleContext.Skip(
+                disposalUploadSkipReason ?? "could not upload or resolve a probe bank transaction for disposal");
         }
 
         var disposalContext = new BankTransactionExplanationWriteProbeContext
@@ -295,16 +293,19 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         }
     }
 
-    private async Task<BankTransactionExplanationWriteProbeContext?> TryBuildWriteProbeContextAsync(
+    private async Task<(BankTransactionExplanationWriteProbeContext? Context, string? SkipReason)> TryBuildWriteProbeContextAsync(
         BankTransactionExplanationWriteProbeVariant variant,
         CancellationToken cancellationToken)
     {
         var bankAccount = await context.Data.GetFirstBankAccountAsync(cancellationToken);
-        var bankTransactionId = await UploadProbeBankTransactionAsync(bankAccount.ResourceId, cancellationToken);
+        var uploadAmount = BankTransactionExplanationWriteProbeSupport.GetProbeStatementAmount(variant);
+        var (bankTransactionId, uploadSkipReason) = await UploadProbeBankTransactionAsync(
+            bankAccount.ResourceId,
+            cancellationToken,
+            uploadAmount);
         if (bankTransactionId is null)
         {
-            Console.WriteLine("  Could not create a probe bank transaction.");
-            return null;
+            return (null, uploadSkipReason ?? "could not upload or resolve a probe bank transaction");
         }
 
         long projectId = 0;
@@ -334,7 +335,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
 
             case BankTransactionExplanationWriteProbeVariant.CreateInvoiceReceipt:
                 {
-                    var invoice = await context.Data.GetFirstInvoiceAsync(cancellationToken);
+                    var invoice = await context.Data.GetFirstReceiptableInvoiceAsync(cancellationToken);
                     invoiceId = invoice.ResourceId;
                     break;
                 }
@@ -380,7 +381,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
                 }
         }
 
-        return new BankTransactionExplanationWriteProbeContext
+        return (new BankTransactionExplanationWriteProbeContext
         {
             BankAccountId = bankAccount.ResourceId,
             BankTransactionId = bankTransactionId.Value,
@@ -394,7 +395,7 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
             DisposedAssetId = disposedAssetId,
             CategoryNominalCode = categoryNominalCode,
             PropertyUri = propertyUri,
-        };
+        }, null);
     }
 
     private static bool VariantUsesCategoryNominalCode(BankTransactionExplanationWriteProbeVariant variant) =>
@@ -431,12 +432,12 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         }
     }
 
-    private async Task<long?> UploadProbeBankTransactionAsync(
+    private async Task<(long? TransactionId, string? SkipReason)> UploadProbeBankTransactionAsync(
         long bankAccountId,
         CancellationToken cancellationToken,
         decimal amount = BankTransactionExplanationWriteProbeSupport.ProbeMoneyOutStatementAmount)
     {
-        var fitId = $"sdk-console-bte-{DateTime.UtcNow:yyyyMMddHHmmss}";
+        var fitId = ProbeBankTransactionLifecycleSupport.CreateProbeFitId("sdk-console-bte");
         await context.Client.BankTransactions.UploadBankStatementAsync(
             new UploadBankStatementRequest(
             [
@@ -460,30 +461,33 @@ internal sealed class BankTransactionExplanationSamples(SampleContext context) :
         var createdId = BankTransactionExplanationWriteProbeSupport.TryResolveUploadedBankTransactionId(
             uploaded.Items,
             fitId);
-        if (createdId is not null)
+        if (createdId is null)
         {
-            return createdId;
+            foreach (var orphan in BankTransactionExplanationWriteProbeSupport.FindUploadOrphans(uploaded.Items, fitId))
+            {
+                await TryDeleteProbeBankTransactionAsync(orphan.ResourceId, cancellationToken);
+            }
+
+            return (null, "bank statement upload did not return a matching transaction id");
         }
 
-        foreach (var orphan in BankTransactionExplanationWriteProbeSupport.FindUploadOrphans(uploaded.Items, fitId))
+        var detail = await context.Client.BankTransactions.GetBankTransactionAsync(createdId.Value, cancellationToken);
+        if (ProbeBankTransactionLifecycleSupport.IsUnexplainedForProbe(detail, amount))
         {
-            await TryDeleteProbeBankTransactionAsync(orphan.ResourceId, cancellationToken);
+            return (createdId, null);
         }
 
-        return null;
+        await TryDeleteProbeBankTransactionAsync(createdId.Value, cancellationToken);
+        return (
+            null,
+            $"uploaded bank transaction {createdId.Value} is not unexplained for probe amount {amount.ToString(CultureInfo.InvariantCulture)} (unexplained {detail.UnexplainedAmount?.ToString(CultureInfo.InvariantCulture) ?? "null"})");
     }
 
-    private async Task TryDeleteProbeBankTransactionAsync(long bankTransactionId, CancellationToken cancellationToken)
-    {
-        try
-        {
-            await context.Client.BankTransactions.DeleteBankTransactionAsync(bankTransactionId, cancellationToken);
-        }
-        catch (FreeAgentApiException)
-        {
-            // Explanation delete may have removed the transaction; ignore cleanup failures.
-        }
-    }
+    private Task TryDeleteProbeBankTransactionAsync(long bankTransactionId, CancellationToken cancellationToken) =>
+        ProbeBankTransactionLifecycleSupport.DeleteExplanationsAndBankTransactionAsync(
+            context.Client,
+            bankTransactionId,
+            cancellationToken);
 
     private static string FormatExplanationRow(BankTransactionExplanation explanation) =>
         $"{explanation.ResourceId,8}  gross={explanation.GrossValue,10}  type={explanation.Type?.ToString() ?? "—",-20}  dated={explanation.DatedOn?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "—"}";

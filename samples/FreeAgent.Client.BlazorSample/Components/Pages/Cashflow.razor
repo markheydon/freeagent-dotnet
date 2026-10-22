@@ -11,7 +11,7 @@
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="Cashflow summary"
                          CallUnderTest="CashflowService.GetCashflowAsync(fromDate, toDate)"
-                         Description="Load historic cashflow for a date range (both dates required)."
+                         Description="Load historic cashflow for a date range (both dates required). This API does not return the projected cashflow chart shown in the FreeAgent web app."
                          EndpointPath="/v2/cashflow"
                          DocsUrl="https://dev.freeagent.com/docs/cashflow" />
 
@@ -26,6 +26,12 @@
     {
         <MudPaper Class="workbench-panel" Elevation="0">
             <MudStack Spacing="3">
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    The cashflow API exposes <strong>historic</strong> totals only. Projected balances (invoices, bills, and similar) are not included;
+                    date ranges that are mostly in the future often return <code>0</code> even when the FreeAgent Cashflow screen shows a forecast.
+                    Try a wider <em>past</em> range after bank transactions are explained, or compare with Banking in the sandbox UI.
+                </MudAlert>
+
                 <MudGrid Spacing="2">
                     <MudItem xs="12" sm="4">
                         <MudDatePicker Label="From date" @bind-Date="_fromDate" Required="true" />

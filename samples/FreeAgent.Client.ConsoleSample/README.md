@@ -142,8 +142,8 @@ Examples marked **(mutates)** write to the connected account.
 | Properties | List properties (skips when company is not `UkUnincorporatedLandlord`); **(mutates)** get property detail with probe create and delete; **(mutates)** update property address; **(mutates)** create probe property and delete |
 | Depreciation profiles | Deserialize straight line profile; deserialize reducing balance profile; build no depreciation purchase helper |
 | CIS bands | List CIS bands |
-| CIS settings | Get CIS settings; **(mutates, menu-only)** round-trip CIS prior deductions update |
-| Payroll | List payroll periods for current tax year end; list payslips for first period; **(mutates, menu-only)** mark first payment paid then unpaid |
+| CIS settings | Get CIS settings; **(mutates)** round-trip CIS prior deductions update (skips when prior deductions are not recorded) |
+| Payroll | List payroll periods for current tax year end; list payslips for first period; **(mutates)** mark previous liability payment paid then unpaid (skips until at least two periods have payslips — not Turpinverse-seedable; see smoke limitations) |
 | Payroll profiles | List profiles for current tax year end; list profile for first user |
 | Profit and loss | Get profit and loss summary |
 | Balance sheet | Get balance sheet; Get balance sheet opening balances |
@@ -155,12 +155,12 @@ Examples marked **(mutates)** write to the connected account.
 | Income tax returns | List income tax returns; Get income tax return detail; **(mutates, menu-only)** mark return/payment transitions (`ExcludeFromRunAll` when sandbox has no SA data) |
 | Self assessment returns | List self assessment returns; Get self assessment return detail; **(mutates, menu-only)** mark return/payment transitions (`ExcludeFromRunAll` when sandbox has no SA data) |
 | Final accounts reports | List final accounts reports; Get final accounts report detail; **(mutates, menu-only)** mark as filed/unfiled (`ExcludeFromRunAll` when unavailable) |
-| Sales tax periods | List sales tax periods; **(mutates, `ExcludeFromRunAll`)** get detail with probe create/delete; update rate |
+| Sales tax periods | List sales tax periods; **(mutates)** get detail with probe create/delete; **(mutates)** update rate (skips on non-US/universal companies) |
 | EC VAT MOSS | List MOSS sales tax rates for Austria (read-only lookup) |
 | Credit note reconciliations | List credit note reconciliations; list credit note reconciliations filtered by date; get credit note reconciliation by id; **(mutates)** create probe credit note reconciliation and delete; **(mutates)** update credit note reconciliation |
 | Bank accounts | List bank accounts; list standard accounts; get detail; create variants; update and delete (sandbox) |
 | Bank feeds | List bank feeds; get bank feed detail |
-| Bank transaction explanations | List explanations; get by id; **(mutates)** create/delete probes for each documented create variant; **(mutates)** update explanation and delete; **(mutates)** create category explanation with new transaction and delete |
+| Bank transaction explanations | List explanations; get by id; **(mutates)** create/delete probes in `--run-all` for category, payment/refund, invoice receipt, bill payment, user payments, and transfer (skip when prerequisites missing); **(mutates)** update explanation and delete; **(mutates, menu-only)** stock, capital-asset, landlord, and opening-balance variants |
 | Bank transactions | List bank transactions; stream all bank transactions via ListAutoPagingAsync; list unexplained transactions; get detail; **(mutates)** upload a statement line and delete; **(mutates)** upload a statement file and delete |
 | Stock items | List stock items; get stock item detail |
 | Price list items | List price list items; **(mutates)** get price list item detail with probe create and delete; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |
