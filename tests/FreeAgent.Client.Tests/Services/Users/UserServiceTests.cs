@@ -40,7 +40,7 @@ public class UserServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new UserService(client);
 
-        var users = await service.ListAsync(view: UserViews.All);
+        var users = await service.ListAsync(view: UserView.All);
 
         Assert.Single(users);
         Assert.Equal("Development Team", users[0].DisplayName);

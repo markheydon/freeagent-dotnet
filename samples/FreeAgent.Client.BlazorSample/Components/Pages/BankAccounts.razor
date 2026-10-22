@@ -41,16 +41,16 @@
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
+                            <MudSelect T="BankAccountView?"
                                        @bind-Value="_view"
                                        Label="View filter"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        FullWidth="true">
-                                <MudSelectItem Value="@string.Empty">All accounts</MudSelectItem>
-                                <MudSelectItem Value="@BankAccountViews.StandardBankAccounts">standard_bank_accounts</MudSelectItem>
-                                <MudSelectItem Value="@BankAccountViews.CreditCardAccounts">credit_card_accounts</MudSelectItem>
-                                <MudSelectItem Value="@BankAccountViews.PaypalAccounts">paypal_accounts</MudSelectItem>
+                                <MudSelectItem T="BankAccountView?" Value="@((BankAccountView?)null)">All accounts</MudSelectItem>
+                                <MudSelectItem Value="@BankAccountView.StandardBankAccounts">standard_bank_accounts</MudSelectItem>
+                                <MudSelectItem Value="@BankAccountView.CreditCardAccounts">credit_card_accounts</MudSelectItem>
+                                <MudSelectItem Value="@BankAccountView.PaypalAccounts">paypal_accounts</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
@@ -155,7 +155,7 @@
     private bool _loading;
     private string? _error;
     private string _wireApiResponse = string.Empty;
-    private string _view = string.Empty;
+    private BankAccountView? _view;
     private IReadOnlyList<BankAccount>? _bankAccounts;
     private BankAccount? _inspectedItem;
     private ModelProbeSnapshot? _inspectedProbe;
@@ -189,15 +189,14 @@
         _error = null;
         _wireApiResponse = string.Empty;
 
-        var diagnosticsEndpoint = string.IsNullOrWhiteSpace(_view)
+        var diagnosticsEndpoint = _view is null
             ? "bank_accounts"
-            : $"bank_accounts?view={Uri.EscapeDataString(_view)}";
+            : $"bank_accounts?view={Uri.EscapeDataString(ListQueryWire.View(_view) ?? string.Empty)}";
 
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _bankAccounts = await client.BankAccounts.ListAsync(
-                string.IsNullOrWhiteSpace(_view) ? null : _view);
+            _bankAccounts = await client.BankAccounts.ListAsync(_view);
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,

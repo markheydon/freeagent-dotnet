@@ -29,8 +29,8 @@ public sealed class CreditNotesService
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="CreditNoteViews.Open"/>)</param>
-    /// <param name="sort">Sort field (<see cref="CreditNoteSortOptions.CreatedAt"/> or <see cref="CreditNoteSortOptions.UpdatedAt"/>); prefix with <c>-</c> for descending</param>
+    /// <param name="view">Optional view filter (for example: <see cref="CreditNoteView.Open"/>)</param>
+    /// <param name="sort">Optional sort order</param>
     /// <param name="updatedSince">Return credit notes updated since this UTC timestamp</param>
     /// <param name="contact">Filter by contact resource reference</param>
     /// <param name="contactId">Filter by contact identifier (equivalent to <c>client.Urls.Contact(contactId)</c>)</param>
@@ -42,8 +42,8 @@ public sealed class CreditNotesService
     public async Task<PaginatedResponse<CreditNote>> ListAsync(
         int page = 1,
         int perPage = 25,
-        string? view = null,
-        string? sort = null,
+        CreditNoteView? view = null,
+        ApiSort<CreditNoteSortField>? sort = null,
         DateTimeOffset? updatedSince = null,
         ContactReference? contact = null,
         long? contactId = null,
@@ -62,14 +62,14 @@ public sealed class CreditNotesService
             new("per_page", perPage.ToString(CultureInfo.InvariantCulture))
         };
 
-        if (!string.IsNullOrWhiteSpace(view))
+        if (view is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("view", view));
+            queryParameters.Add(new KeyValuePair<string, string>("view", view.Value.WireValue));
         }
 
-        if (!string.IsNullOrWhiteSpace(sort))
+        if (sort is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("sort", sort));
+            queryParameters.Add(new KeyValuePair<string, string>("sort", sort.Value.ToWireValue()));
         }
 
         if (updatedSince is not null)
@@ -124,8 +124,8 @@ public sealed class CreditNotesService
     /// </summary>
     public async IAsyncEnumerable<CreditNote> ListAutoPagingAsync(
         int perPage = 25,
-        string? view = null,
-        string? sort = null,
+        CreditNoteView? view = null,
+        ApiSort<CreditNoteSortField>? sort = null,
         DateTimeOffset? updatedSince = null,
         ContactReference? contact = null,
         long? contactId = null,

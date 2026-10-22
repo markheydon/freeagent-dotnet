@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Services.PriceListItems;
 using FreeAgent.Client.Tests.TestSupport;
 
@@ -62,7 +63,7 @@ public class PriceListItemsServiceTests
         });
 
         var service = CreateService(handler);
-        await service.ListAsync(sort: PriceListItemSortOptions.Code);
+        await service.ListAsync(sort: new ApiSort<PriceListItemSortField>(PriceListItemSortField.Code));
     }
 
     [Fact]

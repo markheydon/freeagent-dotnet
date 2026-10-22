@@ -28,8 +28,8 @@ public sealed class ProjectService
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="ProjectViews.Active"/>)</param>
-    /// <param name="sort">Sort field (name, contact_name, contact_display_name, created_at, updated_at); prefix with <c>-</c> for descending</param>
+    /// <param name="view">Optional view filter (for example: <see cref="ProjectView.Active"/>)</param>
+    /// <param name="sort">Optional sort order</param>
     /// <param name="contact">Filter by billing contact resource reference</param>
     /// <param name="contactId">Filter by billing contact identifier (equivalent to <c>client.Urls.Contact(contactId)</c>)</param>
     /// <param name="nested">When <see langword="true"/>, return full contact details nested in each project</param>
@@ -39,8 +39,8 @@ public sealed class ProjectService
     public async Task<PaginatedResponse<Project>> ListAsync(
         int page = 1,
         int perPage = 25,
-        string? view = null,
-        string? sort = null,
+        ProjectView? view = null,
+        ApiSort<ProjectSortField>? sort = null,
         ContactReference? contact = null,
         long? contactId = null,
         bool? nested = null,
@@ -56,14 +56,14 @@ public sealed class ProjectService
             new("per_page", perPage.ToString(CultureInfo.InvariantCulture))
         };
 
-        if (!string.IsNullOrWhiteSpace(view))
+        if (view is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("view", view));
+            queryParameters.Add(new KeyValuePair<string, string>("view", EnumWireValue.Get(view.Value)));
         }
 
-        if (!string.IsNullOrWhiteSpace(sort))
+        if (sort is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("sort", sort));
+            queryParameters.Add(new KeyValuePair<string, string>("sort", sort.Value.ToWireValue()));
         }
 
         var contactFilter = ResolveContactFilter(contact, contactId);
@@ -101,8 +101,8 @@ public sealed class ProjectService
     /// Lists all projects across all pages.
     /// </summary>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="ProjectViews.Active"/>)</param>
-    /// <param name="sort">Sort field (name, contact_name, contact_display_name, created_at, updated_at); prefix with <c>-</c> for descending</param>
+    /// <param name="view">Optional view filter (for example: <see cref="ProjectView.Active"/>)</param>
+    /// <param name="sort">Optional sort order</param>
     /// <param name="contact">Filter by billing contact resource reference</param>
     /// <param name="contactId">Filter by billing contact identifier (equivalent to <c>client.Urls.Contact(contactId)</c>)</param>
     /// <param name="nested">When <see langword="true"/>, return full contact details nested in each project</param>
@@ -110,8 +110,8 @@ public sealed class ProjectService
     /// <returns>Async stream of projects</returns>
     public async IAsyncEnumerable<Project> ListAutoPagingAsync(
         int perPage = 25,
-        string? view = null,
-        string? sort = null,
+        ProjectView? view = null,
+        ApiSort<ProjectSortField>? sort = null,
         ContactReference? contact = null,
         long? contactId = null,
         bool? nested = null,

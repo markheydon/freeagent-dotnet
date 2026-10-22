@@ -214,7 +214,7 @@ public sealed class TurpinverseBillSeeder
         var billsByReference = new Dictionary<string, Bill>(StringComparer.Ordinal);
 
         await foreach (var bill in client.Bills.ListAutoPagingAsync(
-                           view: BillViews.All,
+                           view: BillView.All,
                            cancellationToken: cancellationToken))
         {
             if (string.IsNullOrWhiteSpace(bill.Reference)

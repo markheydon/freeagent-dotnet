@@ -23,7 +23,7 @@ public sealed class BalanceSheet
     /// ISO code for the company's native currency.
     /// </summary>
     [JsonPropertyName("currency")]
-    public string? Currency { get; set; }
+    public CurrencyCode? Currency { get; set; }
 
     /// <summary>
     /// Capital assets of the business.

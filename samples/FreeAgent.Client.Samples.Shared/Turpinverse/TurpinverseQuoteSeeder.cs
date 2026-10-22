@@ -174,7 +174,7 @@ public sealed class TurpinverseQuoteSeeder
         var estimatesByReference = new Dictionary<string, Estimate>(StringComparer.Ordinal);
 
         await foreach (var estimate in client.Estimates.ListAutoPagingAsync(
-                           view: EstimateViews.All,
+                           view: EstimateView.All,
                            cancellationToken: cancellationToken))
         {
             if (string.IsNullOrWhiteSpace(estimate.Reference)

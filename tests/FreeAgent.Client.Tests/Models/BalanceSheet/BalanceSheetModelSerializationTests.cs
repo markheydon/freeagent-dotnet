@@ -63,6 +63,7 @@ public class BalanceSheetModelSerializationTests
         Assert.NotNull(sheet);
         Assert.Equal(new DateOnly(2023, 3, 1), sheet.AccountingPeriodStartDate);
         Assert.Equal(new DateOnly(2023, 9, 30), sheet.AsAtDate);
+        Assert.Equal(CurrencyCode.GBP, sheet.Currency);
         Assert.Equal(1099, sheet.CapitalAssets?.NetBookValue);
         Assert.Equal("681", sheet.CurrentAssets?.Accounts?[0].NominalCode);
         Assert.Equal(-11905, sheet.TotalOwnersEquity);

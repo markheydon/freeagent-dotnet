@@ -46,7 +46,7 @@ public class EstimateServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new EstimateService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 2, view: EstimateViews.Draft);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: EstimateView.Draft);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);

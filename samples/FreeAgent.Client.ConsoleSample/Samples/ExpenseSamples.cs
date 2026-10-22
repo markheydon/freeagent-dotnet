@@ -54,7 +54,7 @@ internal sealed class ExpenseSamples(SampleContext context) : IConsoleSampleProv
     {
         var page = await context.Client.Expenses.ListAsync(
             perPage: 25,
-            view: ExpenseViews.Recent,
+            view: ExpenseView.Recent,
             cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader($"Recent expenses ({page.Items.Count})");

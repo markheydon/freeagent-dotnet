@@ -13,7 +13,7 @@ internal sealed class ContactSamples(SampleContext context) : IConsoleSampleProv
     {
         var page = await context.Client.Contacts.ListAsync(
             perPage: 25,
-            view: ContactViews.Active,
+            view: ContactView.Active,
             cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader($"Active contacts (showing {page.Items.Count} of {page.Total})");

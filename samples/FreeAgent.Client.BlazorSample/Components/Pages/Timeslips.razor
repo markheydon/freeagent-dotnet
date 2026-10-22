@@ -35,16 +35,16 @@
                 <MudStack Spacing="2">
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
+                            <MudSelect T="TimeslipView?"
                                        @bind-Value="_view"
                                        Label="View"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        Clearable="true"
                                        FullWidth="true">
-                                <MudSelectItem Value="@TimeslipViews.All">all</MudSelectItem>
-                                <MudSelectItem Value="@TimeslipViews.Unbilled">unbilled</MudSelectItem>
-                                <MudSelectItem Value="@TimeslipViews.Running">running</MudSelectItem>
+                                <MudSelectItem Value="@TimeslipView.All">all</MudSelectItem>
+                                <MudSelectItem Value="@TimeslipView.Unbilled">unbilled</MudSelectItem>
+                                <MudSelectItem Value="@TimeslipView.Running">running</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
@@ -252,7 +252,7 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allTimeslipsCount;
-    private string? _view;
+    private TimeslipView? _view;
     private DateTime? _fromDate;
     private DateTime? _toDate;
     private DateTime? _updatedSinceDate;
@@ -359,9 +359,9 @@
             $"per_page={_perPage}"
         };
 
-        if (!string.IsNullOrWhiteSpace(_view))
+        if (_view is not null)
         {
-            query.Add($"view={_view}");
+            query.Add($"view={ListQueryWire.View(_view)}");
         }
 
         if (_fromDate is not null)

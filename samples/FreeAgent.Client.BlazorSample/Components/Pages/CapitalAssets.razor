@@ -230,7 +230,7 @@
         var query = new List<string>();
         if (_view is CapitalAssetView view)
         {
-            query.Add($"view={ViewWireValue(view)}");
+            query.Add($"view={ListQueryWire.View(view)}");
         }
 
         if (_includeHistory)
@@ -240,14 +240,6 @@
 
         return query.Count == 0 ? "capital_assets" : $"capital_assets?{string.Join('&', query)}";
     }
-
-    private static string ViewWireValue(CapitalAssetView view) => view switch
-    {
-        CapitalAssetView.All => "all",
-        CapitalAssetView.Disposed => "disposed",
-        CapitalAssetView.Disposable => "disposable",
-        _ => "all"
-    };
 
     private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "-" : value;
 

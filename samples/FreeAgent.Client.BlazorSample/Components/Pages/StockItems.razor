@@ -40,17 +40,20 @@
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
-                                       @bind-Value="_sort"
+                            <MudSelect T="StockItemSortField"
+                                       @bind-Value="_sortField"
                                        Label="Sort"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        FullWidth="true">
-                                <MudSelectItem Value="@StockItemSortOptions.CreatedAt">created_at</MudSelectItem>
-                                <MudSelectItem Value="@StockItemSortOptions.Description">description</MudSelectItem>
-                                <MudSelectItem Value="@StockItemSortOptions.UpdatedAt">updated_at</MudSelectItem>
-                                <MudSelectItem Value="@($"-{StockItemSortOptions.CreatedAt}")">-created_at</MudSelectItem>
+                                <MudSelectItem Value="@StockItemSortField.CreatedAt">created_at</MudSelectItem>
+                                <MudSelectItem Value="@StockItemSortField.Description">description</MudSelectItem>
+                                <MudSelectItem Value="@StockItemSortField.UpdatedAt">updated_at</MudSelectItem>
+                                
                             </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="2">
+                            <MudCheckBox @bind-Value="_sortDescending" Label="Descending sort" Dense="true" />
                         </MudItem>
                         <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
                             <MudButton Variant="Variant.Filled"
@@ -156,7 +159,8 @@
     private StockItem? _inspectedItem;
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
-    private string _sort = StockItemSortOptions.CreatedAt;
+    private StockItemSortField _sortField = StockItemSortField.CreatedAt;
+    private bool _sortDescending;
 
     private IReadOnlyList<StockItemRow> _rows => _stockItems?
         .Select(static (item, index) => new StockItemRow(
@@ -185,12 +189,13 @@
         _error = null;
         _wireApiResponse = string.Empty;
 
-        var diagnosticsEndpoint = $"stock_items?sort={Uri.EscapeDataString(_sort)}";
+        var sortWire = new ApiSort<StockItemSortField>(_sortField, _sortDescending).ToWireValue();
+        var diagnosticsEndpoint = $"stock_items?sort={Uri.EscapeDataString(sortWire)}";
 
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _stockItems = await client.StockItems.ListAsync(sort: _sort);
+            _stockItems = await client.StockItems.ListAsync(sort: new ApiSort<StockItemSortField>(_sortField, _sortDescending));
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,

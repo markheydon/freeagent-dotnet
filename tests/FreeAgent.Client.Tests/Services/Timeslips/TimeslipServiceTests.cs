@@ -50,7 +50,7 @@ public class TimeslipServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new TimeslipService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 2, view: TimeslipViews.Unbilled);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: TimeslipView.Unbilled);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);

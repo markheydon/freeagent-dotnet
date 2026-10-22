@@ -35,15 +35,15 @@
 
                 <MudGrid Spacing="2" Class="contacts-filter-grid">
                     <MudItem xs="12" sm="6" md="4" lg="3">
-                        <MudSelect T="string"
-                                   @bind-Value="_view"
+                        <MudSelect T="ExpenseView?"
+                                       @bind-Value="_view"
                                    Label="View"
                                    Variant="Variant.Outlined"
                                    Margin="Margin.Dense"
                                    Clearable="true"
                                    FullWidth="true">
-                            <MudSelectItem Value="@ExpenseViews.Recent">recent</MudSelectItem>
-                            <MudSelectItem Value="@ExpenseViews.Recurring">recurring</MudSelectItem>
+                            <MudSelectItem Value="@ExpenseView.Recent">recent</MudSelectItem>
+                            <MudSelectItem Value="@ExpenseView.Recurring">recurring</MudSelectItem>
                         </MudSelect>
                     </MudItem>
                     <MudItem xs="12" sm="6" md="4" lg="3">
@@ -170,7 +170,7 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allExpensesCount;
-    private string? _view;
+    private ExpenseView? _view = ExpenseView.Recent;
     private long? _projectIdFilter;
     private int _perPage = 25;
 
@@ -247,9 +247,9 @@
     private string BuildDiagnosticsEndpoint()
     {
         var query = new List<string> { "page=1", $"per_page={_perPage}" };
-        if (!string.IsNullOrWhiteSpace(_view))
+        if (_view is not null)
         {
-            query.Add($"view={Uri.EscapeDataString(_view)}");
+            query.Add($"view={Uri.EscapeDataString(ListQueryWire.View(_view) ?? string.Empty)}");
         }
 
         if (_projectIdFilter is > 0)

@@ -28,7 +28,7 @@ public sealed class RecurringInvoiceService
     /// </summary>
     /// <param name="page">1-based page number</param>
     /// <param name="perPage">Items per page (maximum 100)</param>
-    /// <param name="view">Optional view filter (for example: <see cref="RecurringInvoiceViews.Draft"/>)</param>
+    /// <param name="view">Optional view filter (for example: <see cref="RecurringInvoiceView.Draft"/>)</param>
     /// <param name="contact">Filter by contact resource reference</param>
     /// <param name="contactId">Filter by contact identifier (equivalent to <c>client.Urls.Contact(contactId)</c>)</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -36,7 +36,7 @@ public sealed class RecurringInvoiceService
     public async Task<PaginatedResponse<RecurringInvoice>> ListAsync(
         int page = 1,
         int perPage = 25,
-        string? view = null,
+        RecurringInvoiceView? view = null,
         ContactReference? contact = null,
         long? contactId = null,
         CancellationToken cancellationToken = default)
@@ -51,9 +51,9 @@ public sealed class RecurringInvoiceService
             new("per_page", perPage.ToString(CultureInfo.InvariantCulture))
         };
 
-        if (!string.IsNullOrWhiteSpace(view))
+        if (view is not null)
         {
-            queryParameters.Add(new KeyValuePair<string, string>("view", view));
+            queryParameters.Add(new KeyValuePair<string, string>("view", EnumWireValue.Get(view.Value)));
         }
 
         var contactFilter = ResolveContactFilter(contact, contactId);
@@ -88,7 +88,7 @@ public sealed class RecurringInvoiceService
     /// </summary>
     public async IAsyncEnumerable<RecurringInvoice> ListAutoPagingAsync(
         int perPage = 25,
-        string? view = null,
+        RecurringInvoiceView? view = null,
         ContactReference? contact = null,
         long? contactId = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)

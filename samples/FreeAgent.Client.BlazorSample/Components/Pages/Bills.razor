@@ -41,19 +41,19 @@
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
+                            <MudSelect T="BillView"
                                        @bind-Value="_view"
                                        Label="View"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        FullWidth="true">
-                                <MudSelectItem Value="@BillViews.OpenOrOverdue">open_or_overdue</MudSelectItem>
-                                <MudSelectItem Value="@BillViews.Open">open</MudSelectItem>
-                                <MudSelectItem Value="@BillViews.Overdue">overdue</MudSelectItem>
-                                <MudSelectItem Value="@BillViews.Paid">paid</MudSelectItem>
-                                <MudSelectItem Value="@BillViews.Recurring">recurring</MudSelectItem>
-                                <MudSelectItem Value="@BillViews.HirePurchase">hire_purchase</MudSelectItem>
-                                <MudSelectItem Value="@BillViews.All">all</MudSelectItem>
+                                <MudSelectItem Value="@BillView.OpenOrOverdue">open_or_overdue</MudSelectItem>
+                                <MudSelectItem Value="@BillView.Open">open</MudSelectItem>
+                                <MudSelectItem Value="@BillView.Overdue">overdue</MudSelectItem>
+                                <MudSelectItem Value="@BillView.Paid">paid</MudSelectItem>
+                                <MudSelectItem Value="@BillView.Recurring">recurring</MudSelectItem>
+                                <MudSelectItem Value="@BillView.HirePurchase">hire_purchase</MudSelectItem>
+                                <MudSelectItem Value="@BillView.All">all</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
@@ -119,7 +119,7 @@
                         <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
                             @_pageResult.Items.Count bill@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
                         </MudChip>
-                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @ListQueryWire.View(_view)</MudChip>
                         @if (_pageResult.Total > 0)
                         {
                             <MudChip T="string" Variant="Variant.Outlined">Total: @_pageResult.Total</MudChip>
@@ -129,7 +129,7 @@
                     @if (_pageResult.Items.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                            No bills returned for view <code>@_view</code>. Try <code>all</code>, or create a test bill from
+                            No bills returned for view <code>@ListQueryWire.View(_view)</code>. Try <code>all</code>, or create a test bill from
                             <MudLink Href="/bills/detail">Bill CRUD</MudLink>.
                         </MudAlert>
                     }
@@ -253,7 +253,7 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allBillsCount;
-    private string _view = BillViews.OpenOrOverdue;
+    private BillView _view = BillView.OpenOrOverdue;
     private long? _contactIdFilter;
     private long? _projectIdFilter;
     private bool _nestedBillItems;
@@ -400,7 +400,7 @@
         {
             "page=1",
             $"per_page={_perPage}",
-            $"view={_view}"
+            $"view={ListQueryWire.View(_view)}"
         };
 
         if (_contactIdFilter is > 0)

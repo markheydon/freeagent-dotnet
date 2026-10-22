@@ -40,33 +40,36 @@
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
+                            <MudSelect T="ProjectTaskView?"
                                        @bind-Value="_view"
                                        Label="View"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        Clearable="true"
                                        FullWidth="true">
-                                <MudSelectItem Value="@ProjectTaskViews.Active">active</MudSelectItem>
-                                <MudSelectItem Value="@ProjectTaskViews.Completed">completed</MudSelectItem>
-                                <MudSelectItem Value="@ProjectTaskViews.Hidden">hidden</MudSelectItem>
-                                <MudSelectItem Value="@ProjectTaskViews.All">all</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskView.Active">active</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskView.Completed">completed</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskView.Hidden">hidden</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskView.All">all</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
-                                       @bind-Value="_sort"
+                            <MudSelect T="ProjectTaskSortField?"
+                                       @bind-Value="_sortField"
                                        Label="Sort"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        Clearable="true"
                                        FullWidth="true">
-                                <MudSelectItem Value="@ProjectTaskSortOptions.Name">name</MudSelectItem>
-                                <MudSelectItem Value="@ProjectTaskSortOptions.Project">project</MudSelectItem>
-                                <MudSelectItem Value="@ProjectTaskSortOptions.BillingRate">billing_rate</MudSelectItem>
-                                <MudSelectItem Value="@ProjectTaskSortOptions.CreatedAt">created_at</MudSelectItem>
-                                <MudSelectItem Value="@DescUpdatedAtSort">-updated_at</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskSortField.Name">name</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskSortField.Project">project</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskSortField.BillingRate">billing_rate</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskSortField.CreatedAt">created_at</MudSelectItem>
+                                <MudSelectItem Value="@ProjectTaskSortField.UpdatedAt">updated_at</MudSelectItem>
                             </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="2">
+                            <MudCheckBox @bind-Value="_sortDescending" Label="Descending sort" Dense="true" />
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
                             <MudNumericField @bind-Value="_projectIdFilter"
@@ -127,9 +130,9 @@
                         <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
                             @_pageResult.Items.Count task@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
                         </MudChip>
-                        @if (!string.IsNullOrWhiteSpace(_view))
+                        @if (_view is not null)
                         {
-                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @ListQueryWire.View(_view)</MudChip>
                         }
                         @if (_pageResult.Total > 0)
                         {
@@ -255,7 +258,6 @@
 </MudContainer>
 
 @code {
-    private const string DescUpdatedAtSort = "-updated_at";
 
     private bool _loading;
     private bool _loadingAll;
@@ -266,8 +268,9 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allTasksCount;
-    private string? _view = ProjectTaskViews.Active;
-    private string? _sort;
+    private ProjectTaskView? _view = ProjectTaskView.Active;
+    private ProjectTaskSortField? _sortField;
+    private bool _sortDescending;
     private long? _projectIdFilter;
     private DateTime? _updatedSince;
     private int _perPage = 25;
@@ -309,7 +312,7 @@
                 page: 1,
                 perPage: _perPage,
                 view: _view,
-                sort: _sort,
+                sort: _sortField is null ? null : new ApiSort<ProjectTaskSortField>(_sortField.Value, _sortDescending),
                 updatedSince: _updatedSince is null ? null : DateOnly.FromDateTime(_updatedSince.Value),
                 projectId: _projectIdFilter);
 
@@ -380,7 +383,7 @@
             await foreach (var _ in client.ProjectTasks.ListAutoPagingAsync(
                                perPage: _perPage,
                                view: _view,
-                               sort: _sort,
+                               sort: _sortField is null ? null : new ApiSort<ProjectTaskSortField>(_sortField.Value, _sortDescending),
                                updatedSince: _updatedSince is null ? null : DateOnly.FromDateTime(_updatedSince.Value),
                                projectId: _projectIdFilter))
             {
@@ -415,14 +418,14 @@
             $"per_page={_perPage}"
         };
 
-        if (!string.IsNullOrWhiteSpace(_view))
+        if (_view is not null)
         {
-            query.Add($"view={_view}");
+            query.Add($"view={ListQueryWire.View(_view)}");
         }
 
-        if (!string.IsNullOrWhiteSpace(_sort))
+        if (_sortField is not null)
         {
-            query.Add($"sort={Uri.EscapeDataString(_sort)}");
+            query.Add($"sort={new ApiSort<ProjectTaskSortField>(_sortField!.Value, _sortDescending).ToWireValue()}");
         }
 
         if (_updatedSince is not null)

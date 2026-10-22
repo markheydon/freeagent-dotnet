@@ -6,7 +6,10 @@ namespace FreeAgent.Client.Infrastructure.Serialization;
 /// <summary>
 /// Resolves enum wire names from <see cref="JsonStringEnumMemberNameAttribute"/> values.
 /// </summary>
-internal static class EnumWireValue
+/// <summary>
+/// Resolves enum wire names for query parameters and JSON contracts.
+/// </summary>
+public static class EnumWireValue
 {
     /// <summary>
     /// Returns the JSON wire name for an enum value, using <see cref="JsonStringEnumMemberNameAttribute"/> when present.

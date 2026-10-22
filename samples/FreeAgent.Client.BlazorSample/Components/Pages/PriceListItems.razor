@@ -40,17 +40,20 @@
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
-                                       @bind-Value="_sort"
+                            <MudSelect T="PriceListItemSortField"
+                                       @bind-Value="_sortField"
                                        Label="Sort"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        FullWidth="true">
-                                <MudSelectItem Value="@PriceListItemSortOptions.CreatedAt">created_at</MudSelectItem>
-                                <MudSelectItem Value="@PriceListItemSortOptions.Code">code</MudSelectItem>
-                                <MudSelectItem Value="@PriceListItemSortOptions.UpdatedAt">updated_at</MudSelectItem>
-                                <MudSelectItem Value="@($"-{PriceListItemSortOptions.Code}")">-code</MudSelectItem>
+                                <MudSelectItem Value="@PriceListItemSortField.CreatedAt">created_at</MudSelectItem>
+                                <MudSelectItem Value="@PriceListItemSortField.Code">code</MudSelectItem>
+                                <MudSelectItem Value="@PriceListItemSortField.UpdatedAt">updated_at</MudSelectItem>
+                                
                             </MudSelect>
+                        </MudItem>
+                        <MudItem xs="12" sm="6" md="4" lg="2">
+                            <MudCheckBox @bind-Value="_sortDescending" Label="Descending sort" Dense="true" />
                         </MudItem>
                         <MudItem xs="12" sm="12" md="4" lg="3" Class="contacts-load-button-item">
                             <MudButton Variant="Variant.Filled"
@@ -148,7 +151,8 @@
     private PriceListItem? _inspectedItem;
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
-    private string _sort = PriceListItemSortOptions.CreatedAt;
+    private PriceListItemSortField _sortField = PriceListItemSortField.CreatedAt;
+    private bool _sortDescending;
 
     private IReadOnlyList<PriceListItemRow> _rows => _items?
         .Select(static (item, index) => new PriceListItemRow(
@@ -177,12 +181,13 @@
         _error = null;
         _wireApiResponse = string.Empty;
 
-        var diagnosticsEndpoint = $"price_list_items?sort={Uri.EscapeDataString(_sort)}";
+        var sortWire = new ApiSort<PriceListItemSortField>(_sortField, _sortDescending).ToWireValue();
+        var diagnosticsEndpoint = $"price_list_items?sort={Uri.EscapeDataString(sortWire)}";
 
         try
         {
             using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
-            _items = await client.PriceListItems.ListAsync(sort: _sort);
+            _items = await client.PriceListItems.ListAsync(sort: new ApiSort<PriceListItemSortField>(_sortField, _sortDescending));
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,

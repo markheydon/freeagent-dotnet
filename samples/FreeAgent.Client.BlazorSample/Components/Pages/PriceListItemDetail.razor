@@ -199,7 +199,8 @@
         await RunOperationAsync(
             async client =>
             {
-                var existing = await client.PriceListItems.ListAsync(sort: PriceListItemSortOptions.Code);
+                var existing = await client.PriceListItems.ListAsync(
+                    sort: new ApiSort<PriceListItemSortField>(PriceListItemSortField.Code));
                 var match = existing.FirstOrDefault(item => string.Equals(item.Code, ProbeCode, StringComparison.Ordinal));
 
                 if (match is not null)

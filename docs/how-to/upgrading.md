@@ -56,6 +56,13 @@ Historical note: an earlier alpha release moved `BankTransactionExplanation` fro
 - Wire enums deserialise unrecognised API strings to an `Unknown` member instead of throwing. Check for `Unknown` after GET calls; do not send `Unknown` on create or update (serialisation throws).
 - `SecondSalesTaxStatus` exposes `Kind` and `WireValue` so account-specific second sales tax codes are not lost when `Kind` is `Unknown`.
 
+### List `view` and `sort` query parameters
+
+- `*Views` string constants and raw `sort` strings on list methods are replaced with wire enums (for example `InvoiceView`, `ContactView`) and `ApiSort<TField>` (for example `ApiSort<InvoiceSortField>`).
+- `CreditNoteView` is a struct supporting `CreditNoteView.LastMonths(n)` for `last_{n}_months` views.
+- `BalanceSheet.Currency` is `CurrencyCode?`; `ExpenseAttachment.ContentType` is `BillAttachmentContentType?` on read.
+- Replace `InvoiceViews.Open` with `InvoiceView.Open`, and `sort: "-updated_at"` with `new ApiSort<InvoiceSortField>(InvoiceSortField.UpdatedAt, descending: true)`.
+
 ### List API naming (Stripe.NET parity)
 
 Collection reads now use Stripe.NET-aligned names on resource services:

@@ -41,15 +41,15 @@
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
+                            <MudSelect T="ContactView"
                                        @bind-Value="_view"
                                        Label="View"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        FullWidth="true">
-                                <MudSelectItem Value="@ContactViews.Active">active</MudSelectItem>
-                                <MudSelectItem Value="@ContactViews.All">all</MudSelectItem>
-                                <MudSelectItem Value="@ContactViews.Hidden">hidden</MudSelectItem>
+                                <MudSelectItem Value="@ContactView.Active">active</MudSelectItem>
+                                <MudSelectItem Value="@ContactView.All">all</MudSelectItem>
+                                <MudSelectItem Value="@ContactView.Hidden">hidden</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="3" lg="2">
@@ -94,7 +94,7 @@
                         <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
                             @_pageResult.Items.Count contact@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
                         </MudChip>
-                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                        <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @ListQueryWire.View(_view)</MudChip>
                         @if (_pageResult.Total > 0)
                         {
                             <MudChip T="string" Variant="Variant.Outlined">Total: @_pageResult.Total</MudChip>
@@ -104,7 +104,7 @@
                     @if (_pageResult.Items.Count == 0)
                     {
                         <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
-                            No contacts returned for view <code>@_view</code>. Try <code>all</code>, or create a test contact from
+                            No contacts returned for view <code>@ListQueryWire.View(_view)</code>. Try <code>all</code>, or create a test contact from
                             <MudLink Href="/contacts/detail">Contact CRUD</MudLink>.
                         </MudAlert>
                     }
@@ -228,7 +228,7 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allContactsCount;
-    private string _view = ContactViews.Active;
+    private ContactView _view = ContactView.Active;
     private int _perPage = 25;
 
     private IReadOnlyList<ContactRow> _contactRows => _pageResult?.Items
@@ -259,7 +259,7 @@
         _error = null;
         _wireApiResponse = string.Empty;
 
-        var diagnosticsEndpoint = $"contacts?page=1&per_page={_perPage}&view={_view}";
+        var diagnosticsEndpoint = $"contacts?page=1&per_page={_perPage}&view={ListQueryWire.View(_view)}";
 
         try
         {
@@ -343,7 +343,7 @@
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
                 token.AccessToken,
                 TokenStore.ConnectedEnvironment,
-                $"contacts?per_page={_perPage}&view={_view}");
+                $"contacts?per_page={_perPage}&view={ListQueryWire.View(_view)}");
         }
         catch (Exception ex)
         {

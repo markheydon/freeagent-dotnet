@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http;
 using FreeAgent.Client;
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Infrastructure.Serialization;
 using FreeAgent.Client.Services.Tasks;
 using FreeAgent.Client.Tests.TestSupport;
 using FreeAgentProjectTaskStatus = global::FreeAgent.Client.ProjectTaskStatus;
@@ -50,7 +51,7 @@ public class ProjectTaskServiceTests
         using var client = new FreeAgentHttpClient(httpClient, "test-token", new FreeAgentHttpClientOptions { MinimumRequestSpacing = TimeSpan.Zero });
         var service = new ProjectTaskService(client);
 
-        var page = await service.ListAsync(page: 1, perPage: 2, view: ProjectTaskViews.Active);
+        var page = await service.ListAsync(page: 1, perPage: 2, view: ProjectTaskView.Active);
 
         Assert.Equal(1, page.Page);
         Assert.Equal(2, page.PerPage);
@@ -94,7 +95,7 @@ public class ProjectTaskServiceTests
         var service = new ProjectTaskService(client);
 
         await service.ListAsync(
-            sort: "-updated_at",
+            sort: new ApiSort<ProjectTaskSortField>(ProjectTaskSortField.UpdatedAt, descending: true),
             updatedSince: new DateOnly(2017, 4, 6),
             projectId: 2);
     }

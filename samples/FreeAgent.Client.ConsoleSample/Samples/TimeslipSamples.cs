@@ -49,7 +49,7 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
     {
         var page = await context.Client.Timeslips.ListAsync(
             perPage: 25,
-            view: TimeslipViews.Unbilled,
+            view: TimeslipView.Unbilled,
             cancellationToken: cancellationToken);
 
         SampleOutput.WriteHeader($"Unbilled timeslips ({page.Items.Count})");

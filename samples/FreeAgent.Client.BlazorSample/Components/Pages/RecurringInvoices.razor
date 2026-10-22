@@ -41,16 +41,16 @@
 
                     <MudGrid Spacing="2" Class="contacts-filter-grid">
                         <MudItem xs="12" sm="6" md="4" lg="3">
-                            <MudSelect T="string"
+                            <MudSelect T="RecurringInvoiceView?"
                                        @bind-Value="_view"
                                        Label="View"
                                        Variant="Variant.Outlined"
                                        Margin="Margin.Dense"
                                        FullWidth="true">
-                                <MudSelectItem Value="@string.Empty">(none)</MudSelectItem>
-                                <MudSelectItem Value="@RecurringInvoiceViews.Draft">draft</MudSelectItem>
-                                <MudSelectItem Value="@RecurringInvoiceViews.Active">active</MudSelectItem>
-                                <MudSelectItem Value="@RecurringInvoiceViews.Inactive">inactive</MudSelectItem>
+                                <MudSelectItem T="RecurringInvoiceView?" Value="@((RecurringInvoiceView?)null)">(none)</MudSelectItem>
+                                <MudSelectItem Value="@RecurringInvoiceView.Draft">draft</MudSelectItem>
+                                <MudSelectItem Value="@RecurringInvoiceView.Active">active</MudSelectItem>
+                                <MudSelectItem Value="@RecurringInvoiceView.Inactive">inactive</MudSelectItem>
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="12" sm="6" md="4" lg="3">
@@ -104,9 +104,9 @@
                         <MudChip T="string" Variant="Variant.Filled" Color="Color.Success">
                             @_pageResult.Items.Count profile@(_pageResult.Items.Count == 1 ? string.Empty : "s") on page @_pageResult.Page
                         </MudChip>
-                        @if (!string.IsNullOrWhiteSpace(_view))
+                        @if (_view is not null)
                         {
-                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @_view</MudChip>
+                            <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">View: @ListQueryWire.View(_view)</MudChip>
                         }
                         @if (_pageResult.Total > 0)
                         {
@@ -238,7 +238,7 @@
     private ModelProbeSnapshot? _inspectedProbe;
     private int? _inspectedIndex;
     private int? _allRecurringInvoicesCount;
-    private string _view = string.Empty;
+    private RecurringInvoiceView? _view = RecurringInvoiceView.Draft;
     private long? _contactIdFilter;
     private int _perPage = 25;
 
@@ -280,7 +280,7 @@
             _pageResult = await client.RecurringInvoices.ListAsync(
                 page: 1,
                 perPage: _perPage,
-                view: string.IsNullOrWhiteSpace(_view) ? null : _view,
+                view: _view,
                 contactId: _contactIdFilter);
 
             _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
@@ -349,7 +349,7 @@
             var count = 0;
             await foreach (var _ in client.RecurringInvoices.ListAutoPagingAsync(
                                perPage: _perPage,
-                               view: string.IsNullOrWhiteSpace(_view) ? null : _view,
+                               view: _view,
                                contactId: _contactIdFilter))
             {
                 count++;
@@ -383,9 +383,9 @@
             $"per_page={_perPage}"
         };
 
-        if (!string.IsNullOrWhiteSpace(_view))
+        if (_view is not null)
         {
-            query.Add($"view={_view}");
+            query.Add($"view={ListQueryWire.View(_view)}");
         }
 
         if (_contactIdFilter is > 0)
