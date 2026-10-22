@@ -8,7 +8,7 @@ Maintainer guide for publishing `FreeAgent.Client` to NuGet.org. Consumer-facing
 - [ ] `NUGET_USER` repository secret set to your nuget.org username (profile name, not email)
 - [ ] `<Version>` in [FreeAgent.Client.csproj](../src/FreeAgent.Client/FreeAgent.Client.csproj) matches the intended tag
 - [ ] `main` is green on CI
-- [ ] Contacts and Company resources complete for the release scope
+- [ ] Company API coverage complete for the release scope (see [API coverage](../docs/reference/api-coverage.md))
 
 ## Publish steps
 

@@ -1,0 +1,133 @@
+@page "/account-locks/detail"
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Account locks detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Company"
+                         Title="User account lock writes"
+                         CallUnderTest="AccountLocksService.SetUserAccountLockAsync / DeleteUserAccountLockAsync"
+                         Description="Create or update the user account lock, or delete it. Requires Full Access. Responses are 204 No Content — reload the list probe to inspect wire changes."
+                         EndpointPath="/v2/account_locks"
+                         DocsUrl="https://dev.freeagent.com/docs/account_locks" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+                    These operations change live account lock settings. Use a sandbox company only.
+                </MudAlert>
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudDatePicker @bind-Date="_lockedToDate"
+                               Label="Locked to date (PUT)"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               DateFormat="yyyy-MM-dd" />
+
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                               Disabled="_loading || _lockedTo is null"
+                               OnClick="SetUserLockAsync">
+                        Set user account lock
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Error"
+                               Disabled="_loading"
+                               OnClick="DeleteUserLockAsync">
+                        Delete user account lock
+                    </MudButton>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/account-locks">
+                        Back to list
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private string _wireApiResponse = string.Empty;
+    private DateTime? _lockedToDate;
+
+    private DateOnly? _lockedTo =>
+        _lockedToDate is null ? null : DateOnly.FromDateTime(_lockedToDate.Value);
+
+    private async Task SetUserLockAsync()
+    {
+        if (_lockedTo is null)
+        {
+            _error = "Select a locked-to date first.";
+            return;
+        }
+
+        await RunMutationAsync(async client =>
+        {
+            await client.AccountLocks.SetUserAccountLockAsync(_lockedTo.Value);
+            _operationMessage = $"Set user account lock to {_lockedTo:yyyy-MM-dd}. Reload the list probe to verify.";
+        });
+    }
+
+    private async Task DeleteUserLockAsync() => await RunMutationAsync(async client =>
+    {
+        await client.AccountLocks.DeleteUserAccountLockAsync();
+        _operationMessage = "Deleted user account lock (204). Reload the list probe to verify.";
+    });
+
+    private async Task RunMutationAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _operationMessage = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

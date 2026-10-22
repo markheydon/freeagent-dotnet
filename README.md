@@ -6,7 +6,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 [![NuGet](https://img.shields.io/nuget/v/FreeAgent.Client.svg)](https://www.nuget.org/packages/FreeAgent.Client/)
 [![NuGet (prerelease)](https://img.shields.io/nuget/vpre/FreeAgent.Client.svg?label=nuget%20prerelease)](https://www.nuget.org/packages/FreeAgent.Client/)
 
-> **Prerelease software.** This package is currently in alpha. Public APIs may change between releases. See [VERSIONING.md](VERSIONING.md).
+> **Prerelease software.** This package is currently in beta. Breaking changes are avoided where possible; see [VERSIONING.md](VERSIONING.md).
 
 **Documentation:** [markheydon.me.uk/freeagent-dotnet](https://markheydon.me.uk/freeagent-dotnet/) - tutorials, how-to guides, and SDK reference ([source](docs/)).
 

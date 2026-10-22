@@ -1,0 +1,208 @@
+@page "/vat-returns/detail"
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>VAT return detail - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Taxes"
+                         Title="VAT return detail and transitions"
+                         CallUnderTest="VatReturnsService.GetVatReturnAsync / MarkAsFiledAsync / MarkAsUnfiledAsync / MarkPaymentAsPaidAsync / MarkPaymentAsUnpaidAsync"
+                         Description="Fetch a VAT return by period end date and exercise each documented mark-as transition. Mutations change live sandbox data."
+                         EndpointPath="/v2/vat_returns/:period_ends_on"
+                         DocsUrl="https://dev.freeagent.com/docs/vat_returns" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            Connect from the <MudLink Href="/">overview</MudLink> first.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" Class="contact-crud-progress" />
+                }
+
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+                    Pass <code>?periodEndsOn=YYYY-MM-DD</code> or pick a period from the
+                    <MudLink Href="/vat-returns">list probe</MudLink>. Mark-as-filed requires Full Access per FreeAgent docs.
+                </MudAlert>
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error" ShowCloseIcon="true"
+                              CloseIconClicked="@(() => _error = null)">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_operationMessage is not null)
+                {
+                    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@_operationMessage</MudAlert>
+                }
+
+                <MudDatePicker @bind-Date="_periodEndsOnDate"
+                               Label="Period ends on"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               DateFormat="yyyy-MM-dd" />
+
+                <MudDatePicker @bind-Date="_paymentDueOnDate"
+                               Label="Payment due on (for payment transitions)"
+                               Variant="Variant.Outlined"
+                               Margin="Margin.Dense"
+                               DateFormat="yyyy-MM-dd" />
+
+                <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="_loading || _periodEndsOn is null"
+                               OnClick="GetAsync">Get return</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _periodEndsOn is null"
+                               OnClick="MarkAsFiledAsync">Mark as filed</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" Disabled="_loading || _periodEndsOn is null"
+                               OnClick="MarkAsUnfiledAsync">Mark as unfiled</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || !_canRunPaymentTransition"
+                               OnClick="MarkPaymentAsPaidAsync">Mark payment as paid</MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Warning" Disabled="_loading || !_canRunPaymentTransition"
+                               OnClick="MarkPaymentAsUnpaidAsync">Mark payment as unpaid</MudButton>
+                </MudStack>
+
+                @if (_probe is not null && _return is not null)
+                {
+                    <ModelProbeResults Snapshot="_probe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="VatReturn fields">
+                        <SummaryContent>
+                            <MudStack Row="true" Spacing="2" AlignItems="AlignItems.Center" Wrap="Wrap.Wrap">
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">
+                                    Period ends @_return.PeriodEndsOn
+                                </MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">
+                                    @_return.FilingStatus
+                                </MudChip>
+                            </MudStack>
+                        </SummaryContent>
+                    </ModelProbeResults>
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    [SupplyParameterFromQuery(Name = "periodEndsOn")]
+    public string? PeriodEndsOnQuery { get; set; }
+
+    private bool _loading;
+    private string? _error;
+    private string? _operationMessage;
+    private VatReturn? _return;
+    private ModelProbeSnapshot? _probe;
+    private string _wireApiResponse = string.Empty;
+    private DateTime? _periodEndsOnDate;
+    private DateTime? _paymentDueOnDate;
+
+    private DateOnly? _periodEndsOn =>
+        _periodEndsOnDate is null ? null : DateOnly.FromDateTime(_periodEndsOnDate.Value);
+
+    private DateOnly? _paymentDueOn =>
+        _paymentDueOnDate is null ? null : DateOnly.FromDateTime(_paymentDueOnDate.Value);
+
+    private bool _canRunPaymentTransition => _periodEndsOn is not null && _paymentDueOn is not null;
+
+    protected override void OnParametersSet()
+    {
+        if (DateOnly.TryParse(PeriodEndsOnQuery, out var parsed))
+        {
+            _periodEndsOnDate = parsed.ToDateTime(TimeOnly.MinValue);
+        }
+    }
+
+    private async Task GetAsync() => await RunMutationAsync(
+        async client =>
+        {
+            _return = await client.VatReturns.GetVatReturnAsync(_periodEndsOn!.Value);
+            _operationMessage = "Loaded VAT return from GET.";
+        });
+
+    private async Task MarkAsFiledAsync() => await RunMutationAsync(
+        async client =>
+        {
+            _return = await client.VatReturns.MarkAsFiledAsync(_periodEndsOn!.Value);
+            _operationMessage = "Marked as filed.";
+        });
+
+    private async Task MarkAsUnfiledAsync() => await RunMutationAsync(
+        async client =>
+        {
+            _return = await client.VatReturns.MarkAsUnfiledAsync(_periodEndsOn!.Value);
+            _operationMessage = "Marked as unfiled.";
+        });
+
+    private async Task MarkPaymentAsPaidAsync() => await RunMutationAsync(
+        async client =>
+        {
+            _return = await client.VatReturns.MarkPaymentAsPaidAsync(
+                _periodEndsOn!.Value,
+                _paymentDueOn!.Value);
+            _operationMessage = "Marked payment as paid.";
+        });
+
+    private async Task MarkPaymentAsUnpaidAsync() => await RunMutationAsync(
+        async client =>
+        {
+            _return = await client.VatReturns.MarkPaymentAsUnpaidAsync(
+                _periodEndsOn!.Value,
+                _paymentDueOn!.Value);
+            _operationMessage = "Marked payment as unpaid.";
+        });
+
+    private async Task RunMutationAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action)
+    {
+        if (_periodEndsOn is null)
+        {
+            _error = "Select a period end date first.";
+            return;
+        }
+
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _probe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+
+            if (_return is not null)
+            {
+                var period = _periodEndsOn.Value;
+                _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                    token.AccessToken,
+                    TokenStore.ConnectedEnvironment,
+                    $"vat_returns/{period:yyyy-MM-dd}");
+                _probe = ModelWireDiagnostics.Build(_return, _wireApiResponse, envelopeProperty: "vat_return");
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

@@ -37,6 +37,7 @@ flowchart TB
 | Categories | [Categories](https://dev.freeagent.com/docs/categories) | [Implemented](../../reference/api-coverage.md#categories) |
 | Currencies | [Currencies](https://dev.freeagent.com/docs/currencies) | [Enum support](../../reference/api-coverage.md#currencies-reference-enum) (`CurrencyCode`; no REST resource) |
 | Email addresses | [Email addresses](https://dev.freeagent.com/docs/email_addresses) | [Implemented](../../reference/api-coverage.md#email-addresses) |
+| Account locks | [Account locks](https://dev.freeagent.com/docs/account_locks) | [Implemented](../../reference/api-coverage.md#account-locks) |
 
 ## Documented URI links from other clusters
 

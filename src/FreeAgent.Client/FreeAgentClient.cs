@@ -1,4 +1,5 @@
 using FreeAgent.Client.Infrastructure.Http;
+using FreeAgent.Client.Services.AccountLocks;
 using FreeAgent.Client.Services.Attachments;
 using FreeAgent.Client.Services.BalanceSheet;
 using FreeAgent.Client.Services.BankAccounts;
@@ -58,6 +59,11 @@ public sealed class FreeAgentClient : IDisposable
     /// Company API service.
     /// </summary>
     public CompanyService Company { get; }
+
+    /// <summary>
+    /// Account locks API service.
+    /// </summary>
+    public AccountLocksService AccountLocks { get; }
 
     /// <summary>
     /// Contacts API service.
@@ -332,6 +338,7 @@ public sealed class FreeAgentClient : IDisposable
         _httpClient = httpClient;
         Urls = new FreeAgentResourceUrls(_httpClient.Environment);
         Company = new CompanyService(_httpClient);
+        AccountLocks = new AccountLocksService(_httpClient);
         Contacts = new ContactService(_httpClient);
         Categories = new CategoryService(_httpClient);
         Users = new UserService(_httpClient);

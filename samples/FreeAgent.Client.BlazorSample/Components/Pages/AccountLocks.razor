@@ -1,0 +1,193 @@
+@page "/account-locks"
+@inject TokenStore TokenStore
+@inject OAuthService OAuthService
+@inject ApiDiagnosticsService ApiDiagnostics
+@inject NavigationManager NavigationManager
+
+<PageTitle>Account locks - FreeAgent SDK Sample</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.False" Class="sample-page">
+    <EndpointProbeHeader SectionKicker="Company"
+                         Title="Account locks"
+                         CallUnderTest="AccountLocksService.ListAsync()"
+                         Description="List company account locks and optional user-lock date bounds. Requires Full Access for writes — use the detail probe to set or delete the user lock."
+                         EndpointPath="/v2/account_locks"
+                         DocsUrl="https://dev.freeagent.com/docs/account_locks" />
+
+    @if (!TokenStore.IsConnected)
+    {
+        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined">
+            This probe needs an OAuth session first.
+            <MudLink Href="/">Return to overview</MudLink> and connect to FreeAgent.
+        </MudAlert>
+    }
+    else
+    {
+        <MudPaper Class="workbench-panel" Elevation="0">
+            <MudStack Spacing="3">
+                <MudText Typo="Typo.body2" Class="hero-copy">
+                    User lock mutations live on the
+                    <MudLink Href="/account-locks/detail">account locks detail</MudLink> probe.
+                </MudText>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           Disabled="_loading"
+                           OnClick="LoadListAsync">
+                    List account locks
+                </MudButton>
+
+                @if (_result is not null)
+                {
+                    <MudStack Row="true" Spacing="2" Wrap="Wrap.Wrap">
+                        @if (_result.EarliestLockDate is not null)
+                        {
+                            <MudChip T="string" Variant="Variant.Outlined">Earliest user lock: @_result.EarliestLockDate</MudChip>
+                        }
+                        @if (_result.LatestLockDate is not null)
+                        {
+                            <MudChip T="string" Variant="Variant.Outlined">Latest user lock: @_result.LatestLockDate</MudChip>
+                        }
+                    </MudStack>
+                }
+
+                @if (_loading)
+                {
+                    <MudProgressLinear Indeterminate="true" Color="Color.Primary" />
+                }
+
+                @if (_error is not null)
+                {
+                    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+                    <ApiErrorDiagnostics RawPayload="@_wireApiResponse" />
+                }
+
+                @if (_result is not null && _result.AccountLocks.Count > 0)
+                {
+                    <div class="diagnostics-table-shell">
+                        <MudTable Items="@_rows" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" Class="diagnostics-table">
+                            <HeaderContent>
+                                <MudTh>Locked to</MudTh>
+                                <MudTh>User lock</MudTh>
+                                <MudTh>Locked by</MudTh>
+                                <MudTh>Actions</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Locked to">@context.LockedToDate</MudTd>
+                                <MudTd DataLabel="User lock">@(context.UserLock == true ? "Yes" : "—")</MudTd>
+                                <MudTd DataLabel="Locked by">@ValueOrDash(context.LockedByDescription)</MudTd>
+                                <MudTd DataLabel="Actions">
+                                    <MudButton Variant="Variant.Filled"
+                                               Color="@(context.Index == _inspectedIndex ? Color.Primary : Color.Default)"
+                                               Size="Size.Small"
+                                               OnClick="@(() => InspectRowAsync(context.Index))">
+                                        Inspect mapping
+                                    </MudButton>
+                                </MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </div>
+                }
+
+                @if (_inspectedLock is not null && _inspectedProbe is not null)
+                {
+                    <ModelProbeResults Snapshot="_inspectedProbe"
+                                     WirePayload="@_wireApiResponse"
+                                     ModelFieldsHeading="AccountLock fields (selected row)" />
+                }
+            </MudStack>
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private bool _loading;
+    private string? _error;
+    private AccountLocksListResult? _result;
+    private List<AccountLockRow> _rows = [];
+    private int _inspectedIndex = -1;
+    private AccountLock? _inspectedLock;
+    private ModelProbeSnapshot? _inspectedProbe;
+    private string _wireApiResponse = string.Empty;
+
+    private async Task LoadListAsync()
+    {
+        await RunAsync(async client =>
+        {
+            _result = await client.AccountLocks.ListAsync();
+            _rows = _result.AccountLocks
+                .Select((item, index) => new AccountLockRow(index, item))
+                .ToList();
+            _inspectedIndex = -1;
+            _inspectedLock = null;
+            _inspectedProbe = null;
+
+            _wireApiResponse = await ApiDiagnostics.FetchRawEndpointPayloadAsync(
+                TokenStore.GetToken()!.AccessToken,
+                TokenStore.ConnectedEnvironment,
+                "account_locks");
+
+            if (_result.AccountLocks.Count > 0)
+            {
+                InspectRowAsync(0);
+            }
+        });
+    }
+
+    private void InspectRowAsync(int index)
+    {
+        if (_result is null || index < 0 || index >= _result.AccountLocks.Count)
+        {
+            return;
+        }
+
+        _inspectedIndex = index;
+        _inspectedLock = _result.AccountLocks[index];
+
+        if (ModelWireDiagnostics.TryGetArrayItem(_wireApiResponse, "account_locks", index, out var wireItem))
+        {
+            _inspectedProbe = ModelWireDiagnostics.Build(_inspectedLock, wireItem);
+            return;
+        }
+
+        _inspectedProbe = ModelWireDiagnostics.Build(_inspectedLock, _wireApiResponse, envelopeProperty: "account_locks");
+    }
+
+    private static string ValueOrDash(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? "—" : value;
+
+    private async Task RunAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action)
+    {
+        var token = TokenStore.GetToken();
+        if (token is null)
+        {
+            NavigationManager.NavigateTo("/");
+            return;
+        }
+
+        _loading = true;
+        _error = null;
+        _inspectedProbe = null;
+        _wireApiResponse = string.Empty;
+
+        try
+        {
+            using var client = OAuthService.CreateFreeAgentClient(token, TokenStore.ConnectedEnvironment);
+            await action(client);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private sealed record AccountLockRow(int Index, AccountLock Item)
+    {
+        public DateOnly? LockedToDate => Item.LockedToDate;
+        public bool? UserLock => Item.UserLock;
+        public string? LockedByDescription => Item.LockedByDescription;
+    }
+}

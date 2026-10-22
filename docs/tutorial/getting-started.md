@@ -37,7 +37,7 @@ The SDK serialises and deserialises API traffic with `System.Text.Json` source g
 [File-based apps](https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps) default to reflection-disabled JSON. The client ships source-generated wire metadata, so you do **not** need `JsonSerializerIsReflectionEnabledByDefault`.
 
 ```csharp
-#:package FreeAgent.Client@0.1.0-alpha.6
+#:package FreeAgent.Client@0.1.0-beta.1
 #:property PublishAot=false
 
 using FreeAgent.Client;

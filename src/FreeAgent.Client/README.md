@@ -2,7 +2,7 @@
 
 A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) with OAuth 2.0 support, rate limiting, retries, typed transport errors, and pagination.
 
-> **Prerelease software.** This package is in alpha. Public APIs may change between releases. As of September 2026 this library is in active development and I am aiming to have full FreeAgent API coverage over coming weeks and months. See [versioning policy](https://github.com/markheydon/freeagent-dotnet/blob/main/VERSIONING.md).
+> **Prerelease software.** This package is in beta. Company FreeAgent API resources documented at [dev.freeagent.com/docs](https://dev.freeagent.com/docs) are implemented in the SDK (excluding the separate Accountancy Practice API). See [versioning policy](https://github.com/markheydon/freeagent-dotnet/blob/main/VERSIONING.md).
 
 ## Features
 
