@@ -36,7 +36,7 @@ public sealed class CreditNotesService
     /// <param name="contactId">Filter by contact identifier (equivalent to <c>client.Urls.Contact(contactId)</c>)</param>
     /// <param name="project">Filter by project resource reference</param>
     /// <param name="projectId">Filter by project identifier (equivalent to <c>client.Urls.Project(projectId)</c>)</param>
-    /// <param name="nestedCreditNoteItems">When <see langword="true"/>, include credit note items nested in each credit note. Required for list ingest when you need line items — see incremental sync documentation.</param>
+    /// <param name="nestedCreditNoteItems">When <see langword="true"/>, include credit note items nested in each credit note. Required for list ingest when you need line items — see <a href="https://markheydon.me.uk/freeagent-dotnet/how-to/incremental-sync/">incremental sync</a>.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated credit notes response</returns>
     public async Task<PaginatedResponse<CreditNote>> ListAsync(

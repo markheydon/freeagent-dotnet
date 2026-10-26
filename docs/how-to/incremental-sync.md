@@ -16,6 +16,10 @@ Use this guide when you replicate FreeAgent data into your own store (database, 
 4. On the next run, pass that watermark to fetch only changes.
 
 ```csharp
+static DateTimeOffset? MaxUpdated(DateTimeOffset? cursor, DateTimeOffset? candidate) =>
+    candidate is null ? cursor
+    : cursor is null || candidate > cursor ? candidate : cursor;
+
 var watermark = await db.GetContactsWatermarkAsync();
 
 await foreach (var contact in client.Contacts.ListAutoPagingAsync(
@@ -24,11 +28,13 @@ await foreach (var contact in client.Contacts.ListAutoPagingAsync(
     cancellationToken: cancellationToken))
 {
     await db.UpsertContactAsync(contact, cancellationToken);
-    watermark = Max(watermark, contact.UpdatedAt);
+    watermark = MaxUpdated(watermark, contact.UpdatedAt);
 }
 
 await db.SaveContactsWatermarkAsync(watermark);
 ```
+
+Rows with a null `UpdatedAt` do not advance the watermark.
 
 `ListAutoPagingAsync` parameter order **varies by resource** (for example `updatedSince` appears after date filters on some services). Use IntelliSense or the matrix below — do not assume one signature fits all resources.
 

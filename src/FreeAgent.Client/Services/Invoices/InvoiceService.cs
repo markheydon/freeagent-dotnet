@@ -36,7 +36,7 @@ public sealed class InvoiceService
     /// <param name="contactId">Filter by contact identifier (equivalent to <c>client.Urls.Contact(contactId)</c>)</param>
     /// <param name="project">Filter by project resource reference</param>
     /// <param name="projectId">Filter by project identifier (equivalent to <c>client.Urls.Project(projectId)</c>)</param>
-    /// <param name="nestedInvoiceItems">When <see langword="true"/>, include invoice items nested in each invoice. Required for list ingest when you need line items — see incremental sync documentation.</param>
+    /// <param name="nestedInvoiceItems">When <see langword="true"/>, include invoice items nested in each invoice. Required for list ingest when you need line items — see <a href="https://markheydon.me.uk/freeagent-dotnet/how-to/incremental-sync/">incremental sync</a>.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated invoices response</returns>
     public async Task<PaginatedResponse<Invoice>> ListAsync(
