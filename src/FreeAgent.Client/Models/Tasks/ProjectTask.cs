@@ -62,6 +62,9 @@ public class ProjectTask : IFreeAgentResource
     /// <summary>
     /// Whether the task is billable to clients.
     /// </summary>
+    /// <remarks>
+    /// Nullable because the API may omit the field. On create, leave <see langword="null"/> to omit from the wire payload when FreeAgent defaults apply; set <see langword="true"/> or <see langword="false"/> when you need an explicit value.
+    /// </remarks>
     [JsonPropertyName("is_billable")]
     public bool? IsBillable { get; set; }
 

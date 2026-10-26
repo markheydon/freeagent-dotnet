@@ -4,9 +4,21 @@ namespace FreeAgent.Client;
 /// <summary>
 /// Builds environment-correct FreeAgent resource URIs.
 /// </summary>
+/// <remarks>
+/// Use <see cref="ForEnvironment(FreeAgentEnvironment)"/> when you do not have a <see cref="FreeAgentClient"/> instance
+/// (for example in mappers or unit tests). Individual <see cref="ContactReference.ForEnvironment(FreeAgentEnvironment, long)"/>
+/// methods build the same URIs for a single resource type.
+/// </remarks>
 public sealed class FreeAgentResourceUrls
 {
     private readonly FreeAgentEnvironment _environment;
+
+    /// <summary>
+    /// Creates URL builders for the given API environment (same URIs as <see cref="FreeAgentClient.Urls"/>).
+    /// </summary>
+    /// <param name="environment">Target API environment.</param>
+    /// <returns>Resource URI builder.</returns>
+    public static FreeAgentResourceUrls ForEnvironment(FreeAgentEnvironment environment) => new(environment);
 
     internal FreeAgentResourceUrls(FreeAgentEnvironment environment)
     {

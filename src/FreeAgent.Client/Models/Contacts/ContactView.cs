@@ -6,6 +6,9 @@ namespace FreeAgent.Client;
 /// <summary>
 /// Documented <c>view</c> query values for <c>GET /v2/contacts</c>.
 /// </summary>
+/// <remarks>
+/// Member names follow the SDK; wire values use snake_case. See the Contacts API coverage reference for the full mapping table.
+/// </remarks>
 [JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<ContactView>))]
 public enum ContactView
 {

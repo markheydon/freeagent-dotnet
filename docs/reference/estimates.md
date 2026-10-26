@@ -67,7 +67,7 @@ Task<PaginatedResponse<Estimate>> ListAsync(
 
 ```csharp
 var page = await client.Estimates.ListAsync(
-    view: EstimateViews.Draft,
+    view: EstimateView.Draft,
     contactId: 42,
     nestedEstimateItems: true);
 ```
@@ -249,18 +249,18 @@ Company-level default text shown on all estimates.
 
 ## List filters
 
-### view (`EstimateViews`)
+### view (`EstimateView`)
 
 | Constant | Wire value |
 |----------|------------|
-| `EstimateViews.All` | `all` |
-| `EstimateViews.Recent` | `recent` |
-| `EstimateViews.Draft` | `draft` |
-| `EstimateViews.NonDraft` | `non_draft` |
-| `EstimateViews.Sent` | `sent` |
-| `EstimateViews.Approved` | `approved` |
-| `EstimateViews.Rejected` | `rejected` |
-| `EstimateViews.Invoiced` | `invoiced` |
+| `EstimateView.All` | `all` |
+| `EstimateView.Recent` | `recent` |
+| `EstimateView.Draft` | `draft` |
+| `EstimateView.NonDraft` | `non_draft` |
+| `EstimateView.Sent` | `sent` |
+| `EstimateView.Approved` | `approved` |
+| `EstimateView.Rejected` | `rejected` |
+| `EstimateView.Invoiced` | `invoiced` |
 
 ## EstimateGetOptions
 

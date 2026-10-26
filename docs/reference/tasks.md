@@ -51,7 +51,7 @@ Task<PaginatedResponse<ProjectTask>> ListAsync(
 
 ```csharp
 var page = await client.ProjectTasks.ListAsync(
-    view: ProjectTaskViews.Active,
+    view: ProjectTaskView.Active,
     projectId: 42,
     updatedSince: new DateOnly(2024, 1, 1));
 ```
@@ -168,14 +168,14 @@ Task DeleteProjectTaskAsync(long projectTaskId, CancellationToken cancellationTo
 
 ## List filters
 
-### view (`ProjectTaskViews`)
+### view (`ProjectTaskView`)
 
 | Constant | Wire value |
 |----------|------------|
-| `ProjectTaskViews.All` | `all` |
-| `ProjectTaskViews.Active` | `active` |
-| `ProjectTaskViews.Completed` | `completed` |
-| `ProjectTaskViews.Hidden` | `hidden` |
+| `ProjectTaskView.All` | `all` |
+| `ProjectTaskView.Active` | `active` |
+| `ProjectTaskView.Completed` | `completed` |
+| `ProjectTaskView.Hidden` | `hidden` |
 
 ### sort
 

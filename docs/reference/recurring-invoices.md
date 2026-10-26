@@ -41,7 +41,7 @@ Task<PaginatedResponse<RecurringInvoice>> ListAsync(
 
 **HTTP:** `GET /v2/recurring_invoices`
 
-**View filters:** `RecurringInvoiceViews.Draft`, `RecurringInvoiceViews.Active`, `RecurringInvoiceViews.Inactive`.
+**View filters:** `RecurringInvoiceView.Draft`, `RecurringInvoiceView.Active`, `RecurringInvoiceView.Inactive`.
 
 **Client validation:** `page` ≥ 1; `perPage` between 1 and 100; supply `contact` **or** `contactId`, not both.
 
@@ -49,7 +49,7 @@ Task<PaginatedResponse<RecurringInvoice>> ListAsync(
 
 ```csharp
 var page = await client.RecurringInvoices.ListAsync(
-    view: RecurringInvoiceViews.Active,
+    view: RecurringInvoiceView.Active,
     contactId: 42);
 ```
 
@@ -116,7 +116,7 @@ See also shared invoice read fields (`Reference`, `DatedOn`, `Currency`, `NetVal
 
 - `RecurringInvoiceFrequency` — wire values include `Two Weekly`, `Four Weekly`, `2-Yearly`, and others per FreeAgent docs
 - `RecurringInvoiceStatus` — `Draft`, `Active`
-- `RecurringInvoiceViews` — list filter constants
+- `RecurringInvoiceView` — list filter constants
 
 ### References
 

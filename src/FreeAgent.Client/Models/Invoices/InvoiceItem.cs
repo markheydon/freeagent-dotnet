@@ -21,6 +21,9 @@ public sealed class InvoiceItem
     /// <summary>
     /// Position in the invoice, starting at 1.
     /// </summary>
+    /// <remarks>
+    /// Populated on read when the API returns line order. May be <see langword="null"/> on list rows unless nested items are requested. Optional on some write operations.
+    /// </remarks>
     [JsonPropertyName("position")]
     [JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)]
     public decimal? Position { get; set; }
@@ -160,6 +163,9 @@ public sealed class InvoiceItem
     /// <summary>
     /// Invoice item identifier used when updating or deleting an existing line item.
     /// </summary>
+    /// <remarks>
+    /// Required when updating an existing line. On read, populated from wire <c>id</c>, item <c>url</c>, or an explicit set value. Leave <see langword="null"/> only for new lines on create.
+    /// </remarks>
     [JsonIgnore]
     public long? ItemId
     {
