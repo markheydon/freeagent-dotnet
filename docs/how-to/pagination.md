@@ -17,7 +17,7 @@ using FreeAgent.Client;
 var page = await client.Contacts.ListAsync(
     page: 1,
     perPage: 25,
-    view: ContactViews.Active);
+    view: ContactView.Active);
 
 Console.WriteLine($"Page {page.Page}: {page.Items.Count} of ~{page.Total} contacts");
 Console.WriteLine($"Has next page: {page.HasNextPage}");
@@ -36,6 +36,8 @@ await foreach (var contact in client.Contacts.ListAutoPagingAsync(perPage: 50))
 
 Cancellation is honoured during pagination loops - pass a `CancellationToken` to stop early.
 
+Replicating data into your own store? See [Incremental sync](incremental-sync.md) for `updatedSince` watermarks, nested line-item flags, and a per-resource `ListAutoPagingAsync` parameter matrix.
+
 ## List filters (Contacts)
 
 The Contacts list supports `view`, `sort`, and `updated_since` query parameters. See the [Contacts reference](../reference/contacts.md) for supported values.
@@ -45,7 +47,7 @@ using FreeAgent.Client;
 var page = await client.Contacts.ListAsync(
     page: 1,
     perPage: 25,
-    view: ContactViews.Clients,
-    sort: "-updated_at",
+    view: ContactView.Clients,
+    sort: new ApiSort<ContactSortField>(ContactSortField.UpdatedAt, descending: true),
     updatedSince: DateTimeOffset.Parse("2025-03-15T09:00:00.000Z"));
 ```

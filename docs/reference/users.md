@@ -20,13 +20,13 @@ List, create, update, and delete company users; read and update the authenticate
 
 ```csharp
 Task<IReadOnlyList<User>> ListAsync(
-    string view = UserViews.All,
+    UserView view = UserView.All,
     CancellationToken cancellationToken = default)
 ```
 
 | Parameter | Type | Required | Default | Wire |
 |-----------|------|----------|---------|------|
-| `view` | `string` | No | `UserViews.All` | `view` |
+| `view` | `UserView` | No | `UserView.All` | `view` |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
 **HTTP:** `GET /v2/users`
@@ -36,7 +36,7 @@ Task<IReadOnlyList<User>> ListAsync(
 **Sample:**
 
 ```csharp
-var staff = await client.Users.ListAsync(UserViews.ActiveStaff);
+var staff = await client.Users.ListAsync(UserView.ActiveStaff);
 ```
 
 ---
@@ -141,15 +141,17 @@ Task DeleteUserAsync(long userId, CancellationToken cancellationToken = default)
 
 ## List filters
 
-### view (`UserViews`)
+### view (`UserView`)
 
-| Constant | Wire value |
-|----------|------------|
-| `UserViews.All` | `all` |
-| `UserViews.Staff` | `staff` |
-| `UserViews.ActiveStaff` | `active_staff` |
-| `UserViews.Advisors` | `advisors` |
-| `UserViews.ActiveAdvisors` | `active_advisors` |
+Wire enums mirror FreeAgent query values. There is no separate `Active` member — use `UserView.ActiveStaff` for non-hidden staff (`active_staff` on the wire).
+
+| Member | Wire value |
+|--------|------------|
+| `UserView.All` | `all` |
+| `UserView.Staff` | `staff` |
+| `UserView.ActiveStaff` | `active_staff` |
+| `UserView.Advisors` | `advisors` |
+| `UserView.ActiveAdvisors` | `active_advisors` |
 
 ## User model
 

@@ -40,7 +40,7 @@ public sealed class EstimateService
     /// <param name="projectId">Filter by project identifier (equivalent to <c>client.Urls.Project(projectId)</c>)</param>
     /// <param name="invoice">Filter by invoice resource reference</param>
     /// <param name="invoiceId">Filter by invoice identifier (equivalent to <c>client.Urls.Invoice(invoiceId)</c>)</param>
-    /// <param name="nestedEstimateItems">When <see langword="true"/>, include estimate items nested in each estimate</param>
+    /// <param name="nestedEstimateItems">When <see langword="true"/>, include estimate items nested in each estimate. Required for list ingest when you need line items — see <a href="https://markheydon.me.uk/freeagent-dotnet/how-to/incremental-sync/">incremental sync</a>.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated estimates response</returns>
     public async Task<PaginatedResponse<Estimate>> ListAsync(

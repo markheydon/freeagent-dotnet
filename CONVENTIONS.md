@@ -19,6 +19,7 @@ create an ADR if it's a significant architectural change.
 src/
 └── FreeAgent.Client/
 	├── FreeAgentClient.cs               # Main consumer entry point
+	├── FreeAgentResourceUri.cs          # Parse resource URLs to numeric ids
 	├── FreeAgentResourceUrls.cs         # Environment-correct resource URI builders
 	├── PaginatedResponse.cs             # Public pagination result type
 	├── *GetOptions.cs                   # Single-GET hydration options (Bills, CreditNotes, CreditNoteReconciliations, Estimates, Expenses, Invoices, Notes, Projects, RecurringInvoices, Tasks, Timeslips)

@@ -33,7 +33,7 @@ public sealed class BillService
     /// <param name="contactId">Filter by contact identifier (equivalent to <c>client.Urls.Contact(contactId)</c>)</param>
     /// <param name="project">Filter by project resource reference</param>
     /// <param name="projectId">Filter by project identifier (equivalent to <c>client.Urls.Project(projectId)</c>)</param>
-    /// <param name="nestedBillItems">When <see langword="true"/>, include bill items nested in each bill</param>
+    /// <param name="nestedBillItems">When <see langword="true"/>, include bill items nested in each bill. Required for list ingest when you need line items — see <a href="https://markheydon.me.uk/freeagent-dotnet/how-to/incremental-sync/">incremental sync</a>.</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Paginated bills response</returns>
     public async Task<PaginatedResponse<Bill>> ListAsync(

@@ -65,7 +65,7 @@ Task<PaginatedResponse<Bill>> ListAsync(
 
 ```csharp
 var page = await client.Bills.ListAsync(
-    view: BillViews.Open,
+    view: BillView.Open,
     contactId: 42,
     nestedBillItems: true);
 ```
@@ -139,20 +139,20 @@ Task DeleteBillAsync(long billId, CancellationToken cancellationToken = default)
 
 ## List filters
 
-### view (`BillViews`)
+### view (`BillView`)
 
 | Constant | Wire value |
 |----------|------------|
-| `BillViews.All` | `all` |
-| `BillViews.Open` | `open` |
-| `BillViews.Overdue` | `overdue` |
-| `BillViews.OpenOrOverdue` | `open_or_overdue` |
-| `BillViews.OpenOrOverduePayments` | `open_or_overdue_payments` |
-| `BillViews.OpenOrOverdueRefunds` | `open_or_overdue_refunds` |
-| `BillViews.Paid` | `paid` |
-| `BillViews.Recurring` | `recurring` |
-| `BillViews.HirePurchase` | `hire_purchase` |
-| `BillViews.Cis` | `cis` |
+| `BillView.All` | `all` |
+| `BillView.Open` | `open` |
+| `BillView.Overdue` | `overdue` |
+| `BillView.OpenOrOverdue` | `open_or_overdue` |
+| `BillView.OpenOrOverduePayments` | `open_or_overdue_payments` |
+| `BillView.OpenOrOverdueRefunds` | `open_or_overdue_refunds` |
+| `BillView.Paid` | `paid` |
+| `BillView.Recurring` | `recurring` |
+| `BillView.HirePurchase` | `hire_purchase` |
+| `BillView.Cis` | `cis` |
 
 ## BillGetOptions
 

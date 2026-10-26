@@ -126,12 +126,15 @@ Further resources that link to contacts and projects include [recurring invoices
 
 See [linked resources](https://github.com/markheydon/freeagent-dotnet/blob/main/docs/explanation/linked-resources.md) for the full pattern, including list filters, webhook URL parsing, and update options.
 
+**Replicating data?** Use [incremental sync](https://markheydon.me.uk/freeagent-dotnet/how-to/incremental-sync/) for `ListAutoPagingAsync` watermarks, nested line-item flags (`nestedInvoiceItems`, and similar), and per-resource parameter notes.
+
 ## Documentation
 
 Published documentation: [markheydon.me.uk/freeagent-dotnet](https://markheydon.me.uk/freeagent-dotnet/)
 
 - [Getting started](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started)
 - [Pagination](https://markheydon.me.uk/freeagent-dotnet/how-to/pagination)
+- [Incremental sync](https://markheydon.me.uk/freeagent-dotnet/how-to/incremental-sync)
 - [Error handling](https://markheydon.me.uk/freeagent-dotnet/how-to/error-handling)
 - [API coverage](https://markheydon.me.uk/freeagent-dotnet/reference) - SDK reference for every implemented resource
 

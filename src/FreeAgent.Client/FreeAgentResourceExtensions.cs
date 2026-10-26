@@ -3,6 +3,9 @@ namespace FreeAgent.Client;
 /// <summary>
 /// Helpers for working with <see cref="IFreeAgentResource"/> identifiers.
 /// </summary>
+/// <remarks>
+/// For raw URL strings (webhooks, external stores), use <see cref="FreeAgentResourceUri.TryParseResourceId(string?, out long)"/>.
+/// </remarks>
 public static class FreeAgentResourceExtensions
 {
     /// <summary>

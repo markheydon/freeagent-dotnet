@@ -36,7 +36,7 @@ Task<IReadOnlyList<BankAccount>> ListAsync(
 **Sample:**
 
 ```csharp
-var bankAccounts = await client.BankAccounts.ListAsync(BankAccountViews.StandardBankAccounts);
+var bankAccounts = await client.BankAccounts.ListAsync(BankAccountView.StandardBankAccounts);
 ```
 
 ---

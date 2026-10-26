@@ -63,7 +63,7 @@ Task<PaginatedResponse<Timeslip>> ListAsync(
 
 ```csharp
 var page = await client.Timeslips.ListAsync(
-    view: TimeslipViews.Unbilled,
+    view: TimeslipView.Unbilled,
     fromDate: new DateOnly(2024, 1, 1),
     toDate: new DateOnly(2024, 3, 31),
     projectTaskId: 42,
@@ -235,13 +235,13 @@ Task<Timeslip> StopTimerAsync(long timeslipId, CancellationToken cancellationTok
 
 ## List filters
 
-### view (`TimeslipViews`)
+### view (`TimeslipView`)
 
 | Constant | Wire value |
 |----------|------------|
-| `TimeslipViews.All` | `all` |
-| `TimeslipViews.Unbilled` | `unbilled` |
-| `TimeslipViews.Running` | `running` |
+| `TimeslipView.All` | `all` |
+| `TimeslipView.Unbilled` | `unbilled` |
+| `TimeslipView.Running` | `running` |
 
 ## TimeslipGetOptions
 

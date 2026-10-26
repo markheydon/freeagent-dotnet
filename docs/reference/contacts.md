@@ -24,8 +24,8 @@ Pagination patterns: see [Pagination](../how-to/pagination.md).
 Task<PaginatedResponse<Contact>> ListAsync(
     int page = 1,
     int perPage = 25,
-    string view = ContactViews.Active,
-    string? sort = null,
+    ContactView view = ContactView.Active,
+    ApiSort<ContactSortField>? sort = null,
     DateTimeOffset? updatedSince = null,
     CancellationToken cancellationToken = default)
 ```
@@ -34,8 +34,8 @@ Task<PaginatedResponse<Contact>> ListAsync(
 |-----------|------|----------|---------|------|
 | `page` | `int` | No | `1` | `page` |
 | `perPage` | `int` | No | `25` | `per_page` (max `100`) |
-| `view` | `string` | No | `ContactViews.Active` | `view` |
-| `sort` | `string?` | No | `null` | `sort` |
+| `view` | `ContactView` | No | `ContactView.Active` | `view` |
+| `sort` | `ApiSort<ContactSortField>?` | No | `null` | `sort` |
 | `updatedSince` | `DateTimeOffset?` | No | `null` | `updated_since` (ISO 8601) |
 | `cancellationToken` | `CancellationToken` | No | `default` | - |
 
@@ -51,8 +51,8 @@ Task<PaginatedResponse<Contact>> ListAsync(
 var page = await client.Contacts.ListAsync(
     page: 1,
     perPage: 25,
-    view: ContactViews.Clients,
-    sort: "-updated_at");
+    view: ContactView.Clients,
+    sort: new ApiSort<ContactSortField>(ContactSortField.UpdatedAt, descending: true));
 ```
 
 ---
@@ -62,8 +62,8 @@ var page = await client.Contacts.ListAsync(
 ```csharp
 IAsyncEnumerable<Contact> ListAutoPagingAsync(
     int perPage = 25,
-    string view = ContactViews.Active,
-    string? sort = null,
+    ContactView view = ContactView.Active,
+    ApiSort<ContactSortField>? sort = null,
     DateTimeOffset? updatedSince = null,
     CancellationToken cancellationToken = default)
 ```
@@ -160,23 +160,23 @@ Task DeleteContactAsync(long contactId, CancellationToken cancellationToken = de
 
 ## List filters
 
-### view (`ContactViews`)
+### view (`ContactView`)
 
 | Constant | Wire value |
 |----------|------------|
-| `ContactViews.All` | `all` |
-| `ContactViews.Active` | `active` |
-| `ContactViews.Clients` | `clients` |
-| `ContactViews.Suppliers` | `suppliers` |
-| `ContactViews.ActiveProjects` | `active_projects` |
-| `ContactViews.CompletedProjects` | `completed_projects` |
-| `ContactViews.OpenClients` | `open_clients` |
-| `ContactViews.OpenSuppliers` | `open_suppliers` |
-| `ContactViews.Hidden` | `hidden` |
+| `ContactView.All` | `all` |
+| `ContactView.Active` | `active` |
+| `ContactView.Clients` | `clients` |
+| `ContactView.Suppliers` | `suppliers` |
+| `ContactView.ActiveProjects` | `active_projects` |
+| `ContactView.CompletedProjects` | `completed_projects` |
+| `ContactView.OpenClients` | `open_clients` |
+| `ContactView.OpenSuppliers` | `open_suppliers` |
+| `ContactView.Hidden` | `hidden` |
 
-### sort
+### sort (`ApiSort<ContactSortField>`)
 
-`name`, `created_at`, `updated_at` - prefix with `-` for descending.
+Use `ContactSortField.Name`, `ContactSortField.CreatedAt`, or `ContactSortField.UpdatedAt`. Pass `descending: true` on `ApiSort<T>` for descending order.
 
 ## Contact model
 

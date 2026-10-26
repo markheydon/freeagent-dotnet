@@ -83,8 +83,17 @@ Project skills live in `.agents/skills/`. Read the matching `SKILL.md` when the 
 | `documentation-writer` | Diátaxis-aligned documentation structure |
 | `project-documentation` | Project-aware docs placement and terminology |
 | `mudblazor` | Sample app Blazor UI with MudBlazor |
-| `pr-address-review` | Addressing open PR review comment threads |
 | `goals-review` | Auditing the repo or a PR diff against GOALS.md, SCOPE.md, CONVENTIONS.md, and sample-sync rules |
+| `code-review` | Principal-architect pull request review of a branch or diff (bugs, security, public API, complexity); read-only unless the user asks for fixes |
+
+### Cursor workflow commands
+
+Repo-specific commands under [`.cursor/commands/`](.cursor/commands/) automate repeated review gates. Prefer the command when the user invokes it; otherwise run the underlying skill once.
+
+| Command | When | Skill / role |
+|--------|------|----------------|
+| [goals-review](.cursor/commands/goals-review.md) | Drift check against goals, scope, conventions, or List API inventory | Runs `goals-review`; read-only unless the user asks to fix findings |
+| [loop-code-review](.cursor/commands/loop-code-review.md) | After implementation changes on a branch | Loops `code-review` in isolated subagents; parent fixes code, runs `dotnet` Release gates, and may commit |
 
 ## Task Routing
 

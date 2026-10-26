@@ -288,6 +288,9 @@ public sealed class FreeAgentClient : IDisposable
     /// <summary>
     /// Environment-correct resource URI builders.
     /// </summary>
+    /// <remarks>
+    /// Equivalent to <see cref="FreeAgentResourceUrls.ForEnvironment(FreeAgentEnvironment)"/> for this client's environment.
+    /// </remarks>
     public FreeAgentResourceUrls Urls { get; }
 
     /// <summary>

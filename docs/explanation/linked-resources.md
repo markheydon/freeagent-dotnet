@@ -218,6 +218,17 @@ var invoices = await client.Invoices.ListAsync(contact: contactRef);
 
 `IFreeAgentResource.ResourceId` returns `0` when parsing fails. Use `TryGetResourceId()` or `GetResourceId()` when you need a valid identifier for service calls.
 
+`ResourceId` is read-only — it is derived from `Url` (and sometimes wire `id` fields on nested types). For unit tests and mappers, set a realistic `Url` or deserialise API JSON:
+
+```csharp
+var url = ContactReference.ForEnvironment(FreeAgentEnvironment.Sandbox, 42).Uri;
+// Equivalent: FreeAgentResourceUrls.ForEnvironment(FreeAgentEnvironment.Sandbox).Contact(42).Uri
+var contact = new Contact { Url = url };
+Assert.Equal(42, contact.ResourceId);
+```
+
+For raw URL strings (webhooks, external systems), use `FreeAgentResourceUri.TryParseResourceId(url, out var id)`.
+
 Categories are keyed by nominal code on the wire — use `Category.NominalCode` for API calls, not `ResourceId`. For category links on line items, set `CategoryNominalCode` on the item model.
 
 ## Optional hydration (`*GetOptions`)

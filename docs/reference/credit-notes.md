@@ -61,7 +61,7 @@ Task<PaginatedResponse<CreditNote>> ListAsync(
 
 ```csharp
 var page = await client.CreditNotes.ListAsync(
-    view: CreditNoteViews.Open,
+    view: CreditNoteView.Open,
     contactId: 42,
     nestedCreditNoteItems: true);
 ```
@@ -175,17 +175,17 @@ Task<CreditNote> MarkCreditNoteAsDraftAsync(long creditNoteId, CancellationToken
 
 ## List filters
 
-### view (`CreditNoteViews`)
+### view (`CreditNoteView`)
 
 | Constant | Wire value |
 |----------|------------|
-| `CreditNoteViews.All` | `all` |
-| `CreditNoteViews.RecentOpenOrOverdue` | `recent_open_or_overdue` |
-| `CreditNoteViews.Open` | `open` |
-| `CreditNoteViews.Overdue` | `overdue` |
-| `CreditNoteViews.OpenOrOverdue` | `open_or_overdue` |
-| `CreditNoteViews.Draft` | `draft` |
-| `CreditNoteViews.Refunded` | `refunded` |
+| `CreditNoteView.All` | `all` |
+| `CreditNoteView.RecentOpenOrOverdue` | `recent_open_or_overdue` |
+| `CreditNoteView.Open` | `open` |
+| `CreditNoteView.Overdue` | `overdue` |
+| `CreditNoteView.OpenOrOverdue` | `open_or_overdue` |
+| `CreditNoteView.Draft` | `draft` |
+| `CreditNoteView.Refunded` | `refunded` |
 
 Use `last_N_months` (for example `last_3_months`) as a documented view string when filtering by recency.
 

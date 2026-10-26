@@ -61,7 +61,7 @@ Task<PaginatedResponse<Invoice>> ListAsync(
 
 ```csharp
 var page = await client.Invoices.ListAsync(
-    view: InvoiceViews.Open,
+    view: InvoiceView.Open,
     contactId: 42,
     nestedInvoiceItems: true);
 ```
@@ -227,20 +227,20 @@ Company-level default text shown on all invoices.
 
 ## List filters
 
-### view (`InvoiceViews`)
+### view (`InvoiceView`)
 
 | Constant | Wire value |
 |----------|------------|
-| `InvoiceViews.All` | `all` |
-| `InvoiceViews.RecentOpenOrOverdue` | `recent_open_or_overdue` |
-| `InvoiceViews.Open` | `open` |
-| `InvoiceViews.Overdue` | `overdue` |
-| `InvoiceViews.OpenOrOverdue` | `open_or_overdue` |
-| `InvoiceViews.Draft` | `draft` |
-| `InvoiceViews.Paid` | `paid` |
-| `InvoiceViews.ScheduledToEmail` | `scheduled_to_email` |
-| `InvoiceViews.ThankYouEmails` | `thank_you_emails` |
-| `InvoiceViews.ReminderEmails` | `reminder_emails` |
+| `InvoiceView.All` | `all` |
+| `InvoiceView.RecentOpenOrOverdue` | `recent_open_or_overdue` |
+| `InvoiceView.Open` | `open` |
+| `InvoiceView.Overdue` | `overdue` |
+| `InvoiceView.OpenOrOverdue` | `open_or_overdue` |
+| `InvoiceView.Draft` | `draft` |
+| `InvoiceView.Paid` | `paid` |
+| `InvoiceView.ScheduledToEmail` | `scheduled_to_email` |
+| `InvoiceView.ThankYouEmails` | `thank_you_emails` |
+| `InvoiceView.ReminderEmails` | `reminder_emails` |
 
 ### sort (`InvoiceSortOptions`)
 
