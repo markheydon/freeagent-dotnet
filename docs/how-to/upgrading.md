@@ -6,7 +6,7 @@ nav_order: 4
 
 # Upgrading
 
-FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until stable `1.0.0`, published packages are **prerelease** (currently **beta**, e.g. `0.1.0-beta.1`).
+FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until stable `1.0.0`, published packages are **prerelease** (currently **beta**, e.g. `0.1.0-beta.2`).
 
 ## Prerelease expectations
 
@@ -15,7 +15,7 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until stable `
 - Pin an exact version in your project file:
 
 ```xml
-<PackageReference Include="FreeAgent.Client" Version="0.1.0-beta.1" />
+<PackageReference Include="FreeAgent.Client" Version="0.1.0-beta.2" />
 ```
 
 ## Upgrade checklist

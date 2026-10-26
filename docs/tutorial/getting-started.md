@@ -16,10 +16,10 @@ This tutorial walks through installing the SDK, obtaining an access token, and m
 ## Install the package
 
 ```bash
-dotnet add package FreeAgent.Client --version 0.1.0-beta.1
+dotnet add package FreeAgent.Client --version 0.1.0-beta.2
 ```
 
-> The package is currently in **beta** prerelease (`0.1.0-beta.1`). Pin an exact version if stability matters. See [Upgrading](../how-to/upgrading.md) and [Prerelease and OAuth scope](../explanation/prerelease-and-oauth.md).
+> The package is currently in **beta** prerelease (`0.1.0-beta.2`). Pin an exact version if stability matters. See [Upgrading](../how-to/upgrading.md) and [Prerelease and OAuth scope](../explanation/prerelease-and-oauth.md).
 
 ## Host compatibility
 
@@ -37,7 +37,7 @@ The SDK serialises and deserialises API traffic with `System.Text.Json` source g
 [File-based apps](https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps) default to reflection-disabled JSON. The client ships source-generated wire metadata, so you do **not** need `JsonSerializerIsReflectionEnabledByDefault`.
 
 ```csharp
-#:package FreeAgent.Client@0.1.0-beta.1
+#:package FreeAgent.Client@0.1.0-beta.2
 #:property PublishAot=false
 
 using FreeAgent.Client;
