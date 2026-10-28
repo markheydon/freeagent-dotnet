@@ -1,5 +1,6 @@
 using System.Text.Json;
 using FreeAgent.Client.BlazorSample.Services;
+using FreeAgent.Client.Tests.Infrastructure.Serialization;
 namespace FreeAgent.Client.Tests.Sample;
 
 public class ModelWireDiagnosticsTests
@@ -146,5 +147,47 @@ public class ModelWireDiagnosticsTests
         Assert.Equal(0, snapshot.MatchCount);
         Assert.Equal(0, snapshot.MismatchCount);
         Assert.Equal(1, snapshot.NotReturnedCount);
+    }
+
+    [Fact]
+    public void Build_Timeslip_IncludesTaskLinkFacadesAndMatchesTaskUri()
+    {
+        const string rawPayload = """
+        {
+          "timeslip": {
+            "url": "https://api.freeagent.com/v2/timeslips/25",
+            "task": "https://api.freeagent.com/v2/tasks/3",
+            "project": "https://api.freeagent.com/v2/projects/4",
+            "user": "https://api.freeagent.com/v2/users/2",
+            "dated_on": "2011-08-15",
+            "hours": "12.0"
+          }
+        }
+        """;
+
+        const string timeslipJson = """
+        {
+          "url": "https://api.freeagent.com/v2/timeslips/25",
+          "task": "https://api.freeagent.com/v2/tasks/3",
+          "project": "https://api.freeagent.com/v2/projects/4",
+          "user": "https://api.freeagent.com/v2/users/2",
+          "dated_on": "2011-08-15",
+          "hours": "12.0"
+        }
+        """;
+
+        var timeslip = JsonSerializer.Deserialize<Timeslip>(timeslipJson, FreeAgentJsonTestSupport.Options)!;
+
+        var snapshot = ModelWireDiagnostics.Build(timeslip, rawPayload, "timeslip");
+
+        Assert.Contains(
+            snapshot.FieldRows,
+            row => row.PropertyName == nameof(Timeslip.ProjectTaskId) && row.JsonFieldName == "task");
+        Assert.Contains(
+            snapshot.MappingRows,
+            row => row.PropertyName == nameof(Timeslip.ProjectTaskId)
+                   && row.JsonFieldName == "task"
+                   && row.Status == MappingCheckStatus.Match);
+        Assert.Equal(3, timeslip.ProjectTaskId);
     }
 }

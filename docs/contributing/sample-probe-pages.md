@@ -49,6 +49,7 @@ Reuse these sample-only components and services. Do not duplicate probe logic on
 1. Deserialising each wire field through the **same property type** the model uses.
 2. Using `JsonNumberHandling.AllowReadingFromString` so decimal fields returned as strings (for example `account_balance`) do not false-positive.
 3. Classifying each property as **Match**, **Mismatch**, **Missing in model**, **Model-only**, or **Not returned**.
+4. Including ADR-0011 link facades (`ProjectTaskId`, `ContactId`, nested `ProjectTask`, and so on) even when marked `[JsonIgnore]`, using the paired internal `*Link` property for the JSON field name (for example `ProjectTaskId` → `task`).
 
 Only add model properties that exist on the [FreeAgent API docs](https://dev.freeagent.com/docs/index). Do not invent wire fields (for example `contact_name` is not part of the contacts API).
 

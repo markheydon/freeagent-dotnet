@@ -98,7 +98,20 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteField("Project", detail.Project?.Name);
         SampleOutput.WriteField("User", detail.User?.DisplayName);
         SampleOutput.WriteField("Billed on invoice", detail.BilledOnInvoiceId);
+        SampleOutput.WriteField(
+            "UI billability",
+            FormatBillabilityCategory(TimeslipBillability.Resolve(detail)));
     }
+
+    private static string FormatBillabilityCategory(TimeslipBillabilityCategory category) =>
+        category switch
+        {
+            TimeslipBillabilityCategory.Billed => "Billed",
+            TimeslipBillabilityCategory.Unbilled => "Billable (unbilled)",
+            TimeslipBillabilityCategory.Unbillable => "Unbillable",
+            TimeslipBillabilityCategory.Unknown => "Unknown",
+            _ => category.ToString()
+        };
 
     [ConsoleSample(Name = "Create probe timeslip and delete", MutatesData = true)]
     [SuppressMessage("Style", "IDE0051:Remove unused private members", Justification = "Invoked via reflection by ConsoleSample attribute.")]
