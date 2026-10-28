@@ -273,6 +273,8 @@ var timeslip = await client.Timeslips.GetTimeslipAsync(
     new TimeslipGetOptions { IncludeProjectTask = true });
 
 var category = TimeslipBillability.Resolve(timeslip);
+// or, when the task is on the timeslip:
+var category = timeslip.BillingStatus;
 ```
 
 ## Timeslip model
@@ -295,6 +297,12 @@ Key properties:
 | `CreatedAt` | `DateTimeOffset?` | `created_at` | Read-only |
 | `UpdatedAt` | `DateTimeOffset?` | `updated_at` | Read-only |
 | `Url` | `string` | `url` | |
+
+Read-only composition (not on the wire):
+
+| Property | Type | Notes |
+|----------|------|-------|
+| `BillingStatus` | `TimeslipBillabilityCategory` | FreeAgent UI billability; see [UI billability](#ui-billability-composition-helper). Often `Unknown` until the task is nested or hydrated. |
 
 ## Reference types (list filters and inbound URLs)
 

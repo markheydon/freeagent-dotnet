@@ -90,7 +90,7 @@
                                 <MudText Typo="Typo.h5">Result summary</MudText>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_timeslip.ResourceId</MudChip>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_timeslip.DatedOn?.ToString("yyyy-MM-dd"))</MudChip>
-                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Info">UI billability: @FormatBillabilityCategory(TimeslipBillability.Resolve(_timeslip))</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Info">UI billability: @FormatBillabilityCategory(_timeslip.BillingStatus)</MudChip>
                             </MudStack>
                         </SummaryContent>
                         <HighlightContent>

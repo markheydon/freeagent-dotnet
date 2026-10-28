@@ -62,6 +62,7 @@ public class TimeslipBillabilityTests
         var timeslip = JsonSerializer.Deserialize<Timeslip>(json, FreeAgentJsonTestSupport.Options)!;
 
         Assert.Equal(TimeslipBillabilityCategory.Unbilled, TimeslipBillability.Resolve(timeslip));
+        Assert.Equal(TimeslipBillabilityCategory.Unbilled, timeslip.BillingStatus);
     }
 
     [Fact]

@@ -32,6 +32,10 @@ public enum TimeslipBillabilityCategory
 /// <summary>
 /// Composes FreeAgent UI billability for a timeslip from already-fetched models (no HTTP).
 /// </summary>
+/// <remarks>
+/// Prefer <see cref="Timeslip.BillingStatus"/> when the task is nested or hydrated on the timeslip.
+/// Use <see cref="Resolve"/> when you have a separate <see cref="ProjectTask"/> instance.
+/// </remarks>
 public static class TimeslipBillability
 {
     /// <summary>

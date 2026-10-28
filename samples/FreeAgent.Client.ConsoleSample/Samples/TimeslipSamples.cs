@@ -100,7 +100,7 @@ internal sealed class TimeslipSamples(SampleContext context) : IConsoleSamplePro
         SampleOutput.WriteField("Billed on invoice", detail.BilledOnInvoiceId);
         SampleOutput.WriteField(
             "UI billability",
-            FormatBillabilityCategory(TimeslipBillability.Resolve(detail)));
+            FormatBillabilityCategory(detail.BillingStatus));
     }
 
     private static string FormatBillabilityCategory(TimeslipBillabilityCategory category) =>
