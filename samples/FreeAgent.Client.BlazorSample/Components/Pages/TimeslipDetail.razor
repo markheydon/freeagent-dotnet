@@ -90,6 +90,7 @@
                                 <MudText Typo="Typo.h5">Result summary</MudText>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Primary">ID: @_timeslip.ResourceId</MudChip>
                                 <MudChip T="string" Variant="Variant.Outlined" Color="Color.Secondary">@ValueOrFallback(_timeslip.DatedOn?.ToString("yyyy-MM-dd"))</MudChip>
+                                <MudChip T="string" Variant="Variant.Outlined" Color="Color.Info">UI billability: @FormatBillabilityCategory(_timeslip.BillingStatus)</MudChip>
                             </MudStack>
                         </SummaryContent>
                         <HighlightContent>
@@ -366,4 +367,14 @@
     }
 
     private static string ValueOrFallback(string? value) => string.IsNullOrWhiteSpace(value) ? "Not returned" : value;
+
+    private static string FormatBillabilityCategory(TimeslipBillabilityCategory category) =>
+        category switch
+        {
+            TimeslipBillabilityCategory.Billed => "Billed",
+            TimeslipBillabilityCategory.Unbilled => "Billable (unbilled)",
+            TimeslipBillabilityCategory.Unbillable => "Unbillable",
+            TimeslipBillabilityCategory.Unknown => "Unknown (hydrate task or pass is_billable)",
+            _ => category.ToString()
+        };
 }

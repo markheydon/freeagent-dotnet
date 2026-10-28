@@ -250,6 +250,32 @@ Task<Timeslip> StopTimerAsync(long timeslipId, CancellationToken cancellationTok
 | `IncludeProjectTask` | `bool` | Fetch linked task when only a URI is returned |
 | `IncludeProject` | `bool` | Fetch linked project when only a URI is returned |
 | `IncludeUser` | `bool` | Fetch linked user when only a URI is returned |
+| `IncludeBilledOnInvoice` | `bool` | Fetch billed invoice when only a URI is returned |
+
+## UI billability (composition helper)
+
+FreeAgent shows each timeslip as **Billed**, **Billable**, or **Unbillable** in the web UI. Those labels are not a separate API field; they follow from the linked task and whether the timeslip has been invoiced.
+
+Use `TimeslipBillability.Resolve` when you already have a timeslip and task details (nested, hydrated, or loaded separately). The helper performs no HTTP calls.
+
+| `TimeslipBillabilityCategory` | FreeAgent UI label | Condition |
+|-------------------------------|-------------------|-----------|
+| `Unbillable` | Unbillable | Task `is_billable` is `false` |
+| `Unbilled` | Billable | Task `is_billable` is `true` and `billed_on_invoice` is absent |
+| `Billed` | Billed | Task `is_billable` is `true` and `billed_on_invoice` is present |
+| `Unknown` | — | Task billability not available (for example list response with task URI only) |
+
+Draft invoices do not appear on the timeslip wire until billing completes; correlating draft assignment requires your own invoice data, not this helper.
+
+```csharp
+var timeslip = await client.Timeslips.GetTimeslipAsync(
+    id,
+    new TimeslipGetOptions { IncludeProjectTask = true });
+
+var category = TimeslipBillability.Resolve(timeslip);
+// or, when the task is on the timeslip:
+var category = timeslip.BillingStatus;
+```
 
 ## Timeslip model
 
@@ -271,6 +297,12 @@ Key properties:
 | `CreatedAt` | `DateTimeOffset?` | `created_at` | Read-only |
 | `UpdatedAt` | `DateTimeOffset?` | `updated_at` | Read-only |
 | `Url` | `string` | `url` | |
+
+Read-only composition (not on the wire):
+
+| Property | Type | Notes |
+|----------|------|-------|
+| `BillingStatus` | `TimeslipBillabilityCategory` | FreeAgent UI billability; see [UI billability](#ui-billability-composition-helper). Often `Unknown` until the task is nested or hydrated. |
 
 ## Reference types (list filters and inbound URLs)
 

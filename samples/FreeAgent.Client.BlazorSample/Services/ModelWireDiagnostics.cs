@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using FreeAgent.Client;
 
 namespace FreeAgent.Client.BlazorSample.Services;
 
@@ -64,11 +65,11 @@ public static class ModelWireDiagnostics
         WriteIndented = true
     };
 
-    private static readonly JsonSerializerOptions MappingComparisonJsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        NumberHandling = JsonNumberHandling.AllowReadingFromString
-    };
+    private static readonly JsonSerializerOptions MappingComparisonJsonOptions =
+        FreeAgentJsonSerialization.ApiSerializerOptions;
+
+    private const BindingFlags ModelPropertyFlags =
+        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
     /// <summary>
     /// Builds diagnostics from a model and raw API JSON, optionally extracting a named envelope property.
@@ -230,6 +231,7 @@ public static class ModelWireDiagnostics
     private static List<ModelFieldRow> BuildFieldRows<T>(T model, Type modelType)
     {
         var rows = new List<ModelFieldRow>();
+        var included = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var property in modelType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
         {
@@ -238,31 +240,48 @@ public static class ModelWireDiagnostics
                 continue;
             }
 
-            var rawValue = property.GetValue(model);
-            var jsonName = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name;
-            var stringValue = rawValue switch
-            {
-                null => "Not returned",
-                string text when string.IsNullOrWhiteSpace(text) => "Not returned",
-                string text => text,
-                DateOnly date => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                IEnumerable<string> stringCollection => string.Join(", ", stringCollection),
-                _ => JsonSerializer.Serialize(rawValue, PrettyJsonOptions)
-            };
-
-            rows.Add(new ModelFieldRow(
-                property.Name,
-                jsonName,
-                FormatTypeName(property.PropertyType),
-                stringValue));
+            included.Add(property.Name);
+            rows.Add(CreateFieldRow(model, property, property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name));
         }
 
+        foreach (var (facade, jsonName) in DiscoverLinkFacadeProperties(modelType))
+        {
+            if (!included.Add(facade.Name))
+            {
+                continue;
+            }
+
+            rows.Add(CreateFieldRow(model, facade, jsonName));
+        }
+
+        rows.Sort(static (left, right) => string.Compare(left.PropertyName, right.PropertyName, StringComparison.Ordinal));
         return rows;
+    }
+
+    private static ModelFieldRow CreateFieldRow<T>(T model, PropertyInfo property, string jsonFieldName)
+    {
+        var rawValue = property.GetValue(model);
+        var stringValue = rawValue switch
+        {
+            null => "Not returned",
+            string text when string.IsNullOrWhiteSpace(text) => "Not returned",
+            string text => text,
+            DateOnly date => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            IEnumerable<string> stringCollection => string.Join(", ", stringCollection),
+            _ => JsonSerializer.Serialize(rawValue, PrettyJsonOptions)
+        };
+
+        return new ModelFieldRow(
+            property.Name,
+            jsonFieldName,
+            FormatTypeName(property.PropertyType),
+            stringValue);
     }
 
     private static List<ModelMappingRow> BuildMappingRows<T>(T model, JsonElement wireElement, Type modelType)
     {
         var rows = new List<ModelMappingRow>();
+        var mappedJsonFields = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var property in modelType.GetProperties(BindingFlags.Instance | BindingFlags.Public))
         {
@@ -272,28 +291,150 @@ public static class ModelWireDiagnostics
             }
 
             var jsonName = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name;
-            var modelRawValue = property.GetValue(model);
-            JsonElement rawElement = default;
-            var hasRawValue = wireElement.ValueKind == JsonValueKind.Object
-                && wireElement.TryGetProperty(jsonName, out rawElement);
+            mappedJsonFields.Add(jsonName);
+            rows.Add(CreateMappingRow(model, wireElement, property, jsonName));
+        }
 
-            var status = DetermineMappingStatus(
+        foreach (var linkProperty in DiscoverWireLinkProperties(modelType))
+        {
+            var jsonName = linkProperty.GetCustomAttribute<JsonPropertyNameAttribute>()!.Name;
+            if (!mappedJsonFields.Add(jsonName))
+            {
+                continue;
+            }
+
+            rows.Add(CreateMappingRow(model, wireElement, linkProperty, jsonName));
+        }
+
+        foreach (var (facade, jsonName) in DiscoverLinkFacadeProperties(modelType))
+        {
+            rows.Add(CreateLinkFacadeMappingRow(model, wireElement, facade, jsonName));
+        }
+
+        rows.Sort(static (left, right) => string.Compare(left.PropertyName, right.PropertyName, StringComparison.Ordinal));
+        return rows;
+    }
+
+    private static ModelMappingRow CreateMappingRow<T>(
+        T model,
+        JsonElement wireElement,
+        PropertyInfo property,
+        string jsonName)
+    {
+        var modelRawValue = property.GetValue(model);
+        JsonElement rawElement = default;
+        var hasRawValue = wireElement.ValueKind == JsonValueKind.Object
+            && wireElement.TryGetProperty(jsonName, out rawElement);
+
+        var status = DetermineMappingStatus(
+            hasRawValue,
+            hasRawValue ? rawElement : default,
+            modelRawValue,
+            property.PropertyType);
+
+        return new ModelMappingRow(
+            property.Name,
+            jsonName,
+            FormatTypeName(property.PropertyType),
+            FormatModelValue(modelRawValue),
+            hasRawValue ? FormatJsonValue(rawElement) : "Not returned",
+            hasRawValue ? rawElement.ValueKind.ToString() : "Not returned",
+            status);
+    }
+
+    private static ModelMappingRow CreateLinkFacadeMappingRow<T>(
+        T model,
+        JsonElement wireElement,
+        PropertyInfo facade,
+        string jsonName)
+    {
+        var modelRawValue = facade.GetValue(model);
+        JsonElement rawElement = default;
+        var hasRawValue = wireElement.ValueKind == JsonValueKind.Object
+            && wireElement.TryGetProperty(jsonName, out rawElement);
+
+        var status = facade.PropertyType == typeof(long?) || facade.PropertyType == typeof(long)
+            ? DetermineLinkIdMappingStatus(hasRawValue, hasRawValue ? rawElement : default, modelRawValue as long?)
+            : DetermineMappingStatus(
                 hasRawValue,
                 hasRawValue ? rawElement : default,
                 modelRawValue,
-                property.PropertyType);
+                facade.PropertyType);
 
-            rows.Add(new ModelMappingRow(
-                property.Name,
-                jsonName,
-                FormatTypeName(property.PropertyType),
-                FormatModelValue(modelRawValue),
-                hasRawValue ? FormatJsonValue(rawElement) : "Not returned",
-                hasRawValue ? rawElement.ValueKind.ToString() : "Not returned",
-                status));
+        return new ModelMappingRow(
+            facade.Name,
+            jsonName,
+            FormatTypeName(facade.PropertyType),
+            FormatModelValue(modelRawValue),
+            hasRawValue ? FormatJsonValue(rawElement) : "Not returned",
+            hasRawValue ? rawElement.ValueKind.ToString() : "Not returned",
+            status);
+    }
+
+    private static IEnumerable<PropertyInfo> DiscoverWireLinkProperties(Type modelType) =>
+        modelType
+            .GetProperties(ModelPropertyFlags)
+            .Where(static property =>
+                property.Name.EndsWith("Link", StringComparison.Ordinal)
+                && property.GetCustomAttribute<JsonPropertyNameAttribute>() is not null
+                && property.GetCustomAttribute<JsonIncludeAttribute>() is not null);
+
+    private static IEnumerable<(PropertyInfo Facade, string JsonName)> DiscoverLinkFacadeProperties(Type modelType)
+    {
+        foreach (var linkProperty in DiscoverWireLinkProperties(modelType))
+        {
+            var jsonName = linkProperty.GetCustomAttribute<JsonPropertyNameAttribute>()!.Name;
+            var baseName = linkProperty.Name[..^4];
+
+            var idProperty = modelType.GetProperty(baseName + "Id", ModelPropertyFlags);
+            if (idProperty?.GetCustomAttribute<JsonIgnoreAttribute>() is not null)
+            {
+                yield return (idProperty, jsonName);
+            }
+
+            var navigationProperty = modelType.GetProperty(baseName, ModelPropertyFlags);
+            if (navigationProperty?.GetCustomAttribute<JsonIgnoreAttribute>() is not null
+                && navigationProperty.Name != idProperty?.Name)
+            {
+                yield return (navigationProperty, jsonName);
+            }
+        }
+    }
+
+    private static MappingCheckStatus DetermineLinkIdMappingStatus(
+        bool hasRawValue,
+        JsonElement rawValue,
+        long? modelId)
+    {
+        var hasModelValue = modelId is > 0;
+
+        if (!hasRawValue)
+        {
+            return hasModelValue ? MappingCheckStatus.ModelOnly : MappingCheckStatus.NotReturned;
         }
 
-        return rows;
+        if (!hasModelValue)
+        {
+            return MappingCheckStatus.MissingInModel;
+        }
+
+        if (rawValue.ValueKind == JsonValueKind.String)
+        {
+            return FreeAgentResourceUri.TryParseResourceId(rawValue.GetString(), out var wireId) && wireId == modelId
+                ? MappingCheckStatus.Match
+                : MappingCheckStatus.Mismatch;
+        }
+
+        if (rawValue.ValueKind == JsonValueKind.Object
+            && rawValue.TryGetProperty("url", out var urlElement)
+            && urlElement.ValueKind == JsonValueKind.String)
+        {
+            return FreeAgentResourceUri.TryParseResourceId(urlElement.GetString(), out var wireId) && wireId == modelId
+                ? MappingCheckStatus.Match
+                : MappingCheckStatus.Mismatch;
+        }
+
+        return MappingCheckStatus.Mismatch;
     }
 
     private static MappingCheckStatus DetermineMappingStatus(

@@ -111,6 +111,17 @@ public class Timeslip : IFreeAgentResource
     public long? BilledOnInvoiceId => BilledOnInvoiceLink?.Id;
 
     /// <summary>
+    /// FreeAgent UI billability for this timeslip (Billed, Billable, or Unbillable).
+    /// </summary>
+    /// <remarks>
+    /// Composed from linked task <c>is_billable</c> and read-only <c>billed_on_invoice</c>; not a separate API field.
+    /// Returns <see cref="TimeslipBillabilityCategory.Unknown"/> when task billability is not on the response (task URI only).
+    /// Use <see cref="TimeslipGetOptions.IncludeProjectTask"/> or list <c>nested=true</c>, or pass a task to <see cref="TimeslipBillability.Resolve"/>.
+    /// </remarks>
+    [JsonIgnore]
+    public TimeslipBillabilityCategory BillingStatus => TimeslipBillability.Resolve(this);
+
+    /// <summary>
     /// Date of the timeslip.
     /// </summary>
     [JsonPropertyName("dated_on")]
