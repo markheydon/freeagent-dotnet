@@ -15,7 +15,7 @@ Maintainer guide for publishing `FreeAgent.Client` to NuGet.org. Consumer-facing
 1. **Bump version** (if needed) in `src/FreeAgent.Client/FreeAgent.Client.csproj`:
 
    ```xml
-   <Version>0.1.0-beta.2</Version>
+   <Version>0.1.0-beta.3</Version>
    ```
 
 2. **Merge** release changes to `main`.
@@ -23,8 +23,8 @@ Maintainer guide for publishing `FreeAgent.Client` to NuGet.org. Consumer-facing
 3. **Create and push a tag** matching the csproj version (with `v` prefix):
 
    ```bash
-   git tag v0.1.0-beta.2
-   git push origin v0.1.0-beta.2
+   git tag v0.1.0-beta.3
+   git push origin v0.1.0-beta.3
    ```
 
 4. **Monitor** the [Release workflow](../.github/workflows/release.yml):

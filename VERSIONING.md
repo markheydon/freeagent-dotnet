@@ -1,7 +1,7 @@
 # Versioning Policy
 
 **Project:** FreeAgent.NET
-**Last updated:** 22 October 2026
+**Last updated:** 28 October 2026
 
 ---
 
@@ -15,7 +15,7 @@ FreeAgent.NET uses [Semantic Versioning 2.0.0](https://semver.org/). Until the M
 
 ## Current Stage: Beta
 
-The package is currently published with the `beta` prerelease tag (e.g. `0.1.0-beta.2`).
+The package is currently published with the `beta` prerelease tag (e.g. `0.1.0-beta.3`).
 
 ### What beta means
 
@@ -51,7 +51,7 @@ The package will be promoted to stable `1.0.0` when all of the following are tru
 
 ## Release Workflow
 
-Releases are triggered by pushing a Git tag that matches `v*.*.*` (e.g. `v0.1.0-alpha.1`, `v0.1.0-beta.2`, `v1.0.0`).
+Releases are triggered by pushing a Git tag that matches `v*.*.*` (e.g. `v0.1.0-alpha.1`, `v0.1.0-beta.3`, `v1.0.0`).
 
 See [plan/RELEASE.md](plan/RELEASE.md) for the maintainer runbook.
 
@@ -73,7 +73,7 @@ The release workflow will:
 If you depend on a prerelease version of this package, pin to an exact version in your project file:
 
 ```xml
-<PackageReference Include="FreeAgent.Client" Version="0.1.0-beta.2" />
+<PackageReference Include="FreeAgent.Client" Version="0.1.0-beta.3" />
 ```
 
 ---
@@ -82,6 +82,7 @@ If you depend on a prerelease version of this package, pin to an exact version i
 
 | Date | Change | Reason |
 |---|---|---|
+| 28 October 2026 | Publish `0.1.0-beta.3` | Timeslip UI billability (`TimeslipBillability`, `Timeslip.BillingStatus`) |
 | 26 October 2026 | Publish `0.1.0-beta.2` | Incremental sync guidance and resource URI helpers from dogfood feedback (#219) |
 | 22 October 2026 | Promote to beta (`0.1.0-beta.1`) | Company API coverage complete |
 | 30 April 2026 | Initial draft | Adopt prerelease versioning policy |

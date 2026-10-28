@@ -59,7 +59,7 @@ export FREEAGENT_CLIENT_SECRET='your-sandbox-client-secret'
 Save as `get-token.cs` and run `dotnet run get-token.cs`. Open the printed URL, approve access, then paste the full redirect URL from the browser.
 
 ```csharp
-#:package FreeAgent.Client@0.1.0-beta.2
+#:package FreeAgent.Client@0.1.0-beta.3
 #:property PublishAot=false
 
 using FreeAgent.Client;
@@ -132,7 +132,7 @@ export FREEAGENT_ACCESS_TOKEN='paste-token-from-step-1'
 Save as `company.cs` and run `dotnet run company.cs`.
 
 ```csharp
-#:package FreeAgent.Client@0.1.0-beta.2
+#:package FreeAgent.Client@0.1.0-beta.3
 #:property PublishAot=false
 
 using FreeAgent.Client;

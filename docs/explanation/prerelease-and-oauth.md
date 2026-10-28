@@ -8,7 +8,7 @@ nav_order: 3
 
 ## Prerelease policy
 
-The SDK is in **beta** (`0.x.y-beta.n`; current release `0.1.0-beta.2`). Prerelease packages:
+The SDK is in **beta** (`0.x.y-beta.n`; current release `0.1.0-beta.3`). Prerelease packages:
 
 - Do not carry full stability guarantees until `1.0.0`
 - During beta, breaking changes are avoided where possible and called out in release notes
