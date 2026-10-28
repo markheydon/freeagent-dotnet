@@ -77,7 +77,10 @@ cd samples/FreeAgent.Client.BlazorSample
 dotnet run
 ```
 
-The app starts at `https://localhost:5001`. Your browser may show a certificate warning for the local development certificate; accept it, or run `dotnet dev-certs https --trust` first.
+The app starts at `https://localhost:5001`.
+
+- **Local machine (not a Dev Container):** run `dotnet dev-certs https --trust`, or accept the browser warning once.
+- **Dev Container on Windows:** run `./scripts/export-dev-cert-for-windows-host.sh` in the container, then the PowerShell `$crt` / `Import-Certificate` steps it prints. See [.devcontainer/README.md](../.devcontainer/README.md).
 
 ---
 
