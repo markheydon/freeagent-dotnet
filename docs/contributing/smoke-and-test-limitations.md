@@ -51,10 +51,11 @@ These gaps are not fixed by seeding alone; they need API capability, new SDK res
 
 ## Turpinverse and sandbox data gaps
 
-Turpinverse seeds contacts, projects, tasks, sales documents, notes, and timeslips. It does **not** yet provide everything smoke examples need. Planned Turpinverse work (not this repository’s smoke PR):
+Turpinverse seeds contacts, projects, tasks, sales documents, bills, notes, and timeslips. It does **not** yet provide everything smoke examples need, and seeded projects are **not** a full FreeAgent “project workspace” (Summary / Expenses tab / rebill mix). Manual sandbox fixtures (for example Palmer Identity Vault used in `plan/FreeAgent Project Example/`) are manufactured for integration testing until canon catches up. Planned Turpinverse work (not this repository’s smoke PR):
 
 | Data needed for smoke | Current state | Suggested action |
 |----------------------|---------------|------------------|
+| **Fully populated project** (FA UI tabs: invoices, estimates, time, notes, **outgoings** with rebill/unbillable mix) | Canon seeds projects, tasks, sales docs, bills, notes, and timeslips, but not expenses, bank explanations linked to a project, or rebill-to-project / markup / price scenarios across bills, expenses, and banking. Cannot validate `ProjectWorkspace` / outgoings aggregation or Palmer parity without manual data. | Turpinverse canon + seeders: one anchor project (Palmer-equivalent) with direct `project` and `rebill_to_project` links, unbillable costs, billed vs not-yet-rebilled rows, and at least one bank explanation with project rebill. Track with [Project workspace planning](../../plan/PROJECT_WORKSPACE.md). |
 | Expenses (with optional attachment) | Not seeded | Expense seeder (user, admin category, small receipt base64). |
 | Expenses with attachments | `GetFirstAttachmentIdAsync` scans up to 500 expenses | At least one canon expense with an attachment on create. |
 | Bank transaction explanations | Not seeded | One category explanation or manual line on the company bank account. |
