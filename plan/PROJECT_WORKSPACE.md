@@ -1,6 +1,6 @@
 # Project workspace and linked data
 
-**Status:** Pre-issue planning (not committed until owner approves)  
+**Status:** Tracked in GitHub issue [#223](https://github.com/markheydon/freeagent-dotnet/issues/223)  
 **Primary fixture:** Sandbox *Palmer Identity Vault* — screenshots and notes under [`plan/FreeAgent Project Example/`](FreeAgent%20Project%20Example/) (project id `50651` in URLs at time of capture)  
 **Turpinverse:** Does not yet seed an equivalent fully populated project; see [Turpinverse and sandbox data gaps](../docs/contributing/smoke-and-test-limitations.md#turpinverse-and-sandbox-data-gaps).
 
