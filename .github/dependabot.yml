@@ -1,115 +1,116 @@
 version: 2
 
 updates:
-  - package-ecosystem: "nuget"
+  - package-ecosystem: nuget
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: weekly
+      day: monday
       time: "04:00"
-      timezone: "Europe/London"
+      timezone: Europe/London
     open-pull-requests-limit: 5
     assignees:
-      - "markheydon"
+      - markheydon
     labels:
-      - "type/chore"
+      - type/chore
     ignore:
       - dependency-name: "Microsoft.Extensions.*"
         update-types:
           - version-update:semver-major
     groups:
-      nuget-test-packages:
+      tests:
         patterns:
-          - "xunit*"
-          - "Moq"
-          - "Microsoft.NET.Test.Sdk"
-          - "Microsoft.Testing.*"
-          - "coverlet*"
+          - xunit*
+          - Moq
+          - Microsoft.NET.Test.Sdk
+          - Microsoft.Testing.*
+          - coverlet*
         update-types:
-          - "minor"
-          - "patch"
-      nuget-microsoft-extensions:
+          - minor
+          - patch
+      microsoft-extensions:
         patterns:
-          - "Microsoft.Extensions.*"
+          - Microsoft.Extensions.*
         update-types:
-          - "minor"
-          - "patch"
-      nuget-azure:
+          - minor
+          - patch
+      azure:
         patterns:
-          - "Azure.*"
+          - Azure.*
+          - Microsoft.Azure.*
         update-types:
-          - "minor"
-          - "patch"
-      nuget-opentelemetry:
+          - minor
+          - patch
+      opentelemetry:
         patterns:
-          - "OpenTelemetry.*"
+          - OpenTelemetry.*
         update-types:
-          - "minor"
-          - "patch"
-      nuget-analyzers:
+          - minor
+          - patch
+      analyzers:
         patterns:
-          - "*Analyzer*"
-          - "Microsoft.CodeAnalysis*"
+          - "*Analyzers*"
+          - Microsoft.CodeAnalysis.*
         update-types:
-          - "minor"
-          - "patch"
+          - minor
+          - patch
+      other:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
 
-  - package-ecosystem: "bundler"
+  - package-ecosystem: bundler
     directory: "/docs"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: weekly
+      day: monday
       time: "04:00"
-      timezone: "Europe/London"
+      timezone: Europe/London
     open-pull-requests-limit: 5
     assignees:
-      - "markheydon"
+      - markheydon
     labels:
-      - "type/chore"
+      - type/chore
     groups:
-      bundler-all:
+      bundler:
         patterns:
           - "*"
         update-types:
-          - "minor"
-          - "patch"
+          - minor
+          - patch
 
-  - package-ecosystem: "github-actions"
+  - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: weekly
+      day: monday
       time: "04:00"
-      timezone: "Europe/London"
+      timezone: Europe/London
     open-pull-requests-limit: 5
     assignees:
-      - "markheydon"
+      - markheydon
     labels:
-      - "type/chore"
+      - type/chore
     groups:
-      github-actions-all:
+      github-actions:
         patterns:
           - "*"
         update-types:
-          - "minor"
-          - "patch"
+          - major
+          - minor
+          - patch
 
-  - package-ecosystem: "devcontainers"
+  - package-ecosystem: devcontainers
     directory: "/"
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: weekly
+      day: monday
       time: "04:00"
-      timezone: "Europe/London"
+      timezone: Europe/London
     open-pull-requests-limit: 5
     assignees:
-      - "markheydon"
+      - markheydon
     labels:
-      - "type/chore"
-    groups:
-      devcontainers-all:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-          - "patch"
+      - type/chore
