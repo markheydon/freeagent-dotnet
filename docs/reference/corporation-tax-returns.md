@@ -74,8 +74,8 @@ Task<CorporationTaxReturn> MarkAsUnpaidAsync(DateOnly periodEndsOn, Cancellation
 
 Enumerations:
 
-- `CorporationTaxReturnFilingStatus` — `draft`, `unfiled`, `pending`, `rejected`, `filed`, `marked_as_filed`
-- `CorporationTaxReturnPaymentStatus` — `unpaid`, `marked_as_paid`, `paid` (reserved for future use)
+- `CorporationTaxReturnFilingStatus` - `draft`, `unfiled`, `pending`, `rejected`, `filed`, `marked_as_filed`
+- `CorporationTaxReturnPaymentStatus` - `unpaid`, `marked_as_paid`, `paid` (reserved for future use)
 
 ## Sandbox note
 

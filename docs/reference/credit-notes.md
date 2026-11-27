@@ -131,7 +131,7 @@ Task<CreditNote> UpdateCreditNoteAsync(
 
 **HTTP:** `PUT /v2/credit_notes/:id`
 
-Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new CreditNoteUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items. `ShowProjectName` is sent on update only when `Status` is `Draft` — FreeAgent locks `show_project_name` once a credit note leaves draft. Setting `ShowProjectName` on update without `Status` throws `ArgumentException` (populate `Status` from GET first).
+Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new CreditNoteUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items. `ShowProjectName` is sent on update only when `Status` is `Draft` - FreeAgent locks `show_project_name` once a credit note leaves draft. Setting `ShowProjectName` on update without `Status` throws `ArgumentException` (populate `Status` from GET first).
 
 ---
 

@@ -33,7 +33,9 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-          dotnet-version: 8.0.x
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Restore
         run: dotnet restore FreeAgent.slnx
@@ -75,7 +77,9 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-          dotnet-version: 8.0.x
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Clean, restore, build, and test
         run: |
@@ -90,3 +94,57 @@ jobs:
         with:
           name: test-results
           path: TestResults/*.trx
+
+  forward-sdk-11:
+    name: Build & Test (forward SDK 11)
+    runs-on: ubuntu-latest
+    needs: [verify]
+    timeout-minutes: 20
+    continue-on-error: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          dotnet-version: |
+            8.0.x
+            10.0.x
+            11.0.x
+
+      - name: Resolve forward SDK
+        id: forward_sdk
+        run: |
+          if ! dotnet --list-sdks | grep -qE '^11\.'; then
+            echo "::notice::.NET 11 SDK not on runner; forward probe skipped."
+            echo "probe=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Repo global.json uses latestFeature (10.x only). latestMajor selects the highest installed SDK >= pin.
+          jq '.sdk.rollForward = "latestMajor"' global.json > global.json.tmp
+          mv global.json.tmp global.json
+          ver="$(dotnet --version)"
+          echo "Resolved SDK: ${ver}"
+          if [[ ! "${ver}" =~ ^11\. ]]; then
+            echo "::error::Expected SDK 11.x after global.json rollForward=latestMajor; got ${ver}"
+            exit 1
+          fi
+          echo "probe=true" >> "$GITHUB_OUTPUT"
+
+      - name: Clean, restore, build, and test
+        if: steps.forward_sdk.outputs.probe == 'true'
+        run: |
+          dotnet clean FreeAgent.slnx
+          dotnet restore FreeAgent.slnx
+          dotnet build FreeAgent.slnx --no-restore --configuration Release -warnaserror
+          dotnet test FreeAgent.slnx --no-build --configuration Release --report-trx --results-directory TestResults-forward-sdk-11
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: test-results-forward-sdk-11
+          path: TestResults-forward-sdk-11/*.trx

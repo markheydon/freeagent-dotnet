@@ -66,7 +66,7 @@
                     @if (_runResult is not null)
                     {
                         <MudAlert Severity="@(_runResult.Succeeded ? Severity.Success : Severity.Warning)" Variant="Variant.Outlined">
-                            Completed in @_runResult.Elapsed.TotalSeconds.ToString("0.0")s —
+                            Completed in @_runResult.Elapsed.TotalSeconds.ToString("0.0")s  - 
                             created @_runResult.TotalCreated, updated @_runResult.TotalUpdated, failures @_runResult.TotalFailures.
                         </MudAlert>
                     }

@@ -4,7 +4,7 @@
 
 
 **Project:** FreeAgent.NET
-**Last updated:** 22 October 2026
+**Last updated:** 27 November 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.
@@ -31,7 +31,7 @@ src/
 	├── Models/                          # Resource-grouped strongly typed models (one folder per API resource area)
 	│   ├── Attachments/ … VatReturns/   # See src/FreeAgent.Client/Models/ for the full set (reports, tax, payroll, banking, sales, purchases, and Shared/)
 	└── Services/                        # Resource-oriented service classes (folder per resource; *Service.cs entry point)
-		├── Attachments/ … VatReturns/     # See src/FreeAgent.Client/Services/ — 45 resource services including reports, tax returns, payroll, banking, and assets
+		├── Attachments/ … VatReturns/     # See src/FreeAgent.Client/Services/ - 45 resource services including reports, tax returns, payroll, banking, and assets
 
 tests/
 └── FreeAgent.Client.Tests/
@@ -66,7 +66,7 @@ tests/
 
 
 **New conventions:**
-- Model source files must be grouped by resource under `Models/[Resource]/` (and cross-resource primitives under `Models/Shared/`), but the public namespace is always `FreeAgent.Client` — folders organise the codebase, not caller usings
+- Model source files must be grouped by resource under `Models/[Resource]/` (and cross-resource primitives under `Models/Shared/`), but the public namespace is always `FreeAgent.Client` - folders organise the codebase, not caller usings
 - Do not reintroduce per-resource `FreeAgent.Client.Models.*` namespaces without an ADR
 - All infrastructure plumbing goes under `Infrastructure/` and uses internal/public as appropriate; infrastructure types stay out of the primary consumer namespace except where they are deliberate public SDK contract (for example `PaginatedResponse<T>`)
 - Resource services take `IFreeAgentRequestClient` internally; do not introduce a shared public `ServiceBase` unless an ADR says otherwise
@@ -114,6 +114,17 @@ tests/
 
 ---
 
+## Documentation
+
+- UK English in docs and comments (see [AGENTS.md](AGENTS.md)).
+- Do not use the em dash (Unicode U+2014) in user-facing text, code comments, or documentation in product scope (`src/`, `tests/`, `samples/`, `docs/`, `adr/`, `plan/`, `.devcontainer/`, `scripts/`, `.github/`, and related root markdown). Agent tooling under `.cursor/` and `.agents/` is excluded from CI. Use spaced ASCII hyphen ` - ` for prose breaks; use a single `-` for empty or missing UI values (for example table placeholders). Run [`scripts/verify-no-em-dash.sh`](scripts/verify-no-em-dash.sh) before large doc edits. To drop the CI check, delete [`.github/workflows/no-em-dash.yml`](.github/workflows/no-em-dash.yml).
+- **README.md** (repo root): consumers and contributors.
+- **`docs/`**: consumer guides (GitHub Pages).
+- **`src/.../README.md`**: NuGet package readme.
+- **`plan/`**: maintainer notes (not all pages publish to Pages).
+
+---
+
 ## Things We Don't Do Here
 - No app-style controller or database architecture in this SDK package
 - No business-rule abstraction (VAT, accounting policy, reporting opinions)
@@ -126,6 +137,7 @@ tests/
 ## Revision History
 | Date       | Change                                              | Reason                        |
 |------------|-----------------------------------------------------|-------------------------------|
+| 27 November 2026 | Add Documentation section (UK English, no em dash, CI verify) | Template sync and editorial convention |
 | 22 October 2026 | Correct resource service count in project-structure tree (45) | Goals review documentation drift |
 | 21 October 2026 | Refresh project-structure tree after goals review | SDK surface now includes reports, tax, payroll, and banking clusters |
 | 25 September 2026 | Unified link write contract: `*Id` on models, `*Reference` for filters and inbound URLs | Linked resource contract refactor |

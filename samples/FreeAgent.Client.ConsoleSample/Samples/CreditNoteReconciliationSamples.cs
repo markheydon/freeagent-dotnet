@@ -249,7 +249,7 @@ internal sealed class CreditNoteReconciliationSamples(SampleContext context) : I
     }
 
     private static string FormatReconciliationRow(CreditNoteReconciliation reconciliation) =>
-        $"{reconciliation.ResourceId,8}  gross={reconciliation.GrossValue,8}  invoice={reconciliation.InvoiceId,6}  credit_note={reconciliation.CreditNoteId,6}  dated={reconciliation.DatedOn?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? "—"}";
+        $"{reconciliation.ResourceId,8}  gross={reconciliation.GrossValue,8}  invoice={reconciliation.InvoiceId,6}  credit_note={reconciliation.CreditNoteId,6}  dated={reconciliation.DatedOn?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) ?? " - "}";
 
     private static decimal ResolveProbeGrossValue(decimal? invoiceTotal, decimal? creditNoteTotal)
     {

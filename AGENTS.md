@@ -131,7 +131,7 @@ Backlog hierarchy (milestone → cluster feature → resource story) is defined 
 
 When creating or suggesting GitHub Issues, use:
 
-- `.github/ISSUE_TEMPLATE/feature_request.yml` for a **single-deliverable** SDK capability (`type/story`, `[Story]` title)—not a whole API cluster tracker.
+- `.github/ISSUE_TEMPLATE/feature_request.yml` for a **single-deliverable** SDK capability (`type/story`, `[Story]` title) - not a whole API cluster tracker.
 - `.github/ISSUE_TEMPLATE/story_request.yml` for planning, samples, harness, or admin work (`type/story`).
 - `.github/ISSUE_TEMPLATE/chore_request.yml` for maintenance, tooling, docs, and governance.
 

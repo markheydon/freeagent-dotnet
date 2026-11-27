@@ -14,7 +14,7 @@ internal sealed class PayrollProfileSamples(SampleContext context) : IConsoleSam
         var taxYearEnd = ResolveCurrentUkTaxYearEnd();
         var profiles = await context.Client.PayrollProfiles.ListAsync(taxYearEnd, cancellationToken);
 
-        SampleOutput.WriteHeader($"Payroll profiles ({taxYearEnd}) — {profiles.Count} profile(s)");
+        SampleOutput.WriteHeader($"Payroll profiles ({taxYearEnd}) - {profiles.Count} profile(s)");
         SampleOutput.WriteRows(
             profiles,
             profile => $"user={profile.UserId}  ref={profile.PayrollReference}  title={profile.Title}");

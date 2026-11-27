@@ -32,7 +32,7 @@ Adopt **typed resource references**, **flat public read properties**, and **opti
 - **DEC-004**: `FreeAgentClient` exposes `Environment` and `Urls` so callers build environment-correct URIs without hard-coding hosts.
 - **DEC-005**: Do not add per-resource one-off URI converters. Use the generic `ExpandableFieldJsonConverter<T>` and reference-type converters instead.
 - **DEC-006**: Service methods may accept `long` identifiers as sugar when the client can construct the URI from `Environment` (for example `contactId` on project list filters).
-- **DEC-007**: Public read models expose flat link properties: for example `Contact?`, `long? ContactId`, plus API denormalised display fields (`ContactName`). Writes set `ContactId` (or equivalent `*Id` per link) on the same model — not `*Reference` properties and not `client.Urls` at the call site.
+- **DEC-007**: Public read models expose flat link properties: for example `Contact?`, `long? ContactId`, plus API denormalised display fields (`ContactName`). Writes set `ContactId` (or equivalent `*Id` per link) on the same model - not `*Reference` properties and not `client.Urls` at the call site.
 - **DEC-008**: Single-resource GET methods may accept `*GetOptions` with `Include*` flags that perform additional GETs when requested (default `false`). Example: `GetProjectAsync(id, new ProjectGetOptions { IncludeContact = true })`.
 - **DEC-009**: List methods do not auto-hydrate linked resources (no N+1). Use denormalised API fields or documented `nested` query parameters when the wire response includes nested objects.
 

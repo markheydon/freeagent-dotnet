@@ -41,7 +41,7 @@ nav_order: 10
 ---
 ```
 
-Use UK English spelling. Keep relative `.md` links between pages. Reference pages belong under `docs/reference/` and should be linked from [API coverage](reference/api-coverage.md).
+Use UK English spelling. Do not use the Unicode em dash (U+2014) in `docs/`; use spaced ASCII hyphen ` - ` for prose breaks (see [CONVENTIONS.md](https://github.com/markheydon/freeagent-dotnet/blob/main/CONVENTIONS.md#documentation) and [`scripts/verify-no-em-dash.sh`](https://github.com/markheydon/freeagent-dotnet/blob/main/scripts/verify-no-em-dash.sh)). Keep relative `.md` links between pages. Reference pages belong under `docs/reference/` and should be linked from [API coverage](reference/api-coverage.md).
 
 ## Local preview
 

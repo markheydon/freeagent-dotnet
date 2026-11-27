@@ -10,7 +10,7 @@
     <EndpointProbeHeader SectionKicker="Company"
                          Title="Account locks"
                          CallUnderTest="AccountLocksService.ListAsync()"
-                         Description="List company account locks and optional user-lock date bounds. Requires Full Access for writes — use the detail probe to set or delete the user lock."
+                         Description="List company account locks and optional user-lock date bounds. Requires Full Access for writes - use the detail probe to set or delete the user lock."
                          EndpointPath="/v2/account_locks"
                          DocsUrl="https://dev.freeagent.com/docs/account_locks" />
 
@@ -73,7 +73,7 @@
                             </HeaderContent>
                             <RowTemplate>
                                 <MudTd DataLabel="Locked to">@context.LockedToDate</MudTd>
-                                <MudTd DataLabel="User lock">@(context.UserLock == true ? "Yes" : "—")</MudTd>
+                                <MudTd DataLabel="User lock">@(context.UserLock == true ? "Yes" : " - ")</MudTd>
                                 <MudTd DataLabel="Locked by">@ValueOrDash(context.LockedByDescription)</MudTd>
                                 <MudTd DataLabel="Actions">
                                     <MudButton Variant="Variant.Filled"
@@ -153,7 +153,7 @@
     }
 
     private static string ValueOrDash(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? "—" : value;
+        string.IsNullOrWhiteSpace(value) ? " - " : value;
 
     private async Task RunAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action)
     {

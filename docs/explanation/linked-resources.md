@@ -127,7 +127,7 @@ Landlord property and capital asset links on purchases documents, expenses, bill
 | `CapitalAssetId` | Read-only when the API returns a `capital_asset` URI on expenses, bill lines, or bank explanations |
 | `DisposedAssetId` | Read-only when the API returns a `disposed_asset` URI on bank explanations |
 
-Writes use `PropertyId` on the model — not `client.Urls` at the call site:
+Writes use `PropertyId` on the model - not `client.Urls` at the call site:
 
 ```csharp
 invoice.PropertyId = property.ResourceId;
@@ -157,7 +157,7 @@ var invoice = await client.Invoices.CreateInvoiceAsync(new Invoice
 });
 ```
 
-When updating a resource retrieved from the API, the SDK round-trips existing link ids from the read model. Set an **optional** link id to `null` to clear it on the wire (for example `ProjectId` on an invoice). Required links follow API rules — project billing `ContactId` cannot be blank, so clearing it returns a validation error even though the SDK serialises `"contact": null`. To update scalar fields without re-sending linked resources or line items, use update options:
+When updating a resource retrieved from the API, the SDK round-trips existing link ids from the read model. Set an **optional** link id to `null` to clear it on the wire (for example `ProjectId` on an invoice). Required links follow API rules - project billing `ContactId` cannot be blank, so clearing it returns a validation error even though the SDK serialises `"contact": null`. To update scalar fields without re-sending linked resources or line items, use update options:
 
 ```csharp
 await client.Invoices.UpdateInvoiceAsync(
@@ -201,7 +201,7 @@ Bank transaction explanations, bank feeds, and hire purchases accept `*GetOption
 
 ## List filters and inbound URLs
 
-List methods accept typed `*Reference` parameters **or** `long? *Id` sugar parameters — supply one, not both. Use `client.Urls` to build references when you have an id from a webhook payload or external system:
+List methods accept typed `*Reference` parameters **or** `long? *Id` sugar parameters - supply one, not both. Use `client.Urls` to build references when you have an id from a webhook payload or external system:
 
 ```csharp
 // Filter projects by contact
@@ -218,7 +218,7 @@ var invoices = await client.Invoices.ListAsync(contact: contactRef);
 
 `IFreeAgentResource.ResourceId` returns `0` when parsing fails. Use `TryGetResourceId()` or `GetResourceId()` when you need a valid identifier for service calls.
 
-`ResourceId` is read-only — it is derived from `Url` (and sometimes wire `id` fields on nested types). For unit tests and mappers, set a realistic `Url` or deserialise API JSON:
+`ResourceId` is read-only - it is derived from `Url` (and sometimes wire `id` fields on nested types). For unit tests and mappers, set a realistic `Url` or deserialise API JSON:
 
 ```csharp
 var url = ContactReference.ForEnvironment(FreeAgentEnvironment.Sandbox, 42).Uri;
@@ -229,14 +229,14 @@ Assert.Equal(42, contact.ResourceId);
 
 For raw URL strings (webhooks, external systems), use `FreeAgentResourceUri.TryParseResourceId(url, out var id)`.
 
-Categories are keyed by nominal code on the wire — use `Category.NominalCode` for API calls, not `ResourceId`. For category links on line items, set `CategoryNominalCode` on the item model.
+Categories are keyed by nominal code on the wire - use `Category.NominalCode` for API calls, not `ResourceId`. For category links on line items, set `CategoryNominalCode` on the item model.
 
 ## Optional hydration (`*GetOptions`)
 
 Single-resource GET methods may accept options such as `ProjectGetOptions.IncludeContact`. When `true`, the SDK performs an additional GET to the linked resource **only if** the first response did not already include a nested object.
 
 - Default is `false` (one HTTP call).
-- Hydration is explicit and discoverable in IntelliSense — not lazy-loading on property access.
+- Hydration is explicit and discoverable in IntelliSense - not lazy-loading on property access.
 - List methods do **not** auto-hydrate linked resources (that would cause N+1 requests).
 
 ## List endpoints and `nested`

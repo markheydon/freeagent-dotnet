@@ -17,7 +17,7 @@ A .NET client library for the [FreeAgent API](https://dev.freeagent.com/docs) wi
 - Typed exception model (`FreeAgentApiException`, `FreeAgentRateLimitException`, …)
 - Pagination (single-page and auto-pagination)
 - Company, Contacts, Categories, Users, Projects, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Stock items, Price list items, Capital assets, Capital asset types, Journal sets, Payroll, Payroll profiles, Properties, Profit and loss, Balance sheet, Trial balance, Cashflow, Transactions, VAT returns, Corporation tax returns, Sales tax periods, EC VAT MOSS sales tax rates, Tasks, Timeslips, Notes, and Email addresses API support
-- Targets .NET 8.0 and .NET 10.0
+- Targets .NET 8.0 and .NET 10.0 (.NET 10 recommended; `net8.0` retained during a post-EOL transition - see [VERSIONING.md](VERSIONING.md))
 - Fully async/await with XML documentation
 
 ## Installation
@@ -30,12 +30,12 @@ dotnet add package FreeAgent.Client
 
 | Host | Status |
 |------|--------|
-| SDK-style `.csproj` apps (web, worker, console) | **Supported** — recommended path |
-| File-based apps (`#:package`, .NET 10+) | **Supported** — source-generated JSON metadata |
+| SDK-style `.csproj` apps (web, worker, console) | **Supported** - recommended path |
+| File-based apps (`#:package`, .NET 10+) | **Supported** - source-generated JSON metadata |
 | `PublishTrimmed` / aggressive trimming | **Not supported yet** |
 | Native AOT publish (`PublishAot`) | **Not supported yet** |
 
-API and OAuth traffic use `System.Text.Json` with source-generated metadata, so [file-based apps](https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps) work without `JsonSerializerIsReflectionEnabledByDefault`. Trimmed and Native AOT publish modes are not supported yet; see [#173](https://github.com/markheydon/freeagent-dotnet/issues/173). Details: [Getting started — host compatibility](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started/#host-compatibility).
+API and OAuth traffic use `System.Text.Json` with source-generated metadata, so [file-based apps](https://learn.microsoft.com/en-us/dotnet/core/sdk/file-based-apps) work without `JsonSerializerIsReflectionEnabledByDefault`. Trimmed and Native AOT publish modes are not supported yet; see [#173](https://github.com/markheydon/freeagent-dotnet/issues/173). Details: [Getting started - host compatibility](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started/#host-compatibility).
 
 ## Quick start
 
@@ -45,7 +45,7 @@ Use a **sandbox** OAuth application from the [sandbox developer portal](https://
 
 `http://127.0.0.1:8765/callback`
 
-The SDK provides OAuth **protocol** helpers only (authorisation URL, code exchange, refresh). Your app must obtain the authorisation `code` from the browser redirect — the first script below does that by asking you to paste the redirect URL (works on WSL and plain Linux without a local callback server).
+The SDK provides OAuth **protocol** helpers only (authorisation URL, code exchange, refresh). Your app must obtain the authorisation `code` from the browser redirect - the first script below does that by asking you to paste the redirect URL (works on WSL and plain Linux without a local callback server).
 
 Canonical copies of these scripts (for cloning this repo) live under [`samples/FileBasedQuickStart/`](samples/FileBasedQuickStart/).
 
@@ -147,7 +147,7 @@ var company = await client.Company.GetCompanyAsync();
 Console.WriteLine($"{company.Name} ({company.Currency})");
 ```
 
-For a normal SDK-style project, run `dotnet add package FreeAgent.Client` and use the same logic in `Program.cs` (omit the `#:` lines). For automatic token refresh, construct `FreeAgentClient` with `FreeAgentOAuthClient` and `OAuthTokenResponse` — see [Getting started](docs/tutorial/getting-started.md).
+For a normal SDK-style project, run `dotnet add package FreeAgent.Client` and use the same logic in `Program.cs` (omit the `#:` lines). For automatic token refresh, construct `FreeAgentClient` with `FreeAgentOAuthClient` and `OAuthTokenResponse` - see [Getting started](docs/tutorial/getting-started.md).
 
 More detail: [Getting started](docs/tutorial/getting-started.md) · [Pagination](docs/how-to/pagination.md) · [Error handling](docs/how-to/error-handling.md) · [API coverage](docs/reference/api-coverage.md)
 

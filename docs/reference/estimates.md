@@ -284,7 +284,7 @@ Key properties:
 | Property | Type | Wire name | Notes |
 |----------|------|-----------|-------|
 | `Reference` | `string?` | `reference` | |
-| `Status` | `EstimateStatus?` | `status` | Read-only on create (SDK always sends `Draft`); not sent on update — use transition methods |
+| `Status` | `EstimateStatus?` | `status` | Read-only on create (SDK always sends `Draft`); not sent on update - use transition methods |
 | `EstimateType` | `EstimateType?` | `estimate_type` | Required on create |
 | `DatedOn` | `DateOnly?` | `dated_on` | Required on create |
 | `ContactId` | `long?` | `contact` | Required on create |

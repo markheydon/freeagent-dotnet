@@ -49,10 +49,10 @@ public sealed class TurpinverseNoteSeeder
     }
 
     private static string BuildContactNoteContent() =>
-        $"{NoteContentPrefix} Turpin Enterprises follow-up — canon contact note for SDK probe coverage.";
+        $"{NoteContentPrefix} Turpin Enterprises follow-up - canon contact note for SDK probe coverage.";
 
     private static string BuildProjectNoteContent(string projectId) =>
-        $"{NoteContentPrefix} {projectId} — project status note for SDK probe coverage.";
+        $"{NoteContentPrefix} {projectId} - project status note for SDK probe coverage.";
 
     private async Task<Contact> ResolveTurpinEnterprisesContactAsync(
         FreeAgentClient client,

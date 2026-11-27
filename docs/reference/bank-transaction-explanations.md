@@ -12,7 +12,7 @@ List, get, create, update, and delete explanations that categorise bank movement
 |---|---|
 | **SDK service** | `client.BankTransactionExplanations` (`BankTransactionExplanationsService`) |
 | **FreeAgent docs** | [dev.freeagent.com/docs/bank_transaction_explanations](https://dev.freeagent.com/docs/bank_transaction_explanations) |
-| **Console sample** | `FreeAgent.Client.ConsoleSample` — category **Bank transaction explanations** |
+| **Console sample** | `FreeAgent.Client.ConsoleSample` - category **Bank transaction explanations** |
 
 Bank account and transaction links: see [Linked resources](../explanation/linked-resources.md). Cluster context: see [Banking entity map](../explanation/api-entity-map/banking.md). Nested explanations on bank transaction GET: see [Bank transactions](bank-transactions.md).
 
@@ -260,7 +260,7 @@ Task<BankTransactionExplanation> CreateLandlordPropertyBankTransactionExplanatio
 
 Landlord property profit and loss categories. Factory: `CreateLandlordPropertyBankTransactionExplanationRequest.Create(...)`.
 
-Resolve property URIs with [`client.Properties`](properties.md) (`ListAsync`, `GetPropertyAsync`) or `client.Urls.Property(propertyId)` — do not hand-build URIs at the call site when you already have an id.
+Resolve property URIs with [`client.Properties`](properties.md) (`ListAsync`, `GetPropertyAsync`) or `client.Urls.Property(propertyId)` - do not hand-build URIs at the call site when you already have an id.
 
 **Sample:**
 

@@ -33,7 +33,7 @@ Rules:
 - **`type/epic`**: not used here while the **milestone** carries the release theme (solo-dev-board: epics are not milestone buckets). Prefer linking parent **feature** cluster issues, not hunting for an epic.
 - **Cluster = feature issue**: entity-map “cluster” and `[Feature]` trackers are the same thing (for example #65–#68).
 - **PRs close stories**: title `[Story] Implement … (#NNN)`; `Closes #NNN` on the story; **Related** link to the parent feature (for example `#65`). Do not `Closes` the parent unless you intend to close the whole cluster tracker.
-- **`[Feature]` PR titles** only when closing a `type/feature` tracker itself (for example cluster completion housekeeping)—not for per-resource SDK work.
+- **`[Feature]` PR titles** only when closing a `type/feature` tracker itself (for example cluster completion housekeeping) - not for per-resource SDK work.
 - **Git “feature branch”** (`feature/bills-resource`) is a naming convention only; it is unrelated to `type/feature`.
 - **`type/enabler` vs `type/chore`**: use `type/enabler` when the work is a technical prerequisite for multiple stories (contract or infra). Use `type/chore` for maintenance, verification (#134), sample backfill, and CI. Both are valid; do not relabel chores as enablers unless the solo-dev-board enabler definition clearly fits.
 

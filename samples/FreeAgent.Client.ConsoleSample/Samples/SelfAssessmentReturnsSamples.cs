@@ -22,7 +22,7 @@ internal sealed class SelfAssessmentReturnsSamples(SampleContext context) : ICon
         {
             SampleOutput.WriteField(
                 "Note",
-                "No self assessment returns — expected when the connected user or company does not file self assessment.");
+                "No self assessment returns - expected when the connected user or company does not file self assessment.");
             return;
         }
 
@@ -41,7 +41,7 @@ internal sealed class SelfAssessmentReturnsSamples(SampleContext context) : ICon
             SampleOutput.WriteHeader("Self assessment return detail");
             SampleOutput.WriteField(
                 "Note",
-                "Skipped — no self assessment returns for the connected user.");
+                "Skipped - no self assessment returns for the connected user.");
             return;
         }
 

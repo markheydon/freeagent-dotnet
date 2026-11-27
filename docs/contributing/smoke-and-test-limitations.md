@@ -41,13 +41,13 @@ These gaps are not fixed by seeding alone; they need API capability, new SDK res
 
 **Menu-only by design (not API-blocked):**
 
-- **Stream all …** — full pagination; rate-limit risk on `--run-all`.
-- **Linked resources** — use `--verify-linked-resources` instead.
-- **Take direct debit payment** — needs a live mandate; see table above.
-- **Convert estimate to invoice**, **convert invoice to credit note**, **convert estimate to credit note** — leaves non-deletable converted documents.
-- **Send credit note email (template)** on the first existing credit note — no probe lifecycle; trial limits on canon data.
-- **Update current user opening mileage** — mutates the CI OAuth user even with restore.
-- Estimate and credit note **PDF** downloads — optional; invoice PDF is already in smoke.
+- **Stream all …** - full pagination; rate-limit risk on `--run-all`.
+- **Linked resources** - use `--verify-linked-resources` instead.
+- **Take direct debit payment** - needs a live mandate; see table above.
+- **Convert estimate to invoice**, **convert invoice to credit note**, **convert estimate to credit note** - leaves non-deletable converted documents.
+- **Send credit note email (template)** on the first existing credit note - no probe lifecycle; trial limits on canon data.
+- **Update current user opening mileage** - mutates the CI OAuth user even with restore.
+- Estimate and credit note **PDF** downloads - optional; invoice PDF is already in smoke.
 
 ## Turpinverse and sandbox data gaps
 

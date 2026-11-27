@@ -36,7 +36,7 @@ FreeAgent.NET follows [Semantic Versioning](https://semver.org/). Until stable `
 | `UpdateBankTransactionExplanationRequest.PropertyUri` | `PropertyId` |
 | `Expense.CapitalAssetUri`, `BillItem.CapitalAssetUri`, `BankTransactionExplanation.CapitalAssetUri` / `DisposedAssetUri` | `CapitalAssetId` / `DisposedAssetId` (read-only, parsed from the wire) |
 | `CreateLandlordPropertyBankTransactionExplanationRequest.Create(..., string propertyUri, ...)` | `Create(..., long propertyId, ...)` only |
-| `CreateLandlordPropertyBankTransactionExplanationRequest.Create(..., long propertyId, FreeAgentEnvironment, ...)` | Removed — the service supplies the environment |
+| `CreateLandlordPropertyBankTransactionExplanationRequest.Create(..., long propertyId, FreeAgentEnvironment, ...)` | Removed - the service supplies the environment |
 
 `AccountingTransaction` adds `SourceItemKind` alongside `SourceItemId` for report rows.
 
@@ -142,8 +142,8 @@ MOSS creates/updates throw `ArgumentException` when `ec_status` is `EC VAT MOSS`
 
 ## Additive API changes
 
-- **Attachments:** `client.Attachments` (`GetAttachmentAsync`, `DeleteAttachmentAsync`) — see [Attachments reference](../reference/attachments.md).
-- **EC VAT MOSS:** `client.EcMoss.ListSalesTaxRatesAsync` — see [EC VAT MOSS sales tax rates](../reference/ec-moss-sales-tax-rates.md).
+- **Attachments:** `client.Attachments` (`GetAttachmentAsync`, `DeleteAttachmentAsync`) - see [Attachments reference](../reference/attachments.md).
+- **EC VAT MOSS:** `client.EcMoss.ListSalesTaxRatesAsync` - see [EC VAT MOSS sales tax rates](../reference/ec-moss-sales-tax-rates.md).
 
 ### Goals review (list and read naming)
 

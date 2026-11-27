@@ -14,7 +14,7 @@ Read-only access to capital assets and optional lifecycle history.
 | **FreeAgent docs** | [dev.freeagent.com/docs/capital_assets](https://dev.freeagent.com/docs/capital_assets) |
 | **Sample app** | `/capital-assets` (list), `/capital-assets/detail` (read-only GET) |
 
-Capital assets are created indirectly via [Expenses](expenses.md) or [Bank transaction explanations](bank-transaction-explanations.md) with capital categories — there is no standalone create on the capital assets endpoint.
+Capital assets are created indirectly via [Expenses](expenses.md) or [Bank transaction explanations](bank-transaction-explanations.md) with capital categories - there is no standalone create on the capital assets endpoint.
 
 ## Methods
 

@@ -19,7 +19,7 @@ internal sealed class CorporationTaxReturnsSamples(SampleContext context) : ICon
         {
             SampleOutput.WriteField(
                 "Note",
-                "No corporation tax returns — expected when the sandbox company does not file CT (for example sole trader).");
+                "No corporation tax returns - expected when the sandbox company does not file CT (for example sole trader).");
             return;
         }
 
@@ -37,7 +37,7 @@ internal sealed class CorporationTaxReturnsSamples(SampleContext context) : ICon
             SampleOutput.WriteHeader("Corporation tax return detail");
             SampleOutput.WriteField(
                 "Note",
-                "Skipped — no corporation tax returns for this company (limited company required).");
+                "Skipped - no corporation tax returns for this company (limited company required).");
             return;
         }
 
@@ -110,7 +110,7 @@ internal sealed class CorporationTaxReturnsSamples(SampleContext context) : ICon
         var company = await context.Client.Company.GetCompanyAsync(cancellationToken);
         if (company.Type is not CompanyType.UkLimitedCompany and not CompanyType.UkLimitedLiabilityPartnership)
         {
-            SampleContext.Skip("connected company is not a UK limited company — corporation tax returns do not apply");
+            SampleContext.Skip("connected company is not a UK limited company - corporation tax returns do not apply");
         }
     }
 

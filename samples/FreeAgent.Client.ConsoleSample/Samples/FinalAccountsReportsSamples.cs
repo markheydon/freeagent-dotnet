@@ -19,7 +19,7 @@ internal sealed class FinalAccountsReportsSamples(SampleContext context) : ICons
         {
             SampleOutput.WriteField(
                 "Note",
-                "No final accounts reports — expected when the sandbox company does not file final accounts (for example sole trader).");
+                "No final accounts reports - expected when the sandbox company does not file final accounts (for example sole trader).");
             return;
         }
 
@@ -37,7 +37,7 @@ internal sealed class FinalAccountsReportsSamples(SampleContext context) : ICons
             SampleOutput.WriteHeader("Final accounts report detail");
             SampleOutput.WriteField(
                 "Note",
-                "Skipped — no final accounts reports for this company (limited company required).");
+                "Skipped - no final accounts reports for this company (limited company required).");
             return;
         }
 
@@ -91,7 +91,7 @@ internal sealed class FinalAccountsReportsSamples(SampleContext context) : ICons
         var company = await context.Client.Company.GetCompanyAsync(cancellationToken);
         if (company.Type is not CompanyType.UkLimitedCompany and not CompanyType.UkLimitedLiabilityPartnership)
         {
-            SampleContext.Skip("connected company is not a UK limited company — final accounts reports do not apply");
+            SampleContext.Skip("connected company is not a UK limited company - final accounts reports do not apply");
         }
     }
 

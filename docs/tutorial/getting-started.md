@@ -25,8 +25,8 @@ dotnet add package FreeAgent.Client --version 0.1.0-beta.3
 
 | Host | Status |
 |------|--------|
-| SDK-style `.csproj` apps (web, worker, console) | **Supported** — recommended path |
-| File-based apps (`#:package`, .NET 10+) | **Supported** — source-generated JSON metadata |
+| SDK-style `.csproj` apps (web, worker, console) | **Supported** - recommended path |
+| File-based apps (`#:package`, .NET 10+) | **Supported** - source-generated JSON metadata |
 | `PublishTrimmed` / aggressive trimming | **Not supported yet** |
 | Native AOT publish (`PublishAot`) | **Not supported yet** |
 
@@ -42,7 +42,7 @@ The SDK serialises and deserialises API traffic with `System.Text.Json` source g
 
 using FreeAgent.Client;
 
-// OAuth setup omitted — use FreeAgentClient once you have an access token.
+// OAuth setup omitted - use FreeAgentClient once you have an access token.
 ```
 
 For a repo smoke script that deserialises fixture JSON (and optionally calls the live API when `FREEAGENT_ACCESS_TOKEN` is set), see [samples/FileBasedQuickStart/CompanyDeserializeSmoke.cs](https://github.com/markheydon/freeagent-dotnet/blob/main/samples/FileBasedQuickStart/CompanyDeserializeSmoke.cs). After installing from NuGet, replace `#:project` in that sample with `#:package FreeAgent.Client@<version>`.
@@ -77,7 +77,7 @@ var token = await oauthClient.ExchangeCodeForTokenAsync(authorizationCode);
 
 ## Create a client and call the API
 
-A single `using FreeAgent.Client;` covers the client, list options, OAuth types, and all request/response models — you do not need per-resource model namespaces.
+A single `using FreeAgent.Client;` covers the client, list options, OAuth types, and all request/response models - you do not need per-resource model namespaces.
 
 ```csharp
 using FreeAgent.Client;
@@ -87,7 +87,7 @@ using var client = new FreeAgentClient(token.AccessToken, environment);
 var company = await client.Company.GetCompanyAsync();
 Console.WriteLine($"{company.Name} ({company.Currency})");
 
-// Model types such as Contact are in the same namespace — no extra usings:
+// Model types such as Contact are in the same namespace - no extra usings:
 var page = await client.Contacts.ListAsync();
 ```
 

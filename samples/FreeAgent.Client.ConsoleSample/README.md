@@ -1,6 +1,6 @@
 # FreeAgent.Client console sample
 
-A real-world console reference and **live integration test harness** for the FreeAgent .NET SDK. It demonstrates typical integration patterns — OAuth, dependency injection, and typed API calls — through an interactive menu of examples grouped by resource area.
+A real-world console reference and **live integration test harness** for the FreeAgent .NET SDK. It demonstrates typical integration patterns - OAuth, dependency injection, and typed API calls - through an interactive menu of examples grouped by resource area.
 
 Many examples **create, update, or delete** data in the connected FreeAgent account. The app prints the target environment on startup and enforces sandbox-only writes for `--run-all` and `--seed-turpinverse` runs.
 
@@ -91,7 +91,7 @@ dotnet run
 
 1. The app completes OAuth (browser flow or token from environment variables).
 2. A category menu appears (Company, Account locks, Contacts, Categories, Projects, Tasks, Timeslips, Notes, Users, Email addresses, Invoices, Estimates, Recurring invoices, Credit notes, Credit note reconciliations, Bills, Bank accounts, Bank feeds, Bank transaction explanations, Bank transactions, Hire purchases, Expenses, Attachments, Capital assets, Capital asset types, Journal sets, Payroll, Payroll profiles, Properties, Depreciation profiles, CIS bands, CIS settings, Profit and loss, Balance sheet, Trial balance, Cashflow, Transactions, VAT returns, Corporation tax returns, Income tax returns, Self assessment returns, Final accounts reports, Sales tax periods, EC VAT MOSS, Stock items, Price list items).
-3. Pick a category, then an example. Each example runs without further input — IDs and parent resources are resolved automatically from your sandbox data.
+3. Pick a category, then an example. Each example runs without further input - IDs and parent resources are resolved automatically from your sandbox data.
 4. Examples that cannot run (for example, no projects in the account) report a clear skip message.
 
 ### Read-only vs mutating examples
@@ -100,8 +100,8 @@ Each example is classified in code via `MutatesData` on `[ConsoleSample]`:
 
 | Classification | Behaviour |
 |----------------|-----------|
-| Read-only | List, get, and stream operations — safe on any environment |
-| Mutating | Create, update, delete, and state transitions — require **sandbox** by default |
+| Read-only | List, get, and stream operations - safe on any environment |
+| Mutating | Create, update, delete, and state transitions - require **sandbox** by default |
 
 On **production**, mutating examples are skipped unless you explicitly opt in:
 
@@ -144,7 +144,7 @@ Examples marked **(mutates)** write to the connected account.
 | Depreciation profiles | Deserialize straight line profile; deserialize reducing balance profile; build no depreciation purchase helper |
 | CIS bands | List CIS bands |
 | CIS settings | Get CIS settings; **(mutates)** round-trip CIS prior deductions update (skips when prior deductions are not recorded) |
-| Payroll | List payroll periods for current tax year end; list payslips for first period; **(mutates)** mark previous liability payment paid then unpaid (skips until at least two periods have payslips — not Turpinverse-seedable; see smoke limitations) |
+| Payroll | List payroll periods for current tax year end; list payslips for first period; **(mutates)** mark previous liability payment paid then unpaid (skips until at least two periods have payslips - not Turpinverse-seedable; see smoke limitations) |
 | Payroll profiles | List profiles for current tax year end; list profile for first user |
 | Profit and loss | Get profit and loss summary |
 | Balance sheet | Get balance sheet; Get balance sheet opening balances |
@@ -165,7 +165,7 @@ Examples marked **(mutates)** write to the connected account.
 | Bank transactions | List bank transactions; stream all bank transactions via ListAutoPagingAsync; list unexplained transactions; get detail; **(mutates)** upload a statement line and delete; **(mutates)** upload a statement file and delete |
 | Stock items | List stock items; get stock item detail |
 | Price list items | List price list items; **(mutates)** get price list item detail with probe create and delete; **(mutates)** update price list item description; **(mutates)** create probe price list item and delete |
-| Linked resources | **(mutates)** verify linked-resource writes (create, update) — sandbox PUT round-trip checks for issue #134 |
+| Linked resources | **(mutates)** verify linked-resource writes (create, update) - sandbox PUT round-trip checks for issue #134 |
 
 New SDK resource areas should add a matching `*Samples.cs` provider class under `Samples/`.
 
@@ -181,7 +181,7 @@ On any platform, if the local listener cannot start (port in use, permissions, r
 
 Use `--seed-turpinverse` to populate your sandbox with the full Turpinverse fixture set (contacts, projects, tasks, invoices, estimates, credit notes, notes, and timeslips) in dependency order. Seeding is **idempotent**: existing records are matched by stable keys (email, contract reference, `turpinverse:` references) and updated when canon changes.
 
-**Sandbox only** — the flag refuses to run when `FREEAGENT_ENVIRONMENT` is not `Sandbox`, matching the `--run-all` write guard.
+**Sandbox only** - the flag refuses to run when `FREEAGENT_ENVIRONMENT` is not `Sandbox`, matching the `--run-all` write guard.
 
 Non-interactive authentication uses the same tokens as `--run-all` (`FREEAGENT_REFRESH_TOKEN` or `FREEAGENT_ACCESS_TOKEN`).
 
@@ -208,13 +208,13 @@ One-shot live checks for linked-resource PUT semantics. The command prints a sum
 - Invoice scalar updates with `OmitLineItems` preserve `ContactId` and line items.
 - Explicit invoice `ProjectId = null` clears an optional project link.
 
-**Sandbox only** — same write guard as `--run-all`. Not included in CI `--run-all` smoke.
+**Sandbox only** - same write guard as `--run-all`. Not included in CI `--run-all` smoke.
 
 ```bash
 dotnet run --project samples/FreeAgent.Client.ConsoleSample -- --verify-linked-resources
 ```
 
-Use the same non-interactive token setup as `--run-all` (`FREEAGENT_REFRESH_TOKEN` or `FREEAGENT_ACCESS_TOKEN`). You can also run the same flow from the interactive menu under **Linked resources** (sandbox only — the menu path uses the same sandbox guard and ignores `FREEAGENT_ALLOW_PRODUCTION_WRITES`).
+Use the same non-interactive token setup as `--run-all` (`FREEAGENT_REFRESH_TOKEN` or `FREEAGENT_ACCESS_TOKEN`). You can also run the same flow from the interactive menu under **Linked resources** (sandbox only - the menu path uses the same sandbox guard and ignores `FREEAGENT_ALLOW_PRODUCTION_WRITES`).
 
 ---
 

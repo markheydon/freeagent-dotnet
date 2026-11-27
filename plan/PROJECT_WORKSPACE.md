@@ -1,7 +1,7 @@
 # Project workspace and linked data
 
 **Status:** Tracked in GitHub issue [#223](https://github.com/markheydon/freeagent-dotnet/issues/223)  
-**Primary fixture:** Sandbox *Palmer Identity Vault* — screenshots and notes under [`plan/FreeAgent Project Example/`](FreeAgent%20Project%20Example/) (project id `50651` in URLs at time of capture)  
+**Primary fixture:** Sandbox *Palmer Identity Vault* - screenshots and notes under [`plan/FreeAgent Project Example/`](FreeAgent%20Project%20Example/) (project id `50651` in URLs at time of capture)  
 **Turpinverse:** Does not yet seed an equivalent fully populated project; see [Turpinverse and sandbox data gaps](../docs/contributing/smoke-and-test-limitations.md#turpinverse-and-sandbox-data-gaps).
 
 ## Problem statement
@@ -28,9 +28,9 @@ This is not a wire-modelling bug: types match the API. It is an **integration er
 | **Alignment with FA summary totals** | Summary “Minus Expenses” uses **costs**; Expenses tab “Not Billed Yet” uses **rebill-at** sums. | No helper; document Palmer arithmetic as reference. |
 | **FA UI tab → API sources** | Matrix mapping tabs to endpoints and link fields. | Partial entity-map coverage only. |
 
-## Rebill — not a missing model
+## Rebill - not a missing model
 
-Rebill fields and GET hydration exist on bills, expenses, and payment/refund bank explanations. The gap is **discovery, multi-source aggregation, banking fan-out, and documentation** — not a separate “implement rebill” story.
+Rebill fields and GET hydration exist on bills, expenses, and payment/refund bank explanations. The gap is **discovery, multi-source aggregation, banking fan-out, and documentation** - not a separate “implement rebill” story.
 
 ## Resource inventory
 
@@ -79,7 +79,7 @@ Partial loads; typed **collections per resource** (no primary `switch` on source
 
 Optional later: thin wrappers per item (`ProjectLinkedBill`, …) for documented cost/rebill field mapping without mutating `Bill`.
 
-**Link scope** (outgoings): `ProjectLinkScope` — `DirectProject | RebillToProject | All` (default `All` after spike confirms semantics).
+**Link scope** (outgoings): `ProjectLinkScope` - `DirectProject | RebillToProject | All` (default `All` after spike confirms semantics).
 
 **Banking:** `ProjectOutgoingsLoadOptions` must accept explicit `bankAccountIds` or a documented strategy (e.g. all accounts from `BankAccounts.ListAutoPagingAsync`).
 
@@ -87,7 +87,7 @@ Optional later: thin wrappers per item (`ProjectLinkedBill`, …) for documented
 
 - **Type:** `ProjectWorkspace`
 - **Load:** `ProjectService.LoadWorkspaceAsync(projectId, ProjectWorkspaceLoadOptions, ct)`
-- **Slices:** `GetOutgoingsAsync`, `GetIncomeAsync`, … on `ProjectService` — each slice loader is reused by `LoadWorkspaceAsync` (no duplicated HTTP logic).
+- **Slices:** `GetOutgoingsAsync`, `GetIncomeAsync`, … on `ProjectService` - each slice loader is reused by `LoadWorkspaceAsync` (no duplicated HTTP logic).
 
 ```csharp
 public sealed class ProjectWorkspace
@@ -116,9 +116,9 @@ public enum ProjectWorkspaceSections { None = 0, Outgoings = 1, Income = 2, Pipe
 
 | Tier | Deliverable |
 |------|-------------|
-| **A — Docs** | Explanation: project UI tabs → API sources (matrix + Palmer). Explanation subsection or page: monetary values on read models (pass-through, signs, which field is “cost” per resource). Extend projects entity map outbound links. |
-| **B — Code** | Slice loaders + `LoadWorkspaceAsync`; shared internal link-matching helper; unit tests with wire fixtures; optional integration tests when Turpinverse anchor exists. |
-| **C — Defer** | Unified timeline list, billing buckets (`NotBilledYet` / …), SDK-computed rebill totals — only if A+B insufficient. |
+| **A - Docs** | Explanation: project UI tabs → API sources (matrix + Palmer). Explanation subsection or page: monetary values on read models (pass-through, signs, which field is “cost” per resource). Extend projects entity map outbound links. |
+| **B - Code** | Slice loaders + `LoadWorkspaceAsync`; shared internal link-matching helper; unit tests with wire fixtures; optional integration tests when Turpinverse anchor exists. |
+| **C - Defer** | Unified timeline list, billing buckets (`NotBilledYet` / …), SDK-computed rebill totals - only if A+B insufficient. |
 
 ## Sample sync (when implementing)
 
@@ -129,7 +129,7 @@ Per `AGENTS.md`: exercise new `ProjectService` methods from **both** Blazor work
 1. Spike outcomes for `?project=` vs `rebill_to_project` (see table above).
 2. Default bank account discovery: all accounts vs require explicit ids in options.
 3. Compute `rebill_at` in SDK vs docs-only (default: docs-only for v1).
-4. Invoice/credit note line-level `project` without header project — include in income slice?
+4. Invoice/credit note line-level `project` without header project - include in income slice?
 
 ## GitHub issue (draft)
 
@@ -157,6 +157,6 @@ Per `AGENTS.md`: exercise new `ProjectService` methods from **both** Blazor work
 
 ## Related governance
 
-- **G2, G3** — discoverability and pagination.
-- **SCOPE** — compose API resources; do not encode VAT/profit policy.
-- **GOALS** — prefer existing `Bill`, `Expense`, `BankTransactionExplanation` inside slice collections.
+- **G2, G3** - discoverability and pagination.
+- **SCOPE** - compose API resources; do not encode VAT/profit policy.
+- **GOALS** - prefer existing `Bill`, `Expense`, `BankTransactionExplanation` inside slice collections.

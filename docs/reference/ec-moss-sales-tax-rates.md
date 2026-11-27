@@ -27,8 +27,8 @@ Task<IReadOnlyList<EcMossSalesTaxRate>> ListSalesTaxRatesAsync(
 
 **HTTP:** `GET /v2/ec_moss/sales_tax_rates?country={name}&date={YYYY-MM-DD}`
 
-- `country` — EU member country name (use `EcMossPlaceOfSupply`; same values as `place_of_supply` on MOSS documents).
-- `date` — Transaction date.
+- `country` - EU member country name (use `EcMossPlaceOfSupply`; same values as `place_of_supply` on MOSS documents).
+- `date` - Transaction date.
 
 ## Models
 
@@ -41,7 +41,7 @@ Task<IReadOnlyList<EcMossSalesTaxRate>> ListSalesTaxRatesAsync(
 
 When `ec_status` is `EC VAT MOSS`:
 
-- **Invoices, estimates, credit notes** — `place_of_supply` (`EcMossPlaceOfSupply`) is required on create and update (validated by the SDK before HTTP).
-- **Bank transaction explanations** — `place_of_supply` and `sales_tax_rate` are required on create and update when MOSS applies.
+- **Invoices, estimates, credit notes** - `place_of_supply` (`EcMossPlaceOfSupply`) is required on create and update (validated by the SDK before HTTP).
+- **Bank transaction explanations** - `place_of_supply` and `sales_tax_rate` are required on create and update when MOSS applies.
 
 Use `ListSalesTaxRatesAsync` with the same country and transaction date to choose a `sales_tax_rate` for bank explanations (and to inform invoice line rates).

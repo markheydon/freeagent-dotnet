@@ -8,16 +8,29 @@ nav_order: 1
 
 This guide is for developers **working on the SDK repository**, not for consumers installing the NuGet package. For package usage, start with [Getting started](../tutorial/getting-started.md).
 
-## Prerequisites
+## Dev Container
 
-Install **both** .NET SDKs:
+Open the repo in a [Dev Container](../.devcontainer/README.md) (VS Code, Cursor, or GitHub Codespaces). The base image is **.NET 10**; the **dotnet feature** also installs **.NET 8.0** so full-solution `dotnet test` works.
+
+After the container is created (or **rebuilt** after devcontainer changes):
+
+```bash
+dotnet build FreeAgent.slnx -c Release -warnaserror
+dotnet test FreeAgent.slnx -c Release
+```
+
+HTTPS notes for the Blazor sample: [.devcontainer/README.md](../.devcontainer/README.md) and [samples/README.md](../samples/README.md).
+
+## Prerequisites (bare-metal)
+
+For **full local multi-target parity** (optional outside the Dev Container), install **both** SDKs:
 
 | SDK | Why |
 |-----|-----|
 | **.NET 10.0** | Primary focus; required for the Blazor sample app |
-| **.NET 8.0** | SDK package multi-targets `net8.0` |
+| **.NET 8.0** | Run `net8.0` tests; SDK package still multi-targets `net8.0` (see [ADR-0013](../adr/adr-0013-post-eol-net8-and-forward-sdk-validation.md)) |
 
-CI installs the SDK from [global.json](../global.json) plus `8.0.x` for the `net8.0` target (see [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)). Live sandbox smoke is in [`.github/workflows/sandbox-smoke.yml`](../.github/workflows/sandbox-smoke.yml).
+CI installs **8.0.x** and **10.0.x** (see [global.json](../global.json) and [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)). A **forward SDK 11** job installs **11.0.x** when the runner provides it, temporarily sets `global.json` `rollForward` to **latestMajor** so that SDK is actually selected, then runs the same build and test steps without publishing `net11.0` yet. Live sandbox smoke is in [`.github/workflows/sandbox-smoke.yml`](../.github/workflows/sandbox-smoke.yml).
 
 ### Verify installation
 
@@ -68,6 +81,8 @@ dotnet format FreeAgent.slnx --verify-no-changes
 ```
 
 If changes are reported, run `dotnet format FreeAgent.slnx` and commit the result.
+
+CI also enforces [no em dash](../CONVENTIONS.md#documentation) in product-scope paths via [`scripts/verify-no-em-dash.sh`](../scripts/verify-no-em-dash.sh). Run it before large doc edits.
 
 ## Sample app
 

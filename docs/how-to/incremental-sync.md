@@ -36,7 +36,7 @@ await db.SaveContactsWatermarkAsync(watermark);
 
 Rows with a null `UpdatedAt` do not advance the watermark.
 
-`ListAutoPagingAsync` parameter order **varies by resource** (for example `updatedSince` appears after date filters on some services). Use IntelliSense or the matrix below — do not assume one signature fits all resources.
+`ListAutoPagingAsync` parameter order **varies by resource** (for example `updatedSince` appears after date filters on some services). Use IntelliSense or the matrix below - do not assume one signature fits all resources.
 
 ## Nested line items and linked objects
 
@@ -65,13 +65,13 @@ Resources that support auto-pagination today. Parameter order matches the SDK me
 | `Estimates` | Yes | `DateTimeOffset?` | `fromDate`, `toDate` (before `updatedSince`), `contactId` / `projectId` / `invoiceId`, **`nestedEstimateItems`** |
 | `Bills` | Yes | `DateTimeOffset?` | `fromDate`, `toDate`, `contactId` / `projectId`, **`nestedBillItems`** |
 | `Expenses` | Yes | `DateTimeOffset?` | `fromDate`, `toDate`, `projectId` |
-| `Projects` | No | — | `view`, `sort`, `contactId`, **`nested`** |
-| `RecurringInvoices` | No | — | `view`, `contactId` |
+| `Projects` | No | - | `view`, `sort`, `contactId`, **`nested`** |
+| `RecurringInvoices` | No | - | `view`, `contactId` |
 | `ProjectTasks` | Yes | **`DateOnly?`** (date, not timestamp) | `view`, `sort`, **`projectId`** (scope tasks to a project) |
 | `Timeslips` | Yes | `DateTimeOffset?` | `fromDate`, `toDate`, **`nested`**, `userId` / `projectTaskId` / `projectId` |
 | `BankTransactions` | Yes | `DateTimeOffset?` | **`bankAccountId`** (required scope), `view`, `fromDate`, `toDate`, `lastUploaded` |
 
-`client.Users.ListAsync` returns all users for a view in one response (not paginated). Use `UserView.ActiveStaff` for the `active_staff` wire filter — there is no separate `UserView.Active` member.
+`client.Users.ListAsync` returns all users for a view in one response (not paginated). Use `UserView.ActiveStaff` for the `active_staff` wire filter - there is no separate `UserView.Active` member.
 
 ### Billing rates and other derived fields
 
@@ -81,11 +81,11 @@ Resources that support auto-pagination today. Parameter order matches the SDK me
 
 Several properties are nullable because the API omits them or they are optional on write:
 
-- **`ProjectTask.IsBillable`** (`bool?`) — omit on create when the API default applies; set explicitly when you need a known value.
-- **`InvoiceItem.Position`** (`decimal?`) — line order from the API on read; optional on write depending on operation.
-- **`InvoiceItem.ItemId`** (`long?`) — required when updating existing lines; populated from wire `id` or item `url` on read. See [Linked resources](../explanation/linked-resources.md).
+- **`ProjectTask.IsBillable`** (`bool?`) - omit on create when the API default applies; set explicitly when you need a known value.
+- **`InvoiceItem.Position`** (`decimal?`) - line order from the API on read; optional on write depending on operation.
+- **`InvoiceItem.ItemId`** (`long?`) - required when updating existing lines; populated from wire `id` or item `url` on read. See [Linked resources](../explanation/linked-resources.md).
 
-Do not coerce nulls to defaults in the SDK — that would hide wire semantics.
+Do not coerce nulls to defaults in the SDK - that would hide wire semantics.
 
 ## What this guide does not cover
 
@@ -96,5 +96,5 @@ Do not coerce nulls to defaults in the SDK — that would hide wire semantics.
 ## See also
 
 - [Pagination](pagination.md)
-- [Linked resources](../explanation/linked-resources.md) — `ResourceId`, `Url`, and reference types for tests and webhooks
-- [API coverage](../reference/) — per-resource list filters and models
+- [Linked resources](../explanation/linked-resources.md) - `ResourceId`, `Url`, and reference types for tests and webhooks
+- [API coverage](../reference/) - per-resource list filters and models
