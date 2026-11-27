@@ -10,16 +10,16 @@ This guide is for developers **working on the SDK repository**, not for consumer
 
 ## Dev Container
 
-Open the repo in a [Dev Container](../.devcontainer/devcontainer.json) (VS Code or GitHub Codespaces). The image provides the **.NET 10 SDK only** plus agent-oriented CLI tools.
+Open the repo in a [Dev Container](../.devcontainer/devcontainer.json) (VS Code or GitHub Codespaces). The base image is **.NET 10**; the **dotnet feature** also installs **.NET 8.0** so full-solution `dotnet test` works.
 
-After the container is created:
+After the container is created (or **rebuilt** after devcontainer changes):
 
 ```bash
 dotnet build FreeAgent.slnx -c Release -warnaserror
-dotnet test FreeAgent.slnx -c Release -f net10.0
+dotnet test FreeAgent.slnx -c Release
 ```
 
-Full-solution `dotnet test` (including `net8.0`) needs the **.NET 8 runtime** on the machine. CI validates both target frameworks on every push. HTTPS notes for the Blazor sample: [.devcontainer/README.md](../.devcontainer/README.md) and [samples/README.md](../samples/README.md).
+HTTPS notes for the Blazor sample: [.devcontainer/README.md](../.devcontainer/README.md) and [samples/README.md](../samples/README.md).
 
 ## Prerequisites (bare-metal)
 

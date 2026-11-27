@@ -29,7 +29,7 @@ For live sandbox smoke in GitHub Actions, see **[docs/contributing/ci-sandbox-sm
 
 Requirements:
 
-- **Dev Container:** .NET 10 SDK only (see [docs/contributing-setup.md](docs/contributing-setup.md)); use `dotnet test -f net10.0` for the default in-container loop.
+- **Dev Container:** .NET 10 image with .NET 8.0 installed via the dotnet feature (see [docs/contributing-setup.md](docs/contributing-setup.md)); rebuild the container after devcontainer config changes.
 - **Bare-metal (full TFM parity):** .NET 8.0 and 10.0 SDKs/runtimes so you can run all tests locally.
 
 The SDK package targets both `net8.0` and `net10.0`. CI and release validate both. The sample app is .NET 10.0-only.

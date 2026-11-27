@@ -1,19 +1,15 @@
 # Dev Container
 
-.NET 10 SDK on the official `mcr.microsoft.com/devcontainers/dotnet:10.0` image, plus GitHub CLI, [dev-agent-tools](https://github.com/markheydon/devcontainer-features) (`rg`, `fd`, `jq`, and similar), and Cursor CLI.
+.NET 10 on the official `mcr.microsoft.com/devcontainers/dotnet:10.0` image, with the [dotnet devcontainer feature](https://github.com/devcontainers/features/tree/main/src/dotnet) installing **.NET 8.0** side-by-side so `dotnet test` can run both `net8.0` and `net10.0`. Also includes GitHub CLI, [dev-agent-tools](https://github.com/markheydon/devcontainer-features) (`rg`, `fd`, `jq`, and similar), and Cursor CLI.
 
 ## Target frameworks
 
-The container ships the **.NET 10 SDK only**. You can **build** projects that target `net8.0` and `net10.0`. Running **`dotnet test` for the full solution** may fail without the **.NET 8 runtime** installed locally.
-
-For day-to-day work in the container, prefer:
-
 ```bash
 dotnet build FreeAgent.slnx -c Release -warnaserror
-dotnet test FreeAgent.slnx -c Release -f net10.0
+dotnet test FreeAgent.slnx -c Release
 ```
 
-CI and release workflows validate **both** `net8.0` and `net10.0` on every change. See [docs/contributing-setup.md](../docs/contributing-setup.md).
+CI and release use the same dual-target validation. See [docs/contributing-setup.md](../docs/contributing-setup.md).
 
 ## HTTPS development certificates
 
@@ -30,6 +26,10 @@ Your **Windows** browser does not use the container trust store. After the conta
 Run the `$crt` / `Import-Certificate` lines the script prints in **Windows PowerShell**, then fully quit and reopen the browser.
 
 The exported file is `.local/aspnetcore-localhost.crt` (gitignored).
+
+## Rebuild after config changes
+
+After edits to [devcontainer.json](devcontainer.json), run **Dev Containers: Rebuild Container** so the .NET 8 runtime is installed.
 
 ## Feature lock file
 

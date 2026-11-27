@@ -25,7 +25,7 @@ Development environments (Dev Container) should stay lean (.NET 10 SDK image) wh
 ## Decision
 
 - **DEC-001**: Continue publishing and CI-testing `net8.0` alongside `net10.0` after .NET 8 EOL, with a **planned review by November 2027** to remove or extend `net8.0`.
-- **DEC-002**: Treat **.NET 10** as the primary engineering and Dev Container SDK; do not require .NET 8 SDK in the Dev Container for routine development (full `net8.0` **test** runs remain a CI/release gate).
+- **DEC-002**: Treat **.NET 10** as the primary engineering SDK; the Dev Container uses the `dotnet:10.0` image plus the dotnet feature **`additionalVersions: 8.0`** so full-solution `dotnet test` works in-container.
 - **DEC-003**: CI installs **both** `8.0.x` and `10.0.x` SDKs/runtimes for verify, build, test, and release workflows.
 - **DEC-004**: Add a **forward SDK 11** CI job that installs `11.0.x` (when available on the runner) and runs the same build and test steps as main CI, without adding `net11.0` to `TargetFrameworks` yet.
 - **DEC-005**: Record consumer-facing wording in [README.md](../README.md) and [VERSIONING.md](../VERSIONING.md): `net10.0` recommended; `net8.0` still shipped and validated during the transition window; no `net11.0` asset until a follow-on decision.
@@ -45,7 +45,7 @@ Development environments (Dev Container) should stay lean (.NET 10 SDK image) wh
 
 ## Implementation Notes
 
-- Dev Container: `mcr.microsoft.com/devcontainers/dotnet:10.0`; document `dotnet test -f net10.0` for in-container loops.
+- Dev Container: `mcr.microsoft.com/devcontainers/dotnet:10.0` + dotnet feature `additionalVersions: 8.0`; rebuild after devcontainer changes.
 - [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): `forward-sdk-11` job; flip from `continue-on-error` when green on `main`.
 - [plan/RELEASE.md](../plan/RELEASE.md): note dual SDK install and forward job gating.
 
