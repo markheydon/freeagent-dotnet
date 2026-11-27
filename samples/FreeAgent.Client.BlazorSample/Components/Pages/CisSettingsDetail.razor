@@ -98,7 +98,7 @@
             var prior = current.SubcontractorDetails?.PriorDeductions;
             if (prior?.StartDate is null || prior.InitialBalance is null)
             {
-                _message = "Skipped update — subcontractor prior deductions are not recorded on this company.";
+                _message = "Skipped update - subcontractor prior deductions are not recorded on this company.";
                 return;
             }
 

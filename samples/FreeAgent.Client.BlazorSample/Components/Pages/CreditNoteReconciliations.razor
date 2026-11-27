@@ -280,7 +280,7 @@
 
     private static string GetCrudHref(long id) => $"/credit-note-reconciliations/detail?id={id}";
 
-    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? " - " : value;
 
     private sealed record ReconciliationRow(
         int Index,

@@ -322,7 +322,7 @@
         return href;
     }
 
-    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? " - " : value;
 
     private sealed record ExplanationRow(
         int Index,

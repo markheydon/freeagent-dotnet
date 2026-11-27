@@ -179,7 +179,7 @@ Task DeleteProjectTaskAsync(long projectTaskId, CancellationToken cancellationTo
 
 ### sort
 
-`name`, `project`, `billing_rate`, `created_at`, `updated_at` — prefix with `-` for descending.
+`name`, `project`, `billing_rate`, `created_at`, `updated_at` - prefix with `-` for descending.
 
 ## ProjectTaskGetOptions
 

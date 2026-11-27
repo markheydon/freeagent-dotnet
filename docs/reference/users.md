@@ -143,7 +143,7 @@ Task DeleteUserAsync(long userId, CancellationToken cancellationToken = default)
 
 ### view (`UserView`)
 
-Wire enums mirror FreeAgent query values. There is no separate `Active` member — use `UserView.ActiveStaff` for non-hidden staff (`active_staff` on the wire).
+Wire enums mirror FreeAgent query values. There is no separate `Active` member - use `UserView.ActiveStaff` for non-hidden staff (`active_staff` on the wire).
 
 | Member | Wire value |
 |--------|------------|

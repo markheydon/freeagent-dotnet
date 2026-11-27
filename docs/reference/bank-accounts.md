@@ -98,7 +98,7 @@ Task<BankAccount> CreateEcommerceBankAccountAsync(
 
 ### Create methods
 
-Each create method maps to `POST /v2/bank_accounts` with a variant-specific payload. The SDK sets `type` — callers do not supply it.
+Each create method maps to `POST /v2/bank_accounts` with a variant-specific payload. The SDK sets `type` - callers do not supply it.
 
 | Method | Request type | Notes |
 |--------|--------------|-------|

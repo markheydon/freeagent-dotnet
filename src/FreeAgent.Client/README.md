@@ -25,12 +25,12 @@ dotnet add package FreeAgent.Client
 
 | Host | Status |
 |------|--------|
-| SDK-style `.csproj` apps (web, worker, console) | **Supported** — recommended path |
-| File-based apps (`#:package`, .NET 10+) | **Supported** — source-generated JSON metadata |
+| SDK-style `.csproj` apps (web, worker, console) | **Supported** - recommended path |
+| File-based apps (`#:package`, .NET 10+) | **Supported** - source-generated JSON metadata |
 | `PublishTrimmed` / aggressive trimming | **Not supported yet** |
 | Native AOT publish (`PublishAot`) | **Not supported yet** |
 
-API and OAuth traffic use `System.Text.Json` with source-generated metadata. File-based apps do not need `JsonSerializerIsReflectionEnabledByDefault`. Trim and Native AOT publish are tracked under [#173](https://github.com/markheydon/freeagent-dotnet/issues/173). See [getting started — host compatibility](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started/#host-compatibility).
+API and OAuth traffic use `System.Text.Json` with source-generated metadata. File-based apps do not need `JsonSerializerIsReflectionEnabledByDefault`. Trim and Native AOT publish are tracked under [#173](https://github.com/markheydon/freeagent-dotnet/issues/173). See [getting started - host compatibility](https://markheydon.me.uk/freeagent-dotnet/tutorial/getting-started/#host-compatibility).
 
 ## Quick start
 
@@ -56,7 +56,7 @@ The SDK provides protocol-level OAuth utilities (`FreeAgentOAuthClient`); your a
 
 ## Linked resources
 
-FreeAgent links resources with URI strings on the wire. For writes, set `*Id` properties on models (or `CategoryNominalCode` for categories) — the SDK builds environment-correct URIs internally. For reads, use flat properties such as `ContactId`, `ContactName`, and optional hydration.
+FreeAgent links resources with URI strings on the wire. For writes, set `*Id` properties on models (or `CategoryNominalCode` for categories) - the SDK builds environment-correct URIs internally. For reads, use flat properties such as `ContactId`, `ContactName`, and optional hydration.
 
 The following flow chains ids from each response into the next create call:
 
@@ -73,7 +73,7 @@ var project = await client.Projects.CreateProjectAsync(new Project
 });
 var projectId = project.ResourceId;
 
-// Display name from one GET — no extra HTTP call
+// Display name from one GET - no extra HTTP call
 var summary = await client.Projects.GetProjectAsync(projectId);
 var label = summary.ContactName;
 

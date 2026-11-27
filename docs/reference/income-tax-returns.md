@@ -86,8 +86,8 @@ Task<IncomeTaxReturn> MarkPaymentAsUnpaidAsync(
 
 Enumerations:
 
-- `IncomeTaxReturnFilingStatus` — `unfiled`, `pending`, `rejected`, `provisionally_filed`, `filed`, `marked_as_filed`
-- `IncomeTaxReturnPaymentStatus` — `unpaid`, `marked_as_paid`, `paid` (reserved for future use)
+- `IncomeTaxReturnFilingStatus` - `unfiled`, `pending`, `rejected`, `provisionally_filed`, `filed`, `marked_as_filed`
+- `IncomeTaxReturnPaymentStatus` - `unpaid`, `marked_as_paid`, `paid` (reserved for future use)
 
 ## Sandbox note
 

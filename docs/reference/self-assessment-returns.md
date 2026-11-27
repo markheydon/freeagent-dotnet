@@ -86,8 +86,8 @@ Task<SelfAssessmentReturn> MarkPaymentAsUnpaidAsync(
 
 Enumerations:
 
-- `SelfAssessmentReturnFilingStatus` — `unfiled`, `pending`, `rejected`, `provisionally_filed`, `filed`, `marked_as_filed`
-- `SelfAssessmentReturnPaymentStatus` — `unpaid`, `marked_as_paid`, `paid` (reserved for future use)
+- `SelfAssessmentReturnFilingStatus` - `unfiled`, `pending`, `rejected`, `provisionally_filed`, `filed`, `marked_as_filed`
+- `SelfAssessmentReturnPaymentStatus` - `unpaid`, `marked_as_paid`, `paid` (reserved for future use)
 
 ## Sandbox note
 

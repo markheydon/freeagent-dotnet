@@ -54,7 +54,7 @@ Task<FinalAccountsReport> MarkAsUnfiledAsync(DateOnly periodEndsOn, Cancellation
 
 `FinalAccountsReport` includes period dates, `filing_due_on`, filing metadata (`filing_status`, `filed_at`, `filed_reference`), and the resource `url`.
 
-`FinalAccountsReportFilingStatus` — `draft`, `unfiled`, `pending`, `rejected`, `filed`, `marked_as_filed`
+`FinalAccountsReportFilingStatus` - `draft`, `unfiled`, `pending`, `rejected`, `filed`, `marked_as_filed`
 
 ## Sandbox note
 

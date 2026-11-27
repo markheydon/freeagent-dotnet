@@ -22,7 +22,7 @@ internal sealed class IncomeTaxReturnsSamples(SampleContext context) : IConsoleS
         {
             SampleOutput.WriteField(
                 "Note",
-                "No income tax returns — expected when the connected user or company does not file self assessment.");
+                "No income tax returns - expected when the connected user or company does not file self assessment.");
             return;
         }
 
@@ -41,7 +41,7 @@ internal sealed class IncomeTaxReturnsSamples(SampleContext context) : IConsoleS
             SampleOutput.WriteHeader("Income tax return detail");
             SampleOutput.WriteField(
                 "Note",
-                "Skipped — no income tax returns for the connected user.");
+                "Skipped - no income tax returns for the connected user.");
             return;
         }
 

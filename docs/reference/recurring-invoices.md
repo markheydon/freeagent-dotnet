@@ -114,13 +114,13 @@ See also shared invoice read fields (`Reference`, `DatedOn`, `Currency`, `NetVal
 
 ### Enums and constants
 
-- `RecurringInvoiceFrequency` — wire values include `Two Weekly`, `Four Weekly`, `2-Yearly`, and others per FreeAgent docs
-- `RecurringInvoiceStatus` — `Draft`, `Active`
-- `RecurringInvoiceView` — list filter constants
+- `RecurringInvoiceFrequency` - wire values include `Two Weekly`, `Four Weekly`, `2-Yearly`, and others per FreeAgent docs
+- `RecurringInvoiceStatus` - `Draft`, `Active`
+- `RecurringInvoiceView` - list filter constants
 
 ### References
 
-- `RecurringInvoiceReference` — typed URI for filters and links (`client.Urls.RecurringInvoice(id)`)
+- `RecurringInvoiceReference` - typed URI for filters and links (`client.Urls.RecurringInvoice(id)`)
 
 ---
 
@@ -128,6 +128,6 @@ See also shared invoice read fields (`Reference`, `DatedOn`, `Currency`, `NetVal
 
 **Blazor:** `/recurring-invoices` lists profiles with view and contact filters; `/recurring-invoices/detail?id=` loads a single profile with optional linked-resource hydration.
 
-**Console:** `RecurringInvoiceSamples` — list, stream all pages, list by contact, get by id.
+**Console:** `RecurringInvoiceSamples` - list, stream all pages, list by contact, get by id.
 
 Probe pages use **live sandbox data**; there is no Turpinverse seeder because the API cannot create recurring profiles.

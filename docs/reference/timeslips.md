@@ -263,7 +263,7 @@ Use `TimeslipBillability.Resolve` when you already have a timeslip and task deta
 | `Unbillable` | Unbillable | Task `is_billable` is `false` |
 | `Unbilled` | Billable | Task `is_billable` is `true` and `billed_on_invoice` is absent |
 | `Billed` | Billed | Task `is_billable` is `true` and `billed_on_invoice` is present |
-| `Unknown` | — | Task billability not available (for example list response with task URI only) |
+| `Unknown` | - | Task billability not available (for example list response with task URI only) |
 
 Draft invoices do not appear on the timeslip wire until billing completes; correlating draft assignment requires your own invoice data, not this helper.
 
@@ -306,7 +306,7 @@ Read-only composition (not on the wire):
 
 ## Reference types (list filters and inbound URLs)
 
-Use `client.Urls` or `*Reference.Parse` for list filters and webhook URL parsing — not for create or update payloads:
+Use `client.Urls` or `*Reference.Parse` for list filters and webhook URL parsing - not for create or update payloads:
 
 - `client.Urls.ProjectTask(id)` → `ProjectTaskReference`
 - `client.Urls.Project(id)` → `ProjectReference`

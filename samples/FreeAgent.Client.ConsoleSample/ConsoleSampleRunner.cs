@@ -320,7 +320,7 @@ internal sealed class ConsoleSampleRunner
                     StringComparison.Ordinal))
             {
                 Console.WriteLine(
-                    "Warning: Production writes enabled — this example will modify live account data.");
+                    "Warning: Production writes enabled - this example will modify live account data.");
                 Console.WriteLine();
             }
         }

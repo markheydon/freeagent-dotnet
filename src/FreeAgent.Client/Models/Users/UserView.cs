@@ -8,7 +8,7 @@ namespace FreeAgent.Client;
 /// </summary>
 /// <remarks>
 /// Member names follow the SDK; wire values use snake_case (for example <see cref="ActiveStaff"/> → <c>active_staff</c>).
-/// There is no <c>Active</c> member — use <see cref="ActiveStaff"/> for non-hidden staff users.
+/// There is no <c>Active</c> member - use <see cref="ActiveStaff"/> for non-hidden staff users.
 /// </remarks>
 [JsonConverter(typeof(JsonStringEnumMemberNameCompatibleConverter<UserView>))]
 public enum UserView

@@ -141,7 +141,7 @@ Task<Invoice> UpdateInvoiceAsync(
 
 **HTTP:** `PUT /v2/invoices/:id`
 
-Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new InvoiceUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items. `ShowProjectName` is sent on update only when `Status` is `Draft` — FreeAgent locks `show_project_name` once an invoice leaves draft. Setting `ShowProjectName` on update without `Status` throws `ArgumentException` (populate `Status` from GET first).
+Update existing line items with `ItemId`. Delete line items with `ItemId` and `Destroy = 1`. Pass `new InvoiceUpdateOptions { OmitLineItems = true }` to update scalar fields without sending line items. `ShowProjectName` is sent on update only when `Status` is `Draft` - FreeAgent locks `show_project_name` once an invoice leaves draft. Setting `ShowProjectName` on update without `Status` throws `ArgumentException` (populate `Status` from GET first).
 
 ---
 
@@ -215,7 +215,7 @@ Task<CreditNote> ConvertToCreditNoteAsync(long invoiceId, CancellationToken canc
 
 **HTTP:** `PUT /v2/invoices/:id/transitions/convert_to_credit_note`
 
-Returns the converted credit note. Use `client.CreditNotes` for full credit note operations — see [Credit notes](credit-notes.md).
+Returns the converted credit note. Use `client.CreditNotes` for full credit note operations - see [Credit notes](credit-notes.md).
 
 ---
 
@@ -244,7 +244,7 @@ Company-level default text shown on all invoices.
 
 ### sort (`InvoiceSortOptions`)
 
-`created_at`, `updated_at` — prefix with `-` for descending.
+`created_at`, `updated_at` - prefix with `-` for descending.
 
 ## InvoiceGetOptions
 

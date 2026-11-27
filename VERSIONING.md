@@ -64,6 +64,12 @@ The release workflow will:
 
 ---
 
+## Target frameworks
+
+The `FreeAgent.Client` package multi-targets **`net8.0`** and **`net10.0`**. **.NET 10 is recommended** for new apps. **`net8.0` remains published and CI-tested** after .NET 8 standard support ended (November 2026), with a **planned review by November 2027** to drop or extend `net8.0` ([ADR-0013](adr/adr-0013-post-eol-net8-and-forward-sdk-validation.md)). There is **no `net11.0` asset** until announced in a future release.
+
+---
+
 ## Compatibility Expectations for Prerelease Consumers
 
 - **Alpha releases**: Expect breaking changes. Treat each alpha as potentially incompatible with the previous one.
@@ -82,6 +88,7 @@ If you depend on a prerelease version of this package, pin to an exact version i
 
 | Date | Change | Reason |
 |---|---|---|
+| 27 November 2026 | Document post-EOL `net8.0` window and forward SDK CI | ADR-0013 |
 | 28 October 2026 | Publish `0.1.0-beta.3` | Timeslip UI billability (`TimeslipBillability`, `Timeslip.BillingStatus`) |
 | 26 October 2026 | Publish `0.1.0-beta.2` | Incremental sync guidance and resource URI helpers from dogfood feedback (#219) |
 | 22 October 2026 | Promote to beta (`0.1.0-beta.1`) | Company API coverage complete |

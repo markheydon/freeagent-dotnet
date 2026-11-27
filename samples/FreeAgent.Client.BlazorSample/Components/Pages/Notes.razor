@@ -256,7 +256,7 @@
 
     private static string GetCrudHref(long id) => $"/notes/detail?id={id}";
 
-    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? "—" : value;
+    private static string ValueOrDash(string? value) => string.IsNullOrWhiteSpace(value) ? " - " : value;
 
     private sealed record NoteRow(int Index, long Id, string? Content, string? Author);
 }

@@ -29,10 +29,10 @@ For live sandbox smoke in GitHub Actions, see **[docs/contributing/ci-sandbox-sm
 
 Requirements:
 
-- .NET 8.0 SDK and runtime (required to build and test the SDK `net8.0` target).
-- .NET 10.0 SDK and runtime (primary SDK focus; also required for the Blazor sample).
+- **Dev Container:** .NET 10 SDK only (see [docs/contributing-setup.md](docs/contributing-setup.md)); use `dotnet test -f net10.0` for the default in-container loop.
+- **Bare-metal (full TFM parity):** .NET 8.0 and 10.0 SDKs/runtimes so you can run all tests locally.
 
-The SDK package targets both frameworks. The sample app is .NET 10.0-only.
+The SDK package targets both `net8.0` and `net10.0`. CI and release validate both. The sample app is .NET 10.0-only.
 
 Build and test locally (warnings fail the build; same as CI):
 

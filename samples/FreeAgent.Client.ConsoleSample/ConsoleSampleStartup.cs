@@ -24,7 +24,7 @@ internal static class ConsoleSampleStartup
         if (allowProductionWrites)
         {
             Console.WriteLine(
-                "Warning: Production writes enabled — mutating examples will modify live account data.");
+                "Warning: Production writes enabled - mutating examples will modify live account data.");
             return;
         }
 

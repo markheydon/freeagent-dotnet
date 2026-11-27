@@ -36,7 +36,9 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-          dotnet-version: 8.0.x
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: File-based app smoke (trim-safe JSON)
         run: dotnet run samples/FileBasedQuickStart/CompanyDeserializeSmoke.cs --configuration Release
@@ -75,13 +77,13 @@ jobs:
         run: |
           if [[ "$FREEAGENT_BATCH_SKIP_SMOKE" == "true" ]]; then
             echo "run_smoke=false" >> "$GITHUB_OUTPUT"
-            echo "Sandbox smoke skipped — repository variable FREEAGENT_BATCH_SKIP_SMOKE is true."
+            echo "Sandbox smoke skipped - repository variable FREEAGENT_BATCH_SKIP_SMOKE is true."
             exit 0
           fi
 
           if [[ "$ACTOR" == "dependabot[bot]" && "$EVENT" == "pull_request" ]]; then
             echo "run_smoke=false" >> "$GITHUB_OUTPUT"
-            echo "Sandbox smoke skipped — Dependabot pull requests do not run live API smoke."
+            echo "Sandbox smoke skipped - Dependabot pull requests do not run live API smoke."
             exit 0
           fi
 
@@ -96,7 +98,7 @@ jobs:
             echo "run_smoke=true" >> "$GITHUB_OUTPUT"
           else
             echo "run_smoke=false" >> "$GITHUB_OUTPUT"
-            echo "Sandbox smoke skipped — no changes under src/, samples/, or scripts/ci/."
+            echo "Sandbox smoke skipped - no changes under src/, samples/, or scripts/ci/."
           fi
 
   build-console-smoke:
@@ -114,7 +116,9 @@ jobs:
         uses: actions/setup-dotnet@v6
         with:
           global-json-file: global.json
-          dotnet-version: 8.0.x
+          dotnet-version: |
+            8.0.x
+            10.0.x
 
       - name: Build console sample
         run: |

@@ -304,7 +304,7 @@ internal sealed class LinkedResourceWriteVerificationSamples(SampleContext conte
             var line = $"- [{(passed ? "x" : " ")}] {criterion}";
             if (!string.IsNullOrWhiteSpace(detail))
             {
-                line += $" — {detail}";
+                line += $" - {detail}";
             }
 
             Console.WriteLine(line);

@@ -10,7 +10,7 @@
     <EndpointProbeHeader SectionKicker="Reports"
                          Title="Corporation tax returns"
                          CallUnderTest="CorporationTaxReturnsService.ListAsync()"
-                         Description="List corporation tax return periods. Limited companies only — sole traders and partnerships may return an empty list or errors. Use Inspect mapping per row, then open detail to exercise mark-as transitions."
+                         Description="List corporation tax return periods. Limited companies only - sole traders and partnerships may return an empty list or errors. Use Inspect mapping per row, then open detail to exercise mark-as transitions."
                          EndpointPath="/v2/corporation_tax_returns"
                          DocsUrl="https://dev.freeagent.com/docs/corporation_tax_returns" />
 
@@ -26,7 +26,7 @@
         <MudPaper Class="workbench-panel" Elevation="0">
             <MudStack Spacing="3">
                 <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
-                    Corporation tax returns apply to limited companies. If your sandbox company cannot file CT, the list may be empty — that is expected.
+                    Corporation tax returns apply to limited companies. If your sandbox company cannot file CT, the list may be empty - that is expected.
                 </MudAlert>
 
                 <MudButton Variant="Variant.Filled" Color="Color.Primary"
@@ -167,7 +167,7 @@
         $"/corporation-tax-returns/detail?periodEndsOn={periodEndsOn:yyyy-MM-dd}";
 
     private static string ValueOrDash(string? value) =>
-        string.IsNullOrWhiteSpace(value) ? "—" : value;
+        string.IsNullOrWhiteSpace(value) ? " - " : value;
 
     private async Task RunAsync(Func<FreeAgent.Client.FreeAgentClient, Task> action)
     {

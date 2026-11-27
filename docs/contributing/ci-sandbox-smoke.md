@@ -8,8 +8,8 @@ nav_order: 3
 
 The [Sandbox smoke workflow](https://github.com/markheydon/freeagent-dotnet/actions/workflows/sandbox-smoke.yml) runs on pull requests targeting `main`, pushes to `main`, and a weekly schedule. It includes:
 
-- **File-based app smoke** — [`samples/FileBasedQuickStart/CompanyDeserializeSmoke.cs`](../../samples/FileBasedQuickStart/CompanyDeserializeSmoke.cs) (trim-safe JSON fixture deserialise; no sandbox credentials required).
-- **Console Sample Smoke** — `samples/FreeAgent.Client.ConsoleSample` with `--seed-turpinverse --run-all` against the FreeAgent **sandbox** API when path rules and secrets allow.
+- **File-based app smoke** - [`samples/FileBasedQuickStart/CompanyDeserializeSmoke.cs`](../../samples/FileBasedQuickStart/CompanyDeserializeSmoke.cs) (trim-safe JSON fixture deserialise; no sandbox credentials required).
+- **Console Sample Smoke** - `samples/FreeAgent.Client.ConsoleSample` with `--seed-turpinverse --run-all` against the FreeAgent **sandbox** API when path rules and secrets allow.
 
 The [CI workflow](https://github.com/markheydon/freeagent-dotnet/actions/workflows/ci.yml) is limited to formatting, unit tests, and the documentation site build (mocked HTTP in tests only).
 
@@ -111,8 +111,8 @@ The **Console Sample Smoke** job is omitted unless the run is smoke-eligible. El
 | Condition | Smoke job |
 |-----------|-----------|
 | Changes under `src/`, `samples/`, or `scripts/ci/` (compared to the PR base or previous commit) | Eligible |
-| Documentation-only, tests-only, dependency-only (`.csproj` / lockfile), GitHub Actions-only, or other paths outside the list above | **Not** eligible — job skipped |
-| Pull request opened by **Dependabot** | **Not** eligible — unit tests still run; live API smoke is deferred to the next successful CI on `main` |
+| Documentation-only, tests-only, dependency-only (`.csproj` / lockfile), GitHub Actions-only, or other paths outside the list above | **Not** eligible - job skipped |
+| Pull request opened by **Dependabot** | **Not** eligible - unit tests still run; live API smoke is deferred to the next successful CI on `main` |
 | **workflow_dispatch** on Sandbox smoke | Always eligible (manual) |
 
 When the job runs, credentials behave as before:
@@ -132,10 +132,10 @@ When the job runs, credentials behave as before:
 Before `--run-all`, the job:
 
 1. Refreshes the access token via [`scripts/ci/refresh-freeagent-access-token.sh`](../../scripts/ci/refresh-freeagent-access-token.sh)
-2. Registers the access token with GitHub Actions log masking (`::add-mask::`) before passing it to the smoke step — repository secrets are masked automatically, but step outputs are not
+2. Registers the access token with GitHub Actions log masking (`::add-mask::`) before passing it to the smoke step - repository secrets are masked automatically, but step outputs are not
 3. Seeds Turpinverse canon data with `--seed-turpinverse`, then runs the console sample smoke suite with `--run-all` using the fresh access token
 
-Seeding upserts contacts, projects, tasks, sales documents, notes, and timeslips by stable keys. It is idempotent but does not remove stale sandbox records — delete unwanted probe data manually when refreshing a CI sandbox.
+Seeding upserts contacts, projects, tasks, sales documents, notes, and timeslips by stable keys. It is idempotent but does not remove stale sandbox records - delete unwanted probe data manually when refreshing a CI sandbox.
 
 Turpinverse canon is pinned by commit SHA in the console sample `appsettings.json` (`Turpinverse:CanonRef`) so CI does not drift when upstream `main` changes. Bump the SHA deliberately when adopting new canon fixtures.
 
@@ -157,7 +157,7 @@ Re-run bootstrap (`--bootstrap-refresh-token`) and update the three repository s
 
 ## Related
 
-- [Smoke and test limitations](smoke-and-test-limitations.md) — blocked coverage, Turpinverse data gaps, and menu-only examples
-- [Console sample README](../../samples/FreeAgent.Client.ConsoleSample/README.md) — interactive examples and `--run-all`
-- [#126](https://github.com/markheydon/freeagent-dotnet/issues/126) — post-v1.0 API freshness policy
-- [#134](https://github.com/markheydon/freeagent-dotnet/issues/134) — linked-resource PUT sandbox verification
+- [Smoke and test limitations](smoke-and-test-limitations.md) - blocked coverage, Turpinverse data gaps, and menu-only examples
+- [Console sample README](../../samples/FreeAgent.Client.ConsoleSample/README.md) - interactive examples and `--run-all`
+- [#126](https://github.com/markheydon/freeagent-dotnet/issues/126) - post-v1.0 API freshness policy
+- [#134](https://github.com/markheydon/freeagent-dotnet/issues/134) - linked-resource PUT sandbox verification
