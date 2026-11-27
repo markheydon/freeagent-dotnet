@@ -30,7 +30,7 @@ For **full local multi-target parity** (optional outside the Dev Container), ins
 | **.NET 10.0** | Primary focus; required for the Blazor sample app |
 | **.NET 8.0** | Run `net8.0` tests; SDK package still multi-targets `net8.0` (see [ADR-0013](../adr/adr-0013-post-eol-net8-and-forward-sdk-validation.md)) |
 
-CI installs **8.0.x** and **10.0.x** (see [global.json](../global.json) and [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)). A **forward SDK 11** job probes the next SDK without publishing `net11.0` yet. Live sandbox smoke is in [`.github/workflows/sandbox-smoke.yml`](../.github/workflows/sandbox-smoke.yml).
+CI installs **8.0.x** and **10.0.x** (see [global.json](../global.json) and [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)). A **forward SDK 11** job installs **11.0.x** when the runner provides it, sets `DOTNET_ROLL_FORWARD=LatestMajor` so that SDK is actually selected, then runs the same build and test steps without publishing `net11.0` yet. Live sandbox smoke is in [`.github/workflows/sandbox-smoke.yml`](../.github/workflows/sandbox-smoke.yml).
 
 ### Verify installation
 

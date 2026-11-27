@@ -24,7 +24,7 @@ rg_args=(
   samples
 )
 
-for dir in docs adr plan .github; do
+for dir in docs adr plan .github .devcontainer scripts; do
   if [[ -d "$dir" ]]; then
     rg_args+=("$dir")
   fi

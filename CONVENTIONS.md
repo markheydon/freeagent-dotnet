@@ -117,7 +117,7 @@ tests/
 ## Documentation
 
 - UK English in docs and comments (see [AGENTS.md](AGENTS.md)).
-- Do not use the em dash (Unicode U+2014) in user-facing text, code comments, or documentation in product scope (`src/`, `tests/`, `samples/`, `docs/`, `adr/`, `plan/`, and related root markdown). Use spaced ASCII hyphen ` - ` for prose breaks; use a single `-` for empty or missing UI values (for example table placeholders). Run [`scripts/verify-no-em-dash.sh`](scripts/verify-no-em-dash.sh) before large doc edits. To drop the CI check, delete [`.github/workflows/no-em-dash.yml`](.github/workflows/no-em-dash.yml).
+- Do not use the em dash (Unicode U+2014) in user-facing text, code comments, or documentation in product scope (`src/`, `tests/`, `samples/`, `docs/`, `adr/`, `plan/`, `.devcontainer/`, `scripts/`, `.github/`, and related root markdown). Agent tooling under `.cursor/` and `.agents/` is excluded from CI. Use spaced ASCII hyphen ` - ` for prose breaks; use a single `-` for empty or missing UI values (for example table placeholders). Run [`scripts/verify-no-em-dash.sh`](scripts/verify-no-em-dash.sh) before large doc edits. To drop the CI check, delete [`.github/workflows/no-em-dash.yml`](.github/workflows/no-em-dash.yml).
 - **README.md** (repo root): consumers and contributors.
 - **`docs/`**: consumer guides (GitHub Pages).
 - **`src/.../README.md`**: NuGet package readme.

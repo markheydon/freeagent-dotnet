@@ -11,6 +11,17 @@ dotnet test FreeAgent.slnx -c Release
 
 CI and release use the same dual-target validation. See [docs/contributing-setup.md](../docs/contributing-setup.md).
 
+## Host secrets (optional)
+
+[devcontainer.json](devcontainer.json) passes `CURSOR_API_KEY` and `GH_TOKEN` from your **host** environment into the container when set. Both are optional: omit them on the host if you do not need Cursor Cloud Agents or authenticated `gh` in-container.
+
+- Do not commit tokens or paste them into tracked files.
+- Treat the Dev Container as untrusted for secret display (avoid tools that dump the full environment in logs or issues).
+
+## Editor extensions
+
+The dev container pre-installs **C# Dev Kit** and **GitHub Actions** only (template parity). If you use VS Code without Cursor, you may want to add locally: **EditorConfig**, **YAML**, a spell checker, Docker, and .NET test explorer extensions, and set `dotnet.defaultSolution` to `FreeAgent.slnx`.
+
 ## HTTPS development certificates
 
 The Blazor sample runs at `https://localhost:5001`.

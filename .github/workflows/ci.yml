@@ -115,7 +115,28 @@ jobs:
             10.0.x
             11.0.x
 
+      - name: Resolve forward SDK
+        id: forward_sdk
+        env:
+          DOTNET_ROLL_FORWARD: LatestMajor
+        run: |
+          if ! dotnet --list-sdks | grep -qE '^11\.'; then
+            echo "::notice::.NET 11 SDK not on runner; forward probe skipped."
+            echo "probe=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          ver="$(dotnet --version)"
+          echo "Resolved SDK: ${ver}"
+          if [[ ! "${ver}" =~ ^11\. ]]; then
+            echo "::error::Expected SDK 11.x with DOTNET_ROLL_FORWARD=LatestMajor; got ${ver}"
+            exit 1
+          fi
+          echo "probe=true" >> "$GITHUB_OUTPUT"
+
       - name: Clean, restore, build, and test
+        if: steps.forward_sdk.outputs.probe == 'true'
+        env:
+          DOTNET_ROLL_FORWARD: LatestMajor
         run: |
           dotnet clean FreeAgent.slnx
           dotnet restore FreeAgent.slnx
