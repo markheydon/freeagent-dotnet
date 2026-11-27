@@ -64,6 +64,8 @@ dotnet format FreeAgent.slnx --verify-no-changes
 
 If formatting changes are reported, run `dotnet format FreeAgent.slnx` and commit the result.
 
+CI also runs [`scripts/verify-no-em-dash.sh`](scripts/verify-no-em-dash.sh) on product-scope paths ([`.github/workflows/no-em-dash.yml`](.github/workflows/no-em-dash.yml)). Run the script locally before large documentation edits.
+
 ## Branch and Pull Request Workflow
 
 1. Fork the repository and create a feature branch from `main`. (Git feature branches are a naming convention only; the GitHub `type/feature` label applies to **cluster tracking issues**, not every branch.)
@@ -81,9 +83,9 @@ If formatting changes are reported, run `dotnet format FreeAgent.slnx` and commi
 
 ## Endpoint and Sample App Sync
 
-The Blazor sample is a living reference of what the SDK implements today.
+Both sample apps are living references of what the SDK implements today (see [AGENTS.md](AGENTS.md)).
 
-If you add, remove, or rename SDK endpoints under `src/FreeAgent.Client/Services/`, update `samples/FreeAgent.Client.BlazorSample` in the same PR so the sample remains aligned. Follow [`docs/contributing/sample-probe-pages.md`](docs/contributing/sample-probe-pages.md) for wire-to-model probe pages (see Company, Contacts, and Categories as references).
+If you add, remove, or rename SDK endpoints under `src/FreeAgent.Client/Services/`, update **both** `samples/FreeAgent.Client.BlazorSample` and `samples/FreeAgent.Client.ConsoleSample` in the same PR. For Blazor, follow [`docs/contributing/sample-probe-pages.md`](docs/contributing/sample-probe-pages.md) (see Company, Contacts, and Categories as references). For the console app, add or update the matching `*Samples.cs` provider and the catalogue in [`samples/FreeAgent.Client.ConsoleSample/README.md`](samples/FreeAgent.Client.ConsoleSample/README.md).
 
 ## Testing Guidance
 
@@ -94,6 +96,7 @@ If you add, remove, or rename SDK endpoints under `src/FreeAgent.Client/Services
 ## Documentation Guidance
 
 - Use UK English spelling in all documentation and comments.
+- Follow the editorial rules in [CONVENTIONS.md](CONVENTIONS.md#documentation) (including no Unicode em dash in product scope; use spaced ASCII ` - ` instead).
 - Keep README and plan documents aligned with implemented behaviour, not aspirational behaviour.
 
 ## Security

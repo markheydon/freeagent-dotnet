@@ -1,7 +1,7 @@
 # Versioning Policy
 
 **Project:** FreeAgent.NET
-**Last updated:** 28 October 2026
+**Last updated:** 27 November 2026
 
 ---
 

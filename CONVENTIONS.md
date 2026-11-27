@@ -4,7 +4,7 @@
 
 
 **Project:** FreeAgent.NET
-**Last updated:** 22 October 2026
+**Last updated:** 27 November 2026
 
 This document records decisions about how code is written in this project.
 It exists so that both humans and AI produce consistent output.

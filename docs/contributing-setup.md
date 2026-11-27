@@ -10,7 +10,7 @@ This guide is for developers **working on the SDK repository**, not for consumer
 
 ## Dev Container
 
-Open the repo in a [Dev Container](../.devcontainer/devcontainer.json) (VS Code or GitHub Codespaces). The base image is **.NET 10**; the **dotnet feature** also installs **.NET 8.0** so full-solution `dotnet test` works.
+Open the repo in a [Dev Container](../.devcontainer/README.md) (VS Code, Cursor, or GitHub Codespaces). The base image is **.NET 10**; the **dotnet feature** also installs **.NET 8.0** so full-solution `dotnet test` works.
 
 After the container is created (or **rebuilt** after devcontainer changes):
 
@@ -81,6 +81,8 @@ dotnet format FreeAgent.slnx --verify-no-changes
 ```
 
 If changes are reported, run `dotnet format FreeAgent.slnx` and commit the result.
+
+CI also enforces [no em dash](../CONVENTIONS.md#documentation) in product-scope paths via [`scripts/verify-no-em-dash.sh`](../scripts/verify-no-em-dash.sh). Run it before large doc edits.
 
 ## Sample app
 
