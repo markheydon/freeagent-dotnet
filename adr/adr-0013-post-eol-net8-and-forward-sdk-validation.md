@@ -46,7 +46,7 @@ Development environments (Dev Container) should stay lean (.NET 10 SDK image) wh
 ## Implementation Notes
 
 - Dev Container: `mcr.microsoft.com/devcontainers/dotnet:10.0` + dotnet feature `additionalVersions: 8.0`; rebuild after devcontainer changes.
-- [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): `forward-sdk-11` job sets `DOTNET_ROLL_FORWARD=LatestMajor` so the installed **11.x** SDK is selected despite `global.json` pinning the 10.0 line; build and test run only when an 11.x SDK is present on the runner; flip from `continue-on-error` when green on `main`.
+- [`.github/workflows/ci.yml`](../.github/workflows/ci.yml): `forward-sdk-11` job patches `global.json` to `rollForward: latestMajor` for the job only so the installed **11.x** SDK is selected despite the repo pin using `latestFeature`; build and test run only when an 11.x SDK is present on the runner; flip from `continue-on-error` when green on `main`.
 - [plan/RELEASE.md](../plan/RELEASE.md): note dual SDK install and forward job gating.
 
 ## References
